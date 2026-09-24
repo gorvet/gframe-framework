@@ -1,13 +1,11 @@
 # Plan de extracción
 
-## Proyectos de referencia
+## Escenarios de referencia
 
-Baseconfías y Bebots son las referencias principales:
+La estabilización se valida en aplicaciones reales con dos escenarios principales:
 
-- Baseconfías valida aplicaciones sin tenant y los permisos globales.
-- Bebots valida aplicaciones con tenant, canales y procesos asíncronos.
-
-DANE, Libros, RAG y AIPrint MVP sirven para detectar compatibilidad y evitar que el framework se diseñe alrededor de dos aplicaciones solamente.
+- Aplicaciones sin tenant y con permisos globales.
+- Aplicaciones con tenant, canales y procesos asíncronos.
 
 ## Etapas
 
@@ -19,13 +17,13 @@ Extraer Router, RouteBuilder, Middleware, ORM, Render, Meta, errores, SEO, cron,
 
 Sustituir las copias internas de librerías externas por Composer. Mantener separadas las librerías desarrolladas para GFrame hasta definir si pertenecen al núcleo o a paquetes opcionales.
 
-### 3. Baseconfías
+### 3. Aplicación sin tenant
 
 Instalar el paquete mediante un repositorio Composer de tipo `path`, ejecutar la matriz de pruebas y retirar la copia local del core únicamente cuando exista una reversión segura.
 
-### 4. Bebots
+### 4. Aplicación con tenant
 
-Repetir la integración y validar tenancy, permisos, webhooks, SSE, cron y tareas en segundo plano. Las integraciones con canales, inteligencia artificial y proveedores permanecen en Bebots.
+Repetir la integración y validar tenancy, permisos, webhooks, SSE, cron y tareas en segundo plano. Las integraciones particulares con canales, inteligencia artificial y proveedores permanecen en cada aplicación.
 
 ### 5. Recursos públicos
 
@@ -37,7 +35,7 @@ Crear `gframe/app` como plantilla mínima y un instalador que permita iniciar pr
 
 ## Criterios de salida
 
-- Las pruebas pasan en Baseconfías y Bebots.
+- Las pruebas pasan en aplicaciones con y sin tenant.
 - Ninguna dependencia externa está copiada dentro de `src`.
 - El paquete no contiene secretos ni configuración de una aplicación.
 - Los cambios incompatibles están documentados.

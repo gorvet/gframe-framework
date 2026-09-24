@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-GFrame debe funcionar como un framework instalable y versionado. El núcleo no puede depender de reglas de negocio de Baseconfías, Bebots ni de otra aplicación concreta.
+GFrame debe funcionar como un framework instalable y versionado. El núcleo no puede depender de las reglas de negocio de una aplicación concreta.
 
 ## Capas
 

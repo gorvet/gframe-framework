@@ -2,6 +2,8 @@
 
 namespace GFrame\Tests;
 
+use GFrame\Config\ConfigRepository;
+use GFrame\Config\Environment;
 use GFrame\Foundation\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
@@ -33,5 +35,30 @@ final class FrameworkSmokeTest extends TestCase
 
         self::assertInstanceOf(\Opis\Closure\SerializableClosure::class, $wrapper);
         self::assertSame(8, $wrapper->getClosure()(4));
+    }
+
+    public function testConfigurationSupportsNestedValuesAndOverrides(): void
+    {
+        ConfigRepository::replace([
+            'app' => ['name' => 'GFrame', 'debug' => false, 'languages' => ['es', 'en']],
+            'database' => ['default' => 'main'],
+        ]);
+        ConfigRepository::merge(['app' => ['debug' => true, 'languages' => ['es']]]);
+
+        self::assertSame('GFrame', ConfigRepository::get('app.name'));
+        self::assertTrue(ConfigRepository::get('app.debug'));
+        self::assertSame(['es'], ConfigRepository::get('app.languages'));
+        self::assertSame('fallback', ConfigRepository::get('app.missing', 'fallback'));
+    }
+
+    public function testEnvironmentParsesTypedValues(): void
+    {
+        $_ENV['GFRAME_TEST_BOOLEAN'] = 'false';
+        $_ENV['GFRAME_TEST_INTEGER'] = '42';
+
+        self::assertFalse(Environment::bool('GFRAME_TEST_BOOLEAN', true));
+        self::assertSame(42, Environment::int('GFRAME_TEST_INTEGER'));
+
+        unset($_ENV['GFRAME_TEST_BOOLEAN'], $_ENV['GFRAME_TEST_INTEGER']);
     }
 }

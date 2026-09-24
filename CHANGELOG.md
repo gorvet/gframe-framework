@@ -1,8 +1,26 @@
 # Registro de cambios
 
-## Sin publicar
+## [0.9.0] - Sin publicar
 
-- Creación del repositorio independiente de GFrame.
+### Núcleo
+
+- Creación del paquete independiente de GFrame.
 - Extracción inicial del núcleo compartido.
-- Incorporación de Composer para PHPMailer, Opis Closure y PHP-SSE.
-- Documentación de la arquitectura y del plan de migración.
+- Carga de aplicaciones mediante `GFrame\Foundation\Bootstrap`.
+
+### Configuración
+
+- Incorporación de configuración por entorno mediante `.env` y `config/app.php`.
+- Valores internos protegidos en `config/defaults.php`.
+- Acceso mediante `config()`, `env()`, `env_bool()` y `env_int()`.
+- Compatibilidad temporal con las constantes históricas.
+- Soporte opcional para permisos globales o por tenant.
+
+### Dependencias
+
+- Gestión mediante Composer de PHPMailer, Opis Closure, PHP-SSE, PHP Stemmer y PHP dotenv.
+
+### Calidad
+
+- Pruebas de carga, dependencias, configuración y tareas asíncronas.
+- Documentación de arquitectura, configuración, versionado y migración.

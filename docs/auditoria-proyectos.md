@@ -1,13 +1,11 @@
-# Auditoría inicial de proyectos
+# Auditoría inicial de compatibilidad
 
 ## Alcance
 
-Se compararon Baseconfías, Bebots, DANE, Libros y RAG. AIPrint MVP se incorpora a la siguiente revisión de compatibilidad. La instalación WordPress ubicada en `aiprint` queda fuera del framework.
+Se compararon aplicaciones con y sin tenant para identificar el núcleo común, las variaciones de implementación y las dependencias que deben permanecer opcionales.
 
 ## Resultados
 
-- 106 archivos del core son idénticos en los cinco proyectos comparados.
-- 30 archivos comparten ubicación, pero contienen implementaciones diferentes.
 - Entre los archivos divergentes están Router, RouteBuilder, Middleware, ORM, Render, Meta, Load, permisos y paginación.
 - Los proyectos repiten Bootstrap, jQuery, SweetAlert, AOS, Venobox, `gfselect`, fuentes e iconos.
 - `intlTelInput` aparece copiado con más de 500 archivos en varios proyectos.
@@ -16,4 +14,4 @@ Se compararon Baseconfías, Bebots, DANE, Libros y RAG. AIPrint MVP se incorpora
 
 ## Decisión
 
-La primera extracción toma como punto de partida el core más reciente de Baseconfías y contrasta cada componente sensible con Bebots. No se considera a ningún proyecto como fuente absoluta del framework.
+La extracción conserva únicamente las capacidades reutilizables. Ninguna aplicación concreta se considera fuente absoluta del framework.

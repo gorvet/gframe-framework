@@ -2,7 +2,9 @@
 
 GFrame es un framework PHP ligero orientado a aplicaciones web, paneles administrativos y servicios HTTP. Reúne en un mismo núcleo el enrutamiento, los middleware, el acceso a datos, el renderizado de vistas, los metadatos, la gestión de errores y otras utilidades compartidas.
 
-El proyecto se está extrayendo de aplicaciones reales en producción. La serie `0.x` mantiene compatibilidad con la arquitectura histórica mientras se incorporan namespaces, contratos estables, pruebas y herramientas de instalación.
+GFrame se encuentra en una etapa de estabilización. La serie `0.x` mantiene compatibilidad con la arquitectura existente mientras se incorporan namespaces, contratos estables, pruebas y herramientas de instalación.
+
+La primera versión pública será `0.9.0`.
 
 ## Requisitos
 
@@ -28,9 +30,9 @@ composer check
 
 ## Estado
 
-Esta primera etapa centraliza el núcleo compartido por Baseconfías, Bebots, DANE, Libros, RAG y AIPrint MVP. Baseconfías y Bebots son los proyectos de referencia para validar, respectivamente, permisos globales y permisos por tenant.
+Esta primera etapa estabiliza el núcleo, la instalación mediante Composer y el funcionamiento tanto en aplicaciones globales como en aplicaciones con tenant.
 
-Consulta [la arquitectura](docs/arquitectura.md), [el plan de extracción](docs/plan-extraccion.md) y [la política de dependencias](docs/dependencias.md).
+Consulta [la arquitectura](docs/arquitectura.md), [la configuración](docs/configuracion.md), [el versionado](docs/versionado.md), [el plan de extracción](docs/plan-extraccion.md), [la hoja de ruta](docs/roadmap.md) y [la política de dependencias](docs/dependencias.md).
 
 ## Licencia
 

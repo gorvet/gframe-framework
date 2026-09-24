@@ -2,6 +2,9 @@
 
 namespace GFrame\Foundation;
 
+use Dotenv\Dotenv;
+use GFrame\Config\ConfigRepository;
+use GFrame\Config\LegacyConfigBridge;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -29,29 +32,46 @@ final class Bootstrap
             define('GFRAME_PATH', dirname(__DIR__, 2) . DIRECTORY_SEPARATOR);
         }
 
-        self::loadProjectConfiguration($projectRoot);
+        $usesStructuredConfiguration = self::loadProjectConfiguration($projectRoot);
         self::loadUtilityFiles();
+        if ($usesStructuredConfiguration) {
+            LegacyConfigBridge::defineConstants();
+        }
         self::registerProjectAutoload($projectRoot . DIRECTORY_SEPARATOR . 'app');
         self::loadRoutes($projectRoot . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes');
 
         self::$booted = true;
     }
 
-    private static function loadProjectConfiguration(string $projectRoot): void
+    private static function loadProjectConfiguration(string $projectRoot): bool
     {
-        $candidates = [
+        require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'functions.php';
+        Dotenv::createImmutable($projectRoot)->safeLoad();
+
+        $defaultsFile = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults.php';
+        $projectFile = $projectRoot . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php';
+        if (is_file($defaultsFile) && is_file($projectFile)) {
+            $defaults = require $defaultsFile;
+            $project = require $projectFile;
+            if (!is_array($defaults) || !is_array($project)) {
+                throw new RuntimeException('Los archivos de configuración deben devolver un arreglo.');
+            }
+            ConfigRepository::replace($defaults);
+            ConfigRepository::merge($project);
+            return true;
+        }
+
+        foreach ([
             $projectRoot . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'bootstrap.php',
             $projectRoot . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'Config.php',
-        ];
-
-        foreach ($candidates as $candidate) {
+        ] as $candidate) {
             if (is_file($candidate)) {
                 require_once $candidate;
-                return;
+                return false;
             }
         }
 
-        throw new RuntimeException('No se encontró config/bootstrap.php ni el archivo de configuración heredado.');
+        throw new RuntimeException('No se encontró config/app.php ni un archivo de configuración heredado.');
     }
 
     private static function loadUtilityFiles(): void
