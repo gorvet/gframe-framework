@@ -9,6 +9,7 @@
 - Carga de aplicaciones mediante `GFrame\Foundation\Bootstrap`.
 - Módulo reutilizable para procesar y lanzar en segundo plano colas de notificaciones.
 - Servicios propios de cifrado autenticado y clasificación tolerante de texto.
+- Autenticación reutilizable mediante contratos de usuario, política de contraseñas, tokens y sesiones seguras.
 
 ### Configuración
 
