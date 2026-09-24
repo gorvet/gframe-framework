@@ -5,6 +5,8 @@ namespace GFrame\Tests;
 use GFrame\Config\ConfigRepository;
 use GFrame\Config\Environment;
 use GFrame\Foundation\Bootstrap;
+use GFrame\Notifications\NotificationBatchProcessor;
+use GFrame\Notifications\NotificationQueueWorker;
 use PHPUnit\Framework\TestCase;
 
 final class FrameworkSmokeTest extends TestCase
@@ -60,5 +62,37 @@ final class FrameworkSmokeTest extends TestCase
         self::assertSame(42, Environment::int('GFRAME_TEST_INTEGER'));
 
         unset($_ENV['GFRAME_TEST_BOOLEAN'], $_ENV['GFRAME_TEST_INTEGER']);
+    }
+
+    public function testNotificationQueueWorkerNormalizesAndProcessesBatches(): void
+    {
+        $processor = new class implements NotificationBatchProcessor {
+            public function processNotificationBatch(int $batch): array
+            {
+                return ['status' => 'success', 'processed' => $batch];
+            }
+        };
+
+        $result = (new NotificationQueueWorker())->run($processor, 2);
+
+        self::assertSame('success', $result['status']);
+        self::assertSame(NotificationQueueWorker::MIN_BATCH, $result['batch']);
+        self::assertSame(NotificationQueueWorker::MIN_BATCH, $result['processed']);
+    }
+
+    public function testNotificationQueueWorkerConvertsFailuresIntoStableResponses(): void
+    {
+        $processor = new class implements NotificationBatchProcessor {
+            public function processNotificationBatch(int $batch): array
+            {
+                throw new \RuntimeException('queue_failed');
+            }
+        };
+
+        $result = (new NotificationQueueWorker())->run($processor);
+
+        self::assertSame('error', $result['status']);
+        self::assertSame('queue_failed', $result['message']);
+        self::assertSame(NotificationQueueWorker::DEFAULT_BATCH, $result['batch']);
     }
 }
