@@ -17,6 +17,9 @@ return [
     'session' => [
         'name' => null,
     ],
+    'auth' => [
+        'administrator_roles' => ['admin'],
+    ],
     'tenancy' => [
         'key' => null,
         'table' => null,

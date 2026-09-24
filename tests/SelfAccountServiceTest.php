@@ -12,7 +12,7 @@ final class SelfAccountServiceTest extends TestCase
     public function testProfileAndNameUpdateDoNotExposeCredentials(): void
     {
         $repository = new InMemorySelfAccountRepository();
-        $service = new SelfAccountService($repository);
+        $service = new SelfAccountService($repository, $repository);
 
         $profile = $service->profile(2);
         self::assertSame('success', $profile['status']);
@@ -25,7 +25,7 @@ final class SelfAccountServiceTest extends TestCase
     public function testPasswordChangeValidatesCurrentPasswordAndConfirmation(): void
     {
         $repository = new InMemorySelfAccountRepository();
-        $service = new SelfAccountService($repository);
+        $service = new SelfAccountService($repository, $repository);
 
         self::assertSame('invalid_current_password', $service->changePassword(2, 'incorrecta', 'Nueva-clave-123', 'Nueva-clave-123')['code']);
         self::assertSame('password_mismatch', $service->changePassword(2, 'Clave-actual-123', 'Nueva-clave-123', 'Otra-clave-123')['code']);

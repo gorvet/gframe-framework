@@ -10,7 +10,7 @@ final class SelfAccountService
 {
     public function __construct(
         private readonly SelfAccountRepository $accounts,
-        private readonly ?AccountDeactivationPolicy $deactivationPolicy = null,
+        private readonly AccountDeactivationPolicy $deactivationPolicy,
         private readonly PasswordPolicy $passwords = new PasswordPolicy(),
         private readonly int $maximumNameLength = 120
     ) {
@@ -106,7 +106,7 @@ final class SelfAccountService
             if ($account === null) {
                 return $this->error('not_found');
             }
-            if ($this->deactivationPolicy !== null && !$this->deactivationPolicy->canDeactivateAccount($account)) {
+            if (!$this->deactivationPolicy->canDeactivateAccount($account)) {
                 return ['status' => 'unauthorized', 'code' => 'protected_account'];
             }
             if (!password_verify($password, (string)($account['password'] ?? ''))) {

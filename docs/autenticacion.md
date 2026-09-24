@@ -15,8 +15,10 @@ El proyecto implementa `GFrame\Auth\Contracts\AuthUserRepository`. El contrato p
 
 `GFrame\Auth\SessionManager` regenera la sesión al acceder, mantiene una identidad normalizada, admite claves adicionales del proyecto y destruye la sesión al salir.
 
-`GFrame\Auth\SelfAccountService` permite consultar el perfil propio, actualizar el nombre, cambiar la contraseña y desactivar la cuenta. El proyecto aporta un repositorio y, cuando lo necesita, una política de protección para impedir la baja de cuentas especiales.
+`GFrame\Auth\SelfAccountService` permite consultar el perfil propio, actualizar el nombre, cambiar la contraseña y desactivar la cuenta. El proyecto aporta un repositorio y una política de protección que debe impedir la baja del superadministrador.
 
-Los roles administrativos y la condición de superadministrador no se imponen desde este servicio. Cada aplicación puede definirlos y conectarlos mediante su política de protección. GFrame podrá ofrecerlos como capacidad opcional sin obligar a todos los proyectos a usar el mismo esquema.
+Toda instalación debe crear un único superadministrador como primer usuario. Esta identidad tiene acceso superior, no puede desactivarse desde la cuenta propia y no depende de poseer el rol `admin`. Los administradores adicionales son opcionales, se asignan a otros usuarios y nunca equivalen al superadministrador.
+
+Los nombres de los roles administrativos se configuran mediante `auth.administrator_roles`. La aplicación conecta su esquema de usuarios mediante la sesión normalizada y la política de protección.
 
 Las vistas, mensajes de correo, roles iniciales, áreas, redirecciones y reglas particulares permanecen en cada aplicación.

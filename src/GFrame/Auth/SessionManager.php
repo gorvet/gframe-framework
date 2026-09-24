@@ -16,6 +16,7 @@ final class SessionManager
             'email' => (string)($identity['email'] ?? ''),
             'name' => (string)($identity['name'] ?? ''),
             'role' => (string)($identity['role'] ?? ''),
+            'is_super_admin' => !empty($identity['is_super_admin']),
         ];
 
         foreach ($projectSession as $key => $value) {

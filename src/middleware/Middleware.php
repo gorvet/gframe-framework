@@ -459,16 +459,23 @@ if ($hasHeaders && !$this->is_same_origin()) {
   }
 
   private  function isadmin(): array {
-    if (!isset($_SESSION['userRole'])) {
+    if (!isset($_SESSION['userID'])) {
       return ['status' => 'unauthorized', 'code' => 'login_required'];
     }
-    elseif($_SESSION['userRole']!='admin'){
+
+    if ($this->isSuperAdministrator()) {
+      return ['status' => 'success', 'context' => ['role' => 'super_admin']];
+    }
+
+    $adminRoles = array_map(
+      static fn($role): string => mb_strtolower(trim((string)$role), 'UTF-8'),
+      (array)\GFrame\Config\ConfigRepository::get('auth.administrator_roles', ['admin'])
+    );
+    if (!in_array($this->sessionRole(), $adminRoles, true)) {
       return ['status' => 'unauthorized', 'code' => 'forbidden'];
     }
-    else {
-      return ['status' => 'success'];
-    }
-    
+
+    return ['status' => 'success', 'context' => ['role' => 'admin']];
   }
 
   
@@ -478,7 +485,7 @@ private function checkPermission($permission, $routeParams): array {
         $userId = (int)($_SESSION['userID'] ?? 0);
         if ($userId <= 0) return ['status'=>'unauthorized','code'=>'forbidden'];
 
-        if (!empty($_SESSION['isSuperAdmin'])) {
+        if ($this->isSuperAdministrator()) {
           return ['status' => 'success', 'context' => ['role' => 'super_admin']];
         }
 
@@ -496,7 +503,7 @@ private function checkPermission($permission, $routeParams): array {
                 }
             }
 
-            $fallbackLevel = strtolower(trim((string)($_SESSION['userRole'] ?? '')));
+            $fallbackLevel = $this->sessionRole();
             $userPerm = $this->middlewareDataProvider->userPermissions($userId, $tenantID, $fallbackLevel);
         } catch (Throwable $exception) {
             return [
@@ -525,7 +532,17 @@ private function checkPermission($permission, $routeParams): array {
             'permission_module' => $module,
             'permission_action' => $action,
         ]];
-      }
+}
+
+private function isSuperAdministrator(): bool {
+    return !empty($_SESSION['isSuperAdmin'])
+        || !empty($_SESSION['auth']['is_super_admin']);
+}
+
+private function sessionRole(): string {
+    $role = $_SESSION['userRole'] ?? ($_SESSION['auth']['role'] ?? '');
+    return mb_strtolower(trim((string)$role), 'UTF-8');
+}
 
 private function resolvePermissionTarget(string $permission, array $routeParams): array {
     $permission = strtolower(trim($permission));
