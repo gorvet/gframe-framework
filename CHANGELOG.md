@@ -28,3 +28,4 @@
 
 - Pruebas de carga, dependencias, configuración y tareas asíncronas.
 - Documentación de arquitectura, configuración, versionado y migración.
+- Skills oficiales y versionados para Codex y Claude Code, con instalación y validación automatizadas.

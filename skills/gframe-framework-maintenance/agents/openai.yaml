@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame Framework Maintenance"
+  short_description: "Composer, configuration, tests, docs, skills, and releases"
+  default_prompt: "Use $gframe-framework-maintenance to evolve the standalone GFrame package, verify it, update documentation and skills, and integrate it safely into consuming applications."

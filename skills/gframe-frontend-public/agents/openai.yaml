@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame Frontend Public"
+  short_description: "Public views, meta, schema, and template assets"
+  default_prompt: "Use $gframe-frontend-public to implement or refactor public GFrame views, meta files, schema blocks, public templates, and content-driven page assets."

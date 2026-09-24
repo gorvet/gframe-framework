@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame Frontend Admin"
+  short_description: "Admin views, AJAX flows, and modular assets"
+  default_prompt: "Use $gframe-frontend-admin to implement or refactor admin views, meta files, modular assets, AJAX form flows, validation helpers, and toast or swal feedback in a GFrame PHP app."

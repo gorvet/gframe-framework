@@ -34,7 +34,7 @@ composer check
 
 Esta primera etapa estabiliza el núcleo, la instalación mediante Composer y el funcionamiento tanto en aplicaciones globales como en aplicaciones con tenant.
 
-Consulta [la arquitectura](docs/arquitectura.md), [la configuración](docs/configuracion.md), [la autenticación](docs/autenticacion.md), [las colas de notificaciones](docs/notificaciones.md), [el versionado](docs/versionado.md), [el plan de extracción](docs/plan-extraccion.md), [la hoja de ruta](docs/roadmap.md) y [la política de dependencias](docs/dependencias.md).
+Consulta [la arquitectura](docs/arquitectura.md), [la configuración](docs/configuracion.md), [la autenticación](docs/autenticacion.md), [los skills oficiales](docs/skills.md), [las colas de notificaciones](docs/notificaciones.md), [el versionado](docs/versionado.md), [el plan de extracción](docs/plan-extraccion.md), [la hoja de ruta](docs/roadmap.md) y [la política de dependencias](docs/dependencias.md).
 
 ## Licencia
 

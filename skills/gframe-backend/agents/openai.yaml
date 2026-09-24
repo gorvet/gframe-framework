@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame Backend"
+  short_description: "Backend routes, controllers, services, and contracts"
+  default_prompt: "Use $gframe-backend to implement or refactor backend routes, controllers, services, models, permissions, and response contracts in a GFrame PHP app."

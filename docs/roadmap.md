@@ -21,9 +21,9 @@
 
 ## Desarrollo asistido por IA
 
-- Incorporar al repositorio los skills oficiales de GFrame, versionados junto con el framework.
-- Mantener una fuente común para generar instrucciones compatibles con Codex y Claude Code.
-- Añadir una comprobación que detecte diferencias entre el código, la documentación y los skills.
+- Mantener en el repositorio los skills oficiales de GFrame, versionados junto con el framework.
+- Usar una fuente común e instalable para Codex y Claude Code.
+- Ampliar la comprobación automática de diferencias entre código, documentación y skills.
 - Documentar cómo instalar y actualizar esas instrucciones en cada asistente.
 
 ## Próximas integraciones

@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame Core Architecture"
+  short_description: "Routes, middleware, render, and tenant conventions"
+  default_prompt: "Use $gframe-core-architecture to inspect or change GFrame framework structure, routing, middleware, permissions, tenants, templates, or render conventions."

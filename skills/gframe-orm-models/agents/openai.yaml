@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame ORM Models"
+  short_description: "Single-ORM models with connections and dialect-aware behavior"
+  default_prompt: "Use $gframe-orm-models to implement or refactor GFrame ORM model methods with connection-aware behavior, dialect-separated SQL differences, transactions, list metadata, and stable model response contracts."

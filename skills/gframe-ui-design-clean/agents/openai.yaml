@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame UI Design Clean"
+  short_description: "Clean Bootstrap UI for GFrame admin and public views"
+  default_prompt: "Use $gframe-ui-design-clean to design a clean Bootstrap interface in a GFrame app while keeping styling modular, coherent, and aligned with the framework CSS layers."

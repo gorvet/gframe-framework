@@ -50,9 +50,11 @@
     "scripts": {
         "lint": "@php bin/lint.php",
         "test": "phpunit",
+        "skills:check": "@php bin/validate-skills.php",
         "check": [
             "@lint",
-            "@test"
+            "@test",
+            "@skills:check"
         ]
     },
     "config": {

@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame Auth and Access"
+  short_description: "Authentication, sessions, accounts, and admin hierarchy"
+  default_prompt: "Use $gframe-auth-access to implement or review GFrame authentication, sessions, self-account flows, repository adapters, and superadministrator or administrator access rules."
