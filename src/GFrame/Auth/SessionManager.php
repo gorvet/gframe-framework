@@ -42,4 +42,20 @@ final class SessionManager
         }
         session_destroy();
     }
+
+    public function updateIdentity(array $identity, array $projectSession = []): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $currentIdentity = is_array($_SESSION['auth'] ?? null) ? $_SESSION['auth'] : [];
+        $_SESSION['auth'] = array_replace($currentIdentity, $identity);
+
+        foreach ($projectSession as $key => $value) {
+            if (is_string($key) && $key !== '') {
+                $_SESSION[$key] = $value;
+            }
+        }
+    }
 }

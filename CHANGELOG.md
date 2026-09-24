@@ -10,6 +10,7 @@
 - Módulo reutilizable para procesar y lanzar en segundo plano colas de notificaciones.
 - Servicios propios de cifrado autenticado y clasificación tolerante de texto.
 - Autenticación reutilizable mediante contratos de usuario, política de contraseñas, tokens y sesiones seguras.
+- Gestión de la cuenta propia con perfil, cambio de contraseña, desactivación y políticas de protección configurables.
 
 ### Configuración
 
