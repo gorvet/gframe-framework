@@ -4,6 +4,7 @@
 
 - Completar la integración en una aplicación sin tenant.
 - Consolidar la configuración por entorno mediante `.env` y `config/app.php`.
+- Proporcionar cron, heartbeat, colas de notificaciones, cifrado y clasificación de texto desde el paquete.
 - Mantener compatibilidad temporal con las constantes históricas.
 - Documentar cada cambio funcional y cada decisión de arquitectura.
 - Revisar que la documentación y los skills evolucionen junto con el código.

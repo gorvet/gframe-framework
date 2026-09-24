@@ -8,6 +8,7 @@
 - Extracción inicial del núcleo compartido.
 - Carga de aplicaciones mediante `GFrame\Foundation\Bootstrap`.
 - Módulo reutilizable para procesar y lanzar en segundo plano colas de notificaciones.
+- Servicios propios de cifrado autenticado y clasificación tolerante de texto.
 
 ### Configuración
 

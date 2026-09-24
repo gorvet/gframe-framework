@@ -14,11 +14,11 @@ Estas librerías no deben copiarse dentro de `src` ni mantenerse manualmente en 
 ## Componentes propios
 
 - `PHPAsync`: pasa al componente asíncrono de GFrame y utiliza Opis Closure desde Composer.
-- `encryption`: paquete propio pendiente de extracción.
-- `textClassifier`: paquete propio; su dependencia de stemming se instala con Composer.
+- `GFrame\Security\Encryption`: cifrado autenticado AES-256-GCM incluido en el framework.
+- `GFrame\Text\TextClassifier`: clasificador propio; su dependencia de stemming se instala con Composer.
 - `gfselect`: componente propio de interfaz pendiente de extracción.
 - `passwordUtils`: utilidad propia pendiente de extracción.
-- Fuente de iconos `bebots`: recurso propio pendiente de extracción al paquete de interfaz.
+- Fuente de iconos `gframe-icons`: recurso propio pendiente de extracción al paquete de interfaz.
 
 `opusConverter` es propio, pero queda retirado porque ya no se necesita. PHPMailer, Opis Closure, PHP-SSE y PHP Stemmer son dependencias externas y no se copiarán al repositorio.
 

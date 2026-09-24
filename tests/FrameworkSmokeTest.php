@@ -7,6 +7,8 @@ use GFrame\Config\Environment;
 use GFrame\Foundation\Bootstrap;
 use GFrame\Notifications\NotificationBatchProcessor;
 use GFrame\Notifications\NotificationQueueWorker;
+use GFrame\Security\Encryption;
+use GFrame\Text\TextClassifier;
 use PHPUnit\Framework\TestCase;
 
 final class FrameworkSmokeTest extends TestCase
@@ -94,5 +96,25 @@ final class FrameworkSmokeTest extends TestCase
         self::assertSame('error', $result['status']);
         self::assertSame('queue_failed', $result['message']);
         self::assertSame(NotificationQueueWorker::DEFAULT_BATCH, $result['batch']);
+    }
+
+    public function testEncryptionRoundTrip(): void
+    {
+        $encryption = new Encryption('test-secret');
+        $payload = $encryption->encrypt('contenido privado');
+
+        self::assertNotSame('contenido privado', $payload);
+        self::assertSame('contenido privado', $encryption->decrypt($payload));
+    }
+
+    public function testTextClassifierSupportsSpanishAndTypographicalErrors(): void
+    {
+        $classifier = new TextClassifier();
+        $intent = $classifier->intentsClassify('necesito pagar la nomna', [
+            'payroll' => ['pagar la nómina', 'salarios de trabajadores'],
+            'cash' => ['efectivo en caja'],
+        ]);
+
+        self::assertSame('payroll', $intent);
     }
 }
