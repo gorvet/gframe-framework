@@ -1,0 +1,177 @@
+<?php
+
+return [
+    'webpage' => ['type' => 'WebPage'],
+    'collection' => ['type' => 'CollectionPage'],
+    'listing' => ['type' => 'CollectionPage'],
+    'contact' => ['type' => 'ContactPage'],
+
+    'article' => ['type' => 'Article'],
+    'blog' => ['type' => 'BlogPosting'],
+    'blog_post' => ['type' => 'BlogPosting'],
+    'news' => ['type' => 'NewsArticle'],
+    'news_article' => ['type' => 'NewsArticle'],
+    'tech_article' => ['type' => 'TechArticle'],
+
+    'product' => ['type' => 'Product', 'product' => []],
+    'software' => ['type' => 'SoftwareApplication', 'software' => []],
+    'app' => ['type' => 'SoftwareApplication', 'software' => []],
+    'service' => ['type' => 'Service', 'service' => []],
+    'course' => ['type' => 'Course', 'course' => []],
+    'event' => ['type' => 'Event', 'event' => []],
+    'local_business' => ['type' => 'LocalBusiness', 'business' => []],
+    'job' => ['type' => 'JobPosting', 'job' => []],
+    'job_posting' => ['type' => 'JobPosting', 'job' => []],
+    'video' => ['type' => 'VideoObject', 'video' => []],
+    'recipe' => ['type' => 'Recipe', 'recipe' => []],
+    'creative_work' => ['type' => 'CreativeWork', 'creativeWork' => []],
+    'faq' => ['type' => 'WebPage', 'faq' => []],
+
+    // Moldes "de uso comun" para vistas
+    'site_base' => [
+        'preset' => 'webpage',
+    ],
+    'marketing_page' => [
+        'presets' => ['webpage'],
+    ],
+    'faq_page' => [
+        'presets' => ['webpage', 'faq'],
+        'faq' => [],
+    ],
+    'contact_page' => [
+        'preset' => 'contact',
+    ],
+    'blog_article' => [
+        'preset' => 'blog',
+    ],
+    'news_article' => [
+        'preset' => 'news_article',
+    ],
+    'tech_article' => [
+        'preset' => 'tech_article',
+    ],
+    'product_page' => [
+        'preset' => 'product',
+        'product' => [
+            'name' => null,
+            'description' => null,
+            'sku' => null,
+            'brand' => null,
+            'images' => [],
+            'price' => null,
+            'currency' => 'USD',
+            'availability' => 'https://schema.org/InStock',
+        ],
+    ],
+    'saas_landing' => [
+        'presets' => ['software', 'faq'],
+        'software' => [
+            'name' => null,
+            'category' => 'BusinessApplication',
+            'os' => 'Web',
+            'offers' => [],
+            'aggregateRating' => [
+                'ratingValue' => null,
+                'reviewCount' => null,
+            ],
+        ],
+        'faq' => [],
+    ],
+    'service_page' => [
+        'preset' => 'service',
+        'service' => [
+            'name' => null,
+            'description' => null,
+            'serviceType' => null,
+            'areaServed' => null,
+            'provider' => null,
+            'offers' => null,
+        ],
+    ],
+    'course_page' => [
+        'preset' => 'course',
+        'course' => [
+            'name' => null,
+            'description' => null,
+            'url' => null,
+            'provider' => null,
+        ],
+    ],
+    'event_page' => [
+        'preset' => 'event',
+        'event' => [
+            'name' => null,
+            'description' => null,
+            'startDate' => null,
+            'endDate' => null,
+            'eventAttendanceMode' => null,
+            'eventStatus' => null,
+            'images' => [],
+            'location' => null,
+            'organizer' => null,
+            'offers' => null,
+        ],
+    ],
+    'local_business_page' => [
+        'preset' => 'local_business',
+        'business' => [
+            'type' => 'LocalBusiness',
+            'name' => null,
+            'description' => null,
+            'url' => null,
+            'image' => null,
+            'telephone' => null,
+            'address' => null,
+            'geo' => null,
+            'openingHoursSpecification' => null,
+            'sameAs' => [],
+        ],
+    ],
+    'job_posting_page' => [
+        'preset' => 'job_posting',
+        'job' => [
+            'title' => null,
+            'description' => null,
+            'datePosted' => null,
+            'validThrough' => null,
+            'employmentType' => null,
+            'hiringOrganization' => null,
+            'jobLocation' => null,
+            'baseSalary' => null,
+            'applicantLocationRequirements' => null,
+            'directApply' => null,
+        ],
+    ],
+    'video_page' => [
+        'preset' => 'video',
+        'video' => [
+            'name' => null,
+            'description' => null,
+            'thumbnailUrl' => [],
+            'uploadDate' => null,
+            'duration' => null,
+            'contentUrl' => null,
+            'embedUrl' => null,
+            'publisher' => null,
+        ],
+    ],
+    'recipe_page' => [
+        'preset' => 'recipe',
+        'recipe' => [
+            'name' => null,
+            'description' => null,
+            'image' => [],
+            'author' => null,
+            'recipeYield' => null,
+            'prepTime' => null,
+            'cookTime' => null,
+            'totalTime' => null,
+            'recipeCategory' => null,
+            'recipeCuisine' => null,
+            'keywords' => null,
+            'recipeIngredient' => [],
+            'recipeInstructions' => [],
+            'nutrition' => null,
+        ],
+    ],
+];
