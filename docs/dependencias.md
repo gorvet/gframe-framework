@@ -1,5 +1,13 @@
 # Política de dependencias
 
+## Ubicación de los paquetes PHP
+
+GFrame utiliza `packages/` como directorio de instalación de Composer. El autoload se carga desde `packages/autoload.php` y los ejecutables se generan en `packages/bin/`.
+
+Composer mantiene su estructura estándar `proveedor/paquete` dentro de esa carpeta. Por ejemplo, el framework se instala en una aplicación como `packages/gframe/framework` y PHPMailer como `packages/phpmailer/phpmailer`.
+
+`packages/` es generado, no se versiona y nunca forma parte del archivo distribuible de GFrame.
+
 ## Dependencias externas administradas por Composer
 
 | Función | Paquete |
@@ -30,4 +38,4 @@ Bootstrap, jQuery, SweetAlert, AOS, Venobox y otras librerías de interfaz se re
 
 ## Regla de actualización
 
-Composer fija las versiones en `composer.lock`. Las actualizaciones se prueban en el framework y luego se incorporan de forma explícita a cada aplicación.
+Composer fija las versiones en `composer.lock`. Las actualizaciones se prueban en el framework y luego se incorporan de forma explícita a cada aplicación. En una aplicación se usa `composer install`; no se copian paquetes manualmente.

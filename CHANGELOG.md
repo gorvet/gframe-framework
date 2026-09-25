@@ -23,6 +23,9 @@
 ### Dependencias
 
 - Gestión mediante Composer de PHPMailer, Opis Closure, PHP-SSE, PHP Stemmer y PHP dotenv.
+- Identidad Composer establecida como `gframe/framework`.
+- Dependencias PHP organizadas bajo `packages/`, con autoload en `packages/autoload.php`.
+- Exclusión de dependencias, pruebas y archivos de desarrollo de los paquetes distribuibles.
 
 ### Calidad
 

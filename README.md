@@ -18,7 +18,7 @@ La primera versión pública será `0.9.0`.
 ## Instalación
 
 ```bash
-composer require gorvet/gframe
+composer require gframe/framework
 ```
 
 Mientras el paquete no esté publicado en Packagist, puede instalarse desde GitHub o mediante un repositorio local de tipo `path`.
@@ -29,6 +29,8 @@ Mientras el paquete no esté publicado en Packagist, puede instalarse desde GitH
 composer install
 composer check
 ```
+
+Las dependencias de desarrollo se instalan en `packages/`. Esta carpeta es generada por Composer y no se versiona.
 
 ## Estado
 

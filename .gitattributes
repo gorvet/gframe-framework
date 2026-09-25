@@ -9,3 +9,10 @@
 *.woff2 binary
 *.ttf binary
 *.eot binary
+
+/vendor export-ignore
+/packages export-ignore
+/.phpunit.cache export-ignore
+/tests export-ignore
+/phpunit.xml export-ignore
+/composer.lock export-ignore

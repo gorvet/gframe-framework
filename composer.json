@@ -1,5 +1,5 @@
 {
-    "name": "gorvet/gframe",
+    "name": "gframe/framework",
     "description": "Framework PHP ligero para aplicaciones web, paneles administrativos y servicios HTTP.",
     "type": "library",
     "license": "MIT",
@@ -58,6 +58,8 @@
         ]
     },
     "config": {
+        "vendor-dir": "packages",
+        "bin-dir": "packages/bin",
         "sort-packages": true,
         "optimize-autoloader": true
     },

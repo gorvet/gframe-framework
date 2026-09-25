@@ -28,7 +28,7 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 
 ## Hard Rules
 
-- Do not modify the GFrame repository or `vendor/gorvet/gframe` for project-specific backend work.
+- Do not modify the GFrame repository or `packages/gframe/framework` for project-specific backend work.
 - If backend requirements do not fit existing framework conventions, stop and call out the mismatch before changing code.
 - Prefer adapting controllers, models, services, routes in `config/routes`, and database schema before proposing any framework patch.
 - Routes live in `config/routes/*.php`, not `routes/*.php`.

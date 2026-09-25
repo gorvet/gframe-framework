@@ -6,7 +6,7 @@ For a shared change:
 
 1. implement and test it in GFrame;
 2. commit the framework change;
-3. run `composer update gorvet/gframe` in the application;
+3. run `composer update gframe/framework` in the application;
 4. verify application routes and adapters;
 5. commit the application lock and integration changes.
 

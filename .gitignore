@@ -1,4 +1,5 @@
 /vendor/
+/packages/
 /.phpunit.cache/
 /.idea/
 /.vscode/

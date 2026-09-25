@@ -19,6 +19,7 @@ class Robots
             '/core/',
             '/app/',
             '/storage/',
+            '/packages/',
             '/vendor/',
         ];
 

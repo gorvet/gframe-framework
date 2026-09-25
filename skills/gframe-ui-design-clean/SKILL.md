@@ -37,7 +37,7 @@ Read [references/bootstrap-patterns.md](references/bootstrap-patterns.md) before
 
 ## Product Consistency
 
-- Framework assets and application assets are separate. Do not patch GFrame or `vendor/gorvet/gframe` for a project-only design.
+- Framework assets and application assets are separate. Do not patch GFrame or `packages/gframe/framework` for a project-only design.
 - Keep view-specific rules in the module stylesheet.
 - Move genuinely reused application patterns to `public/css/app/common.css` or the appropriate application-wide admin stylesheet.
 - Change framework-level tokens or shared assets only for an explicitly authorized GFrame-wide improvement.

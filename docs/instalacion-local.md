@@ -14,7 +14,7 @@ Hasta que el paquete se publique en Packagist, una aplicación puede enlazarlo d
         }
     ],
     "require": {
-        "gorvet/gframe": "dev-main"
+        "gframe/framework": "dev-main"
     }
 }
 ```
@@ -22,7 +22,22 @@ Hasta que el paquete se publique en Packagist, una aplicación puede enlazarlo d
 Después se ejecuta:
 
 ```bash
-composer update gorvet/gframe
+composer update gframe/framework
 ```
 
 Esta modalidad permite probar cambios localmente. En producción, cada aplicación debe instalar una versión etiquetada y desplegar su `composer.lock`.
+
+## Directorio de dependencias
+
+Los proyectos GFrame configuran Composer para instalar los paquetes en `packages/`:
+
+```json
+{
+    "config": {
+        "vendor-dir": "packages",
+        "bin-dir": "packages/bin"
+    }
+}
+```
+
+El arranque de la aplicación carga `packages/autoload.php`. No debe existir otra copia manual del framework ni de sus dependencias.

@@ -4,7 +4,7 @@
 
 - Do not modify GFrame middleware or routing to fit one project's schema or business rules.
 - Shared fixes belong in the GFrame repository; project adapters belong in the application's `app/` and `config/` layers.
-- Never patch `vendor/gorvet/gframe` or rebuild a duplicated local core.
+- Never patch `packages/gframe/framework` or rebuild a duplicated local core.
 
 ## Middleware Roles
 

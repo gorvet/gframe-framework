@@ -1,9 +1,10 @@
 <?php
 
-$autoloadCandidates = [
-    dirname(__DIR__) . '/vendor/autoload.php',
+$autoloadCandidates = array_filter([
+    $_composer_autoload_path ?? null,
+    dirname(__DIR__) . '/packages/autoload.php',
     dirname(__DIR__, 3) . '/autoload.php',
-];
+]);
 
 foreach ($autoloadCandidates as $autoload) {
     if (is_file($autoload)) {
