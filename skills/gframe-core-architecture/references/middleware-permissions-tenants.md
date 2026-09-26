@@ -10,6 +10,8 @@
 
 Current middleware names include `guest`, `auth`, `admin`, `can:*`, CSRF, honeypot, and transport guards.
 
+Authentication middleware reads the normalized `$_SESSION['auth']` identity as its primary contract. Legacy top-level session keys are transitional and must not define new framework behavior.
+
 ## Permission Modes
 
 `can:*` operates in two modes:

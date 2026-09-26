@@ -26,7 +26,7 @@ GFrame debe funcionar como un framework instalable y versionado. El núcleo no p
 
 ### Paquetes opcionales
 
-Los módulos reutilizables que no sean necesarios en todas las aplicaciones deben instalarse aparte. Entre los candidatos están la biblioteca de medios, el editor, las notificaciones, la clasificación de textos y la conversión de audio.
+Los módulos reutilizables que no sean necesarios en todas las aplicaciones deben instalarse aparte. Entre los candidatos están la biblioteca de medios, el editor, las notificaciones y la conversión de audio. Los algoritmos propios de un dominio, como `TextClassifier` en Bebots, permanecen en su aplicación.
 
 ## Compatibilidad inicial
 

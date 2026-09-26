@@ -39,10 +39,10 @@ if (!is_string($serializedClosure) || $serializedClosure === '') {
     exit(1);
 }
 
-$wrapper = @unserialize($serializedClosure);
-if (!$wrapper instanceof \Opis\Closure\SerializableClosure) {
+try {
+    $closure = ClosureWrapper::unserialize($serializedClosure);
+} catch (Throwable $exception) {
     exit(1);
 }
 
-$closure = $wrapper->getClosure();
 $closure();

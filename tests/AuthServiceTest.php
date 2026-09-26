@@ -54,6 +54,20 @@ final class AuthServiceTest extends TestCase
         self::assertSame('invalid_password', $auth->register('persona@example.com', 'short')['code']);
         self::assertSame('invalid_email', $auth->register('invalid-email', 'Password-123')['code']);
     }
+
+    public function testAuthenticationRequiresTheConfiguredActiveStatus(): void
+    {
+        $repository = new InMemoryAuthUserRepository();
+        $auth = new AuthService($repository);
+
+        $registered = $auth->register('persona@example.com', 'Password-123');
+        $repository->updateAuthUser((int)$registered['user_id'], ['status' => 'archived']);
+
+        $response = $auth->authenticate('persona@example.com', 'Password-123');
+
+        self::assertSame('error', $response['status']);
+        self::assertSame('invalid_user', $response['code']);
+    }
 }
 
 final class InMemoryAuthUserRepository implements AuthUserRepository

@@ -23,7 +23,7 @@ Use this for registration, login, verification, recovery, session identity, self
 - Do not reveal whether an email exists during password recovery.
 - The first installed user is the unique superadministrator. Additional administrators are optional and subordinate.
 - Require an `AccountDeactivationPolicy` so the superadministrator cannot deactivate their own account.
-- Preserve legacy session keys only as an application compatibility bridge; also populate normalized `auth` identity.
+- Treat normalized `auth` identity as the framework contract. Preserve legacy session keys only as a temporary application migration bridge.
 - Protect routes in middleware, not inside persistence models.
 
 ## Verification

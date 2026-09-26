@@ -14,4 +14,4 @@ Implement `AuthUserRepository` for credential and token persistence. Implement `
 
 Controllers remain the HTTP boundary and add project messages, email templates, redirects, area assignments, and legacy session keys.
 
-The normalized session identity contains `id`, `email`, `name`, `role`, and `is_super_admin`.
+The normalized `$_SESSION['auth']` identity is the framework source of truth and contains `id`, `email`, `name`, `role`, and `is_super_admin`. Legacy top-level session keys are only a temporary application migration bridge.

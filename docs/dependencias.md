@@ -15,20 +15,18 @@ Composer mantiene su estructura estándar `proveedor/paquete` dentro de esa carp
 | Correo SMTP | `phpmailer/phpmailer` |
 | Serialización de closures para PHPAsync | `opis/closure` 3.7 |
 | Server-Sent Events | `hhxsv5/php-sse` |
-| Stemming usado por TextClassifier | `wamania/php-stemmer` |
 
 Estas librerías no deben copiarse dentro de `src` ni mantenerse manualmente en `core/vendors`.
 
 ## Componentes propios
 
 - `PHPAsync`: pasa al componente asíncrono de GFrame y utiliza Opis Closure desde Composer.
-- `GFrame\Security\Encryption`: cifrado autenticado AES-256-GCM incluido en el framework.
-- `GFrame\Text\TextClassifier`: clasificador propio; su dependencia de stemming se instala con Composer.
+- `GFrame\Security\Encryption`: utilidad opcional de cifrado autenticado AES-256-GCM incluida en el framework. Su formato es propio y no migra automáticamente datos cifrados por implementaciones anteriores.
 - `gfselect`: componente propio de interfaz pendiente de extracción.
 - `passwordUtils`: utilidad propia pendiente de extracción.
 - Fuente de iconos `gframe-icons`: recurso propio pendiente de extracción al paquete de interfaz.
 
-`opusConverter` es propio, pero queda retirado porque ya no se necesita. PHPMailer, Opis Closure, PHP-SSE y PHP Stemmer son dependencias externas y no se copiarán al repositorio.
+`TextClassifier` permanece en Bebots porque es un algoritmo específico para bots conversacionales. `opusConverter` es propio, pero queda retirado porque ya no se necesita. PHPMailer, Opis Closure y PHP-SSE son dependencias externas y no se copiarán al repositorio.
 
 Los componentes propios podrán incorporarse al núcleo o convertirse en paquetes `gframe/*`. Las dependencias específicas de un proyecto permanecerán en ese proyecto.
 

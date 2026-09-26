@@ -4,7 +4,7 @@
 
 - Completar la integración en una aplicación sin tenant.
 - Consolidar la configuración por entorno mediante `.env` y `config/app.php`.
-- Proporcionar cron, heartbeat, colas de notificaciones, cifrado y clasificación de texto desde el paquete.
+- Proporcionar cron, heartbeat, colas de notificaciones y cifrado opcional desde el paquete.
 - Proporcionar autenticación mediante contratos que no impongan el esquema de usuarios del proyecto.
 - Crear el superadministrador obligatorio durante la instalación y admitir administradores adicionales como roles configurables.
 - Mantener compatibilidad temporal con las constantes históricas.

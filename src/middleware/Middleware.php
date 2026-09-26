@@ -20,12 +20,12 @@ public function __construct() {
         $refreshSession = true;
     }
 
-    if (!isset($_SESSION['userID'])) {
+    if (!$this->hasSessionIdentity()) {
         if ($refreshSession === false) {
             return ['status' => 'unauthorized', 'code' => 'expired', 'message' => 'Sesión expirada por inactividad.'];
         }
     }
-    if ($sessionAwareRoute && isset($_SESSION['userID'])) {
+    if ($sessionAwareRoute && $this->hasSessionIdentity()) {
         $res = $this->sessionTimeout($refreshSession);
         if ($res['status'] !== 'success') return $res;
     }
@@ -445,21 +445,21 @@ if ($hasHeaders && !$this->is_same_origin()) {
 
 
   private  function auth(): array { 
-    if (!isset($_SESSION['userID'])) {
+    if (!$this->hasSessionIdentity()) {
       return ['status' => 'unauthorized', 'code' => 'login_required'];
     }
       return ['status' => 'success'];
   }
 
   private  function guest(): array {
-    if (isset($_SESSION['userID'])) {
+    if ($this->hasSessionIdentity()) {
       return ['status' => 'unauthorized', 'code' => 'already_logged'];
     }
       return ['status' => 'success'];
   }
 
   private  function isadmin(): array {
-    if (!isset($_SESSION['userID'])) {
+    if (!$this->hasSessionIdentity()) {
       return ['status' => 'unauthorized', 'code' => 'login_required'];
     }
 
@@ -482,7 +482,7 @@ if ($hasHeaders && !$this->is_same_origin()) {
 
 private function checkPermission($permission, $routeParams): array {
 
-        $userId = (int)($_SESSION['userID'] ?? 0);
+        $userId = $this->sessionUserID();
         if ($userId <= 0) return ['status'=>'unauthorized','code'=>'forbidden'];
 
         if ($this->isSuperAdministrator()) {
@@ -535,13 +535,49 @@ private function checkPermission($permission, $routeParams): array {
 }
 
 private function isSuperAdministrator(): bool {
-    return !empty($_SESSION['isSuperAdmin'])
-        || !empty($_SESSION['auth']['is_super_admin']);
+    $normalized = is_array($_SESSION['auth'] ?? null)
+        ? ($_SESSION['auth']['is_super_admin'] ?? null)
+        : null;
+
+    if ($normalized !== null) {
+        return $this->sessionBoolean($normalized);
+    }
+
+    return $this->sessionBoolean($_SESSION['isSuperAdmin'] ?? false);
 }
 
 private function sessionRole(): string {
-    $role = $_SESSION['userRole'] ?? ($_SESSION['auth']['role'] ?? '');
+    $normalized = is_array($_SESSION['auth'] ?? null)
+        ? ($_SESSION['auth']['role'] ?? null)
+        : null;
+    $role = $normalized !== null && trim((string)$normalized) !== ''
+        ? $normalized
+        : ($_SESSION['userRole'] ?? '');
     return mb_strtolower(trim((string)$role), 'UTF-8');
+}
+
+private function hasSessionIdentity(): bool {
+    return $this->sessionUserID() > 0;
+}
+
+private function sessionUserID(): int {
+    $normalized = is_array($_SESSION['auth'] ?? null)
+        ? (int)($_SESSION['auth']['id'] ?? 0)
+        : 0;
+
+    return $normalized > 0 ? $normalized : (int)($_SESSION['userID'] ?? 0);
+}
+
+private function sessionBoolean(mixed $value): bool {
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    if (is_int($value) || is_float($value)) {
+        return (int)$value === 1;
+    }
+
+    return in_array(mb_strtolower(trim((string)$value), 'UTF-8'), ['1', 'true', 'yes', 'on'], true);
 }
 
 private function resolvePermissionTarget(string $permission, array $routeParams): array {

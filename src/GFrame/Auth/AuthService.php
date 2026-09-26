@@ -133,6 +133,9 @@ final class AuthService
             if ($status === $this->suspendedStatus) {
                 return $this->error('suspended_account');
             }
+            if ($status !== $this->activeStatus) {
+                return $this->error('invalid_user');
+            }
 
             $name = trim((string)($user['name'] ?? '')) ?: $this->displayNameFromEmail((string)$user['email']);
             $firstLogin = empty($user['last_login']);

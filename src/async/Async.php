@@ -1,28 +1,32 @@
 <?php
 
 // Ejecutor de tareas en segundo plano basado en Opis Closure.
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'ClosureWrapper.php';
+
 class Async
 {
+    protected string $serializedWrapper = '';
+
     public function create(Closure $closure): void
     {
         if (!defined('ABSPATH')) {
             throw new RuntimeException('GFrame debe iniciarse antes de crear una tarea asíncrona.');
         }
 
+        $this->serializedWrapper = ClosureWrapper::serialize($closure);
+        $this->run($this->serializedWrapper);
+    }
+
+    public function run(string $serialized): void
+    {
         $payload = json_encode([
             'root' => rtrim((string)ABSPATH, '/\\'),
-            'closure' => base64_encode(serialize(new \Opis\Closure\SerializableClosure($closure))),
+            'closure' => base64_encode($serialized),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!is_string($payload) || $payload === '') {
             throw new RuntimeException('No se pudo preparar la tarea asíncrona.');
         }
-
-        $this->run($payload);
-    }
-
-    public function run(string $payload): void
-    {
         $worker = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'async-worker.php');
         if ($worker === false) {
             throw new RuntimeException('No se encontró el worker de tareas asíncronas.');

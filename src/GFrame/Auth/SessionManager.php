@@ -11,13 +11,13 @@ final class SessionManager
         }
 
         session_regenerate_id(true);
-        $_SESSION['auth'] = [
+        $_SESSION['auth'] = $this->normalizeIdentity([
             'id' => (int)($identity['id'] ?? 0),
             'email' => (string)($identity['email'] ?? ''),
             'name' => (string)($identity['name'] ?? ''),
             'role' => (string)($identity['role'] ?? ''),
-            'is_super_admin' => !empty($identity['is_super_admin']),
-        ];
+            'is_super_admin' => $identity['is_super_admin'] ?? false,
+        ]);
 
         foreach ($projectSession as $key => $value) {
             if (is_string($key) && $key !== '') {
@@ -51,12 +51,36 @@ final class SessionManager
         }
 
         $currentIdentity = is_array($_SESSION['auth'] ?? null) ? $_SESSION['auth'] : [];
-        $_SESSION['auth'] = array_replace($currentIdentity, $identity);
+        $_SESSION['auth'] = $this->normalizeIdentity(array_replace($currentIdentity, $identity));
 
         foreach ($projectSession as $key => $value) {
             if (is_string($key) && $key !== '') {
                 $_SESSION[$key] = $value;
             }
         }
+    }
+
+    private function normalizeIdentity(array $identity): array
+    {
+        return [
+            'id' => (int)($identity['id'] ?? 0),
+            'email' => trim((string)($identity['email'] ?? '')),
+            'name' => trim((string)($identity['name'] ?? '')),
+            'role' => mb_strtolower(trim((string)($identity['role'] ?? '')), 'UTF-8'),
+            'is_super_admin' => $this->normalizeBoolean($identity['is_super_admin'] ?? false),
+        ];
+    }
+
+    private function normalizeBoolean(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return (int)$value === 1;
+        }
+
+        return in_array(mb_strtolower(trim((string)$value), 'UTF-8'), ['1', 'true', 'yes', 'on'], true);
     }
 }

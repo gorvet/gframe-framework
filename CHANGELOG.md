@@ -8,8 +8,9 @@
 - Extracción inicial del núcleo compartido.
 - Carga de aplicaciones mediante `GFrame\Foundation\Bootstrap`.
 - Módulo reutilizable para procesar y lanzar en segundo plano colas de notificaciones.
-- Servicios propios de cifrado autenticado y clasificación tolerante de texto.
+- Servicio opcional de cifrado autenticado.
 - Autenticación reutilizable mediante contratos de usuario, política de contraseñas, tokens y sesiones seguras.
+- Validación estricta del estado activo antes de autenticar y contrato normalizado en `$_SESSION['auth']`.
 - Gestión de la cuenta propia con perfil, cambio de contraseña, desactivación y políticas de protección configurables.
 
 ### Configuración
@@ -22,13 +23,13 @@
 
 ### Dependencias
 
-- Gestión mediante Composer de PHPMailer, Opis Closure, PHP-SSE, PHP Stemmer y PHP dotenv.
+- Gestión mediante Composer de PHPMailer, Opis Closure, PHP-SSE y PHP dotenv.
 - Identidad Composer establecida como `gframe/framework`.
 - Dependencias PHP organizadas bajo `packages/`, con autoload en `packages/autoload.php`.
 - Exclusión de dependencias, pruebas y archivos de desarrollo de los paquetes distribuibles.
 
 ### Calidad
 
-- Pruebas de carga, dependencias, configuración y tareas asíncronas.
+- Pruebas de carga, dependencias, configuración, identidad normalizada y tareas asíncronas.
 - Documentación de arquitectura, configuración, versionado y migración.
 - Skills oficiales y versionados para Codex y Claude Code, con instalación y validación automatizadas.

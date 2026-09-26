@@ -8,7 +8,6 @@ use GFrame\Foundation\Bootstrap;
 use GFrame\Notifications\NotificationBatchProcessor;
 use GFrame\Notifications\NotificationQueueWorker;
 use GFrame\Security\Encryption;
-use GFrame\Text\TextClassifier;
 use PHPUnit\Framework\TestCase;
 
 final class FrameworkSmokeTest extends TestCase
@@ -27,18 +26,14 @@ final class FrameworkSmokeTest extends TestCase
         self::assertTrue(class_exists(\PHPMailer\PHPMailer\PHPMailer::class));
         self::assertTrue(class_exists(\Hhxsv5\SSE\SSE::class));
         self::assertTrue(class_exists(\Opis\Closure\SerializableClosure::class));
-        self::assertTrue(class_exists(\Wamania\Snowball\StemmerFactory::class));
     }
 
     public function testClosuresCanBeSerializedForBackgroundJobs(): void
     {
-        $serialized = serialize(new \Opis\Closure\SerializableClosure(
-            static fn(int $value): int => $value * 2
-        ));
-        $wrapper = unserialize($serialized);
+        $serialized = \ClosureWrapper::serialize(static fn(int $value): int => $value * 2);
+        $closure = \ClosureWrapper::unserialize($serialized);
 
-        self::assertInstanceOf(\Opis\Closure\SerializableClosure::class, $wrapper);
-        self::assertSame(8, $wrapper->getClosure()(4));
+        self::assertSame(8, $closure(4));
     }
 
     public function testConfigurationSupportsNestedValuesAndOverrides(): void
@@ -107,14 +102,13 @@ final class FrameworkSmokeTest extends TestCase
         self::assertSame('contenido privado', $encryption->decrypt($payload));
     }
 
-    public function testTextClassifierSupportsSpanishAndTypographicalErrors(): void
+    public function testEncryptionRejectsTamperedPayload(): void
     {
-        $classifier = new TextClassifier();
-        $intent = $classifier->intentsClassify('necesito pagar la nomna', [
-            'payroll' => ['pagar la nómina', 'salarios de trabajadores'],
-            'cash' => ['efectivo en caja'],
-        ]);
+        $encryption = new Encryption('test-secret');
+        $payload = $encryption->encrypt('contenido privado');
+        $tampered = substr($payload, 0, -2) . 'aa';
 
-        self::assertSame('payroll', $intent);
+        $this->expectException(\Throwable::class);
+        $encryption->decrypt($tampered);
     }
 }
