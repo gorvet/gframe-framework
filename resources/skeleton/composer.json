@@ -1,5 +1,5 @@
 {
-    "name": "gframe/app",
+    "name": "gframe/project",
     "description": "Proyecto base para aplicaciones construidas con GFrame.",
     "type": "project",
     "license": "MIT",

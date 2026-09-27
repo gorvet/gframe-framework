@@ -31,7 +31,7 @@ Extraer JavaScript, CSS, iconos y fuentes comunes. Antes de unificar `common.css
 
 ### 6. Proyecto base e instalador
 
-Crear `gframe/app` como plantilla mínima y un instalador que permita iniciar proyectos con `composer create-project`.
+Mantener una plantilla mínima dentro de GFrame y un instalador que permita iniciar proyectos mediante `composer new`.
 
 ## Criterios de salida
 

@@ -51,7 +51,7 @@
         "test": "phpunit",
         "skills:check": "@php bin/validate-skills.php",
         "modules:list": "@php bin/modules.php list",
-        "app:export": "@php bin/export-app.php",
+        "new": "@php bin/new-project.php",
         "check": [
             "@lint",
             "@test",

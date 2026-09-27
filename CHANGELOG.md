@@ -25,7 +25,7 @@
 - Registro separado de Owl Carousel, Swiper y las demás dependencias frontend reutilizables.
 - Perfiles de instalación `static`, `managed` y `saas`, con esquemas MySQL y SQLite.
 - Esqueleto de aplicación con portada inicial propia de GFrame e instalador visual.
-- Exportador del paquete de aplicación `gframe/app` sin duplicar su fuente dentro del repositorio del framework.
+- Generador integrado de proyectos mediante `composer new`, con una sola fuente dentro de GFrame.
 - Biblioteca multimedia con ámbitos global, tenant y usuario, más relaciones reutilizables con contenidos.
 - Cola de notificaciones persistente con transporte de correo.
 

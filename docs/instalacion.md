@@ -25,14 +25,14 @@ El instalador:
 
 Al terminar debe eliminarse o bloquearse `public/install` en producción.
 
-El esqueleto versionado en `resources/skeleton` será la fuente del paquete `gframe/app` utilizado por `composer create-project`.
+El esqueleto versionado en `resources/skeleton` es la fuente única para crear proyectos.
 
-Para generar localmente el repositorio distribuible desde esa fuente:
+Para crear un proyecto:
 
 ```bash
-composer app:export -- ../gframe-app
+composer new -- ../mi-proyecto
 ```
 
-El exportador no sobrescribe archivos existentes. Así, `resources/skeleton` continúa siendo la fuente única de la estructura inicial y `gframe/app` funciona como paquete de distribución.
+El directorio debe estar vacío. Después se instalan las dependencias dentro del proyecto y se abre `public/install/`. El asistente ofrece los perfiles `static`, `managed` y `saas`; no se mantienen plantillas independientes para cada uno.
 
 SQLite es una alternativa completa para proyectos que no necesitan MySQL. Autenticación, roles, multimedia y notificaciones incluyen esquemas para ambos motores.

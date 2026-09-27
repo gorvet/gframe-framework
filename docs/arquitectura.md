@@ -51,4 +51,4 @@ Los estilos propios de cada aplicación permanecen en `public/css/app` y se carg
 
 ## Proyecto inicial
 
-`gframe/framework` contiene el núcleo y mantiene en `resources/skeleton` la fuente única del proyecto inicial. El paquete distribuible `gframe/app` se genera desde ese esqueleto y proporciona la portada pública, la estructura MVC mínima y el instalador visual.
+`gframe/framework` contiene el núcleo y mantiene en `resources/skeleton` la fuente única del proyecto inicial. El comando `composer new` genera desde allí la portada pública, la estructura MVC mínima y el instalador visual. No existen aplicaciones base diferentes por perfil: el mismo instalador configura un sitio estático, una aplicación administrada o un SaaS.

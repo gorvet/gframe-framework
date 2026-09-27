@@ -23,11 +23,13 @@ composer require gframe/framework
 
 Mientras el paquete no esté publicado en Packagist, puede instalarse desde GitHub o mediante un repositorio local de tipo `path`.
 
-El proyecto inicial distribuible se genera desde `resources/skeleton` con:
+GFrame crea un proyecto nuevo desde su estructura inicial con:
 
 ```bash
-composer app:export -- ../gframe-app
+composer new -- ../mi-proyecto
 ```
+
+Después se instalan las dependencias del proyecto y se abre `public/install/`. Un único asistente permite elegir un sitio estático, una aplicación administrada o un SaaS multitenant.
 
 ## Desarrollo
 

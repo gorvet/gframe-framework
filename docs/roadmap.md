@@ -32,4 +32,4 @@
 - Integrar el catálogo de módulos y su publicador con el instalador visual. **Completado.**
 - Validar una aplicación completa sin tenant.
 - Validar posteriormente tenancy, canales y tareas asíncronas en una aplicación que utilice esas capacidades.
-- Preparar un proyecto base instalable con `composer create-project`.
+- Validar el generador integrado `composer new` en Windows y Linux.
