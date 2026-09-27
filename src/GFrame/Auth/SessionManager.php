@@ -15,8 +15,8 @@ final class SessionManager
             'id' => (int)($identity['id'] ?? 0),
             'email' => (string)($identity['email'] ?? ''),
             'name' => (string)($identity['name'] ?? ''),
+            'role_id' => (int)($identity['role_id'] ?? 0),
             'role' => (string)($identity['role'] ?? ''),
-            'is_super_admin' => $identity['is_super_admin'] ?? false,
         ]);
 
         foreach ($projectSession as $key => $value) {
@@ -62,25 +62,15 @@ final class SessionManager
 
     private function normalizeIdentity(array $identity): array
     {
+        $roleID = (int)($identity['role_id'] ?? 0);
+        $role = mb_strtolower(trim((string)($identity['role'] ?? '')), 'UTF-8');
+
         return [
             'id' => (int)($identity['id'] ?? 0),
             'email' => trim((string)($identity['email'] ?? '')),
             'name' => trim((string)($identity['name'] ?? '')),
-            'role' => mb_strtolower(trim((string)($identity['role'] ?? '')), 'UTF-8'),
-            'is_super_admin' => $this->normalizeBoolean($identity['is_super_admin'] ?? false),
+            'role_id' => $roleID,
+            'role' => $role,
         ];
-    }
-
-    private function normalizeBoolean(mixed $value): bool
-    {
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if (is_int($value) || is_float($value)) {
-            return (int)$value === 1;
-        }
-
-        return in_array(mb_strtolower(trim((string)$value), 'UTF-8'), ['1', 'true', 'yes', 'on'], true);
     }
 }

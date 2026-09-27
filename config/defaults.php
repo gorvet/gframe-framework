@@ -18,18 +18,29 @@ return [
         'name' => null,
     ],
     'auth' => [
-        'administrator_roles' => ['admin'],
+        'password_expiration' => [
+            'enabled' => false,
+            'days' => 90,
+            'warning_days' => 7,
+        ],
     ],
     'tenancy' => [
         'key' => null,
         'table' => null,
     ],
     'seo' => [
-        'metricool' => false,
+        'enabled' => true,
         'allow_indexing' => true,
         'sitemap' => true,
         'robots' => true,
         'llms' => true,
+    ],
+    'analytics' => [
+        'enabled' => false,
+        'metricool' => [
+            'enabled' => false,
+            'hash' => '',
+        ],
     ],
     'mail' => [
         'host' => '',

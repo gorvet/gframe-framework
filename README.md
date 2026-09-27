@@ -23,6 +23,12 @@ composer require gframe/framework
 
 Mientras el paquete no esté publicado en Packagist, puede instalarse desde GitHub o mediante un repositorio local de tipo `path`.
 
+El proyecto inicial distribuible se genera desde `resources/skeleton` con:
+
+```bash
+composer app:export -- ../gframe-app
+```
+
 ## Desarrollo
 
 ```bash
@@ -36,7 +42,9 @@ Las dependencias de desarrollo se instalan en `packages/`. Esta carpeta es gener
 
 Esta primera etapa estabiliza el núcleo, la instalación mediante Composer y el funcionamiento tanto en aplicaciones globales como en aplicaciones con tenant.
 
-Consulta [la arquitectura](docs/arquitectura.md), [la configuración](docs/configuracion.md), [la autenticación](docs/autenticacion.md), [los skills oficiales](docs/skills.md), [las colas de notificaciones](docs/notificaciones.md), [el versionado](docs/versionado.md), [el plan de extracción](docs/plan-extraccion.md), [la hoja de ruta](docs/roadmap.md) y [la política de dependencias](docs/dependencias.md).
+Bootstrap, jQuery, SweetAlert2, `gframe-icons`, `alerts` y las utilidades frontend forman la base visual instalada automáticamente. Los demás recursos reutilizables se mantienen como módulos seleccionables. El catálogo puede consultarse con `composer modules:list`; sus dependencias se resuelven antes de publicar cada módulo.
+
+Consulta [la arquitectura](docs/arquitectura.md), [la instalación](docs/instalacion.md), [la configuración](docs/configuracion.md), [la autenticación](docs/autenticacion.md), [el inventario de módulos](docs/inventario-modulos.md), [los módulos opcionales](docs/modulos-opcionales.md), [los skills oficiales](docs/skills.md), [las colas de notificaciones](docs/notificaciones.md), [el versionado](docs/versionado.md), [el plan de extracción](docs/plan-extraccion.md), [la hoja de ruta](docs/roadmap.md) y [la política de dependencias](docs/dependencias.md).
 
 ## Licencia
 

@@ -45,12 +45,18 @@ final class LegacyConfigBridge
 
         self::defineTenancy();
 
-        $allowIndexing = (bool)ConfigRepository::get('seo.allow_indexing', true);
-        self::define('Metricool', (bool)ConfigRepository::get('seo.metricool', false));
+        $debug = (bool)ConfigRepository::get('app.debug', false);
+        $seoEnabled = (bool)ConfigRepository::get('seo.enabled', true);
+        $allowIndexing = $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.allow_indexing', true);
+        $analyticsEnabled = (bool)ConfigRepository::get('analytics.enabled', false);
+        $metricoolEnabled = (bool)ConfigRepository::get('analytics.metricool.enabled', false);
+        self::define('Metricool', !$debug && $analyticsEnabled && $metricoolEnabled);
+        self::define('METRICOOL_HASH', (string)ConfigRepository::get('analytics.metricool.hash', ''));
+        self::define('SEO_ENABLED', $seoEnabled && !$debug);
         self::define('SEO_ALLOW_INDEXING', $allowIndexing);
-        self::define('SEO_ENABLE_SITEMAP_XML', (bool)ConfigRepository::get('seo.sitemap', $allowIndexing));
-        self::define('SEO_ENABLE_ROBOTS_TXT', (bool)ConfigRepository::get('seo.robots', $allowIndexing));
-        self::define('SEO_ENABLE_LLMS_TXT', (bool)ConfigRepository::get('seo.llms', $allowIndexing));
+        self::define('SEO_ENABLE_SITEMAP_XML', $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.sitemap', true));
+        self::define('SEO_ENABLE_ROBOTS_TXT', $seoEnabled && (bool)ConfigRepository::get('seo.robots', true));
+        self::define('SEO_ENABLE_LLMS_TXT', $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.llms', true));
 
         self::define('M_Host', (string)ConfigRepository::get('mail.host', ''));
         self::define('M_Port', (int)ConfigRepository::get('mail.port', 465));

@@ -2,73 +2,79 @@
 
 namespace GFrame\Tests;
 
-use GFrame\Config\ConfigRepository;
+require_once dirname(__DIR__) . '/src/utils/PermissionHelper.php';
+
+use GFrame\Auth\RolePermissionService;
+use GFrame\Tests\Support\InMemoryRoleModel;
 use PHPUnit\Framework\TestCase;
 
 final class AdministrativeAccessTest extends TestCase
 {
-    private array $configuration = [];
     private array $session = [];
 
     protected function setUp(): void
     {
-        $this->configuration = (array)ConfigRepository::get();
         $this->session = $_SESSION ?? [];
-        ConfigRepository::merge(['auth' => ['administrator_roles' => ['admin']]]);
+        $_SESSION = [];
     }
 
     protected function tearDown(): void
     {
-        ConfigRepository::replace($this->configuration);
         $_SESSION = $this->session;
     }
 
-    public function testSuperAdministratorAlwaysPassesAdminMiddleware(): void
+    public function testSuperadministratorAlwaysPassesAdminAndPermissionMiddleware(): void
     {
         $_SESSION = [
-            'auth' => [
-                'id' => 1,
-                'role' => 'registrado',
-                'is_super_admin' => true,
-            ],
+            'auth' => ['id' => 1, 'role_id' => 1, 'role' => 'superadministrator'],
             'lastActivity' => time(),
         ];
+        $middleware = $this->middleware();
 
-        $result = (new \Middleware())->handle(['middleware' => ['admin']]);
+        $admin = $middleware->handle(['middleware' => ['admin']]);
+        $permission = $middleware->handle(['middleware' => ['can:users.manage']]);
 
-        self::assertSame('success', $result['status']);
-        self::assertSame('super_admin', $result['context']['role']);
+        self::assertSame('success', $admin['status']);
+        self::assertSame('superadministrator', $admin['context']['role']);
+        self::assertSame('success', $permission['status']);
     }
 
-    public function testConfiguredAdministratorPassesWithoutBecomingSuperAdministrator(): void
+    public function testRoleWithAdminAccessPassesAdminWithoutBecomingSuperadministrator(): void
     {
+        $model = new InMemoryRoleModel();
+        $model->permissions[2] = ['admin.access'];
         $_SESSION = [
-            'auth' => [
-                'id' => 8,
-                'role' => 'admin',
-                'is_super_admin' => false,
-            ],
+            'auth' => ['id' => 2, 'role_id' => 2, 'role' => 'registered'],
             'lastActivity' => time(),
         ];
 
-        $result = (new \Middleware())->handle(['middleware' => ['admin']]);
+        $result = $this->middleware($model)->handle(['middleware' => ['admin']]);
 
         self::assertSame('success', $result['status']);
-        self::assertSame('admin', $result['context']['role']);
+        self::assertSame('registered', $result['context']['role']);
     }
 
-    public function testOrdinaryUserCannotPassAdminMiddleware(): void
+    public function testRoleWithoutAdminAccessCannotPassAdminMiddleware(): void
     {
         $_SESSION = [
-            'auth' => [
-                'id' => 9,
-                'role' => 'registrado',
-                'is_super_admin' => false,
-            ],
+            'auth' => ['id' => 2, 'role_id' => 2, 'role' => 'registered'],
             'lastActivity' => time(),
         ];
 
-        $result = (new \Middleware())->handle(['middleware' => ['admin']]);
+        $result = $this->middleware()->handle(['middleware' => ['admin']]);
+
+        self::assertSame('unauthorized', $result['status']);
+        self::assertSame('forbidden', $result['code']);
+    }
+
+    public function testSessionRoleCannotOverrideTheStoredRole(): void
+    {
+        $_SESSION = [
+            'auth' => ['id' => 2, 'role_id' => 1, 'role' => 'superadministrator'],
+            'lastActivity' => time(),
+        ];
+
+        $result = $this->middleware()->handle(['middleware' => ['admin']]);
 
         self::assertSame('unauthorized', $result['status']);
         self::assertSame('forbidden', $result['code']);
@@ -77,88 +83,45 @@ final class AdministrativeAccessTest extends TestCase
     public function testNormalizedIdentityPassesAuthAndIsRejectedByGuest(): void
     {
         $_SESSION = [
-            'auth' => [
-                'id' => 12,
-                'role' => 'registrado',
-                'is_super_admin' => false,
-            ],
+            'auth' => ['id' => 2, 'role_id' => 2, 'role' => 'registered'],
             'lastActivity' => time(),
         ];
-
-        $middleware = new \Middleware();
+        $middleware = $this->middleware();
 
         self::assertSame('success', $middleware->handle(['middleware' => ['auth']])['status']);
         self::assertSame('already_logged', $middleware->handle(['middleware' => ['guest']])['code']);
     }
 
-    public function testStringFalseDoesNotGrantSuperAdministratorAccess(): void
+    public function testLegacyTopLevelSessionKeysDoNotAuthenticate(): void
     {
         $_SESSION = [
-            'auth' => [
-                'id' => 13,
-                'role' => 'registrado',
-                'is_super_admin' => 'false',
-            ],
+            'userID' => 1,
+            'userRole' => 'superadministrator',
             'lastActivity' => time(),
         ];
 
-        $result = (new \Middleware())->handle(['middleware' => ['admin']]);
+        $result = $this->middleware()->handle(['middleware' => ['auth']]);
 
         self::assertSame('unauthorized', $result['status']);
-        self::assertSame('forbidden', $result['code']);
+        self::assertSame('login_required', $result['code']);
     }
 
-    public function testNormalizedIdentityTakesPrecedenceOverLegacyKeys(): void
+    public function testRoleMiddlewareUsesTheNormalizedRoleSlug(): void
     {
         $_SESSION = [
-            'auth' => [
-                'id' => 13,
-                'role' => 'registrado',
-                'is_super_admin' => false,
-            ],
-            'userID' => 99,
-            'userRole' => 'admin',
-            'isSuperAdmin' => true,
+            'auth' => ['id' => 2, 'role_id' => 2, 'role' => 'registered'],
             'lastActivity' => time(),
         ];
+        $middleware = $this->middleware();
 
-        $result = (new \Middleware())->handle(['middleware' => ['admin']]);
-
-        self::assertSame('unauthorized', $result['status']);
-        self::assertSame('forbidden', $result['code']);
+        self::assertSame('success', $middleware->handle(['middleware' => ['role:registered']])['status']);
+        self::assertSame('forbidden', $middleware->handle(['middleware' => ['role:admin']])['code']);
     }
 
-    public function testNormalizedSuperAdministratorBypassesPermissions(): void
+    private function middleware(?InMemoryRoleModel $model = null): \Middleware
     {
-        $_SESSION = [
-            'auth' => [
-                'id' => 1,
-                'role' => 'registrado',
-                'is_super_admin' => true,
-            ],
-            'lastActivity' => time(),
-        ];
-
-        $result = (new \Middleware())->handle([
-            'middleware' => ['can:users.manage'],
-        ]);
-
-        self::assertSame('success', $result['status']);
-        self::assertSame('super_admin', $result['context']['role']);
-    }
-
-    public function testLegacyIdentityRemainsAvailableDuringMigration(): void
-    {
-        $_SESSION = [
-            'userID' => 14,
-            'userRole' => 'admin',
-            'isSuperAdmin' => false,
-            'lastActivity' => time(),
-        ];
-
-        $result = (new \Middleware())->handle(['middleware' => ['admin']]);
-
-        self::assertSame('success', $result['status']);
-        self::assertSame('admin', $result['context']['role']);
+        return new \Middleware(new RolePermissionService(
+            $model ?? new InMemoryRoleModel()
+        ));
     }
 }

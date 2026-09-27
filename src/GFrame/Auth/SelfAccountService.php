@@ -2,17 +2,13 @@
 
 namespace GFrame\Auth;
 
-use GFrame\Auth\Contracts\AccountDeactivationPolicy;
-use GFrame\Auth\Contracts\SelfAccountRepository;
 use Throwable;
 
 final class SelfAccountService
 {
     public function __construct(
-        private readonly SelfAccountRepository $accounts,
-        private readonly AccountDeactivationPolicy $deactivationPolicy,
-        private readonly PasswordPolicy $passwords = new PasswordPolicy(),
-        private readonly int $maximumNameLength = 120
+        private readonly UserModel $users = new UserModel(),
+        private readonly PasswordPolicy $passwords = new PasswordPolicy()
     ) {
     }
 
@@ -23,7 +19,7 @@ final class SelfAccountService
         }
 
         try {
-            $account = $this->accounts->findAccountById($userID);
+            $account = $this->users->findAccountByID($userID);
             if ($account === null) {
                 return $this->error('not_found');
             }
@@ -32,28 +28,6 @@ final class SelfAccountService
             return ['status' => 'success', 'code' => 'account_loaded', 'data' => $account];
         } catch (Throwable $exception) {
             return $this->exception($exception, 'account_load_failed');
-        }
-    }
-
-    public function updateProfile(int $userID, string $name): array
-    {
-        $name = trim($name);
-        if ($userID <= 0) {
-            return $this->error('not_found');
-        }
-        if ($name === '' || mb_strlen($name, 'UTF-8') > $this->maximumNameLength) {
-            return $this->error('invalid_name');
-        }
-
-        try {
-            if ($this->accounts->findAccountById($userID) === null) {
-                return $this->error('not_found');
-            }
-
-            $this->accounts->updateAccountName($userID, $name);
-            return ['status' => 'success', 'code' => 'profile_updated'];
-        } catch (Throwable $exception) {
-            return $this->exception($exception, 'profile_update_failed');
         }
     }
 
@@ -77,7 +51,7 @@ final class SelfAccountService
         }
 
         try {
-            $account = $this->accounts->findAccountById($userID);
+            $account = $this->users->findAccountByID($userID);
             if ($account === null) {
                 return $this->error('not_found');
             }
@@ -85,7 +59,7 @@ final class SelfAccountService
                 return $this->error('invalid_current_password');
             }
 
-            $this->accounts->updateAccountPassword($userID, $this->passwords->hash($newPassword));
+            $this->users->updateAccountPassword($userID, $this->passwords->hash($newPassword));
             return ['status' => 'success', 'code' => 'password_updated'];
         } catch (Throwable $exception) {
             return $this->exception($exception, 'password_update_failed');
@@ -102,18 +76,18 @@ final class SelfAccountService
         }
 
         try {
-            $account = $this->accounts->findAccountById($userID);
+            $account = $this->users->findAccountByID($userID);
             if ($account === null) {
                 return $this->error('not_found');
             }
-            if (!$this->deactivationPolicy->canDeactivateAccount($account)) {
+            if (($account['role'] ?? '') === SystemRole::SUPERADMINISTRATOR) {
                 return ['status' => 'unauthorized', 'code' => 'protected_account'];
             }
             if (!password_verify($password, (string)($account['password'] ?? ''))) {
                 return $this->error('invalid_current_password');
             }
 
-            $this->accounts->deactivateAccount($userID);
+            $this->users->deactivateAccount($userID);
             return ['status' => 'success', 'code' => 'account_deactivated'];
         } catch (Throwable $exception) {
             return $this->exception($exception, 'account_deactivation_failed');

@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS `tenants` (
+  `tenant_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(160) NOT NULL,
+  `slug` VARCHAR(160) NOT NULL,
+  `status` VARCHAR(30) NOT NULL DEFAULT 'active',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tenant_id`),
+  UNIQUE KEY `uq_tenants_slug` (`slug`),
+  KEY `idx_tenants_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

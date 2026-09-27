@@ -50,6 +50,8 @@
         "lint": "@php bin/lint.php",
         "test": "phpunit",
         "skills:check": "@php bin/validate-skills.php",
+        "modules:list": "@php bin/modules.php list",
+        "app:export": "@php bin/export-app.php",
         "check": [
             "@lint",
             "@test",

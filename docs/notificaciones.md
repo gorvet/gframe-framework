@@ -1,29 +1,35 @@
 # Colas de notificaciones
 
-GFrame proporciona la infraestructura para ejecutar colas de notificaciones sin imponer tablas, usuarios, plantillas ni canales a las aplicaciones.
+GFrame proporciona una cola persistente opcional mediante `NotificationQueueModel`, la coordinación mediante `NotificationQueueService` y un transporte de correo listo para utilizar.
 
-Cada proyecto implementa `GFrame\Notifications\NotificationBatchProcessor` y entrega su adaptador a `NotificationQueueWorker`:
+El flujo estándar utiliza el modelo y el transporte de correo:
 
 ```php
-use GFrame\Notifications\NotificationBatchProcessor;
+use GFrame\Notifications\EmailNotificationTransport;
+use GFrame\Notifications\NotificationQueueModel;
+use GFrame\Notifications\NotificationQueueService;
 use GFrame\Notifications\NotificationQueueWorker;
 
-final class ProjectNotificationProcessor implements NotificationBatchProcessor
-{
-    public function processNotificationBatch(int $batch): array
-    {
-        return ['status' => 'success', 'processed' => $batch];
-    }
-}
+$queue = new NotificationQueueService(
+    new NotificationQueueModel(),
+    new EmailNotificationTransport()
+);
+
+$queue->enqueue('email', 'persona@example.com', [
+    'subject' => 'Aviso',
+    'body' => '<p>Contenido del mensaje</p>',
+]);
 
 $worker = new NotificationQueueWorker();
-$result = $worker->run(new ProjectNotificationProcessor(), 120);
+$result = $worker->run($queue, 120);
 ```
 
-Para lanzarlo en segundo plano, el adaptador debe poder construirse sin argumentos:
+Los proyectos que necesiten otro canal implementan `NotificationTransport`. Para procesamiento específico también pueden implementar `NotificationBatchProcessor`.
+
+Para lanzar un procesador construible sin argumentos en segundo plano:
 
 ```php
 $worker->dispatchAsync(ProjectNotificationProcessor::class, 120);
 ```
 
-El framework normaliza el tamaño del lote, captura errores y devuelve una respuesta estable. El proyecto conserva la selección de destinatarios, persistencia, reglas, contenido y entrega por canales.
+El framework normaliza el tamaño del lote, captura errores y devuelve una respuesta estable. Las plantillas, destinatarios y reglas de negocio permanecen en la aplicación.

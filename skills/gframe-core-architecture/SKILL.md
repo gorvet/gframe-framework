@@ -45,7 +45,7 @@ Examples:
 - Route type is inferred by the file where it is declared.
 - Middleware is the first-class place for auth, guest, admin, tenant, and `can:*` authorization checks.
 - `can:*` works globally when tenancy is not configured and requires tenant context only when both the tenant key and table are configured.
-- The superadministrator bypasses permission checks. Configured administrator roles are subordinate and do not become superadministrators.
+- The protected `superadministrator` role bypasses permission checks. Roles with `admin.access` remain subordinate and do not become superadministrators.
 - Owner fallback permission rows are currently created automatically when a tenant owner has no explicit permission row yet.
 - Do not move framework permission behavior into controllers or models unless the change is explicitly framework-level.
 - Keep RouteBuilder and Render inference compatible unless the task is explicitly about changing that inference.

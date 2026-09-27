@@ -30,3 +30,18 @@ if (!function_exists('env_int')) {
         return Environment::int($key, $default);
     }
 }
+
+if (!function_exists('project_path')) {
+    function project_path(string $path = ''): string
+    {
+        $path = trim($path);
+        if ($path === '') {
+            return defined('ABSPATH') ? rtrim((string)ABSPATH, '\\/') : '';
+        }
+        if (preg_match('/^[A-Za-z]:[\\\\\/]|^[\\\\\/]/', $path) === 1) {
+            return $path;
+        }
+        $root = defined('ABSPATH') ? rtrim((string)ABSPATH, '\\/') . DIRECTORY_SEPARATOR : '';
+        return $root . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+    }
+}

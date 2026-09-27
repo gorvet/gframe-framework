@@ -1,0 +1,5 @@
+/packages/
+/.env
+/storage/*.sqlite
+/storage/gframe-installed.json
+*.log

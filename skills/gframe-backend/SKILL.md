@@ -1,6 +1,6 @@
 ---
 name: gframe-backend
-description: Build, refactor, and debug backend HTTP code in GFrame applications, including routes, controllers, services, repositories, ORM models, authentication, global or tenant permissions, and stable response contracts.
+description: Build, refactor, and debug backend HTTP code in GFrame applications, including routes, controllers, services, ORM models, authentication, global or tenant permissions, and stable response contracts.
 ---
 
 # GFrame Backend
@@ -34,8 +34,8 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 - Routes live in `config/routes/*.php`, not `routes/*.php`.
 - Route type is inferred by the declaring file: `routes_web`, `routes_ajax`, `routes_api`, `routes_sse`, `routes_webhook`, `routes_system`.
 - Middleware decides access scope. Do not move `auth`, `admin`, or `can:*` permission logic into models.
-- Protected `can:*` flows need tenant context only when tenancy is configured. Global applications resolve permissions from the authenticated role or stored global permission row.
-- Keep framework services schema-independent through contracts and project repositories, as used by authentication and account management.
+- Protected `can:*` flows need tenant context only when tenancy is configured. Global applications resolve permissions through `users.role_id`, `roles`, `permissions`, and `role_permissions`.
+- Keep the standard MVC path direct: controllers call services when reusable rules are needed, and services call ORM models. Add a contract only for a genuinely interchangeable external capability.
 - Admin-only pages and endpoints belong under admin routes and should stay behind `auth` plus `admin` or `can:*`.
 - Controller validates required request fields and sanitizes free text before calling model or service.
 - Model must not read raw `$_POST`, `$_REQUEST`, or generic form state.

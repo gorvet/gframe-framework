@@ -10,7 +10,7 @@
 
 ## CSS Layers
 
-- framework-published tokens and components under the future `public/assets/gframe` layer
+- framework-published optional components under `public/vendors/internal/` and external libraries under `public/vendors/external/`
 - `public/css/variables.css` and `public/css/common.css` while the legacy asset bridge remains active
 - `public/css/app/common.css` for patterns shared by several application views
 - `public/css/app/admin/admin.css` for application-wide admin styling
@@ -20,7 +20,7 @@ Keep one-screen styling in its module. Promote a rule to application shared CSS 
 
 ## JS Layers
 
-- `public/js/core/alertToast.js` for `alertToast`, `swalAlert`, and spinner helpers
+- `public/vendors/internal/gframe-alerts/alertToast.js` for `alertToast`, `swalAlert`, and spinner helpers
 - `public/js/core/utils/errors.js` for transport and business error mapping
 - `public/js/core/utils/forms.js` for HTML5 validation feedback
 - `public/js/app/admin/<module>/*` for module-specific behavior
@@ -54,5 +54,7 @@ Use view meta for screen-specific CSS, JS, title, schema, or extra dependencies.
 - footer JS injections
 - `#toastBox`
 - protected-page globals such as `is_protected`
+
+The `alerts` module also publishes its toast styles. Load both the module CSS and JS through meta files.
 
 Do not duplicate those framework-level elements without a compatibility reason.

@@ -40,14 +40,14 @@ Use this when creating or modifying admin views in `app/views/admin/*` and their
 - Load assets through meta files, not by hardcoding script tags in views.
 - Follow backend response keys already used by the framework: `status`, `message`, `code`, `data`, `meta`, `html`.
 - Treat `response.code` as an exact contract value. Compare the canonical string directly and do not apply `toLowerCase()` or other casing normalization before branching.
-- Use `public/js/core/alertToast.js` for `alertToast` and `swalAlert`.
+- Use the `alerts` module for `alertToast` and `swalAlert`. Its published compatibility path is `public/vendors/internal/gframe-alerts/alertToast.js`.
 - Use `public/js/core/utils/errors.js` for `ajaxError()` and `successError()`.
 - Use `public/js/core/utils/forms.js` for `validationFeedback()`.
 - Do not use `window.alert`, `window.confirm`, or raw `Swal.fire` directly in normal module code.
 - Use `alertToast` for normal success, warning, business error, and transport error feedback.
 - Use `swalAlert` for destructive confirmations or blocking decisions that require explicit confirmation.
 - `public/js/core/utils/errors.js` should only centralize shared/core code handling such as `forbidden`, `not_found`, `service_unavailable`, `to_reload`, numeric aliases, and transport errors.
-- `public/js/core/alertToast.js` and `swalAlert` are presentation helpers only. They must not reinterpret or normalize backend `code` values.
+- `alertToast` and `swalAlert` are presentation helpers only. They must not reinterpret or normalize backend `code` values.
 - If a form uses HTML5 validation attributes such as `required`, keep the standard pattern: `class="needs-validation"` plus `novalidate`, then JS `checkValidity()` plus `validationFeedback(...)` plus `was-validated`.
 - Do not hardcode HTML fragments in module JS. Keep markup in PHP views or backend-rendered partials, and let JS only inject or toggle existing DOM.
 - Do not hardcode user-facing copy in module JS. Prefer backend `message`, rendered PHP, existing DOM text, or server-provided payload data.

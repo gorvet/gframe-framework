@@ -1,7 +1,7 @@
 <?php
 
 $root = dirname(__DIR__);
-$directories = [$root . '/src', $root . '/bin', $root . '/tests'];
+$directories = [$root . '/src', $root . '/bin', $root . '/tests', $root . '/resources/modules'];
 $failed = [];
 
 foreach ($directories as $directory) {

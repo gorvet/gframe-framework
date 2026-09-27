@@ -8,9 +8,9 @@
 
 ## Middleware Roles
 
-Current middleware names include `guest`, `auth`, `admin`, `can:*`, CSRF, honeypot, and transport guards.
+Current middleware names include `guest`, `auth`, `admin`, `role:*`, `can:*`, CSRF, honeypot, and transport guards.
 
-Authentication middleware reads the normalized `$_SESSION['auth']` identity as its primary contract. Legacy top-level session keys are transitional and must not define new framework behavior.
+Authentication middleware reads the normalized `$_SESSION['auth']` identity as its only identity contract.
 
 ## Permission Modes
 
@@ -21,14 +21,14 @@ Authentication middleware reads the normalized `$_SESSION['auth']` identity as i
 
 Only tenant mode requires a tenant identifier from route parameters or request data. Defining only one tenancy setting is invalid.
 
-Permission templates live in the application's `config/Permissions.php`. `MiddlewareDataProvider` loads stored permissions and fills missing keys from those templates.
+Global permissions use `roles`, `permissions`, and `role_permissions` when the normalized identity includes `role_id`. Tenant permissions retain the tenant assignment layer and its application templates.
 
 ## Administrative Hierarchy
 
 - Installation creates one unique superadministrator as the first user.
-- Superadministrator status is independent from ordinary roles and bypasses `admin` and `can:*` checks.
+- `superadministrator` is a protected system role and bypasses `admin` and `can:*` checks.
 - Additional administrators are optional and never become superadministrators implicitly.
-- `auth.administrator_roles` defines which ordinary roles pass the `admin` middleware.
+- `admin.access` defines which ordinary roles pass the `admin` middleware.
 - The superadministrator account must remain protected from self-deactivation and delegated administration.
 
 ## Owner Fallback

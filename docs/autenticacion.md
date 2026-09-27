@@ -1,8 +1,8 @@
 # Autenticación
 
-GFrame separa la lógica de autenticación del esquema de usuarios de cada aplicación.
+GFrame separa la autenticación, los perfiles y la autorización por roles sin abandonar el flujo MVC.
 
-El proyecto implementa `GFrame\Auth\Contracts\AuthUserRepository`. El contrato permite buscar usuarios por correo o token, crear una cuenta pendiente y actualizar únicamente los campos relacionados con autenticación.
+El flujo estándar es `AuthController → AuthService → UserModel → ORM`. `UserModel` utiliza las tablas normalizadas `users` y `roles`. La tabla de usuarios no exige un nombre: los datos personales pertenecen al perfil de la aplicación.
 
 `GFrame\Auth\AuthService` proporciona:
 
@@ -12,15 +12,24 @@ El proyecto implementa `GFrame\Auth\Contracts\AuthUserRepository`. El contrato p
 - solicitud y aplicación del restablecimiento de contraseña;
 - reenvío seguro de la verificación;
 - tokens aleatorios con caducidad configurable.
+- expiración opcional de contraseñas y cambio obligatorio.
 
 El acceso solo se concede cuando el estado devuelto por el adaptador coincide con el estado activo configurado. Los estados pendientes, suspendidos o desconocidos no crean una sesión.
 
-`GFrame\Auth\SessionManager` regenera la sesión al acceder, mantiene la identidad normalizada en `$_SESSION['auth']`, admite claves transitorias del proyecto y destruye la sesión al salir. El middleware utiliza `auth.id`, `auth.role` y `auth.is_super_admin` como identidad principal.
+`GFrame\Auth\SessionManager` regenera la sesión al acceder, mantiene la identidad normalizada en `$_SESSION['auth']`, admite claves transitorias del proyecto y destruye la sesión al salir. El middleware utiliza `auth.id`, `auth.role_id` y `auth.role` como identidad principal.
 
-`GFrame\Auth\SelfAccountService` permite consultar el perfil propio, actualizar el nombre, cambiar la contraseña y desactivar la cuenta. El proyecto aporta un repositorio y una política de protección que debe impedir la baja del superadministrador.
+Las decisiones de autorización vuelven a resolver el rol almacenado mediante `RoleModel`; cambiar un rol o permiso tiene efecto sin confiar en una copia antigua de la sesión.
 
-Toda instalación debe crear un único superadministrador como primer usuario. Esta identidad tiene acceso superior, no puede desactivarse desde la cuenta propia y no depende de poseer el rol `admin`. Los administradores adicionales son opcionales, se asignan a otros usuarios y nunca equivalen al superadministrador.
+El apartado **Mi cuenta** permite al usuario conectado consultar los datos base de su cuenta, cambiar la contraseña y desactivarla. Internamente usa `GFrame\Auth\SelfAccountService` y `UserModel`, protege directamente al superadministrador y no presupone campos de perfil como nombre, teléfono o avatar. Esos datos pertenecen al modelo de la aplicación.
 
-Los nombres de los roles administrativos se configuran mediante `auth.administrator_roles`. La aplicación conecta su esquema de usuarios mediante la sesión normalizada y la política de protección. Las claves de sesión anteriores solo funcionan como apoyo durante la migración de proyectos existentes.
+`GFrame\Auth\RolePermissionService` administra roles, permisos y asignaciones mediante `RoleModel`, que utiliza `users.role_id`, `roles`, `permissions` y `role_permissions`.
 
-Las vistas, mensajes de correo, roles iniciales, áreas, redirecciones y reglas particulares permanecen en cada aplicación.
+Toda instalación debe crear el rol protegido `superadministrator` y asignarlo al primer usuario. Ese rol pasa `admin` y `can:*` sin asignaciones adicionales, no puede concederse a otra cuenta, degradarse ni eliminarse. Los demás roles obtienen capacidades mediante `role_permissions`; el permiso `admin.access` concede acceso al middleware `admin`.
+
+`GFrame\Auth\AuthInstallationService` crea la primera cuenta mediante `UserModel`, la deja verificada y le asigna el rol `superadministrator`. Rechaza nuevas ejecuciones cuando ya existe algún usuario.
+
+La expiración de contraseñas está desactivada por defecto. Cuando se activa, `password_changed_at` y `force_password_change` permiten exigir la renovación sin bloquear el acceso a la pantalla de cambio de contraseña.
+
+Los esquemas de referencia para MySQL y SQLite están en `resources/database/schema`. El esquema normalizado no utiliza `is_super_admin` ni listas configurables de roles administrativos.
+
+Las vistas, mensajes de correo, perfiles, áreas, redirecciones y reglas particulares permanecen en cada aplicación.

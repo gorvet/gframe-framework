@@ -1,0 +1,16 @@
+{
+    "name": "gframe/app",
+    "description": "Proyecto base para aplicaciones construidas con GFrame.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "gframe/framework": "^0.9"
+    },
+    "config": {
+        "vendor-dir": "packages",
+        "bin-dir": "packages/bin",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}

@@ -21,7 +21,7 @@ Use services when logic is reusable and does not belong cleanly in controller or
 - multi-step orchestration
 - subsystem-specific helpers
 
-Shared services in GFrame must depend on contracts rather than an application's table names. Applications implement repository adapters and keep their own messages, views, roles, and domain policies.
+Shared services coordinate reusable rules and call ORM models for persistence. Do not add repository layers when a standard GFrame model already owns the table. Use a small contract only for a genuinely interchangeable external capability, such as a notification transport or project-specific profile store.
 
 ## Model Boundary
 

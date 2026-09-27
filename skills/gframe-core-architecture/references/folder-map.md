@@ -31,6 +31,16 @@
 - `public/js/app/admin/` for admin module JS
 - `public/css/app/admin/` for admin module CSS
 
+## Optional Modules
+
+- `resources/modules/<module>/module.php` for the module manifest and dependency declarations
+- `resources/modules/<module>/public/` for publishable browser assets
+- `resources/modules/<module>/application/` for optional application files consumed by the installer
+- `GFrame\Modules\ModuleCatalog` for discovery and dependency resolution
+- `GFrame\Modules\ModuleAssetPublisher` for safe publication into the application's `public/` directory
+
+External browser libraries publish below `public/vendors/external/`. GFrame-owned browser components publish below `public/vendors/internal/` or the documented shared JS destination. Do not copy optional modules manually when the catalog can resolve and publish them.
+
 ## Practical Rule
 
 If a shared change alters request lifecycle, access rules, rendering, or framework conventions, work in the GFrame repository. If it is project-specific, work in the application's `app/`, `config/`, or `public/` layers.

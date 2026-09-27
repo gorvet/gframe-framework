@@ -8,6 +8,8 @@ GFrame separa la configuración en tres niveles:
 
 El archivo `.env.example` documenta las variables necesarias sin contener secretos.
 
+Los tres niveles se combinan. `defaults.php` aporta un valor seguro, `app.php` decide si el proyecto lo conserva o lo sustituye y `.env` aporta el dato específico del servidor. No es necesario definir `APP_URL` durante una petición web: GFrame detecta dinámicamente dominio, protocolo y subcarpeta. `APP_URL` queda disponible para correos, cron o consola, donde no existe una petición desde la que inferirla.
+
 ## Acceso
 
 ```php
@@ -23,4 +25,29 @@ Durante la serie `0.x`, GFrame mantiene las constantes históricas principales. 
 
 Las aplicaciones con tenant pueden definir `tenancy.key` y `tenancy.table`. Ambas opciones son obligatorias entre sí. Si se omiten, los permisos funcionan en modo global.
 
-Los roles que acceden al middleware `admin` se configuran en `auth.administrator_roles`. El superadministrador se identifica por separado en la sesión y siempre conserva una autoridad superior a esos roles.
+`seo.enabled` controla sitemap, robots y `llms.txt`; cada recurso conserva además su activador individual. En modo debug se impiden la indexación, sitemap y `llms.txt`. `robots.txt` puede mantenerse para declarar el bloqueo.
+
+Metricool se configura de forma independiente:
+
+```php
+'analytics' => [
+    'enabled' => true,
+    'metricool' => ['enabled' => true],
+],
+```
+
+En modo debug no se carga Metricool aunque ambos activadores estén habilitados.
+
+La renovación de contraseñas es opcional:
+
+```php
+'auth' => [
+    'password_expiration' => [
+        'enabled' => false,
+        'days' => 90,
+        'warning_days' => 7,
+    ],
+],
+```
+
+El middleware `admin` exige el permiso `admin.access`. El rol de sistema `superadministrator` lo omite mediante una regla interna.

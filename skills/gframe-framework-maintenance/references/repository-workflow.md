@@ -11,3 +11,5 @@ For a shared change:
 5. commit the application lock and integration changes.
 
 Use semantic versioning for public releases. During `0.x`, document compatibility changes and migration requirements explicitly.
+
+Optional frontend components live in `resources/modules`. Register dependencies in the module manifest and publish them through `ModuleAssetPublisher`; do not duplicate browser libraries across framework directories.

@@ -56,6 +56,7 @@ Common middleware names:
 - `guest`
 - `auth`
 - `admin`
+- `role:editor`
 - `can:view`
 - `can:edit`
 - `can:add`
@@ -71,7 +72,7 @@ Access scope is decided in middleware and route config, not in models.
 
 Missing tenant context fails only when tenancy is enabled. Global mode does not require a tenant identifier.
 
-The superadministrator bypasses permission checks. Ordinary administrator roles are configured through `auth.administrator_roles` and remain subordinate.
+The protected `superadministrator` role bypasses permission checks. Other roles remain subordinate and require `admin.access` for the `admin` middleware.
 
 ## Admin, Public, and Protected Flows
 

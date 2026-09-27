@@ -4,10 +4,13 @@
 class Middleware {
 
 private $middlewareDataProvider;
+private \GFrame\Auth\RolePermissionService $rolePermissionService;
 
 
-public function __construct() {
+public function __construct(?\GFrame\Auth\RolePermissionService $rolePermissionService = null) {
     $this->middlewareDataProvider = new MiddlewareDataProvider();
+    $this->rolePermissionService = $rolePermissionService
+      ?? new \GFrame\Auth\RolePermissionService(new \GFrame\Auth\RoleModel());
 }
 
     
@@ -62,6 +65,10 @@ public function __construct() {
       elseif ($middleware === 'admin') { 
         $res = $this->isadmin();
       }
+      elseif (str_starts_with($middleware, 'role:')) {
+        $role = explode(':', $middleware, 2)[1] ?? '';
+        $res = $this->checkRole($role);
+      }
       
       elseif (str_starts_with($middleware, 'can:')) {
         // Si es un permiso can:xxx
@@ -106,6 +113,7 @@ private function usesSessionState(array $middlewares): bool {
             $normalized === 'auth'
             || $normalized === 'guest'
             || $normalized === 'admin'
+            || str_starts_with($normalized, 'role:')
             || str_starts_with($normalized, 'can:')
         ) {
             return true;
@@ -463,19 +471,32 @@ if ($hasHeaders && !$this->is_same_origin()) {
       return ['status' => 'unauthorized', 'code' => 'login_required'];
     }
 
-    if ($this->isSuperAdministrator()) {
-      return ['status' => 'success', 'context' => ['role' => 'super_admin']];
+    $authorization = $this->rolePermissionService->authorize($this->sessionUserID(), 'admin.access');
+    if (($authorization['status'] ?? '') !== 'success') {
+      return $authorization;
     }
 
-    $adminRoles = array_map(
-      static fn($role): string => mb_strtolower(trim((string)$role), 'UTF-8'),
-      (array)\GFrame\Config\ConfigRepository::get('auth.administrator_roles', ['admin'])
-    );
-    if (!in_array($this->sessionRole(), $adminRoles, true)) {
+    return ['status' => 'success', 'context' => [
+      'role' => (string)($authorization['data']['role'] ?? $this->sessionRole()),
+    ]];
+  }
+
+  private function checkRole(string $requiredRole): array {
+    if (!$this->hasSessionIdentity()) {
+      return ['status' => 'unauthorized', 'code' => 'login_required'];
+    }
+
+    $requiredRole = mb_strtolower(trim($requiredRole), 'UTF-8');
+    $resolved = $this->rolePermissionService->role($this->sessionUserID());
+    if (
+      $requiredRole === ''
+      || ($resolved['status'] ?? '') !== 'success'
+      || (string)($resolved['data']['role'] ?? '') !== $requiredRole
+    ) {
       return ['status' => 'unauthorized', 'code' => 'forbidden'];
     }
 
-    return ['status' => 'success', 'context' => ['role' => 'admin']];
+    return ['status' => 'success', 'context' => ['role' => $requiredRole]];
   }
 
   
@@ -485,13 +506,34 @@ private function checkPermission($permission, $routeParams): array {
         $userId = $this->sessionUserID();
         if ($userId <= 0) return ['status'=>'unauthorized','code'=>'forbidden'];
 
-        if ($this->isSuperAdministrator()) {
-          return ['status' => 'success', 'context' => ['role' => 'super_admin']];
-        }
-
         [$module, $action] = $this->resolvePermissionTarget((string)$permission, $routeParams);
         if ($module === '' || $action === '') {
             return ['status' => 'unauthorized', 'code' => 'permission'];
+        }
+
+        $resolvedRole = $this->rolePermissionService->role($userId);
+        if (
+            ($resolvedRole['status'] ?? '') === 'success'
+            && !empty($resolvedRole['data']['bypass'])
+        ) {
+            return ['status' => 'success', 'context' => [
+                'role' => \GFrame\Auth\SystemRole::SUPERADMINISTRATOR,
+                'permission_module' => $module,
+                'permission_action' => $action,
+            ]];
+        }
+
+        if (!projectPermissionsUseTenancy()) {
+            $authorization = $this->rolePermissionService->authorize($userId, $module . '.' . $action);
+            if (($authorization['status'] ?? '') !== 'success') {
+                return $authorization;
+            }
+
+            return ['status' => 'success', 'context' => [
+                'role' => (string)($authorization['data']['role'] ?? $this->sessionRole()),
+                'permission_module' => $module,
+                'permission_action' => $action,
+            ]];
         }
 
         try {
@@ -534,26 +576,11 @@ private function checkPermission($permission, $routeParams): array {
         ]];
 }
 
-private function isSuperAdministrator(): bool {
-    $normalized = is_array($_SESSION['auth'] ?? null)
-        ? ($_SESSION['auth']['is_super_admin'] ?? null)
-        : null;
-
-    if ($normalized !== null) {
-        return $this->sessionBoolean($normalized);
-    }
-
-    return $this->sessionBoolean($_SESSION['isSuperAdmin'] ?? false);
-}
-
 private function sessionRole(): string {
     $normalized = is_array($_SESSION['auth'] ?? null)
         ? ($_SESSION['auth']['role'] ?? null)
         : null;
-    $role = $normalized !== null && trim((string)$normalized) !== ''
-        ? $normalized
-        : ($_SESSION['userRole'] ?? '');
-    return mb_strtolower(trim((string)$role), 'UTF-8');
+    return mb_strtolower(trim((string)($normalized ?? '')), 'UTF-8');
 }
 
 private function hasSessionIdentity(): bool {
@@ -565,19 +592,7 @@ private function sessionUserID(): int {
         ? (int)($_SESSION['auth']['id'] ?? 0)
         : 0;
 
-    return $normalized > 0 ? $normalized : (int)($_SESSION['userID'] ?? 0);
-}
-
-private function sessionBoolean(mixed $value): bool {
-    if (is_bool($value)) {
-        return $value;
-    }
-
-    if (is_int($value) || is_float($value)) {
-        return (int)$value === 1;
-    }
-
-    return in_array(mb_strtolower(trim((string)$value), 'UTF-8'), ['1', 'true', 'yes', 'on'], true);
+    return $normalized;
 }
 
 private function resolvePermissionTarget(string $permission, array $routeParams): array {

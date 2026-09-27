@@ -1,11 +1,11 @@
 ---
 name: gframe-auth-access
-description: Implement and review GFrame authentication, normalized sessions, self-account management, superadministrator hierarchy, configurable administrator roles, and application repository adapters without imposing a project schema.
+description: Implement and review GFrame MVC authentication, normalized sessions, standard user models, My Account management, protected system roles, and role permissions.
 ---
 
 # GFrame Authentication and Access
 
-Use this for registration, login, verification, recovery, session identity, self-account actions, and administrative hierarchy.
+Use this for registration, login, verification, recovery, session identity, My Account actions, and administrative hierarchy.
 
 ## Read Order
 
@@ -14,15 +14,16 @@ Use this for registration, login, verification, recovery, session identity, self
 
 ## Rules
 
-- GFrame services depend on contracts; the application adapts its user table through repositories.
-- Keep views, email copy, redirects, initial application roles, areas, and domain policies in the application.
+- Keep the standard MVC flow: controller, authentication service, `UserModel` or `RoleModel`, ORM, database.
+- Do not introduce repository layers around the standard GFrame models.
+- Keep views, email copy, redirects, additional application roles, profiles, areas, and domain policies in the application.
 - Use `AuthService` for registration, verification, recovery, reset, and credential authentication.
 - Use `SessionManager` to regenerate, normalize, update, and destroy sessions.
-- Use `SelfAccountService` for the current user's profile, password change, and account deactivation.
+- Use `SelfAccountService` for the current user's base account, password change, and account deactivation.
 - Never expose password hashes or tokens in public profile responses.
 - Do not reveal whether an email exists during password recovery.
-- The first installed user is the unique superadministrator. Additional administrators are optional and subordinate.
-- Require an `AccountDeactivationPolicy` so the superadministrator cannot deactivate their own account.
+- The first installed user receives the unique protected `superadministrator` role. Additional administrators are optional and subordinate.
+- Keep the superadministrator deactivation protection inside the framework service.
 - Treat normalized `auth` identity as the framework contract. Preserve legacy session keys only as a temporary application migration bridge.
 - Protect routes in middleware, not inside persistence models.
 

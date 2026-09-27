@@ -26,16 +26,16 @@ final class SessionManagerTest extends TestCase
             'id' => '27',
             'email' => ' usuario@example.com ',
             'name' => ' Juana ',
+            'role_id' => '3',
             'role' => ' ADMIN ',
-            'is_super_admin' => 'false',
         ]);
 
         self::assertSame([
             'id' => 27,
             'email' => 'usuario@example.com',
             'name' => 'Juana',
+            'role_id' => 3,
             'role' => 'admin',
-            'is_super_admin' => false,
         ], $_SESSION['auth']);
     }
 
@@ -45,15 +45,15 @@ final class SessionManagerTest extends TestCase
             'id' => 27,
             'email' => 'usuario@example.com',
             'name' => 'Juana',
+            'role_id' => 3,
             'role' => 'admin',
-            'is_super_admin' => true,
         ];
 
         (new SessionManager())->updateIdentity(['name' => 'Ana']);
 
         self::assertSame(27, $_SESSION['auth']['id']);
         self::assertSame('Ana', $_SESSION['auth']['name']);
-        self::assertTrue($_SESSION['auth']['is_super_admin']);
+        self::assertSame(3, $_SESSION['auth']['role_id']);
     }
 
     public function testLoginCreatesTheNormalizedIdentityAndSecurityTokens(): void
@@ -62,13 +62,14 @@ final class SessionManagerTest extends TestCase
             'id' => 31,
             'email' => 'usuario@example.com',
             'name' => 'Usuario',
+            'role_id' => 3,
             'role' => 'ADMIN',
-            'is_super_admin' => false,
         ]);
 
         self::assertSame(31, $_SESSION['auth']['id']);
+        self::assertSame(3, $_SESSION['auth']['role_id']);
         self::assertSame('admin', $_SESSION['auth']['role']);
-        self::assertFalse($_SESSION['auth']['is_super_admin']);
+        self::assertArrayNotHasKey('is_super_admin', $_SESSION['auth']);
         self::assertMatchesRegularExpression('/^[a-f0-9]{64}$/', $_SESSION['csrfToken']);
         self::assertIsInt($_SESSION['lastActivity']);
         self::assertIsInt($_SESSION['csrfTimestamp']);
@@ -81,8 +82,8 @@ final class SessionManagerTest extends TestCase
                 'id' => 31,
                 'email' => 'usuario@example.com',
                 'name' => 'Usuario',
+                'role_id' => 3,
                 'role' => 'admin',
-                'is_super_admin' => false,
             ],
         ];
 
@@ -90,4 +91,5 @@ final class SessionManagerTest extends TestCase
 
         self::assertSame([], $_SESSION);
     }
+
 }

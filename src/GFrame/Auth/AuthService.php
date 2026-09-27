@@ -2,19 +2,28 @@
 
 namespace GFrame\Auth;
 
-use GFrame\Auth\Contracts\AuthUserRepository;
+use GFrame\Config\ConfigRepository;
 use Throwable;
 
 final class AuthService
 {
+    private readonly bool $passwordExpirationEnabled;
+    private readonly int $passwordExpirationDays;
+
     public function __construct(
-        private readonly AuthUserRepository $users,
+        private readonly UserModel $users,
         private readonly PasswordPolicy $passwords = new PasswordPolicy(),
         private readonly TokenManager $tokens = new TokenManager(),
         private readonly string $pendingStatus = 'unverify',
         private readonly string $activeStatus = 'verify',
-        private readonly string $suspendedStatus = 'suspended'
+        private readonly string $suspendedStatus = 'suspended',
+        ?bool $passwordExpirationEnabled = null,
+        ?int $passwordExpirationDays = null
     ) {
+        $this->passwordExpirationEnabled = $passwordExpirationEnabled
+            ?? (bool)ConfigRepository::get('auth.password_expiration.enabled', false);
+        $this->passwordExpirationDays = max(1, $passwordExpirationDays
+            ?? (int)ConfigRepository::get('auth.password_expiration.days', 90));
     }
 
     public function register(string $email, string $password): array
@@ -36,7 +45,6 @@ final class AuthService
             $userID = $this->users->createPendingUser(
                 $email,
                 $this->passwords->hash($password),
-                $this->displayNameFromEmail($email),
                 $token,
                 $this->tokens->issuedAt()
             );
@@ -110,6 +118,8 @@ final class AuthService
                 'password' => $this->passwords->hash($password),
                 'token' => $this->tokens->issue(),
                 'token_updated_at' => $this->tokens->issuedAt(),
+                'password_changed_at' => date('Y-m-d H:i:s'),
+                'force_password_change' => false,
             ]);
 
             return ['status' => 'success', 'code' => 'password_reset'];
@@ -137,17 +147,23 @@ final class AuthService
                 return $this->error('invalid_user');
             }
 
-            $name = trim((string)($user['name'] ?? '')) ?: $this->displayNameFromEmail((string)$user['email']);
             $firstLogin = empty($user['last_login']);
             $this->users->updateAuthUser((int)$user['user_id'], [
-                'name' => $name,
                 'last_login' => date('Y-m-d H:i:s'),
             ]);
 
             unset($user['password'], $user['token']);
-            $user['name'] = $name;
 
-            return ['status' => 'success', 'code' => 'authenticated', 'user' => $user, 'first_login' => $firstLogin];
+            $mustChangePassword = !empty($user['force_password_change'])
+                || $this->passwordHasExpired((string)($user['password_changed_at'] ?? ''));
+
+            return [
+                'status' => 'success',
+                'code' => $mustChangePassword ? 'password_change_required' : 'authenticated',
+                'user' => $user,
+                'first_login' => $firstLogin,
+                'must_change_password' => $mustChangePassword,
+            ];
         } catch (Throwable $exception) {
             return $this->exception($exception, 'authentication_failed');
         }
@@ -181,17 +197,6 @@ final class AuthService
         }
     }
 
-    public function displayNameFromEmail(string $email, string $fallback = 'Usuario'): string
-    {
-        $local = trim((string)strtok(trim($email), '@'));
-        if ($local === '') {
-            return $fallback;
-        }
-
-        return mb_strtoupper(mb_substr($local, 0, 1, 'UTF-8'), 'UTF-8')
-            . mb_substr($local, 1, null, 'UTF-8');
-    }
-
     private function normalizeEmail(string $email): string
     {
         $email = mb_strtolower(trim($email), 'UTF-8');
@@ -207,5 +212,19 @@ final class AuthService
     {
         error_log('[GFrame Auth] ' . $exception->getMessage());
         return ['status' => 'error', 'code' => $code];
+    }
+
+    private function passwordHasExpired(string $changedAt): bool
+    {
+        if (!$this->passwordExpirationEnabled || $this->passwordExpirationDays <= 0) {
+            return false;
+        }
+
+        $changedTimestamp = strtotime($changedAt);
+        if ($changedTimestamp === false) {
+            return true;
+        }
+
+        return $changedTimestamp <= strtotime('-' . $this->passwordExpirationDays . ' days');
     }
 }

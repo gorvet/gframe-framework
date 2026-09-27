@@ -50,6 +50,17 @@ abstract class ORM {
     $pdo->rollBack();
     }
 
+    public static function disconnect(?string $connectionName = null): void {
+    if ($connectionName === null) {
+        self::$pdo = [];
+        DatabaseManager::disconnect();
+        return;
+    }
+
+    unset(self::$pdo[$connectionName]);
+    DatabaseManager::disconnect($connectionName);
+    }
+
 
     public function fill(array $attributes) {
     foreach ($attributes as $key => $value) {
