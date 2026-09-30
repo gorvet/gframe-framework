@@ -29,6 +29,7 @@ Al terminar debe eliminarse o bloquearse `public/install` en producción.
 El instalador no crea un tenant ni asigna membresías a usuarios. En `managed` e `intranet` los permisos se resuelven por rol global; en `saas`, cada módulo que crea un tenant debe crear también la membresía inicial de su dueño. El procedimiento completo, incluida la comprobación de propiedad, está en [roles, permisos y membresías](permisos.md).
 
 El esqueleto versionado en `resources/skeleton` es la fuente única para crear proyectos.
+Incluye `.htaccess` para enrutar las URL de Apache hacia `index.php` y bloquear el acceso directo a los archivos internos.
 
 ## Uso y extensión de los perfiles
 

@@ -5,6 +5,7 @@
 ### Núcleo
 
 - El generador de proyectos reconoce `-h` y `--help` sin crear un directorio accidental.
+- El esqueleto incluye reglas de Apache para las rutas de la aplicación y la protección de archivos internos.
 
 - Multimedia recupera campo y selector separados, selección múltiple JSON, vista previa segura renderizada por PHP, actualización del listado por fragmentos, carga desde el selector, registro seguro de enlaces HTTPS y navegación, vista previa y copia de URL en el modal de detalles. La URL externa se guarda separada de la ruta local.
 
