@@ -46,7 +46,7 @@ if (is_dir($target)) {
 try {
     $files = ProjectScaffolder::frameworkDefault()->publish($target, false);
     fwrite(STDOUT, 'Proyecto GFrame creado: ' . count($files) . " archivos.\n");
-    fwrite(STDOUT, "Instala sus dependencias y abre public/install/ en el navegador.\n");
+    fwrite(STDOUT, "Instala sus dependencias y abre install.php en el navegador.\n");
 } catch (Exception $exception) {
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(1);

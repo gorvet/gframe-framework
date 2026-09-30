@@ -33,10 +33,17 @@ final class InstallerHttpTest extends TestCase
         foreach (['static', 'managed', 'intranet', 'saas'] as $profile) {
             $project = $this->temporaryPath . DIRECTORY_SEPARATOR . $profile;
             mkdir($project, 0775, true);
+            $socket = stream_socket_server('tcp://127.0.0.1:0');
+            self::assertIsResource($socket);
+            $address = stream_socket_get_name($socket, false);
+            fclose($socket);
+            $port = (int)substr((string)$address, strrpos((string)$address, ':') + 1);
+            $base = 'http://127.0.0.1:' . $port;
             $input = [
                 'project_root' => $project,
                 'profile' => $profile,
                 'app_name' => 'Prueba ' . $profile,
+                'app_url' => $base,
             ];
             if ($profile !== 'static') {
                 $input['database'] = ['driver' => 'sqlite', 'path' => 'storage/database.sqlite'];
@@ -60,18 +67,12 @@ if (is_string($path) && (is_file(__DIR__ . $path) || is_file(rtrim(__DIR__ . $pa
 require __DIR__ . '/index.php';
 PHP);
 
-            $socket = stream_socket_server('tcp://127.0.0.1:0');
-            self::assertIsResource($socket);
-            $address = stream_socket_get_name($socket, false);
-            fclose($socket);
-            $port = (int)substr((string)$address, strrpos((string)$address, ':') + 1);
             $command = [PHP_BINARY, '-S', '127.0.0.1:' . $port, '-t', $project, $router];
             $nullDevice = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
             $process = proc_open($command, [0 => ['pipe', 'r'], 1 => ['file', $nullDevice, 'a'], 2 => ['file', $nullDevice, 'a']], $pipes, $project);
             self::assertIsResource($process);
             fclose($pipes[0]);
             try {
-                $base = 'http://127.0.0.1:' . $port;
                 $ready = false;
                 for ($attempt = 0; $attempt < 40; $attempt++) {
                     $connection = @stream_socket_client('tcp://127.0.0.1:' . $port, $error, $message, 0.1);
@@ -87,12 +88,44 @@ PHP);
                 [$status, $body] = $this->request($base . '/');
                 self::assertSame($profile === 'intranet' ? 301 : 200, $status, $profile . ': ' . substr($body, 0, 250));
                 if ($profile !== 'intranet') {
-                    self::assertStringContainsString('La base está preparada', $body, $profile);
+                    self::assertStringContainsString('Algo maravilloso se construye aquí.', $body, $profile);
                 }
 
                 if ($profile !== 'static') {
-                    [$loginStatus] = $this->request($base . '/login');
+                    [$loginStatus, $loginBody, $loginHeaders] = $this->request($base . '/login');
                     self::assertSame(200, $loginStatus, $profile . ': login');
+                    self::assertStringContainsString('auth-login-form', $loginBody);
+                    self::assertStringContainsString('/login/lostpassword', $loginBody);
+                    self::assertStringContainsString('public/img/logo.png', $loginBody);
+                    self::assertSame(200, $this->request($base . '/login/lostpassword')[0], $profile . ': recuperación');
+                    self::assertSame(200, $this->request($base . '/login/resetpassword?rp=prueba')[0], $profile . ': restablecimiento');
+
+                    $cookie = '';
+                    foreach ($loginHeaders as $header) {
+                        if (stripos($header, 'Set-Cookie: ') === 0) {
+                            $cookie = explode(';', substr($header, 12), 2)[0];
+                            break;
+                        }
+                    }
+                    self::assertNotSame('', $cookie, $profile . ': cookie de sesión');
+                    [$authStatus, $authBody, $authHeaders] = $this->request($base . '/ajax/login', 'POST', http_build_query([
+                        'login_email' => $profile . '@example.test',
+                        'login_password' => 'Password-123',
+                        'middle_name' => '',
+                    ]), $cookie);
+                    self::assertSame(200, $authStatus, $profile . ': autenticación ' . substr($authBody, 0, 200));
+                    $auth = json_decode($authBody, true);
+                    self::assertSame('success', $auth['status'] ?? null, $profile . ': autenticación');
+                    self::assertSame($base . '/admin', $auth['redirect'] ?? null, $profile . ': destino administrativo: ' . $authBody);
+                    foreach ($authHeaders as $header) {
+                        if (stripos($header, 'Set-Cookie: ') === 0) {
+                            $cookie = explode(';', substr($header, 12), 2)[0];
+                            break;
+                        }
+                    }
+                    [$adminStatus, $adminBody] = $this->request($base . '/admin', 'GET', null, $cookie);
+                    self::assertSame(200, $adminStatus, $profile . ': panel');
+                    self::assertStringContainsString('Escritorio', $adminBody, $profile . ': panel');
                 }
 
                 [$robotsStatus, $robotsBody] = $this->request($base . '/robots.txt');
@@ -106,8 +139,10 @@ PHP);
 
                 [$assetStatus] = $this->request($base . '/public/vendors/external/bootstrap/css/bootstrap.min.css');
                 self::assertSame(200, $assetStatus, $profile . ': Bootstrap');
+                self::assertSame(200, $this->request($base . '/public/img/logo.png')[0], $profile . ': logotipo');
+                self::assertSame(200, $this->request($base . '/public/img/favicon.png')[0], $profile . ': favicon');
 
-                [$installerStatus, $installerBody] = $this->request($base . '/public/install/');
+                [$installerStatus, $installerBody] = $this->request($base . '/install.php');
                 self::assertSame(200, $installerStatus, $profile . ': instalador bloqueado');
                 self::assertStringContainsString('La aplicación quedó instalada correctamente', $installerBody);
                 self::assertStringNotContainsString('id="installer-form"', $installerBody);
@@ -118,13 +153,22 @@ PHP);
         }
     }
 
-    private function request(string $url): array
+    private function request(string $url, string $method = 'GET', ?string $content = null, string $cookie = ''): array
     {
-        $context = stream_context_create(['http' => ['ignore_errors' => true, 'timeout' => 5]]);
+        $headers = ['X-Requested-With: XMLHttpRequest'];
+        if ($content !== null) $headers[] = 'Content-Type: application/x-www-form-urlencoded';
+        if ($cookie !== '') $headers[] = 'Cookie: ' . $cookie;
+        $context = stream_context_create(['http' => [
+            'ignore_errors' => true,
+            'timeout' => 5,
+            'method' => $method,
+            'header' => implode("\r\n", $headers),
+            'content' => $content ?? '',
+        ]]);
         $body = @file_get_contents($url, false, $context);
         $headers = $http_response_header ?? [];
         preg_match('/^HTTP\/\S+\s+(\d+)/', (string)($headers[0] ?? ''), $matches);
-        return [(int)($matches[1] ?? 0), (string)$body];
+        return [(int)($matches[1] ?? 0), (string)$body, $headers];
     }
 
     private function removeDirectory(string $path): void

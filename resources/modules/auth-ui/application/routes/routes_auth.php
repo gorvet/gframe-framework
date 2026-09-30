@@ -16,14 +16,14 @@ Route::get('login/register', 'auth/AuthController@registerPage')
     ->noAction()
     ->registerFinal();
 
-Route::get('login/recovery', 'auth/AuthController@recoveryPage')
+Route::get('login/lostpassword', 'auth/AuthController@recoveryPage')
     ->template('auth')
     ->view('authRecovery')
     ->middleware(['guest'])
     ->noAction()
     ->registerFinal();
 
-Route::get('login/reset', 'auth/AuthController@resetPage')
+Route::get('login/resetpassword', 'auth/AuthController@resetPage')
     ->template('auth')
     ->view('authReset')
     ->middleware(['guest'])

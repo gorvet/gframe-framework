@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="<?= htmlspecialchars(rtrim((string)site_url, '/') . '/public/img/favicon.png', ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="apple-touch-icon" href="<?= htmlspecialchars(rtrim((string)site_url, '/') . '/public/img/apple-touch-icon.png', ENT_QUOTES, 'UTF-8') ?>">
     <title><?= $this->metasController->getMetaTag('title') ?></title>
     <meta name="description" content="<?= $this->metasController->getMetaTag('description') ?>">
     <meta name="robots" content="<?= $this->metasController->getMetaTag('robots') ?>">

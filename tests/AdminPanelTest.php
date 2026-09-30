@@ -22,6 +22,8 @@ final class AdminPanelTest extends TestCase
             self::assertFileExists($project . '/app/views/templates/mail/contactTemplate.html');
             $publisher = new ModuleAssetPublisher(ModuleCatalog::frameworkDefault());
             $publisher->publishProject(['admin-panel'], $project);
+            self::assertFileExists($project . '/config/routes/routes_admin_dashboard.php');
+            self::assertFileExists($project . '/app/views/admin/adminIndex.php');
             $viewDirectory = $project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'reports';
             mkdir($viewDirectory, 0775, true);
             file_put_contents($viewDirectory . DIRECTORY_SEPARATOR . 'reportIndex.php', '<div class="col-12">Informe de prueba</div>');

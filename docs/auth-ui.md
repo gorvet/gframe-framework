@@ -18,8 +18,8 @@ La publicación agrega el controlador, las rutas web y AJAX, las vistas, la plan
 | --- | --- | --- |
 | `GET` | `/login` | Iniciar sesión |
 | `GET` | `/login/register` | Crear una cuenta |
-| `GET` | `/login/recovery` | Solicitar recuperación |
-| `GET` | `/login/reset?token=...` | Establecer una contraseña nueva |
+| `GET` | `/login/lostpassword` | Solicitar recuperación |
+| `GET` | `/login/resetpassword?rp=...` | Establecer una contraseña nueva |
 | `GET` | `/login/verify?v=...` | Verificar una cuenta |
 | `POST` | `/ajax/login` | Procesar el acceso |
 | `POST` | `/ajax/logout` | Cerrar la sesión |
@@ -44,7 +44,7 @@ Las operaciones públicas usan `guest`, protección de mismo origen para AJAX y 
 ],
 ```
 
-`login_redirect` define el destino habitual. Cuando `AuthService` devuelve `must_change_password`, se utiliza `password_change_redirect`; su valor predeterminado es `/account`, del módulo `self-account`.
+`login_redirect` define el destino habitual. Si no se configura, el acceso lleva a `/admin`, publicado por `admin-panel`. Cuando `AuthService` devuelve `must_change_password`, se utiliza `password_change_redirect`; su valor predeterminado es `/account`, del módulo `self-account`.
 
 Si se activa la expiración o se utiliza `force_password_change`, la aplicación debe instalar `self-account` o reemplazar esa ruta por una pantalla equivalente.
 
@@ -93,7 +93,7 @@ Conexiones restauradas tomando Bebots como referencia funcional:
 - El único cierre está en `heartbeat-client/session.js`, con `[data-gf-logout]`, confirmación, tokens globales, presentación de fallos y notificación mediante BroadcastChannel y storage. El panel no duplica ese envío. Sin almacenamiento, el canal sigue funcionando si está disponible.
 - `rd` viaja con el login; el controlador solo admite rutas relativas dentro de la aplicación, sin esquemas, barras iniciales ni segmentos de recorrido. Un destino inválido usa la redirección configurada. El cambio obligatorio de contraseña siempre prevalece.
 - El reenvío usa `/ajax/verification`, `AuthService::requestVerification()` y Mail. El token se elimina de la respuesta pública. El aviso de cuenta sin verificar aporta el botón desde un fragmento PHP, no HTML generado en JS.
-- `auth.css` parte del CSS de Bebots, adapta selectores al ámbito auth y utiliza variables compartidas de Bootstrap. El meta carga `variables.css`; se elimina la paleta paralela `--gframe-auth-*`. No se copia el fondo fotográfico de Base Confías.
+- `auth.css` conserva la estructura de las pantallas de Base Confías y las variables compartidas de Bootstrap. La plantilla utiliza el logotipo original de GFrame publicado en `public/img/logo.png`; el fondo fotográfico de Base Confías sigue siendo propio de esa aplicación.
 
 Se añaden pruebas de comportamiento JS para validación, doble envío, retorno, reenvío y cierre entre pestañas; pruebas PHP verifican el destino seguro, meta y plantilla de reenvío sin exponer el token. La revisión visual HTTP y la entrega real por SMTP siguen pendientes. El cotejo general de todos los módulos se realizará al final, según lo acordado.
 

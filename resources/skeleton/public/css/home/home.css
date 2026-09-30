@@ -1,0 +1,48 @@
+#homeHeader {
+    background-color: #333;
+    color: #fff;
+    box-shadow: none;
+    height: 70px;
+}
+
+#homeHeader .home-logo {
+    display: block;
+    max-height: 42px;
+    width: auto;
+}
+
+#homeHeader .navbar a {
+    color: #cdcdcd;
+    text-decoration: none;
+}
+
+#homeHeader .navbar a:hover,
+#homeHeader .navbar a:focus-visible {
+    color: #fff;
+}
+
+body.tpl-home {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+}
+
+.site-wrapper {
+    align-items: center;
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: #333;
+}
+
+.site-wrapper-inner {
+    width: 100%;
+}
+
+.inner {
+    padding: 30px;
+}
+
+.cover {
+    padding: 0 20px;
+}

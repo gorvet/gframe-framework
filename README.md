@@ -29,7 +29,7 @@ GFrame crea un proyecto nuevo desde su estructura inicial con:
 composer new -- ../mi-proyecto
 ```
 
-Después se instalan las dependencias del proyecto y se abre `public/install/`. Un único asistente permite elegir un sitio estático, una aplicación administrada o un SaaS multitenant.
+Después se instalan las dependencias del proyecto y se abre `install.php`. Un único asistente permite elegir un sitio estático, una aplicación administrada o un SaaS multitenant.
 
 ## Desarrollo
 

@@ -1,32 +1,38 @@
-<header class="gframe-header">
-    <nav class="container d-flex align-items-center justify-content-between py-4" aria-label="Navegación principal">
-        <a class="gframe-brand" href="<?= htmlspecialchars(site_url, ENT_QUOTES, 'UTF-8') ?>" aria-label="Inicio de <?= htmlspecialchars(site_name, ENT_QUOTES, 'UTF-8') ?>">
-            <span class="gframe-mark" aria-hidden="true">G</span>
-            <span><?= htmlspecialchars(site_name, ENT_QUOTES, 'UTF-8') ?></span>
+<?php
+$base = rtrim((string)site_url, '/') . '/';
+$identity = is_array($_SESSION['auth'] ?? null) ? $_SESSION['auth'] : [];
+$hasAuth = is_file(ABSPATH . 'app/views/auth/authLogin.php');
+$displayName = trim((string)($identity['name'] ?? ''));
+if ($displayName === '') $displayName = explode('@', (string)($identity['email'] ?? ''), 2)[0];
+?>
+<header id="homeHeader" class="header fixed-top">
+    <div class="container d-flex justify-content-between align-items-center h-100">
+        <a href="<?= htmlspecialchars($base, ENT_QUOTES, 'UTF-8') ?>" aria-label="Inicio de GFrame">
+            <img src="<?= htmlspecialchars($base . 'public/img/navlogo.png', ENT_QUOTES, 'UTF-8') ?>" alt="GFrame" class="home-logo">
         </a>
-        <a class="gframe-doc-link" href="https://github.com/gorvet/gframe-framework" target="_blank" rel="noopener noreferrer">Documentación</a>
-    </nav>
+        <?php if ($hasAuth): ?>
+        <nav id="navbar" class="navbar" aria-label="Navegación principal">
+            <ul class="d-flex align-items-center gap-3 mb-0 list-unstyled">
+                <?php if ($identity !== []): ?>
+                    <li>Hola, <?= htmlspecialchars(ucfirst($displayName), ENT_QUOTES, 'UTF-8') ?></li>
+                    <li><a href="<?= htmlspecialchars($base . 'admin', ENT_QUOTES, 'UTF-8') ?>">Dashboard</a></li>
+                <?php else: ?>
+                    <li><a href="<?= htmlspecialchars($base . 'login', ENT_QUOTES, 'UTF-8') ?>">Entrar</a></li>
+                    <li><a href="<?= htmlspecialchars($base . 'login/register', ENT_QUOTES, 'UTF-8') ?>">Crear cuenta</a></li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+        <?php endif; ?>
+    </div>
 </header>
 
-<main class="gframe-welcome">
-    <div class="container">
-        <div class="row align-items-center gy-5">
-            <div class="col-12 col-lg-7">
-                <p class="gframe-eyebrow">GFrame está listo</p>
-                <h1>La base está preparada.<br>Lo próximo lo construyes tú.</h1>
-                <p class="gframe-lead">Una estructura PHP ligera, organizada y lista para convertirse en tu aplicación.</p>
-                <div class="d-flex flex-wrap gap-3 align-items-center">
-                    <a class="btn btn-primary btn-lg" href="https://github.com/gorvet/gframe-framework" target="_blank" rel="noopener noreferrer">Conocer GFrame</a>
-                    <span class="gframe-version">PHP · MVC · Bootstrap</span>
-                </div>
-            </div>
-            <div class="col-12 col-lg-5">
-                <div class="gframe-start">
-                    <span class="gframe-start-label">Tu primer cambio</span>
-                    <code>app/views/home/homeIndex.php</code>
-                    <p>Edita esta vista y empieza a darle identidad a tu proyecto.</p>
-                </div>
+<div class="site-wrapper">
+    <div class="site-wrapper-inner">
+        <div class="container">
+            <div class="inner cover">
+                <h1 class="cover-heading">G-Frame</h1>
+                <p class="lead">Algo maravilloso se construye aquí.</p>
             </div>
         </div>
     </div>
-</main>
+</div>

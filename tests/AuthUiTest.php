@@ -38,6 +38,8 @@ final class AuthUiTest extends TestCase
         $ajax = (string)file_get_contents($this->modulePath . '/application/routes/routes_ajax_auth.php');
 
         self::assertSame(5, substr_count($web, "->middleware(['guest'])"));
+        self::assertStringContainsString("Route::get('login/lostpassword'", $web);
+        self::assertStringContainsString("Route::get('login/resetpassword'", $web);
         self::assertStringContainsString("Route::post('ajax/logout'", $ajax);
         self::assertStringContainsString("->middleware(['auth'])", $ajax);
         self::assertSame(5, substr_count($ajax, "->middleware(['honeypot', 'guest'])"));
@@ -62,6 +64,7 @@ final class AuthUiTest extends TestCase
 
         self::assertSame('account', $defaults['auth']['password_change_redirect']);
         self::assertStringContainsString("'auth.password_change_redirect'", $controller);
+        self::assertStringContainsString("\$path = 'admin'", $controller);
         self::assertStringContainsString("'must_change_password' => \$mustChangePassword", $controller);
     }
 

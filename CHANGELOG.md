@@ -4,6 +4,10 @@
 
 ### Núcleo
 
+- La portada inicial recupera el mensaje, la estructura y los logotipos del proyecto GFrame original; el instalador publica también favicon e icono táctil.
+- `auth-ui` recupera las rutas `/login/lostpassword` y `/login/resetpassword?rp=...`, la composición visual de las vistas originales y la redirección al panel administrativo.
+- `admin-panel` publica una ruta `/admin` y un escritorio inicial para que el acceso tenga destino funcional.
+
 - El generador de proyectos reconoce `-h` y `--help` sin crear un directorio accidental.
 - El esqueleto incluye reglas de Apache para las rutas de la aplicación y la protección de archivos internos.
 

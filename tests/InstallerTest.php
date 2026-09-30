@@ -128,8 +128,10 @@ final class InstallerTest extends TestCase
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_system.php');
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'gframe-installed.json');
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'index.php');
+        self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'install.php');
+        self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . 'home.css');
         self::assertStringContainsString(
-            'La base está preparada',
+            'Algo maravilloso se construye aquí.',
             (string)file_get_contents($this->temporaryPath . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . 'homeIndex.php')
         );
 

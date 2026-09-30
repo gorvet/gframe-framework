@@ -8,7 +8,7 @@ use GFrame\Modules\ModuleCatalog;
 
 session_start();
 
-$projectRoot = dirname(__DIR__, 2);
+$projectRoot = __DIR__;
 $autoloadCandidates = [
     $projectRoot . DIRECTORY_SEPARATOR . 'packages' . DIRECTORY_SEPARATOR . 'autoload.php',
     $projectRoot . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php',
@@ -27,6 +27,10 @@ if ($autoload === null) {
 require $autoload;
 
 $escape = static fn(mixed $value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+$requestPath = (string)(parse_url((string)($_SERVER['REQUEST_URI'] ?? '/install.php'), PHP_URL_PATH) ?: '/install.php');
+$basePath = preg_replace('#/install\.php$#i', '', $requestPath) ?: '';
+$scheme = !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off' ? 'https' : 'http';
+$appUrl = $scheme . '://' . (string)($_SERVER['HTTP_HOST'] ?? 'localhost') . rtrim($basePath, '/');
 $lock = $projectRoot . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'gframe-installed.json';
 $installed = is_file($lock);
 $profiles = InstallationProfileCatalog::frameworkDefault()->all();
@@ -64,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
             'project_root' => $projectRoot,
             'profile' => (string)($_POST['profile'] ?? 'managed'),
             'app_name' => trim((string)($_POST['app_name'] ?? 'GFrame')),
+            'app_url' => $appUrl,
             'environment' => 'production',
             'debug' => false,
             'timezone' => (string)($_POST['timezone'] ?? 'America/Havana'),
@@ -131,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
         <?php if ($installed): ?>
             <div class="result">
                 <div class="alert success">La aplicación quedó instalada correctamente.</div>
-                <p>Por seguridad, elimina o bloquea el directorio <code>public/install</code> antes de publicar el sitio.</p>
+                <p>La aplicación ya está instalada. Bloquea el acceso a <code>install.php</code> antes de publicarla.</p>
                 <a href="../../">Abrir la aplicación</a>
             </div>
         <?php else: ?>

@@ -1,7 +1,11 @@
-Options -Indexes -MultiViews
-
+Options -Indexes
 <IfModule mod_rewrite.c>
+    Options -MultiViews
     RewriteEngine On
+
+    RewriteCond %{HTTP_HOST} localhost [NC]
+    RewriteCond %{REQUEST_URI} ^/([^/]+)/? [NC]
+    RewriteRule ^ - [E=PROJECT:%1]
 
     RewriteRule ^(?:app|bin|config|core|packages|storage)(?:/|$) - [F,NC]
     RewriteRule ^(?:\.env(?:\..*)?|composer\.(?:json|lock)|README\.md)$ - [F,NC]
@@ -9,4 +13,19 @@ Options -Indexes -MultiViews
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L]
+
+    RewriteCond %{REQUEST_URI} ^/.*/public(/.*)?$ [NC]
+    RewriteRule ^ - [L]
+
+    <If "%{HTTP_HOST} = 'localhost'">
+        ErrorDocument 403 /%{ENV:PROJECT}/index.php
+        ErrorDocument 404 /%{ENV:PROJECT}/index.php
+        ErrorDocument 500 /%{ENV:PROJECT}/index.php
+        ErrorDocument 503 /%{ENV:PROJECT}/index.php
+    </If>
 </IfModule>
+
+ErrorDocument 403 /index.php
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
+ErrorDocument 503 /index.php

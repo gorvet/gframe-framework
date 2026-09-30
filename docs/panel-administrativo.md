@@ -23,9 +23,9 @@ El navegador de menús existente (`MenuHelper::build`) acepta elementos, encabez
 
 ## Implementación en GFrame
 
-El módulo `admin-panel` instala `adminTemplate.php`, `admin.meta.php`, `navbar.php`, `aside.php`, `menu.php`, CSS y JavaScript propios. Los perfiles `managed`, `intranet` y `saas` lo incluyen. `user-admin` lo requiere y usa `->template('admin')`. El perfil `static` no lo instala.
+El módulo `admin-panel` instala la ruta `/admin`, un escritorio inicial, `adminTemplate.php`, `admin.meta.php`, `navbar.php`, `aside.php`, `menu.php`, CSS y JavaScript propios. Los perfiles `managed`, `intranet` y `saas` lo incluyen. `user-admin` lo requiere y usa `->template('admin')`. El perfil `static` no lo instala.
 
-La plantilla mantiene la disposición actual: sidebar izquierdo, área principal y navbar en la parte superior de esa área. El footer sigue siendo independiente. No se publica un escritorio genérico ni una ruta `admin/`; cada aplicación define sus propias vistas y rutas de inicio.
+La plantilla mantiene la disposición actual: sidebar izquierdo, área principal y navbar en la parte superior de esa área. El footer sigue siendo independiente. La ruta `/admin` muestra el escritorio inicial; cada aplicación puede ampliar esa vista con sus datos propios.
 
 El meta de la plantilla carga los recursos del panel incluso en vistas anidadas. La prioridad es global → plantilla → extensiones de módulos → grupo → vista. Los recursos repetidos se deduplican. El módulo `notifications` publica una acción de header y su meta de CSS/JS; si no se instala, el panel funciona sin ese control.
 

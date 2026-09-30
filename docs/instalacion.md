@@ -11,9 +11,9 @@ GFrame ofrece cuatro perfiles iniciales:
 
 ## Instalador visual
 
-El esqueleto del proyecto incluye `public/install/index.php`. La pantalla permite elegir el perfil, MySQL o SQLite, módulos opcionales, configuración SEO, Metricool, expiración de contraseñas y la primera cuenta superadministradora.
+El esqueleto del proyecto incluye `install.php` en la raíz. La pantalla permite elegir el perfil, MySQL o SQLite, módulos opcionales, configuración SEO, Metricool, expiración de contraseñas y la primera cuenta superadministradora.
 
-Antes de configurar el negocio, la aplicación muestra una portada inicial de GFrame con el mensaje «La base está preparada. Lo próximo lo construyes tú.» y señala la primera vista que debe editarse. El proyecto puede reemplazarla sin modificar el framework.
+Antes de configurar el negocio, la aplicación muestra la portada original de GFrame con el mensaje «Algo maravilloso se construye aquí.», sus logotipos y sus iconos. El proyecto puede reemplazarla sin modificar el framework.
 
 El instalador:
 
@@ -24,11 +24,11 @@ El instalador:
 5. escribe `config/app.php`, `.env` y `config/modules.php`, publica los recursos y registra las migraciones iniciales;
 6. crea el primer superadministrador y registra `storage/gframe-installed.json` para impedir una segunda ejecución.
 
-Al terminar debe eliminarse o bloquearse `public/install` en producción.
+Al terminar debe bloquearse `install.php` en producción.
 
 El instalador no crea un tenant ni asigna membresías a usuarios. En `managed` e `intranet` los permisos se resuelven por rol global; en `saas`, cada módulo que crea un tenant debe crear también la membresía inicial de su dueño. El procedimiento completo, incluida la comprobación de propiedad, está en [roles, permisos y membresías](permisos.md).
 
-El esqueleto versionado en `resources/skeleton` es la fuente única para crear proyectos.
+El esqueleto versionado en `resources/skeleton` es la fuente única para crear proyectos. Conserva `install.php` en la raíz y `public/css/home/home.css`, como en los proyectos de referencia.
 Incluye `.htaccess` para enrutar las URL de Apache hacia `index.php` y bloquear el acceso directo a los archivos internos.
 
 ## Uso y extensión de los perfiles
@@ -53,7 +53,7 @@ composer new -- ../mi-proyecto
 
 Use `composer new -- --help` para consultar la ayuda sin crear archivos.
 
-El directorio debe estar vacío. Después se instalan las dependencias dentro del proyecto y se abre `public/install/`. El asistente ofrece los perfiles `static`, `managed`, `intranet` y `saas`; no se mantienen plantillas independientes para cada uno.
+El directorio debe estar vacío. Después se instalan las dependencias dentro del proyecto y se abre `install.php`. El asistente ofrece los perfiles `static`, `managed`, `intranet` y `saas`; no se mantienen plantillas independientes para cada uno.
 
 SQLite es una alternativa completa para proyectos que no necesitan MySQL. Autenticación, roles, multimedia y notificaciones incluyen esquemas para ambos motores.
 

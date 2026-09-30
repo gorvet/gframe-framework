@@ -57,8 +57,9 @@ final class AuthController
 
         $path = trim((string)config(
             $mustChangePassword ? 'auth.password_change_redirect' : 'auth.login_redirect',
-            $mustChangePassword ? 'account' : ''
+            $mustChangePassword ? 'account' : 'admin'
         ), '/');
+        if ($path === '' && !$mustChangePassword) $path = 'admin';
         $base = rtrim((string)site_url, '/') . '/';
         $returnUrl = $mustChangePassword ? null : self::returnUrl((string)($_POST['rd'] ?? ''), $base);
         return [
@@ -149,7 +150,7 @@ final class AuthController
             $email,
             'Recupera tu cuenta',
             'Establecer una contraseña',
-            '/login/reset?token=' . rawurlencode($token),
+            '/login/resetpassword?rp=' . rawurlencode($token),
             'Recibimos una solicitud para restablecer tu contraseña.'
         )) {
             return $this->withMessage(['status' => 'error', 'code' => 'mail_delivery_failed']);

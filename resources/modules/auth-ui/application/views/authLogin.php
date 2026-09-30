@@ -1,8 +1,9 @@
-<div class="card login-card auth-card">
-    <div class="card-header text-center border-0 py-3">
-        <h1 class="h4 mb-0">Iniciar sesión</h1>
+<div class="col-lg-9 col-xl-8 col-xxl-6">
+  <div class="login-card card">
+    <div class="card-header text-center p-3">
+        <h1 class="h4 fw-bold lh-1 mb-0">Iniciar sesión</h1>
     </div>
-    <div class="card-body p-4">
+    <div class="card-body p-4 mt-0">
         <div class="alert alert-danger d-none" id="auth-error" role="alert"></div>
         <form method="post" action="<?= htmlspecialchars(rtrim((string)site_url, '/') . '/ajax/login', ENT_QUOTES, 'UTF-8') ?>" id="auth-login-form" class="needs-validation" novalidate>
             <input type="text" name="middle_name" value="" class="d-none" tabindex="-1" autocomplete="off">
@@ -17,11 +18,12 @@
                     <button class="showPassword input-group-text" type="button">Mostrar</button>
                 </div>
             </div>
-            <button class="btn btn-primary w-100" id="auth-submit" type="submit">Acceder</button>
+            <div class="mb-3"><a href="<?= htmlspecialchars(rtrim((string)site_url, '/') . '/login/lostpassword', ENT_QUOTES, 'UTF-8') ?>">Olvidé mi contraseña</a></div>
+            <button class="btn btn-primary d-block w-100 mt-3" id="auth-submit" type="submit">Acceder</button>
         </form>
-        <div class="d-flex justify-content-between gap-3 mt-3 small">
-            <a href="<?= htmlspecialchars(rtrim((string)site_url, '/') . '/login/recovery', ENT_QUOTES, 'UTF-8') ?>">Olvidé mi contraseña</a>
-            <a href="<?= htmlspecialchars(rtrim((string)site_url, '/') . '/login/register', ENT_QUOTES, 'UTF-8') ?>">Crear cuenta</a>
+        <div class="col-auto text-center mt-3">
+            <span class="mb-0">¿No tienes cuenta?</span>
+            <a class="toregister" href="<?= htmlspecialchars(rtrim((string)site_url, '/') . '/login/register', ENT_QUOTES, 'UTF-8') ?>">Crear una cuenta</a>
         </div>
     </div>
 </div>
