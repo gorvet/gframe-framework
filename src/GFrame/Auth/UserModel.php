@@ -2,9 +2,12 @@
 
 namespace GFrame\Auth;
 
+use GFrame\Auth\Contracts\AccountDeactivationPolicy;
+use GFrame\Auth\Contracts\SelfAccountRepository;
+use GFrame\Auth\Contracts\UserAdministrationRepository;
 use RuntimeException;
 
-class UserModel extends \ORM
+class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivationPolicy, UserAdministrationRepository
 {
     protected $table = 'users';
     protected $primaryKey = 'user_id';
@@ -86,6 +89,11 @@ class UserModel extends \ORM
         $this->updateAuthUser($userID, ['status' => 'disabled']);
     }
 
+    public function canDeactivateAccount(array $account): bool
+    {
+        return (string)($account['role'] ?? '') !== SystemRole::SUPERADMINISTRATOR;
+    }
+
     public function updateAuthUser(int $userID, array $attributes): void
     {
         $allowed = array_intersect_key($attributes, array_flip([
@@ -98,13 +106,21 @@ class UserModel extends \ORM
             'last_login',
         ]));
         if ($userID <= 0 || $allowed === []) {
-            return;
+            throw new RuntimeException('Actualización de autenticación inválida.');
         }
 
-        $this->reset()
+        if (in_array((string)($allowed['status'] ?? ''), ['suspended', 'disabled'], true)) {
+            $allowed['token'] = bin2hex(random_bytes(32));
+            $allowed['token_updated_at'] = date('Y-m-d H:i:s');
+        }
+
+        $result = $this->reset()
             ->useStrictComparison(false)
             ->where('user_id', '=', $userID)
             ->update($allowed);
+        if (!in_array($result['status'] ?? '', ['updated', 'no_change'], true)) {
+            throw new RuntimeException('No se pudo actualizar el usuario de autenticación.');
+        }
     }
 
     public function usersExist(): bool
@@ -140,11 +156,17 @@ class UserModel extends \ORM
         ]))->insert();
     }
 
-    public function paginateUsers(int $page, int $perPage, string $search = ''): array
+    public function paginateUsers(int $page, int $perPage, string $search = '', string $role = '', string $status = ''): array
     {
         $countQuery = $this->reset();
         if ($search !== '') {
             $countQuery->whereLike('email', $search);
+        }
+        if ($role !== '') {
+            $countQuery->where('role_id', '=', (int)($this->findRoleIDBySlug($role) ?? 0));
+        }
+        if ($status !== '') {
+            $countQuery->where('status', '=', $status);
         }
         $total = (int)$countQuery->count('*');
         $lastPage = max(1, (int)ceil($total / $perPage));
@@ -156,13 +178,27 @@ class UserModel extends \ORM
         if ($search !== '') {
             $query->whereLike('users.email', $search);
         }
+        if ($role !== '') {
+            $query->where('roles.slug', '=', $role);
+        }
+        if ($status !== '') {
+            $query->where('users.status', '=', $status);
+        }
 
         return [
             'data' => array_map(
                 static fn(array $row): array => $row,
                 $query->orderBy('users.user_id', 'DESC')->paginate($page, $perPage)
             ),
-            'meta' => ['page' => $page, 'per_page' => $perPage, 'total' => $total, 'total_pages' => $lastPage],
+            'meta' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => $lastPage,
+                'search' => $search,
+                'role' => $role,
+                'status' => $status,
+            ],
         ];
     }
 
@@ -177,7 +213,7 @@ class UserModel extends \ORM
 
     public function setActive(int $userID, bool $active): void
     {
-        $this->reset()->where('user_id', '=', $userID)->update(['status' => $active ? 'verify' : 'disabled']);
+        $this->updateAuthUser($userID, ['status' => $active ? 'verify' : 'disabled']);
     }
 
     public function assignRole(int $userID, int $roleID): void

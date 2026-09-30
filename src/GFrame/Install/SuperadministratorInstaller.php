@@ -15,13 +15,11 @@ final class SuperadministratorInstaller
 
     public function install(PDO $pdo, string $email, string $password): array
     {
+        $validation = $this->validate($email, $password);
+        if ($validation['status'] !== 'success') {
+            return $validation;
+        }
         $email = mb_strtolower(trim($email), 'UTF-8');
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return ['status' => 'error', 'code' => 'invalid_email'];
-        }
-        if (!$this->passwords->accepts($password)) {
-            return ['status' => 'error', 'code' => 'invalid_password'];
-        }
         if ((int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn() > 0) {
             return ['status' => 'error', 'code' => 'application_already_installed'];
         }
@@ -55,5 +53,24 @@ final class SuperadministratorInstaller
             'user_id' => (int)$pdo->lastInsertId(),
             'role_id' => $roleID,
         ];
+    }
+
+    public function validate(string $email, string $password): array
+    {
+        if (!filter_var(mb_strtolower(trim($email), 'UTF-8'), FILTER_VALIDATE_EMAIL)) {
+            return ['status' => 'error', 'code' => 'invalid_email'];
+        }
+        if (!$this->passwords->accepts($password)) {
+            return ['status' => 'error', 'code' => 'invalid_password'];
+        }
+        return ['status' => 'success', 'code' => 'valid_superadministrator'];
+    }
+
+    public function removeCreated(PDO $pdo, int $userID): void
+    {
+        if ($userID <= 0) return;
+        $statement = $pdo->prepare('DELETE FROM users WHERE user_id = :user_id AND role_id = :role_id');
+        $role = $pdo->query("SELECT role_id FROM roles WHERE slug = 'superadministrator' LIMIT 1")->fetchColumn();
+        $statement->execute(['user_id' => $userID, 'role_id' => (int)$role]);
     }
 }

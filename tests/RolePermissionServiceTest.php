@@ -2,9 +2,8 @@
 
 namespace GFrame\Tests;
 
-require_once dirname(__DIR__) . '/src/utils/PermissionHelper.php';
-
 use GFrame\Auth\RolePermissionService;
+use GFrame\Session\SessionRuntime;
 use GFrame\Tests\Support\InMemoryRoleModel;
 use PHPUnit\Framework\TestCase;
 
@@ -21,6 +20,7 @@ final class RolePermissionServiceTest extends TestCase
     protected function tearDown(): void
     {
         $_SESSION = $this->session;
+        SessionRuntime::clearAuthorizationStale();
     }
 
     public function testSuperadministratorBypassesPermissions(): void
@@ -97,5 +97,60 @@ final class RolePermissionServiceTest extends TestCase
             'forbidden',
             $middleware->handle(['middleware' => ['can:users.manage']])['code']
         );
+    }
+
+    public function testStaleSessionRefreshesPermissionsWithoutLoggingOut(): void
+    {
+        $model = new InMemoryRoleModel();
+        $model->permissions[2] = ['content.publish'];
+        $_SESSION = [
+            'auth' => [
+                'id' => 2,
+                'role_id' => 2,
+                'role' => 'registered',
+                'role_version' => 1,
+                'permissions' => ['content.read'],
+            ],
+        ];
+        SessionRuntime::markAuthorizationStale();
+
+        $result = (new RolePermissionService($model))->authorize(2, 'content.publish');
+
+        self::assertSame('success', $result['status']);
+        self::assertSame(['content.publish'], $_SESSION['auth']['permissions']);
+        self::assertFalse(SessionRuntime::authorizationStale());
+    }
+
+    public function testTenantRoleIsATemplateAndUserOverridesHavePrecedence(): void
+    {
+        $model = new InMemoryRoleModel();
+        $model->roles[3] = ['role_id' => 3, 'name' => 'Editor', 'slug' => 'editor', 'is_system' => 0, 'security_version' => 1];
+        $model->permissions[3] = ['content.read', 'content.publish'];
+        $model->tenantRoles[2][18] = 3;
+        $model->userOverrides[2][18] = ['content.publish' => false, 'content.delete' => true];
+        $_SESSION['auth'] = ['id' => 2, 'role_id' => 2, 'role' => 'registered'];
+        $service = new RolePermissionService($model);
+
+        self::assertSame('success', $service->authorize(2, 'content.read', 18)['status']);
+        self::assertSame('unauthorized', $service->authorize(2, 'content.publish', 18)['status']);
+        self::assertSame('success', $service->authorize(2, 'content.delete', 18)['status']);
+    }
+
+    public function testOnlyActiveTenantIsCachedAndChangingTenantReloadsItsMembership(): void
+    {
+        $model = new InMemoryRoleModel();
+        $model->tenantRoles[2][18] = 2;
+        $model->tenantRoles[2][19] = 2;
+        $model->permissions[2] = ['content.read'];
+        $_SESSION['auth'] = ['id' => 2, 'role_id' => 2, 'role' => 'registered'];
+        $service = new RolePermissionService($model);
+
+        self::assertSame('success', $service->authorize(2, 'content.read', 18)['status']);
+        $reads = $model->authorizationReads;
+        self::assertSame('success', $service->authorize(2, 'content.read', 18)['status']);
+        self::assertSame($reads, $model->authorizationReads);
+        self::assertSame('success', $service->authorize(2, 'content.read', 19)['status']);
+        self::assertGreaterThan($reads, $model->authorizationReads);
+        self::assertSame(19, $_SESSION['auth']['tenant_authorization']['tenant_id']);
     }
 }

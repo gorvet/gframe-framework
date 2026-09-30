@@ -2,14 +2,23 @@
 
 namespace GFrame\Auth;
 
-use Throwable;
+use Exception;
+use GFrame\Auth\Contracts\AccountDeactivationPolicy;
+use GFrame\Auth\Contracts\SelfAccountRepository;
+use GFrame\Session\ActiveSessionRegistry;
+use GFrame\Session\SessionRuntime;
 
 final class SelfAccountService
 {
+    private ?ActiveSessionRegistry $sessions;
+
     public function __construct(
-        private readonly UserModel $users = new UserModel(),
-        private readonly PasswordPolicy $passwords = new PasswordPolicy()
+        private readonly SelfAccountRepository $accounts = new UserModel(),
+        private readonly ?AccountDeactivationPolicy $deactivationPolicy = null,
+        private readonly PasswordPolicy $passwords = new PasswordPolicy(),
+        ?ActiveSessionRegistry $sessions = null
     ) {
+        $this->sessions = $sessions ?? SessionRuntime::registry();
     }
 
     public function profile(int $userID): array
@@ -19,14 +28,14 @@ final class SelfAccountService
         }
 
         try {
-            $account = $this->users->findAccountByID($userID);
+            $account = $this->accounts->findAccountByID($userID);
             if ($account === null) {
                 return $this->error('not_found');
             }
 
             unset($account['password'], $account['token']);
             return ['status' => 'success', 'code' => 'account_loaded', 'data' => $account];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'account_load_failed');
         }
     }
@@ -51,7 +60,7 @@ final class SelfAccountService
         }
 
         try {
-            $account = $this->users->findAccountByID($userID);
+            $account = $this->accounts->findAccountByID($userID);
             if ($account === null) {
                 return $this->error('not_found');
             }
@@ -59,9 +68,12 @@ final class SelfAccountService
                 return $this->error('invalid_current_password');
             }
 
-            $this->users->updateAccountPassword($userID, $this->passwords->hash($newPassword));
+            $this->accounts->updateAccountPassword($userID, $this->passwords->hash($newPassword));
+            if ($this->sessions !== null) {
+                $this->sessions->revokeUser($userID);
+            }
             return ['status' => 'success', 'code' => 'password_updated'];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'password_update_failed');
         }
     }
@@ -76,20 +88,28 @@ final class SelfAccountService
         }
 
         try {
-            $account = $this->users->findAccountByID($userID);
+            $account = $this->accounts->findAccountByID($userID);
             if ($account === null) {
                 return $this->error('not_found');
             }
-            if (($account['role'] ?? '') === SystemRole::SUPERADMINISTRATOR) {
+            $policy = $this->deactivationPolicy
+                ?? ($this->accounts instanceof AccountDeactivationPolicy ? $this->accounts : null);
+            $canDeactivate = $policy !== null
+                ? $policy->canDeactivateAccount($account)
+                : (string)($account['role'] ?? '') !== SystemRole::SUPERADMINISTRATOR;
+            if (!$canDeactivate) {
                 return ['status' => 'unauthorized', 'code' => 'protected_account'];
             }
             if (!password_verify($password, (string)($account['password'] ?? ''))) {
                 return $this->error('invalid_current_password');
             }
 
-            $this->users->deactivateAccount($userID);
+            $this->accounts->deactivateAccount($userID);
+            if ($this->sessions !== null) {
+                $this->sessions->revokeUser($userID, true);
+            }
             return ['status' => 'success', 'code' => 'account_deactivated'];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'account_deactivation_failed');
         }
     }
@@ -99,7 +119,7 @@ final class SelfAccountService
         return ['status' => 'error', 'code' => $code];
     }
 
-    private function exception(Throwable $exception, string $code): array
+    private function exception(Exception $exception, string $code): array
     {
         error_log('[GFrame Self Account] ' . $exception->getMessage());
         return $this->error($code);

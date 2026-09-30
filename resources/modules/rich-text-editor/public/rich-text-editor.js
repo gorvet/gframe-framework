@@ -225,8 +225,8 @@
       registrations[String(editorID || "")] = options || {};
     },
     init: init,
-    initAll: function() {
-      document.querySelectorAll("textarea.js-rich-text-editor").forEach(init);
+    initAll: function(root) {
+      (root || document).querySelectorAll("textarea.js-rich-text-editor").forEach(init);
     },
     saveAll: function() {
       if (typeof tinymce === "undefined") return;
@@ -235,6 +235,19 @@
         if (editor) normalizeTableCells(editor.getBody());
       });
       tinymce.triggerSave();
+    },
+    destroy: function(elementOrID) {
+      if (typeof tinymce === "undefined") return;
+      var id = typeof elementOrID === "string" ? elementOrID : elementOrID && elementOrID.id;
+      var editor = id ? tinymce.get(id) : null;
+      if (editor) editor.remove();
+    },
+    destroyAll: function(root) {
+      if (typeof tinymce === "undefined") return;
+      (root || document).querySelectorAll("textarea.js-rich-text-editor").forEach(function(element) {
+        var editor = tinymce.get(element.id);
+        if (editor) editor.remove();
+      });
     }
   };
 

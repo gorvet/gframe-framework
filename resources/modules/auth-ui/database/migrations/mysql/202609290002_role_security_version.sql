@@ -1,0 +1,1 @@
+ALTER TABLE `roles` ADD COLUMN `security_version` BIGINT UNSIGNED NOT NULL DEFAULT 1 AFTER `is_system`;

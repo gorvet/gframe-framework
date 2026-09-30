@@ -11,6 +11,10 @@ class Robots
 
     private function render(): string
     {
+        if (defined('SEO_ALLOW_INDEXING') && !SEO_ALLOW_INDEXING) {
+            return "User-agent: *\nDisallow: /\n";
+        }
+
         $disallowPaths = [
             '/admin/',
             '/ajax/',

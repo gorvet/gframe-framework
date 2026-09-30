@@ -12,6 +12,8 @@ Keep the view body focused on page content and let the template wrap the shared 
 
 ## Asset Registration
 
+The skeleton provides `public/js/app/home/mngnoadmin.js` in home group meta. It uses `#header`, `#mng`, `.mobile-nav-toggle` and `.scroll-top`; see `docs/navegacion-publica.md` for markup, CSS states and extension. It does not define project navigation markup or visual styles.
+
 Load CSS and JS through meta files.
 
 Typical public assets include:

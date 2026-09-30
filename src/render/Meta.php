@@ -7,7 +7,6 @@ class Meta {
     protected $cssLinks = [];
     protected $jsScripts = [];
     protected $jsHScripts = [];
-    protected $credits = '';
     protected $schema = [];
     private static $instance;
 
@@ -28,7 +27,6 @@ class Meta {
         $this->cssLinks = [];
         $this->jsScripts = [];
         $this->jsHScripts = [];
-        $this->credits = '';
         $this->schema = [];
 
         $this->initializeConfig();
@@ -69,10 +67,6 @@ class Meta {
             $this->setHeaderJsScripts($metaConfig['hjs']);
         }
 
-        if (array_key_exists('credits', $metaConfig)) {
-            $this->setFooterCredits((string)$metaConfig['credits']);
-        }
-
         if (!empty($metaConfig['schema']) && is_array($metaConfig['schema'])) {
             $this->setSchema($metaConfig['schema']);
         }
@@ -92,10 +86,6 @@ class Meta {
 
     public function setHeaderJsScripts($jsHScripts) {
         $this->jsHScripts = array_values(array_unique(array_merge($this->jsHScripts, $jsHScripts)));
-    }
-
-    public function setFooterCredits($credits) {
-        $this->credits = $credits;
     }
 
     public function setSchema(array $schema) {
@@ -120,10 +110,6 @@ class Meta {
 
     public function getHeaderJsScripts() {
         return $this->jsHScripts;
-    }
-
-    public function getFooterCredits() {
-        return $this->credits;
     }
 
     public function renderSchema(): string {

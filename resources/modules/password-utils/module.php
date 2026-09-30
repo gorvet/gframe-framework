@@ -2,8 +2,9 @@
 
 return [
     'name' => 'password-utils',
-    'type' => 'internal-ui',
-    'description' => 'Indicadores y utilidades de contraseña propios de GFrame.',
+    'type' => 'backend-module',
+    'description' => 'Política de contraseña y utilidades visuales propias de GFrame.',
+    'dependencies' => ['jquery'],
     'assets' => [
         ['source' => 'public', 'target' => 'vendors/internal/passwordUtils'],
     ],

@@ -3,7 +3,7 @@
 ## Config Layer
 
 - `config/routes/` for route declarations split by transport type
-- `config/Permissions.php` for tenant permission templates by role
+- `config/Permissions.php` for initial and updateable role permission templates
 - `config/meta/` for reusable meta schema helpers and examples
 
 ## Framework Repository

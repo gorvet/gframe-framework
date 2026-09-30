@@ -2,13 +2,15 @@
 
 namespace GFrame\Media;
 
-class MediaModel extends \ORM
+use GFrame\Media\Contracts\MediaRepository;
+
+class MediaModel extends \ORM implements MediaRepository
 {
     protected $table = 'media';
     protected $primaryKey = 'media_id';
     protected $fillable = [
         'media_id', 'scope_type', 'scope_id', 'source', 'kind', 'name', 'original_name',
-        'path', 'mime_type', 'size_bytes', 'created_at',
+        'path', 'remote_url', 'mime_type', 'size_bytes', 'alt_text', 'metadata_json', 'variants_json', 'status', 'created_at',
         'related_type', 'related_id', 'field', 'sort_order',
     ];
 
@@ -39,6 +41,9 @@ class MediaModel extends \ORM
             if (!empty($filters['search'])) {
                 $query->whereAnyLike(['name', 'original_name'], (string)$filters['search']);
             }
+            if (!empty($filters['ym'])) {
+                $query->where('created_at', 'LIKE', (string)$filters['ym'] . '%');
+            }
             return $query;
         };
 
@@ -58,6 +63,27 @@ class MediaModel extends \ORM
     public function deleteMedia(int $mediaID, MediaScope $scope): void
     {
         $this->applyScope($this->reset()->where('media_id', '=', $mediaID), $scope)->deleteWhere();
+    }
+
+    public function updateMedia(int $mediaID, MediaScope $scope, array $data): void
+    {
+        $allowed = array_intersect_key($data, array_flip(['original_name', 'alt_text', 'metadata_json', 'variants_json', 'status']));
+        if ($allowed !== []) {
+            $this->applyScope($this->reset()->where('media_id', '=', $mediaID), $scope)->update($allowed);
+        }
+    }
+
+    public function usedBytes(MediaScope $scope): int
+    {
+        return (int)$this->applyScope($this->reset(), $scope)->sum('size_bytes');
+    }
+
+    public function paths(MediaScope $scope): array
+    {
+        return array_values(array_filter(array_map(
+            static fn(array $row): string => (string)($row['path'] ?? ''),
+            $this->applyScope($this->reset()->select('path'), $scope)->get()
+        )));
     }
 
     public function attach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content', int $sortOrder = 0): void
@@ -92,18 +118,19 @@ class MediaModel extends \ORM
     }
 
     /** @return list<array<string, mixed>> */
-    public function related(string $relatedType, int $relatedID, string $field = 'content'): array
+    public function related(string $relatedType, int $relatedID, string $field, MediaScope $scope): array
     {
+        $query = $this->reset()
+            ->select('media.*', 'media_relations.field', 'media_relations.sort_order')
+            ->join('media_relations', 'media_relations.media_id', '=', 'media.media_id')
+            ->where('media_relations.related_type', '=', $relatedType)
+            ->where('media_relations.related_id', '=', $relatedID)
+            ->where('media_relations.field', '=', $field);
+        $this->applyScope($query, $scope);
+
         return array_map(
             static fn(array $row): array => $row,
-            $this->reset()
-                ->select('media.*', 'media_relations.field', 'media_relations.sort_order')
-                ->join('media_relations', 'media_relations.media_id', '=', 'media.media_id')
-                ->where('media_relations.related_type', '=', $relatedType)
-                ->where('media_relations.related_id', '=', $relatedID)
-                ->where('media_relations.field', '=', $field)
-                ->orderBy('media_relations.sort_order', 'ASC')
-                ->get()
+            $query->orderBy('media_relations.sort_order', 'ASC')->get()
         );
     }
 

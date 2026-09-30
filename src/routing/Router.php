@@ -60,7 +60,12 @@ echo "</pre>";*/
       (($res['status'] ?? '') === 'preflight')
   ) {
       CorsHelper::sendHeaders(!empty($res['cors_headers']));
+      http_response_code((int)($res['http_code'] ?? 204));
+      exit;
   }
+      if (array_key_exists('cors_headers', $res)) {
+        CorsHelper::sendHeaders(!empty($res['cors_headers']));
+      }
       if ($res['status']!=='success') {
         $routeParams = $this->processMiddlewareError($res, $routeParams);   
       }
@@ -83,8 +88,11 @@ echo "</pre>";*/
 echo "</pre>";*/
 
     foreach (RouteBuilder::all() as $routeMethod => $routesByUri) {
-      if ($routeMethod !== $method) continue;
+      if ($method === 'OPTIONS') {
+        if ($this->intendedType !== 'api') continue;
+      } elseif ($routeMethod !== $method) continue;
       foreach ($routesByUri as $pattern => $route) {
+        if ($method === 'OPTIONS' && ($route['type'] ?? '') !== 'api') continue;
 
         $regexPattern = preg_replace('#\{[a-zA-Z_]+\}#', '([a-zA-Z0-9_\-]+)', $pattern);
         $regexPattern = '#^' . $regexPattern . '$#';

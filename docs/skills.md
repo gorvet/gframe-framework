@@ -13,7 +13,7 @@ Los skills de `skills/` se versionan junto con el framework y son la fuente ofic
 - `gframe-ui-design-clean`
 - `gframe-framework-maintenance`
 
-El antiguo skill de medios no se incluye todavía porque el módulo continúa en las aplicaciones y aún no forma parte del paquete GFrame.
+El skill `gframe-media-module` acompaña al módulo multimedia extraído y documenta sus contratos, ámbitos y flujos reutilizables.
 
 ## Instalación
 

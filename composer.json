@@ -28,6 +28,8 @@
             "GFrame\\": "src/GFrame/"
         },
         "classmap": [
+            "resources/modules/markdown/src/",
+            "resources/modules/password-utils/src/",
             "src/async/",
             "src/cron/",
             "src/database/",
@@ -46,6 +48,9 @@
             "GFrame\\Tests\\": "tests/"
         }
     },
+    "bin": [
+        "bin/gframe-update"
+    ],
     "scripts": {
         "lint": "@php bin/lint.php",
         "test": "phpunit",

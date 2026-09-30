@@ -182,7 +182,7 @@ class Sitemap {
     // ✅ Blindaje: si la meta no tiene contrato o revienta, se ignora
     try {
       $metaData = require $metaPath;
-    } catch (\Throwable $e) {
+    } catch (\Exception $e) {
       return [];
     }
 

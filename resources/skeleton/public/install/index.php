@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
         }
         unset($_SESSION['gframe_installer_csrf']);
         $installed = true;
-    } catch (Throwable $exception) {
+    } catch (Exception $exception) {
         $error = $exception->getMessage();
     }
 }
@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
                 <div class="section grid">
                     <h2 class="full">Aplicación</h2>
                     <div><label for="app_name">Nombre</label><input id="app_name" name="app_name" required value="<?= $escape($_POST['app_name'] ?? '') ?>"></div>
-                    <div><label for="profile">Tipo de proyecto</label><select id="profile" name="profile"><?php foreach ($profiles as $profile): ?><option value="<?= $escape($profile['slug']) ?>" data-database="<?= $profile['database'] ? '1' : '0' ?>" data-auth="<?= $profile['auth'] ? '1' : '0' ?>" data-tenancy="<?= $profile['tenancy'] ? '1' : '0' ?>"><?= $escape($profile['name']) ?></option><?php endforeach; ?></select></div>
+                    <div><label for="profile">Tipo de proyecto</label><select id="profile" name="profile"><?php foreach ($profiles as $profile): ?><option value="<?= $escape($profile['slug']) ?>" data-database="<?= $profile['database'] ? '1' : '0' ?>" data-auth="<?= $profile['auth'] ? '1' : '0' ?>" data-tenancy="<?= $profile['tenancy'] ? '1' : '0' ?>" data-public="<?= $profile['public'] ? '1' : '0' ?>"><?= $escape($profile['name']) ?></option><?php endforeach; ?></select></div>
                     <div><label for="timezone">Zona horaria</label><input id="timezone" name="timezone" value="America/Havana" required></div>
                 </div>
 
@@ -183,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
                     </div>
                 </div>
 
-                <div class="section grid">
+                <div class="section grid" data-section="publication">
                     <h2 class="full">Publicación y medición</h2>
                     <label class="check"><input type="checkbox" name="seo_enabled" value="1" checked><span>Activar SEO</span></label>
                     <label class="check"><input type="checkbox" name="seo_sitemap" value="1" checked><span>Generar sitemap</span></label>
@@ -208,6 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
         document.querySelector('[data-section="database"]')?.toggleAttribute('hidden', option?.dataset.database !== '1');
         document.querySelector('[data-section="auth"]')?.toggleAttribute('hidden', option?.dataset.auth !== '1');
         document.querySelector('[data-section="tenancy"]')?.toggleAttribute('hidden', option?.dataset.tenancy !== '1');
+        document.querySelector('[data-section="publication"]')?.toggleAttribute('hidden', option?.dataset.public !== '1');
         document.querySelectorAll('[data-module-database="1"] input').forEach(input => {
             input.disabled = option?.dataset.database !== '1';
             if (input.disabled) input.checked = false;

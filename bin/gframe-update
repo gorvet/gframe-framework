@@ -1,0 +1,71 @@
+#!/usr/bin/env php
+<?php
+
+use GFrame\Foundation\Bootstrap;
+use GFrame\Install\ProjectUpdateService;
+
+$autoloadCandidates = [
+    dirname(__DIR__) . DIRECTORY_SEPARATOR . 'packages' . DIRECTORY_SEPARATOR . 'autoload.php',
+    dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'autoload.php',
+];
+foreach ($autoloadCandidates as $autoload) {
+    if (is_file($autoload)) {
+        require_once $autoload;
+        break;
+    }
+}
+if (!class_exists(ProjectUpdateService::class)) {
+    fwrite(STDERR, "No se pudo cargar GFrame.\n");
+    exit(1);
+}
+
+$options = ['project' => getcwd(), 'modules' => [], 'preserve-custom' => false, 'dry-run' => false, 'no-database' => false];
+foreach (array_slice($argv, 1) as $argument) {
+    if ($argument === '--preserve-custom') $options['preserve-custom'] = true;
+    elseif ($argument === '--force') $options['preserve-custom'] = false;
+    elseif ($argument === '--dry-run') $options['dry-run'] = true;
+    elseif ($argument === '--no-database') $options['no-database'] = true;
+    elseif (str_starts_with($argument, '--project=')) $options['project'] = substr($argument, 10);
+    elseif (str_starts_with($argument, '--modules=')) $options['modules'] = array_values(array_filter(array_map('trim', explode(',', substr($argument, 10)))));
+    elseif ($argument === '--help' || $argument === '-h') {
+        echo "Uso: gframe-update [--project=ruta] [--modules=a,b] [--dry-run] [--preserve-custom] [--no-database]\n";
+        exit(0);
+    }
+}
+
+try {
+    $projectRoot = realpath((string)$options['project']) ?: (string)$options['project'];
+    $pdo = null;
+    $driver = '';
+    if (!$options['no-database']) {
+        Bootstrap::boot($projectRoot);
+        $connection = DatabaseManager::connection();
+        if (!$connection instanceof PDO) throw new RuntimeException((string)($connection['message'] ?? 'No se pudo conectar con la base de datos.'));
+        $pdo = $connection;
+        $driver = DatabaseManager::driver();
+    }
+    $result = ProjectUpdateService::frameworkDefault()->update(
+        $projectRoot,
+        $options['modules'],
+        $pdo,
+        $driver,
+        $options['preserve-custom'],
+        $options['dry-run']
+    );
+    echo ($options['dry-run'] ? 'Vista previa completada.' : 'Proyecto actualizado.') . PHP_EOL;
+    echo 'Módulos: ' . implode(', ', $result['modules']) . PHP_EOL;
+    echo 'Nuevos: ' . count($result['added']) . ' | Actualizados: ' . count($result['updated']) . ' | Sin cambios: ' . count($result['unchanged']) . PHP_EOL;
+    echo ($options['dry-run'] ? 'Migraciones pendientes: ' : 'Migraciones ejecutadas: ') . (int)$result['migrations']['count'] . PHP_EOL;
+    echo 'Plantillas: ' . (int)$result['permissions']['roles'] . ' roles nuevos | ' . (int)$result['permissions']['granted'] . ' concedidos | ' . (int)$result['permissions']['revoked'] . ' retirados' . PHP_EOL;
+    if ($result['overwritten_custom'] !== []) {
+        echo 'Archivos administrados personalizados reemplazados: ' . count($result['overwritten_custom']) . PHP_EOL;
+    }
+    if ($result['conflicts'] !== []) {
+        echo 'Personalizados conservados: ' . count($result['conflicts']) . PHP_EOL;
+        foreach ($result['conflicts'] as $file) echo '  - ' . $file . PHP_EOL;
+    }
+    exit(0);
+} catch (Exception $exception) {
+    fwrite(STDERR, 'Actualización cancelada: ' . $exception->getMessage() . PHP_EOL);
+    exit(1);
+}

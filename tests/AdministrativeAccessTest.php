@@ -2,8 +2,6 @@
 
 namespace GFrame\Tests;
 
-require_once dirname(__DIR__) . '/src/utils/PermissionHelper.php';
-
 use GFrame\Auth\RolePermissionService;
 use GFrame\Tests\Support\InMemoryRoleModel;
 use PHPUnit\Framework\TestCase;

@@ -222,8 +222,6 @@ class MediaProcessor {
         if ($mimeOk && $ext === 'json') $mime = 'application/json';
         if ($mimeOk && $ext === 'csv')  $mime = 'text/csv';
         if ($mimeOk && $ext === 'txt')  $mime = 'text/plain';
-      } elseif ($kind === 'audios' || $kind === 'videos') {
-        $mimeOk = true;
       }
     }
 

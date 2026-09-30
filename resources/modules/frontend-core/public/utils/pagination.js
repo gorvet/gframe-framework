@@ -126,7 +126,7 @@ function creaPaginacion(total_pages, page) {
 
 window.fetchDataForPage = window.fetchDataForPage || null;
 
-$(document).on('click', '.linkeable', function(event) {
+$(document).on('click', '#all_items_pagination .linkeable', function(event) {
   event.preventDefault();
   var numPage = $(this).text();
   if (!isNaN(numPage) && typeof window.fetchDataForPage === 'function') {
@@ -134,7 +134,7 @@ $(document).on('click', '.linkeable', function(event) {
   }
 });
 
-$(document).on('click', '.next', function(event) {
+$(document).on('click', '#all_items_pagination .next', function(event) {
   event.preventDefault();
   var numPage = parseInt($('#all_items_pagination li.active span.page-link').text(), 10);
   numPage = numPage + 1;
@@ -143,7 +143,7 @@ $(document).on('click', '.next', function(event) {
   }
 });
 
-$(document).on('click', '.prev', function(event) {
+$(document).on('click', '#all_items_pagination .prev', function(event) {
   event.preventDefault();
   var numPage = parseInt($('#all_items_pagination li.active span.page-link').text(), 10);
   numPage = numPage - 1;

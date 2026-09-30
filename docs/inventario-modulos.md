@@ -4,6 +4,7 @@
 
 - **Arranque y configuración**: carga por Composer, `.env`, configuración del proyecto y compatibilidad temporal con constantes históricas.
 - **Enrutamiento**: rutas web, AJAX, API, webhook, sistema y SSE mediante `Router` y `RouteBuilder`.
+- **Acceso API entrante**: Bearer por ruta, CORS, múltiples consumidores y proveedor reemplazable para credenciales por cliente o tenant.
 - **Middleware**: autenticación, invitados, roles, permisos y ejecución global o por tenant.
 - **MVC y renderizado**: controladores, modelos ORM, vistas, plantillas, metadatos por grupo y por vista.
 - **Base de datos**: ORM, conexiones MySQL y SQLite, dialectos, transacciones y paginación.
@@ -13,7 +14,7 @@
 - **Errores**: respuestas web y de API, plantillas personalizables y detalle condicionado por debug.
 - **SEO**: metadatos, JSON-LD, sitemap, robots.txt y llms.txt con activadores independientes.
 - **Metricool**: carga opcional desde el footer, desactivada automáticamente durante debug.
-- **Correo**: PHPMailer y tema reutilizable para mensajes.
+- **Correo**: servicio único sobre PHPMailer, SMTP desde `.env`, plantillas y tema reutilizable.
 - **Cliente HTTP**: peticiones seguras con TLS, cabeceras, JSON y contratos de respuesta estables.
 - **Procesos asíncronos**: ejecución en segundo plano mediante `Async`.
 - **Cron**: registro y ejecución de tareas programadas.
@@ -21,6 +22,8 @@
 - **Cifrado**: utilidades de cifrado propias del framework.
 - **Instalación**: perfiles, esquemas, configuración, módulos, primer superadministrador y bloqueo posterior.
 - **Esqueleto de aplicación**: portada pública inicial, estructura MVC y asistente visual.
+- **Footer**: plantillas independientes y opcionales para contenido, copyright y créditos, personalizables por grupo y vista.
+- **Panel administrativo**: plantilla compartida, navbar, sidebar, tema y persistencia para perfiles con administración.
 
 ## Base visual predeterminada
 
@@ -32,17 +35,23 @@ Se instala automáticamente en todos los proyectos:
 - `gframe-icons`;
 - `alerts`: `alertToast`, `swalAlert` y estados de carga;
 - `frontend-core`: formularios, errores, paginación, tablas, Markdown y utilidades comunes.
+- `error-pages`: plantilla y vistas web para errores 403, 404, 500 y 503.
 
 ## Módulos funcionales opcionales
 
+- `auth-ui`: acceso, registro, verificación, recuperación, restablecimiento y cierre de sesión.
+- `self-account`: pantalla Mi cuenta, cambio de contraseña y desactivación de la cuenta propia.
 - `media-library`: archivos globales, por tenant o por usuario y relaciones con contenidos.
-- `notifications`: cola persistente, procesamiento por lotes y transporte de correo.
-- `user-admin`: administración de usuarios reservada al superadministrador.
-- `wordpress-headless`: contenido y taxonomías de WordPress mediante BridgeFrame.
+- `notifications`: inbox por usuario y tenant con transportes extensibles.
+- `notifications-email`: adaptador que conecta notificaciones, colas y campañas con el soporte Mail del núcleo.
+- `notification-campaigns`: envíos masivos inmediatos o programados sobre la cola y los transportes registrados.
+- `user-admin`: listado, búsqueda, filtros, activación, desactivación y asignación de roles mediante permisos; el superadministrador conserva acceso total.
+- `wordpress-headless`: contenido y taxonomías de WordPress mediante BridgeFrame, con estilos de bloques integrados.
 - `rich-text-editor`: componente reutilizable sobre TinyMCE con limpieza de contenido pegado desde Word.
-- `heartbeat-client`: cliente web para los canales heartbeat.
+- `heartbeat-client`: cliente web, controlador y ruta de sistema para los canales heartbeat.
+- `cron-runner`: persistencia y ejecución CLI de tareas programadas.
 - `gfselect`: selector enriquecido propio.
-- `password-utils`: indicador y utilidades de contraseñas.
+- `password-utils`: política PHP de aceptación, generador seguro e indicador visual de contraseñas.
 
 ## Componentes visuales opcionales
 
@@ -59,6 +68,5 @@ Se instala automáticamente en todos los proyectos:
 - `swiper` 11.2.10: deslizadores táctiles.
 - `tinymce` 8.6.0: motor externo del editor enriquecido.
 - `venobox` 2.0.4: cajas de luz.
-- `wordpress-styles`: estilos para contenido procedente de WordPress.
 
-Owl Carousel y Swiper son alternativas independientes. TinyMCE se instala automáticamente cuando se selecciona `rich-text-editor`. `wordpress-styles` se instala con `wordpress-headless`.
+Owl Carousel y Swiper son alternativas independientes. TinyMCE se instala automáticamente cuando se selecciona `rich-text-editor`. Los estilos para contenido WordPress forman parte de `wordpress-headless`.

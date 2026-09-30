@@ -2,7 +2,10 @@
 
 use RouteBuilder as Route;
 
-Route::get('', 'home/HomeController@index')
+$home = Route::get('', 'home/HomeController@index')
     ->template('home')
-    ->view('homeIndex')
-    ->registerFinal();
+    ->view('homeIndex');
+if (!(bool)config('app.public', true)) {
+    $home->middleware(['auth']);
+}
+$home->registerFinal();

@@ -1,0 +1,39 @@
+/* Adaptación visual del contenido WordPress a las variables del proyecto. */
+.gf-wordpress-content {
+  --gf-wp-primary: var(--bs-primary, #0d6efd);
+  --gf-wp-text: var(--bs-body-color, #212529);
+  --gf-wp-background: var(--bs-body-bg, #fff);
+  --gf-wp-border: var(--bs-border-color, #dee2e6);
+  --gf-wp-link: var(--bs-link-color, var(--gf-wp-primary));
+  --gf-wp-on-primary: var(--bs-white, #fff);
+  --wp--preset--color--primary: var(--gf-wp-primary);
+  --wp--preset--color--foreground: var(--gf-wp-text);
+  --wp--preset--color--background: var(--gf-wp-background);
+  color: var(--gf-wp-text);
+  font-family: var(--bs-body-font-family, inherit);
+}
+
+.gf-wordpress-content :where(a:not(.has-text-color):not(.wp-block-button__link)) {
+  color: var(--gf-wp-link);
+}
+
+.gf-wordpress-content :where(.wp-block-button__link:not(.has-background):not(.is-style-outline)) {
+  background-color: var(--gf-wp-primary);
+  color: var(--gf-wp-on-primary);
+}
+
+.gf-wordpress-content :where(.wp-block-button.is-style-outline .wp-block-button__link:not(.has-text-color)) {
+  color: var(--gf-wp-primary);
+}
+
+.gf-wordpress-content :where(.wp-block-quote, .wp-block-pullquote) {
+  border-color: var(--gf-wp-border);
+}
+
+.gf-wordpress-content :where(.wp-block-table td, .wp-block-table th) {
+  border-color: var(--gf-wp-border);
+}
+
+.gf-wordpress-content :where(img, video, iframe) {
+  max-width: 100%;
+}

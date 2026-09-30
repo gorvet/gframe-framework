@@ -3,7 +3,7 @@
 namespace GFrame\Auth;
 
 use GFrame\Config\ConfigRepository;
-use Throwable;
+use Exception;
 
 final class AuthService
 {
@@ -54,7 +54,7 @@ final class AuthService
             }
 
             return ['status' => 'success', 'code' => 'account_registered', 'user_id' => $userID, 'token' => $token];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'register_failed');
         }
     }
@@ -66,7 +66,7 @@ final class AuthService
             if ($user === null) {
                 return $this->error('invalid_token');
             }
-            if ((string)($user['status'] ?? '') === $this->suspendedStatus) {
+            if (in_array((string)($user['status'] ?? ''), [$this->suspendedStatus, 'disabled'], true)) {
                 return $this->error('suspended_account');
             }
 
@@ -77,7 +77,7 @@ final class AuthService
             ]);
 
             return ['status' => 'success', 'code' => 'account_verified'];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'verification_failed');
         }
     }
@@ -86,7 +86,7 @@ final class AuthService
     {
         try {
             $user = $this->users->findByEmail($this->normalizeEmail($email));
-            if ($user === null || (string)($user['status'] ?? '') === $this->suspendedStatus) {
+            if ($user === null || in_array((string)($user['status'] ?? ''), [$this->suspendedStatus, 'disabled'], true)) {
                 return ['status' => 'success', 'code' => 'recovery_requested'];
             }
 
@@ -97,7 +97,7 @@ final class AuthService
             ]);
 
             return ['status' => 'success', 'code' => 'recovery_requested', 'token' => $token];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'recovery_failed');
         }
     }
@@ -113,6 +113,9 @@ final class AuthService
             if ($user === null || !$this->tokens->isValidTimestamp((string)($user['token_updated_at'] ?? ''))) {
                 return $this->error('invalid_token');
             }
+            if (in_array((string)($user['status'] ?? ''), [$this->suspendedStatus, 'disabled'], true)) {
+                return $this->error('suspended_account');
+            }
 
             $this->users->updateAuthUser((int)$user['user_id'], [
                 'password' => $this->passwords->hash($password),
@@ -123,7 +126,7 @@ final class AuthService
             ]);
 
             return ['status' => 'success', 'code' => 'password_reset'];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'password_reset_failed');
         }
     }
@@ -164,7 +167,7 @@ final class AuthService
                 'first_login' => $firstLogin,
                 'must_change_password' => $mustChangePassword,
             ];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'authentication_failed');
         }
     }
@@ -192,7 +195,7 @@ final class AuthService
             ]);
 
             return ['status' => 'success', 'code' => 'verification_requested', 'token' => $token];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return $this->exception($exception, 'verification_request_failed');
         }
     }
@@ -208,7 +211,7 @@ final class AuthService
         return ['status' => 'error', 'code' => $code];
     }
 
-    private function exception(Throwable $exception, string $code): array
+    private function exception(Exception $exception, string $code): array
     {
         error_log('[GFrame Auth] ' . $exception->getMessage());
         return ['status' => 'error', 'code' => $code];

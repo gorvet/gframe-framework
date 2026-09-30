@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS `notification_campaigns` (
+  `campaign_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, `tenant_id` BIGINT UNSIGNED NULL,
+  `name` VARCHAR(160) NOT NULL, `title` VARCHAR(190) NOT NULL, `message` MEDIUMTEXT NOT NULL,
+  `template_id` VARCHAR(120) NOT NULL DEFAULT 'notification', `channels_json` JSON NOT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'draft', `scheduled_at` DATETIME NULL,
+  `started_at` DATETIME NULL, `completed_at` DATETIME NULL, `created_by` BIGINT UNSIGNED NULL,
+  `created_at` DATETIME NOT NULL, `updated_at` DATETIME NOT NULL,
+  PRIMARY KEY (`campaign_id`), KEY `idx_campaign_status` (`tenant_id`, `status`, `scheduled_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS `notification_campaign_recipients` (
+  `recipient_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, `campaign_id` BIGINT UNSIGNED NOT NULL, `channel` VARCHAR(80) NOT NULL,
+  `recipient` VARCHAR(255) NOT NULL, `variables_json` JSON NULL, `status` VARCHAR(20) NOT NULL DEFAULT 'pending',
+  `queued_jobs` INT UNSIGNED NOT NULL DEFAULT 0, `last_error` VARCHAR(1000) NULL,
+  `processing_at` DATETIME NULL, `queued_at` DATETIME NULL, `created_at` DATETIME NOT NULL,
+  PRIMARY KEY (`recipient_id`), UNIQUE KEY `uq_campaign_recipient` (`campaign_id`, `channel`, `recipient`),
+  KEY `idx_campaign_recipient_status` (`campaign_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

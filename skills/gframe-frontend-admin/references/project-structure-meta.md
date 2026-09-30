@@ -10,6 +10,8 @@
 
 ## CSS Layers
 
+The admin panel uses Bootstrap's `data-bs-theme` as the sole theme selector. Personalization belongs in `public/css/variables.css`, loaded after Bootstrap, and existing button/component customization files. Do not introduce a separate theme.css layer. Preserve `GFTheme` and `gf-theme` persistence. Keep color and `-rgb` variables aligned; brand variables alone do not recolor compiled buttons. Do not add a second theme controller or `data-gf-theme` selectors.
+
 - framework-published optional components under `public/vendors/internal/` and external libraries under `public/vendors/external/`
 - `public/css/variables.css` and `public/css/common.css` while the legacy asset bridge remains active
 - `public/css/app/common.css` for patterns shared by several application views
@@ -29,6 +31,8 @@ Keep one-screen styling in its module. Promote a rule to application shared CSS 
 
 Use meta files to load assets.
 
+The admin template's shared assets live in `app/views/templates/admin.meta.php`. Modules may add template-level assets through `app/views/templates/meta/admin/*.meta.php`; these are loaded before group and view meta.
+
 Group meta:
 
 - `app/views/admin/<module>/<module>.group.meta.php`
@@ -47,13 +51,14 @@ Use view meta for screen-specific CSS, JS, title, schema, or extra dependencies.
 - dynamic CSS and JS from Meta
 - global token form `#tokens`
 - CSRF values used by AJAX flows
+- `site_url` and `is_protected` globals
 
 `app/views/templates/footer.php` already provides:
 
-- `site_url`
 - footer JS injections
-- `#toastBox`
-- protected-page globals such as `is_protected`
+- the optional footer areas
+
+The admin template provides `#toastBox`.
 
 The `alerts` module also publishes its toast styles. Load both the module CSS and JS through meta files.
 

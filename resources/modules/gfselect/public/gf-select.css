@@ -1,6 +1,18 @@
 .gf-select-wrapper{
     position: relative;
 }
+
+.gf-select-wrapper > .gf-select-native {
+  position: absolute !important;
+  bottom: 0;
+  left: .75rem;
+  width: 1px !important;
+  min-height: 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
 .gf-select-wrapper *{
     position: relative;
     box-sizing: border-box;
@@ -26,7 +38,7 @@
 }
 
 .gf-select-toggle.active{
-    border: 1px solid #5333ff;
+    border: 1px solid var(--bs-primary, #5333ff);
 }
 
  
@@ -67,7 +79,7 @@
 }
 
 .gf-select-search-wrapper .gf-select-search-input:focus,.gf-select-search-wrapper .gf-select-search-input:focus-visible  {
-    border: 1px solid #5333ff;
+    border: 1px solid var(--bs-primary, #5333ff);
     outline: 0;
 }
 
@@ -88,7 +100,7 @@
 
 .gf-select-list .gf-select-list-item:hover,.gf-select-list .gf-select-list-item.selected{
   background-color: rgba(0, 0, 0, 0.05);
-  color: #5333ff;
+  color: var(--bs-primary, #5333ff);
 }
 
  .gf-select-list .gf-select-list-item.selected {
@@ -97,4 +109,83 @@
   background-position: right .75rem center;
   padding-right: 2rem; 
   background-size:  calc(.75em + .375rem) calc(.75em + .375rem);
+}
+
+button.gf-select-toggle,
+button.gf-select-list-item {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+}
+
+button.gf-select-toggle:disabled,
+button.gf-select-list-item:disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+
+.gf-select-selection {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: .35rem;
+  overflow: hidden;
+}
+
+.gf-select-value,
+.gf-select-placeholder,
+.gf-select-option-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gf-select-placeholder {
+  opacity: .65;
+}
+
+.gf-select-list li {
+  margin: 0;
+}
+
+button.gf-select-list-item {
+  border: 0;
+  background-color: transparent;
+}
+
+.gf-select-group,
+.gf-select-empty,
+.gf-select-limit {
+  display: block;
+  padding: 8px 16px;
+}
+
+.gf-select-group,
+.gf-select-limit {
+  font-size: .8rem;
+  font-weight: 600;
+  opacity: .7;
+}
+
+.gf-select-empty {
+  text-align: center;
+  opacity: .7;
+}
+
+.gf-select-chip,
+.gf-select-count {
+  min-width: 0;
+  padding: .15rem .45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bs-primary-bg-subtle, rgba(83, 51, 255, .1));
+  color: var(--bs-primary, #5333ff);
+  font-size: .8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gf-select-count {
+  flex: 0 0 auto;
 }

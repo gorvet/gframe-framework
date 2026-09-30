@@ -253,7 +253,7 @@ class Llms
             ];
             $data = [];
             $metaData = require $metaPath;
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return [];
         }
 
@@ -290,7 +290,7 @@ class Llms
             ];
             $data = [];
             $metaData = require $metaPath;
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return [];
         }
 
@@ -328,7 +328,7 @@ class Llms
 
         try {
             $metaData = require $metaPath;
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return [];
         }
 

@@ -4,6 +4,7 @@ namespace GFrame\Install;
 
 use GFrame\Modules\ModuleAssetPublisher;
 use GFrame\Modules\ModuleCatalog;
+use Composer\InstalledVersions;
 use PDO;
 use RuntimeException;
 
@@ -16,7 +17,9 @@ final class ProjectInstaller
         private readonly ModuleAssetPublisher $publisher,
         private readonly ProjectConfigWriter $configuration = new ProjectConfigWriter(),
         private readonly SuperadministratorInstaller $superadministrator = new SuperadministratorInstaller(),
-        private readonly ?ProjectScaffolder $scaffolder = null
+        private readonly ?ProjectScaffolder $scaffolder = null,
+        private readonly ?MigrationRunner $migrations = null,
+        private readonly PermissionTemplateSynchronizer $permissions = new PermissionTemplateSynchronizer()
     ) {
     }
 
@@ -30,7 +33,8 @@ final class ProjectInstaller
             new ModuleAssetPublisher($modules),
             new ProjectConfigWriter(),
             new SuperadministratorInstaller(),
-            ProjectScaffolder::frameworkDefault()
+            ProjectScaffolder::frameworkDefault(),
+            new MigrationRunner($modules)
         );
     }
 
@@ -59,11 +63,25 @@ final class ProjectInstaller
             return ['status' => 'error', 'code' => 'modules_require_database'];
         }
 
+        if (!empty($profile['auth'])) {
+            $admin = (array)($input['superadministrator'] ?? []);
+            $validation = $this->superadministrator->validate(
+                (string)($admin['email'] ?? ''),
+                (string)($admin['password'] ?? '')
+            );
+            if ($validation['status'] !== 'success') {
+                return $validation;
+            }
+        }
+
+        $this->configuration->assertAvailable($projectRoot);
+
         $scaffolded = ($this->scaffolder ?? ProjectScaffolder::frameworkDefault())->publish($projectRoot);
 
         $database = null;
         $schemaResult = ['scripts' => [], 'statements' => 0];
         $adminResult = null;
+        $permissionResult = ['roles' => 0, 'granted' => 0, 'revoked' => 0];
         $databaseSettings = (array)($input['database'] ?? []);
         if (!empty($profile['database'])) {
             $database = $this->connect($projectRoot, $databaseSettings);
@@ -74,33 +92,67 @@ final class ProjectInstaller
                 $moduleNames,
                 (bool)$profile['tenancy']
             );
-        }
-
-        if (!empty($profile['auth'])) {
-            if (!$database instanceof PDO) {
-                throw new RuntimeException('La autenticación requiere una conexión de base de datos.');
-            }
-            $admin = (array)($input['superadministrator'] ?? []);
-            $adminResult = $this->superadministrator->install(
-                $database,
-                (string)($admin['email'] ?? ''),
-                (string)($admin['password'] ?? '')
-            );
-            if (($adminResult['status'] ?? '') !== 'success') {
-                return $adminResult;
-            }
+            if (!empty($profile['auth'])) $permissionResult = $this->permissions->sync($database, $projectRoot);
         }
 
         $settings = $input;
         $settings['database'] = !empty($profile['database']) ? $databaseSettings : [];
         $settings['tenancy'] = (bool)$profile['tenancy'];
-        $files = $this->configuration->write($projectRoot, $settings, $moduleNames);
-        $published = $this->publisher->publishProject($moduleNames, $projectRoot);
-        $this->writeLock($lock, [
+        $settings['public'] = (bool)$profile['public'];
+        if (!$settings['public']) {
+            $settings['seo_enabled'] = false;
+            $settings['seo_allow_indexing'] = false;
+            $settings['seo_sitemap'] = false;
+            $settings['seo_robots'] = true;
+            $settings['seo_llms'] = false;
+            $settings['metricool_enabled'] = false;
+            $settings['metricool_hash'] = '';
+        }
+        $moduleEnvironment = [];
+        foreach ($resolved as $module) {
+            $moduleEnvironment = array_merge($moduleEnvironment, (array)($module['environment'] ?? []));
+        }
+        $files = $this->configuration->write($projectRoot, $settings, $moduleNames, false, array_values(array_unique($moduleEnvironment)));
+        try {
+            $published = $this->publisher->publishProject($moduleNames, $projectRoot);
+            if ($database instanceof PDO) {
+                ($this->migrations ?? new MigrationRunner($this->modules))->baseline(
+                    $database,
+                    strtolower((string)($databaseSettings['driver'] ?? 'mysql')),
+                    $moduleNames
+                );
+            }
+            if (!empty($profile['auth'])) {
+                if (!$database instanceof PDO) {
+                    throw new RuntimeException('La autenticación requiere una conexión de base de datos.');
+                }
+                $admin = (array)($input['superadministrator'] ?? []);
+                $adminResult = $this->superadministrator->install(
+                    $database,
+                    (string)($admin['email'] ?? ''),
+                    (string)($admin['password'] ?? '')
+                );
+                if (($adminResult['status'] ?? '') !== 'success') {
+                    $this->removeConfiguration($files);
+                    return $adminResult;
+                }
+            }
+            $this->writeLock($lock, [
             'installed_at' => date(DATE_ATOM),
             'profile' => $profile['slug'],
             'modules' => $moduleNames,
-        ]);
+            'framework_version' => class_exists(InstalledVersions::class) && InstalledVersions::isInstalled('gframe/framework')
+                ? (string)(InstalledVersions::getPrettyVersion('gframe/framework') ?? 'unknown')
+                : 'development',
+            'managed_files' => $this->managedHashes($projectRoot, $published),
+            ]);
+        } catch (\Exception $exception) {
+            if ($database instanceof PDO && ($adminResult['status'] ?? '') === 'success') {
+                $this->superadministrator->removeCreated($database, (int)$adminResult['user_id']);
+            }
+            $this->removeConfiguration($files);
+            throw $exception;
+        }
 
         return [
             'status' => 'success',
@@ -109,11 +161,37 @@ final class ProjectInstaller
             'modules' => $moduleNames,
             'schemas' => $schemaResult,
             'superadministrator' => $adminResult,
+            'permissions' => $permissionResult,
             'files' => $files,
             'published' => $published,
             'scaffolded' => $scaffolded,
             'lock' => $lock,
         ];
+    }
+
+    private function removeConfiguration(array $files): void
+    {
+        foreach ($files as $path) {
+            if (is_string($path) && is_file($path)) {
+                unlink($path);
+            }
+        }
+    }
+
+    private function managedHashes(string $projectRoot, array $published): array
+    {
+        $paths = array_merge(
+            array_map(static fn(string $path): string => 'public/' . ltrim($path, '/'), (array)($published['public_files'] ?? [])),
+            (array)($published['application_files'] ?? [])
+        );
+        $hashes = [];
+        foreach ($paths as $path) {
+            $normalized = str_replace('\\', '/', (string)$path);
+            $absolute = $projectRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $normalized);
+            if (is_file($absolute)) $hashes[$normalized] = hash_file('sha256', $absolute);
+        }
+        ksort($hashes, SORT_NATURAL | SORT_FLAG_CASE);
+        return $hashes;
     }
 
     private function connect(string $projectRoot, array &$settings): PDO

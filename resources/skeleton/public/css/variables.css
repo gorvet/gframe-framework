@@ -1,0 +1,12 @@
+/* Personalización de las variables de Bootstrap. Cargar después de Bootstrap. */
+:root[data-bs-theme="dark"] {
+    --bs-body-bg: #051321;
+    --bs-body-bg-rgb: 5, 19, 33;
+    --bs-body-color: #e7e9ee;
+    --bs-body-color-rgb: 231, 233, 238;
+    --bs-secondary-bg: #212734;
+    --bs-secondary-bg-rgb: 33, 39, 52;
+    --bs-tertiary-bg: #1a1f27;
+    --bs-tertiary-bg-rgb: 26, 31, 39;
+    --bs-border-color: #4b566c;
+}

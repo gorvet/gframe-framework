@@ -2,8 +2,19 @@
 
 namespace GFrame\Auth;
 
+use Exception;
+use GFrame\Session\ActiveSessionRegistry;
+use GFrame\Session\SessionRuntime;
+
 final class SessionManager
 {
+    private ?ActiveSessionRegistry $sessions;
+
+    public function __construct(?ActiveSessionRegistry $sessions = null)
+    {
+        $this->sessions = $sessions ?? SessionRuntime::registry();
+    }
+
     public function login(array $identity, array $projectSession = []): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -17,6 +28,10 @@ final class SessionManager
             'name' => (string)($identity['name'] ?? ''),
             'role_id' => (int)($identity['role_id'] ?? 0),
             'role' => (string)($identity['role'] ?? ''),
+            'permissions' => (array)($identity['permissions'] ?? []),
+            'role_version' => (int)($identity['role_version'] ?? 1),
+            'authorization_version' => (int)($identity['authorization_version'] ?? 1),
+            'bypass' => !empty($identity['bypass']),
         ]);
 
         foreach ($projectSession as $key => $value) {
@@ -28,12 +43,35 @@ final class SessionManager
         $_SESSION['csrfToken'] = bin2hex(random_bytes(32));
         $_SESSION['lastActivity'] = time();
         $_SESSION['csrfTimestamp'] = time();
+
+        $userID = (int)($_SESSION['auth']['id'] ?? 0);
+        if ($this->sessions !== null && $userID > 0) {
+            try {
+                $this->sessions->register($userID, session_id(), [
+                    'role_id' => (int)($_SESSION['auth']['role_id'] ?? 0),
+                    'role_version' => (int)($_SESSION['auth']['role_version'] ?? 1),
+                    'authorization_version' => (int)($_SESSION['auth']['authorization_version'] ?? 1),
+                ]);
+            } catch (Exception $exception) {
+                $_SESSION = [];
+                if (session_status() === PHP_SESSION_ACTIVE) {
+                    session_destroy();
+                }
+                throw $exception;
+            }
+        }
     }
 
     public function logout(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+
+        $userID = (int)($_SESSION['auth']['id'] ?? 0);
+        $sessionID = session_id();
+        if ($this->sessions !== null && $userID > 0 && $sessionID !== '') {
+            $this->sessions->unregister($userID, $sessionID);
         }
 
         $_SESSION = [];
@@ -71,6 +109,10 @@ final class SessionManager
             'name' => trim((string)($identity['name'] ?? '')),
             'role_id' => $roleID,
             'role' => $role,
+            'permissions' => array_values(array_unique(array_filter(array_map('strval', (array)($identity['permissions'] ?? []))))),
+            'role_version' => max(1, (int)($identity['role_version'] ?? 1)),
+            'authorization_version' => max(1, (int)($identity['authorization_version'] ?? 1)),
+            'bypass' => !empty($identity['bypass']),
         ];
     }
 }

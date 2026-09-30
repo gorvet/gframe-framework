@@ -3,11 +3,22 @@
 namespace GFrame\Tests;
 
 use GFrame\Auth\AuthService;
+use GFrame\Auth\PasswordPolicy;
 use GFrame\Auth\UserModel;
 use PHPUnit\Framework\TestCase;
 
 final class AuthServiceTest extends TestCase
 {
+    public function testPasswordPolicyUsesUtf8ByteLength(): void
+    {
+        $policy = new PasswordPolicy();
+
+        self::assertFalse($policy->accepts('1234567'));
+        self::assertTrue($policy->accepts('12345678'));
+        self::assertTrue($policy->accepts(str_repeat('á', 36)));
+        self::assertFalse($policy->accepts(str_repeat('á', 37)));
+    }
+
     public function testRegistrationVerificationAndAuthentication(): void
     {
         $model = new InMemoryUserModel();
@@ -55,6 +66,40 @@ final class AuthServiceTest extends TestCase
         self::assertSame('invalid_email', $auth->register('invalid-email', 'Password-123')['code']);
     }
 
+    public function testSuspensionAfterRecoveryBlocksPasswordReset(): void
+    {
+        foreach (['suspended', 'disabled'] as $status) {
+            $users = new InMemoryUserModel();
+            $auth = new AuthService($users);
+            $registered = $auth->register('user@example.test', 'Password-123');
+            $auth->verify($registered['token']);
+            $recovery = $auth->requestRecovery('user@example.test');
+            $hash = $users->users[1]['password'];
+            $users->users[1]['status'] = $status;
+            self::assertSame('suspended_account', $auth->resetPassword($recovery['token'], 'New-password-123')['code']);
+            self::assertSame('suspended_account', $auth->verify($recovery['token'])['code']);
+            self::assertArrayNotHasKey('token', $auth->requestRecovery('user@example.test'));
+            self::assertSame($hash, $users->users[1]['password']);
+        }
+    }
+
+    public function testFailedWritesDoNotReportSuccess(): void
+    {
+        $users = new class extends UserModel {
+            public function findByToken(string $token): ?array {
+                return ['user_id' => 1, 'status' => 'verify', 'token_updated_at' => date('Y-m-d H:i:s')];
+            }
+            public function findByEmail(string $email): ?array { return $this->findByToken(''); }
+            public function updateAuthUser(int $userID, array $attributes): void {
+                throw new \RuntimeException('Usuario eliminado durante la operación');
+            }
+        };
+        $auth = new AuthService($users);
+        self::assertSame('verification_failed', $auth->verify('token')['code']);
+        self::assertSame('password_reset_failed', $auth->resetPassword('token', 'New-password-123')['code']);
+        self::assertSame('recovery_failed', $auth->requestRecovery('user@example.test')['code']);
+    }
+
     public function testAuthenticationRequiresTheConfiguredActiveStatus(): void
     {
         $model = new InMemoryUserModel();
@@ -83,6 +128,37 @@ final class AuthServiceTest extends TestCase
 
         self::assertSame('password_change_required', $login['code']);
         self::assertTrue($login['must_change_password']);
+    }
+
+    public function testRepositoryExceptionsBecomeStableErrorContracts(): void
+    {
+        $auth = new AuthService(new FailingAuthUserModel());
+
+        self::assertSame(
+            ['status' => 'error', 'code' => 'authentication_failed'],
+            $auth->authenticate('persona@example.com', 'Password-123')
+        );
+        self::assertSame(
+            ['status' => 'error', 'code' => 'register_failed'],
+            $auth->register('persona@example.com', 'Password-123')
+        );
+        self::assertSame(
+            ['status' => 'error', 'code' => 'recovery_failed'],
+            $auth->requestRecovery('persona@example.com')
+        );
+    }
+}
+
+final class FailingAuthUserModel extends UserModel
+{
+    public function findByEmail(string $email): ?array
+    {
+        throw new \RuntimeException('Fallo de prueba');
+    }
+
+    public function emailExists(string $email): bool
+    {
+        throw new \RuntimeException('Fallo de prueba');
     }
 }
 

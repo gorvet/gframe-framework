@@ -16,7 +16,7 @@ Use this for registration, login, verification, recovery, session identity, My A
 
 - Keep the standard MVC flow: controller, authentication service, `UserModel` or `RoleModel`, ORM, database.
 - Do not introduce repository layers around the standard GFrame models.
-- Keep views, email copy, redirects, additional application roles, profiles, areas, and domain policies in the application.
+- Use `auth-ui`, `self-account` and `user-admin` as the reusable base MVC modules. Keep brand-specific view overrides, email copy, redirects, additional roles, profiles, areas and domain policies in the application.
 - Use `AuthService` for registration, verification, recovery, reset, and credential authentication.
 - Use `SessionManager` to regenerate, normalize, update, and destroy sessions.
 - Use `SelfAccountService` for the current user's base account, password change, and account deactivation.

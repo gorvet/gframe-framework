@@ -28,6 +28,8 @@ GFrame debe funcionar como un framework instalable y versionado. El núcleo no p
 
 Los módulos reutilizables que no sean necesarios en todas las aplicaciones se seleccionan desde el catálogo durante la instalación. Entre ellos están la biblioteca multimedia, el editor enriquecido, las notificaciones y WordPress headless. Los algoritmos propios de un dominio, como `TextClassifier` en Bebots, permanecen en su aplicación.
 
+El núcleo y los archivos publicados por esos módulos son código administrado: una actualización puede reemplazarlos. Las aplicaciones personalizan el comportamiento desde sus propios servicios, adaptadores y contratos, sin editar directamente los archivos administrados.
+
 Los módulos fundamentales pueden incluir esquemas de instalación portables. El módulo de autenticación proporciona las tablas estándar de usuarios, roles y permisos; las aplicaciones no añaden datos de perfil o negocio a esa tabla base.
 
 ## Compatibilidad inicial

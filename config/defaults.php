@@ -5,6 +5,7 @@ return [
         'name' => 'GFrame',
         'environment' => 'production',
         'debug' => false,
+        'public' => true,
         'url' => null,
         'timezone' => 'UTC',
         'language' => 'es',
@@ -16,8 +17,22 @@ return [
     ],
     'session' => [
         'name' => null,
+        'driver' => 'native',
+        'connection' => null,
+        'lifetime' => 1800,
+        'idle_timeout' => 1800,
+        'redis' => [
+            'host' => '127.0.0.1',
+            'port' => 6379,
+            'password' => '',
+            'database' => 0,
+            'timeout' => 2.0,
+            'prefix' => 'gframe:session:',
+        ],
     ],
     'auth' => [
+        'login_redirect' => '',
+        'password_change_redirect' => 'account',
         'password_expiration' => [
             'enabled' => false,
             'days' => 90,
@@ -27,6 +42,11 @@ return [
     'tenancy' => [
         'key' => null,
         'table' => null,
+    ],
+    'media' => [
+        'scope' => 'global',
+        'max_upload_bytes' => 26214400,
+        'quota_bytes' => 0,
     ],
     'seo' => [
         'enabled' => true,
@@ -42,13 +62,10 @@ return [
             'hash' => '',
         ],
     ],
-    'mail' => [
-        'host' => '',
-        'port' => 465,
-        'username' => '',
-        'password' => '',
-        'encryption' => 'ssl',
-        'from' => 'noreply@example.test',
-        'from_name' => 'GFrame',
+    'notifications' => [
+        'email' => [
+            'max_attempts' => 5,
+            'retry_delay_seconds' => 300,
+        ],
     ],
 ];

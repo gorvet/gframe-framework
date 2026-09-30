@@ -73,8 +73,8 @@ final class FrameworkSmokeTest extends TestCase
         $result = (new NotificationQueueWorker())->run($processor, 2);
 
         self::assertSame('success', $result['status']);
-        self::assertSame(NotificationQueueWorker::MIN_BATCH, $result['batch']);
-        self::assertSame(NotificationQueueWorker::MIN_BATCH, $result['processed']);
+        self::assertSame(NotificationQueueWorker::MIN_BATCH, $result['data']['batch']);
+        self::assertSame(NotificationQueueWorker::MIN_BATCH, $result['data']['processed']);
     }
 
     public function testNotificationQueueWorkerConvertsFailuresIntoStableResponses(): void
@@ -89,8 +89,8 @@ final class FrameworkSmokeTest extends TestCase
         $result = (new NotificationQueueWorker())->run($processor);
 
         self::assertSame('error', $result['status']);
-        self::assertSame('queue_failed', $result['message']);
-        self::assertSame(NotificationQueueWorker::DEFAULT_BATCH, $result['batch']);
+        self::assertSame('notification_batch_failed', $result['code']);
+        self::assertSame(NotificationQueueWorker::DEFAULT_BATCH, $result['data']['batch']);
     }
 
     public function testEncryptionRoundTrip(): void

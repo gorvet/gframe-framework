@@ -21,7 +21,7 @@ Authentication middleware reads the normalized `$_SESSION['auth']` identity as i
 
 Only tenant mode requires a tenant identifier from route parameters or request data. Defining only one tenancy setting is invalid.
 
-Global permissions use `roles`, `permissions`, and `role_permissions` when the normalized identity includes `role_id`. Tenant permissions retain the tenant assignment layer and its application templates.
+Roles are permission templates. `RolePermissionService` resolves effective permissions from the session, including global and tenant-specific user overrides.
 
 ## Administrative Hierarchy
 
@@ -31,9 +31,11 @@ Global permissions use `roles`, `permissions`, and `role_permissions` when the n
 - `admin.access` defines which ordinary roles pass the `admin` middleware.
 - The superadministrator account must remain protected from self-deactivation and delegated administration.
 
-## Owner Fallback
+## Tenant Assignment
 
-In tenant mode, a tenant owner without a stored permission row may receive the configured owner fallback. This behavior does not apply to global permissions.
+Tenant mode requires an explicit active row in `tenant_memberships`. Owning a project record does not grant framework permissions implicitly.
+
+Auth creates users and a global role only. The application module that creates a tenant must also create its `owner` membership atomically. The generic `tenants` table has no owner column; do not infer ownership from submitted IDs. An active owner may manage `gestor` memberships, and a gestor may leave. See [roles, permissions, and memberships](../../../docs/permisos.md) for installation variants, ownership verification, and the transaction example.
 
 ## Boundary Rule
 

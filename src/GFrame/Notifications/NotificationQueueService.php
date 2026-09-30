@@ -3,12 +3,13 @@
 namespace GFrame\Notifications;
 
 use GFrame\Notifications\Contracts\NotificationTransport;
-use Throwable;
+use GFrame\Notifications\Contracts\NotificationQueueRepository;
+use Exception;
 
 final class NotificationQueueService implements NotificationBatchProcessor
 {
     public function __construct(
-        private readonly NotificationQueueModel $notifications,
+        private readonly NotificationQueueRepository $notifications,
         private readonly NotificationTransport $transport
     ) {
     }
@@ -21,14 +22,16 @@ final class NotificationQueueService implements NotificationBatchProcessor
             return ['status' => 'error', 'code' => 'invalid_notification'];
         }
 
-        $id = $this->notifications->enqueue([
-            'tenant_id' => $tenantID,
-            'channel' => $channel,
-            'recipient' => $recipient,
-            'payload' => $payload,
-        ]);
-
-        return ['status' => 'success', 'code' => 'notification_queued', 'notification_id' => $id];
+        try {
+            $id = $this->notifications->enqueue([
+                'tenant_id' => $tenantID, 'channel' => $channel,
+                'recipient' => $recipient, 'payload' => $payload,
+            ]);
+            return ['status' => 'success', 'code' => 'notification_queued', 'data' => ['notification_id' => $id]];
+        } catch (Exception $exception) {
+            error_log('[GFrame Notification Queue] ' . $exception->getMessage());
+            return ['status' => 'error', 'code' => 'notification_queue_failed'];
+        }
     }
 
     public function processNotificationBatch(int $batch): array
@@ -42,17 +45,14 @@ final class NotificationQueueService implements NotificationBatchProcessor
                 $this->transport->send($notification);
                 $this->notifications->markSent($id);
                 $sent++;
-            } catch (Throwable $exception) {
+            } catch (Exception $exception) {
                 $this->notifications->markFailed($id, $exception->getMessage());
                 $failed++;
             }
         }
 
-        return [
-            'status' => 'success',
-            'processed' => $sent + $failed,
-            'sent' => $sent,
-            'failed' => $failed,
-        ];
+        return ['status' => 'success', 'code' => 'notification_batch_processed', 'data' => [
+            'processed' => $sent + $failed, 'sent' => $sent, 'failed' => $failed,
+        ]];
     }
 }

@@ -12,31 +12,28 @@ const PASSWORD_UTILS_ALL =
   PASSWORD_UTILS_SYMBOLS;
 
 function passwordUtilsRandomInt(maxExclusive) {
-  if (
-    typeof window !== "undefined" &&
-    window.crypto &&
-    typeof window.crypto.getRandomValues === "function"
-  ) {
-    const range = Math.max(1, maxExclusive | 0);
-    const maxUint32 = 0xffffffff;
-    const limit = Math.floor(maxUint32 / range) * range;
-    const values = new Uint32Array(1);
-    do {
-      window.crypto.getRandomValues(values);
-    } while (values[0] >= limit);
-    return values[0] % range;
+  const range = maxExclusive >>> 0;
+  if (!range || !window.crypto || typeof window.crypto.getRandomValues !== "function") {
+    return null;
   }
-
-  return Math.floor(Math.random() * maxExclusive);
+  const totalValues = 0x100000000;
+  const limit = Math.floor(totalValues / range) * range;
+  const values = new Uint32Array(1);
+  do {
+    window.crypto.getRandomValues(values);
+  } while (values[0] >= limit);
+  return values[0] % range;
 }
 
 function passwordUtilsPick(chars) {
-  return chars.charAt(passwordUtilsRandomInt(chars.length));
+  const index = passwordUtilsRandomInt(chars.length);
+  return index === null ? null : chars.charAt(index);
 }
 
 function passwordUtilsShuffleChars(charsArray) {
   for (let i = charsArray.length - 1; i > 0; i--) {
     const j = passwordUtilsRandomInt(i + 1);
+    if (j === null) return null;
     const tmp = charsArray[i];
     charsArray[i] = charsArray[j];
     charsArray[j] = tmp;
@@ -47,8 +44,11 @@ function passwordUtilsShuffleChars(charsArray) {
 // Generate a random password.
 // Default length: 18 and always includes lower/upper/digit/symbol.
 function generatePassword(length = 18) {
+  if (typeof window === "undefined" || !window.crypto || typeof window.crypto.getRandomValues !== "function") {
+    return null;
+  }
   let finalLength = parseInt(length, 10);
-  if (Number.isNaN(finalLength) || finalLength < 8) {
+  if (Number.isNaN(finalLength) || finalLength < 8 || finalLength > 72) {
     finalLength = 18;
   }
 
@@ -63,7 +63,8 @@ function generatePassword(length = 18) {
     chars.push(passwordUtilsPick(PASSWORD_UTILS_ALL));
   }
 
-  return passwordUtilsShuffleChars(chars).join("");
+  const shuffled = passwordUtilsShuffleChars(chars);
+  return shuffled === null ? null : shuffled.join("");
 }
 
 // Evaluate password strength.
@@ -151,12 +152,11 @@ function updateMeterPassword(password, email) {
 }
 
 function passwordValidate(password, email) {
-  if (!password) {
-    return false;
-  }
-
-  const puntuacion = evaluatePassword(password, email);
-  return puntuacion >= 6;
+  // La regla obligatoria coincide con GFrame\Auth\PasswordPolicy.
+  // El medidor es orientativo; el servidor siempre valida de nuevo.
+  if (typeof password !== "string" || typeof TextEncoder === "undefined") return false;
+  const bytes = new TextEncoder().encode(password).length;
+  return bytes >= 8 && bytes <= 72;
 }
 
 // Show/hide password input.

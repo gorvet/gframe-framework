@@ -34,7 +34,7 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 - Routes live in `config/routes/*.php`, not `routes/*.php`.
 - Route type is inferred by the declaring file: `routes_web`, `routes_ajax`, `routes_api`, `routes_sse`, `routes_webhook`, `routes_system`.
 - Middleware decides access scope. Do not move `auth`, `admin`, or `can:*` permission logic into models.
-- Protected `can:*` flows need tenant context only when tenancy is configured. Global applications resolve permissions through `users.role_id`, `roles`, `permissions`, and `role_permissions`.
+- Protected `can:*` flows need tenant context only when tenancy is configured. Global applications resolve permissions through `users.role_id` and `roles.permissions_json`; multitenant applications use `tenant_memberships`.
 - Keep the standard MVC path direct: controllers call services when reusable rules are needed, and services call ORM models. Add a contract only for a genuinely interchangeable external capability.
 - Admin-only pages and endpoints belong under admin routes and should stay behind `auth` plus `admin` or `can:*`.
 - Controller validates required request fields and sanitizes free text before calling model or service.
@@ -46,6 +46,7 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 - Do not lowercase or normalize controller/model business codes in Router `ajax` or `api` output. Payload codes must arrive at JS exactly as emitted by the module.
 - Numeric `4xx/5xx` codes may exist as framework aliases for transport and error resolution, but business/module payloads should prefer canonical string codes.
 - Router handles JSON output for `ajax` and `api`; controllers should return arrays instead of echoing JSON manually.
+- Expected model, service, and controller failures must return stable arrays with `status`, `code`, and `message`. Do not use `Throwable` as a replacement for this response flow; catch `Exception` at the owning layer and let the controller, Router, and frontend decide whether to use an error view, `swalAlert`, or `alertToast`.
 - For list refresh flows, prefer server-rendered partial HTML instead of assembling markup in JS.
 - If a frontend flow needs user-facing copy, return it from controller/model payloads or render it in PHP instead of forcing the module JS to invent texts locally.
 - Keep GET page-clamping redirects only on GET requests.

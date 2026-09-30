@@ -1,0 +1,53 @@
+/*--------------------------------------------------------------
+# Estilos de auth
+--------------------------------------------------------------*/
+body.tpl-auth{ 
+    background: var(--bs-gray-100); 
+}
+:root[data-bs-theme="dark"] body.tpl-auth {
+     background:var(--bs-body-bg);
+}
+
+body.tpl-auth {  
+  min-height: calc(100vh);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.login-card .card-header h1 {
+  font-weight: bold;
+  font-size: 1.4rem;
+  text-decoration: none;
+  line-height: 1;
+  margin: 0;
+}
+
+.tpl-auth .lead {
+  font-weight: bold;
+  text-align: center;
+  font-size: 1.5rem;
+  padding-bottom: 10px;
+  line-height: 1.5;
+}
+
+.tpl-auth .tolostp { 
+  color: var(--bs-danger); 
+}
+
+.tpl-auth .tolostp:hover { 
+  color: var(--bs-danger); 
+}
+
+.tpl-auth .logo-auth {
+  max-height: 70px;
+  width: auto;
+}
+
+
+.auth-page { display:flex; flex:1 1 auto; align-items:center; width:100%; }
+.auth-brand { display:inline-flex; align-items:center; gap:.65rem; color:var(--bs-body-color); font-size:1.35rem; font-weight:700; text-decoration:none; }
+.auth-mark { display:inline-flex; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; border-radius:var(--bs-border-radius); background:var(--bs-primary); color:var(--bs-white); }
+.login-card .card-header { background:var(--bs-gradient, var(--bs-primary)); }
+.login-card .showPassword { cursor:pointer; }
+.login-card a:focus-visible, .login-card button:focus-visible { outline:.2rem solid var(--bs-primary-border-subtle); outline-offset:.2rem; }
+@media(max-width:575.98px) { .auth-page { align-items:flex-start; } }

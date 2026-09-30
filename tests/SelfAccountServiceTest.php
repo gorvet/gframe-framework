@@ -4,6 +4,9 @@ namespace GFrame\Tests;
 
 use GFrame\Auth\SelfAccountService;
 use GFrame\Auth\UserModel;
+use GFrame\Auth\Contracts\AccountDeactivationPolicy;
+use GFrame\Auth\PasswordPolicy;
+use GFrame\Session\ActiveSessionRegistry;
 use PHPUnit\Framework\TestCase;
 
 final class SelfAccountServiceTest extends TestCase
@@ -40,6 +43,71 @@ final class SelfAccountServiceTest extends TestCase
 
         self::assertSame('account_deactivated', $service->deactivate(2, 'Clave-actual-123')['code']);
         self::assertSame('disabled', $model->accounts[2]['status']);
+    }
+
+    public function testApplicationPolicyCanPreventDeactivation(): void
+    {
+        $model = new InMemorySelfAccountModel();
+        $policy = new DenyAccountDeactivationPolicy();
+        $service = new SelfAccountService($model, $policy);
+
+        self::assertSame('protected_account', $service->deactivate(2, 'Clave-actual-123')['code']);
+        self::assertSame('verify', $model->accounts[2]['status']);
+    }
+
+    public function testRepositoryExceptionsBecomeStableContracts(): void
+    {
+        $service = new SelfAccountService(new FailingSelfAccountModel());
+
+        self::assertSame('account_load_failed', $service->profile(2)['code']);
+        self::assertSame(
+            'password_update_failed',
+            $service->changePassword(2, 'Clave-actual-123', 'Nueva-clave-123', 'Nueva-clave-123')['code']
+        );
+        self::assertSame('account_deactivation_failed', $service->deactivate(2, 'Clave-actual-123')['code']);
+    }
+
+    public function testDeactivationRevokesEveryActiveSession(): void
+    {
+        $registry = new SelfAccountRegistry();
+        $service = new SelfAccountService(
+            new InMemorySelfAccountModel(),
+            null,
+            new PasswordPolicy(),
+            $registry
+        );
+
+        self::assertSame('account_deactivated', $service->deactivate(2, 'Clave-actual-123')['code']);
+        self::assertSame([[2, true]], $registry->revoked);
+    }
+}
+
+final class SelfAccountRegistry implements ActiveSessionRegistry
+{
+    public array $revoked = [];
+    public function register(int $userID, string $sessionID, array $authorization = []): void {}
+    public function unregister(int $userID, string $sessionID): void {}
+    public function revokeUser(int $userID, bool $block = false): int { $this->revoked[] = [$userID, $block]; return 1; }
+    public function allowUser(int $userID): void {}
+    public function publishRoleVersion(int $roleID, int $version): void {}
+    public function publishUserAuthorizationVersion(int $userID, int $version): void {}
+    public function updateAuthorization(int $userID, string $sessionID, int $roleID, int $roleVersion, int $authorizationVersion = 1): void {}
+    public function updateTenantAuthorization(int $userID, string $sessionID, int $roleID, int $roleVersion): void {}
+}
+
+final class DenyAccountDeactivationPolicy implements AccountDeactivationPolicy
+{
+    public function canDeactivateAccount(array $account): bool
+    {
+        return false;
+    }
+}
+
+final class FailingSelfAccountModel extends UserModel
+{
+    public function findAccountByID(int $userID): ?array
+    {
+        throw new \RuntimeException('Fallo de prueba');
     }
 }
 

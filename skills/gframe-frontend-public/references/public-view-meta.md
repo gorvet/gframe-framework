@@ -22,7 +22,6 @@ Public meta files usually carry:
 - `css`
 - `js`
 - `schema`
-- `credits`
 - `sitemap`
 
 ## Content-Driven Meta

@@ -2,7 +2,7 @@
 
 namespace GFrame\Auth;
 
-use Throwable;
+use Exception;
 
 final class AuthInstallationService
 {
@@ -47,7 +47,7 @@ final class AuthInstallationService
                 'user_id' => $userID,
                 'role_id' => $roleID,
             ];
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             error_log('[GFrame Auth Installation] ' . $exception->getMessage());
             return ['status' => 'error', 'code' => 'installation_failed'];
         }

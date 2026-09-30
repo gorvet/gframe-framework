@@ -13,6 +13,7 @@ return [
     ],
     'js' => [
         'public/vendors/external/bootstrap/js/bootstrap.bundle.min.js',
+        'public/js/app/home/mngnoadmin.js',
     ],
     'schema' => [
         'type' => 'WebSite',
@@ -20,5 +21,4 @@ return [
         'title' => site_name,
         'description' => 'Aplicación construida con GFrame.',
     ],
-    'credits' => '&copy; ' . date('Y') . ' ' . site_name . '. Construido con GFrame.',
 ];

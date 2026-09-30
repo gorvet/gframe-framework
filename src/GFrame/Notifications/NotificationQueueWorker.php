@@ -4,7 +4,7 @@ namespace GFrame\Notifications;
 
 use Async;
 use InvalidArgumentException;
-use Throwable;
+use Exception;
 
 final class NotificationQueueWorker
 {
@@ -19,15 +19,22 @@ final class NotificationQueueWorker
         try {
             $result = $processor->processNotificationBatch($batch);
             $result['status'] = (string)($result['status'] ?? 'success');
-            $result['batch'] = $batch;
+            $data = (array)($result['data'] ?? []);
+            foreach ($result as $key => $value) {
+                if (!in_array($key, ['status', 'code', 'message', 'data'], true)) {
+                    $data[$key] = $value;
+                    unset($result[$key]);
+                }
+            }
+            $result['data'] = $data;
+            $result['data']['batch'] = $batch;
 
             return $result;
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             return [
                 'status' => 'error',
-                'code' => $exception->getCode(),
-                'message' => $exception->getMessage(),
-                'batch' => $batch,
+                'code' => 'notification_batch_failed',
+                'data' => ['batch' => $batch],
             ];
         }
     }

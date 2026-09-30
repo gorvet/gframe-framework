@@ -1,0 +1,103 @@
+# Estructura del panel administrativo: auditoría y propuesta
+
+La auditoría y la extracción inicial están terminadas. Se consultaron Base Confías, Bebots y Dane. Ninguna de esas aplicaciones se modificó.
+
+## Qué existe hoy
+
+Las tres aplicaciones comparten exactamente `app/views/templates/adminTemplate.php`. Su estructura actual es: contenedor, sidebar izquierdo, área principal, navbar dentro del área principal y contenido de la vista. El footer se renderiza después mediante `Render`, fuera de esa plantilla.
+
+También son idénticos en los tres proyectos `sidebar.js`, `darkmode.js`, `persistencia_sidebar.js` y `persistencia_darkmode.js`. El sidebar tiene un estado persistente para escritorio y un cajón temporal para móvil. El tema admite preferencia local, preferencia del sistema y sincronización entre pestañas. La persistencia temprana del sidebar está duplicada dentro de `persistencia_darkmode.js`; debe quedar en un único lugar cuando se extraiga.
+
+`admin.css` es idéntico entre Base Confías y Bebots. Dane parte de la misma base y agrega, entre otros estilos, el componente de notificaciones. Por ello, el CSS común puede formar la base visual de GFrame, mientras que los estilos exclusivos de cada módulo o aplicación deben permanecer separados.
+
+Las plantillas `navbar.php` y `aside.php` conservan la misma disposición general, pero mezclan estructura compartida con decisiones de cada aplicación:
+
+- Logo, enlace de inicio, rutas y nombres del proyecto.
+- Menús, secciones y reglas de acceso propias del proyecto.
+- Indicador y menú de notificaciones, aunque notificaciones es un módulo instalable.
+- Saludo y cierre de sesión, actualmente tomados de variables históricas de `$_SESSION`.
+
+El navegador de menús existente (`MenuHelper::build`) acepta elementos, encabezados, divisores y submenús. Puede seguir utilizándose como renderizador visual mientras se define de dónde recibe las entradas y cómo se comprueban sus permisos. Las tres aplicaciones construyen actualmente sus arreglos de navegación dentro de `aside.php`.
+
+`dashboard.js` también es idéntico, pero su contenido funcional está comentado. No justifica publicarlo como recurso del panel. `udashboard.php` no aporta una vista compartida; los escritorios reales corresponden a cada aplicación. El archivo histórico `.adminTemplate.php` no es la plantilla activa.
+
+## Implementación en GFrame
+
+El módulo `admin-panel` instala `adminTemplate.php`, `admin.meta.php`, `navbar.php`, `aside.php`, `menu.php`, CSS y JavaScript propios. Los perfiles `managed`, `intranet` y `saas` lo incluyen. `user-admin` lo requiere y usa `->template('admin')`. El perfil `static` no lo instala.
+
+La plantilla mantiene la disposición actual: sidebar izquierdo, área principal y navbar en la parte superior de esa área. El footer sigue siendo independiente. No se publica un escritorio genérico ni una ruta `admin/`; cada aplicación define sus propias vistas y rutas de inicio.
+
+El meta de la plantilla carga los recursos del panel incluso en vistas anidadas. La prioridad es global → plantilla → extensiones de módulos → grupo → vista. Los recursos repetidos se deduplican. El módulo `notifications` publica una acción de header y su meta de CSS/JS; si no se instala, el panel funciona sin ese control.
+
+La barra lateral usa `gf-sidebar` para guardar el estado de escritorio. En móvil funciona como cajón temporal y no hereda el estado colapsado. El tema usa `gf-theme`, sigue el sistema cuando no hay elección explícita y sincroniza cambios entre pestañas. Un único script temprano aplica ambos valores antes de cargar los estilos.
+
+## Uso y personalización
+
+Declare una ruta protegida con `->template('admin')` y una vista propia de la aplicación. Por ejemplo:
+
+```php
+Route::get('admin/reportes', 'admin/reportes/ReportController@index')
+    ->template('admin')
+    ->view('reportIndex')
+    ->middleware(['auth', 'can:reports.view'])
+    ->registerFinal();
+```
+
+Edite `app/views/admin/parts/menu.php` para las secciones y enlaces propios del proyecto. La plantilla imprime ese archivo dentro de `#sidebar-nav`. Los módulos pueden publicar archivos en `app/views/admin/parts/menu-items/`; cada archivo comprueba el permiso antes de mostrar su enlace. El módulo `user-admin` aporta así su entrada «Usuarios».
+
+Edite `app/views/admin/parts/navbar.php` para el logo, el enlace de inicio o acciones propias. Las acciones aportadas por módulos viven en `app/views/admin/parts/header-actions/`. Los archivos meta de esas acciones se colocan en `app/views/templates/meta/admin/`. La identidad del usuario se lee de `$_SESSION['auth']` y se escapa antes de imprimirla.
+
+Los estilos del proyecto van en su CSS administrativo; los de una vista, en su hoja específica. Regístrelos en los meta correspondientes. Las vistas son responsables de su contenido y no duplican el header ni el sidebar. El footer conserva las áreas opcionales de `content`, `copyright` y `credits` descritas en `docs/footer.md`.
+
+## Tema Bootstrap y personalización
+
+El selector único del tema es `data-bs-theme` en `<html>`. Bootstrap aporta los estilos de sus componentes y GFrame conserva el controlador propio: `gf-theme` en `localStorage`, preferencia del sistema, sincronización entre pestañas y aplicación temprana mediante `preload.js`. No se necesita otro selector `data-gf-theme` ni otro controlador de Bootstrap.
+
+`public/css/variables.css` se carga después de Bootstrap y reúne la personalización de variables, incluidas las superficies oscuras. No se añade un archivo de tema separado. Usa `:root` para valores comunes y `:root[data-bs-theme="light"]` o `:root[data-bs-theme="dark"]` para diferencias por modo. La personalización específica de botones permanece en el archivo de botones del proyecto; no requiere otra capa de tema. No dupliques las reglas de componentes que Bootstrap ya resuelve. El esqueleto actual incluye los valores oscuros adaptados, no una copia completa de los estilos de los proyectos de origen.
+
+```css
+:root[data-bs-theme="light"] {
+    --bs-body-bg: #ffffff;
+    --bs-body-bg-rgb: 255, 255, 255;
+}
+:root[data-bs-theme="dark"] {
+    --bs-body-bg: #051321;
+    --bs-body-bg-rgb: 5, 19, 33;
+}
+```
+
+Mantén sincronizadas las variables de color y sus variantes `-rgb`. Cambiar `--bs-primary` no redefine automáticamente `--bs-primary-rgb`, las variables locales `--bs-btn-*` de los botones ni los colores compilados de todos los componentes. Personaliza esos casos concretos en tu hoja o compila Bootstrap con Sass si necesitas reconstruir toda la paleta. Las variables propias, como sombras adicionales, siguen siendo válidas si nuestro CSS las consume.
+
+API disponible tras cargar `admin.js`:
+
+```js
+GFTheme.get();                  // 'light' o 'dark'
+GFTheme.set('dark');            // Aplica y guarda la elección.
+GFTheme.set('light', false);    // Aplica sin cambiar la preferencia guardada.
+GFTheme.resetToSystem();        // Borra la elección y sigue al sistema.
+```
+
+La persistencia es local al navegador, no un ajuste guardado en la cuenta. Si el almacenamiento está bloqueado, el cambio funciona en la página pero no se garantiza entre recargas. El panel sigue el sistema cuando no existe una elección guardada; el modo público no incorpora automáticamente este controlador. La adaptación visual completa sigue pendiente de la revisión HTTP acordada.
+
+### Visor de variables
+
+El esqueleto incluye `public/css/colores.html` junto a `variables.css`, basado en el visor original de Bebots. Conserva su vista rápida, agrupación por intención, muestras de tipografía y sombras, copia individual y copia de la lista. Añade detección automática de variables globales, muestras de bordes y radios, interpretación de colores RGB y componentes reales de Bootstrap. Abre el HTML por HTTP desde una instalación con Bootstrap publicado. Permite alternar claro/oscuro y buscar por nombre o valor.
+
+El catálogo presenta los valores calculados de las variables globales; las variables locales de componentes no se enumeran en ese catálogo. Los componentes reales muestran su resultado visual. Al añadir variables globales en `variables.css`, el visor las detecta sin mantener una lista manual. No edita CSS ni modifica la preferencia de tema del panel. Los archivos de personalización de botones adicionales deben incluirse después de `variables.css` para que la muestra los refleje. Las variables `--ui-*` pertenecen únicamente al visor y se excluyen del catálogo.
+
+## Qué no se extrae del proyecto
+
+- Los menús de Base Confías, Bebots o Dane.
+- El HTML, CSS y JavaScript de NiceAdmin; solo se tomaron referencias estructurales para el skill de diseño.
+- El `dashboard.js` comentado ni los fragmentos de escritorio vacíos.
+- Los estilos de notificaciones exclusivos de Dane dentro del CSS base del panel.
+- La plantilla oculta `.adminTemplate.php`.
+
+## Comprobaciones realizadas
+
+- Publicación de la plantilla, meta, CSS y JavaScript con `user-admin`.
+- Publicación de la acción y meta de notificaciones cuando se instala ese módulo.
+- Carga de meta de plantilla y módulo antes del meta de una vista anidada.
+- Instalación del módulo en perfiles administrados.
+
+La revisión visual e interactiva en una instalación HTTP limpia queda pendiente para la fase general de validación de perfiles. La publicación y el render de metadatos están cubiertos por pruebas automatizadas.

@@ -22,9 +22,9 @@ Estas librerías no deben copiarse dentro de `src` ni mantenerse manualmente en 
 
 - `PHPAsync`: pasa al componente asíncrono de GFrame y utiliza Opis Closure desde Composer.
 - `GFrame\Security\Encryption`: utilidad opcional de cifrado autenticado AES-256-GCM incluida en el framework. Su formato es propio y no migra automáticamente datos cifrados por implementaciones anteriores.
-- `gfselect`: componente propio de interfaz pendiente de extracción.
-- `passwordUtils`: utilidad propia pendiente de extracción.
-- Fuente de iconos `gframe-icons`: recurso propio pendiente de extracción al paquete de interfaz.
+- `gfselect`: componente propio de interfaz extraído y documentado en [GFSelect](gfselect.md).
+- `password-utils`: utilidad propia extraída y documentada en [Password Utils](password-utils.md).
+- Fuente de iconos [`gframe-icons`](gframe-icons.md): recurso propio extraído y documentado.
 
 `TextClassifier` permanece en Bebots porque es un algoritmo específico para bots conversacionales. `opusConverter` es propio, pero queda retirado porque ya no se necesita. PHPMailer, Opis Closure y PHP-SSE son dependencias externas y no se copiarán al repositorio.
 

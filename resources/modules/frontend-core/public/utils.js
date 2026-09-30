@@ -5,14 +5,14 @@
     return;
   }
   window.__gfUtilsEntryLoaded = true;
+  window.__gfUtilsReady = false;
+  window.__gfUtilsErrors = [];
 
   var files = [
     'utils/helpers.js',
     'utils/errors.js',
     'utils/forms.js',
-    'utils/pagination.js',
-    'utils/table.js',
-    'utils/markdown.js'
+    'utils/pagination.js'
   ];
 
   function resolveBasePath() {
@@ -25,8 +25,14 @@
 
   function appendSequentially(srcList, index) {
     if (index >= srcList.length) {
-      window.__gfUtilsReady = true;
-      document.dispatchEvent(new CustomEvent('gfutilsready'));
+      if (window.__gfUtilsErrors.length) {
+        document.dispatchEvent(new CustomEvent('gfutilserror', {
+          detail: { files: window.__gfUtilsErrors.slice() }
+        }));
+      } else {
+        window.__gfUtilsReady = true;
+        document.dispatchEvent(new CustomEvent('gfutilsready'));
+      }
       return;
     }
 
@@ -45,6 +51,7 @@
       appendSequentially(srcList, index + 1);
     };
     s.onerror = function() {
+      window.__gfUtilsErrors.push(src);
       appendSequentially(srcList, index + 1);
     };
 

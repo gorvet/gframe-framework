@@ -4,8 +4,9 @@ return [
     'name' => 'gfselect',
     'type' => 'internal-ui',
     'description' => 'Selector enriquecido propio de GFrame.',
-    'dependencies' => ['bootstrap', 'jquery'],
+    'dependencies' => ['bootstrap'],
     'assets' => [
-        ['source' => 'public', 'target' => 'vendors/internal/gfselect'],
+        ['source' => 'public/gf-select.js', 'target' => 'vendors/internal/gfselect/gf-select.js'],
+        ['source' => 'public/gf-select.css', 'target' => 'vendors/internal/gfselect/gf-select.css'],
     ],
 ];

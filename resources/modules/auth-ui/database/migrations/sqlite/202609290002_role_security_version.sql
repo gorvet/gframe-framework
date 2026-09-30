@@ -1,0 +1,1 @@
+ALTER TABLE roles ADD COLUMN security_version INTEGER NOT NULL DEFAULT 1;

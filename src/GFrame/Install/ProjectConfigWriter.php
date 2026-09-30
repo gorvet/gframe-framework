@@ -7,7 +7,7 @@ use RuntimeException;
 final class ProjectConfigWriter
 {
     /** @return array{config:string,environment:string,modules:string} */
-    public function write(string $projectRoot, array $settings, array $modules, bool $overwrite = false): array
+    public function write(string $projectRoot, array $settings, array $modules, bool $overwrite = false, array $moduleEnvironment = []): array
     {
         $projectRoot = $this->projectRoot($projectRoot);
         $configDirectory = $projectRoot . DIRECTORY_SEPARATOR . 'config';
@@ -26,14 +26,35 @@ final class ProjectConfigWriter
 
         $database = (array)($settings['database'] ?? []);
         $php = $this->configFile($settings, $database, $tenancy);
-        $environment = $this->environment($settings, $database);
+        $environment = $this->environment($settings, $database, $moduleEnvironment);
         $moduleFile = "<?php\n\nreturn " . var_export(array_values($modules), true) . ";\n";
 
-        $this->writeFile($configPath, $php);
-        $this->writeFile($environmentPath, $environment);
-        $this->writeFile($modulesPath, $moduleFile);
+        $written = [];
+        try {
+            foreach ([$configPath => $php, $environmentPath => $environment, $modulesPath => $moduleFile] as $path => $content) {
+                $this->writeFile($path, $content);
+                $written[] = $path;
+            }
+        } catch (RuntimeException $exception) {
+            if (!$overwrite) {
+                foreach ($written as $path) {
+                    unlink($path);
+                }
+            }
+            throw $exception;
+        }
 
         return ['config' => $configPath, 'environment' => $environmentPath, 'modules' => $modulesPath];
+    }
+
+    public function assertAvailable(string $projectRoot): void
+    {
+        $root = $this->projectRoot($projectRoot);
+        $this->guard([
+            $root . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php',
+            $root . DIRECTORY_SEPARATOR . '.env',
+            $root . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'modules.php',
+        ], false);
     }
 
     private function projectRoot(string $path): string
@@ -57,7 +78,7 @@ final class ProjectConfigWriter
         }
     }
 
-    private function environment(array $settings, array $database): string
+    private function environment(array $settings, array $database, array $moduleEnvironment = []): string
     {
         $values = [
             'APP_NAME' => (string)($settings['app_name'] ?? 'GFrame'),
@@ -66,6 +87,11 @@ final class ProjectConfigWriter
             'APP_URL' => (string)($settings['app_url'] ?? ''),
             'APP_KEY' => 'base64:' . base64_encode(random_bytes(32)),
             'METRICOOL_HASH' => (string)($settings['metricool_hash'] ?? ''),
+            'SESSION_DRIVER' => $database !== [] ? 'database' : 'native',
+            'SESSION_REDIS_HOST' => '127.0.0.1',
+            'SESSION_REDIS_PORT' => '6379',
+            'SESSION_REDIS_PASSWORD' => '',
+            'SESSION_REDIS_DATABASE' => '0',
         ];
         if ($database !== []) {
             $values['DB_DRIVER'] = (string)($database['driver'] ?? 'mysql');
@@ -77,6 +103,12 @@ final class ProjectConfigWriter
                 $values['DB_NAME'] = (string)($database['database'] ?? '');
                 $values['DB_USER'] = (string)($database['username'] ?? '');
                 $values['DB_PASSWORD'] = (string)($database['password'] ?? '');
+            }
+        }
+        foreach ($moduleEnvironment as $key) {
+            $key = strtoupper(trim((string)$key));
+            if (preg_match('/^[A-Z][A-Z0-9_]*$/', $key) === 1 && !array_key_exists($key, $values)) {
+                $values[$key] = '';
             }
         }
 
@@ -99,6 +131,7 @@ final class ProjectConfigWriter
         $timezone = var_export((string)($settings['timezone'] ?? 'UTC'), true);
         $language = var_export((string)($settings['language'] ?? 'es'), true);
         $debug = !empty($settings['debug']) ? 'true' : 'false';
+        $public = !array_key_exists('public', $settings) || !empty($settings['public']) ? 'true' : 'false';
         $databaseConfig = '[]';
         if ($database !== []) {
             $databaseConfig = strtolower((string)($database['driver'] ?? 'mysql')) === 'sqlite'
@@ -122,6 +155,13 @@ final class ProjectConfigWriter
         $metricoolEnabled = !empty($settings['metricool_enabled']) ? 'true' : 'false';
         $analytics = "['enabled' => {$metricoolEnabled}, 'metricool' => ['enabled' => {$metricoolEnabled}, 'hash' => env('METRICOOL_HASH', '')]]";
         $tenancyExport = var_export($tenancy, true);
+        $idleTimeout = max(60, (int)($settings['session_idle_timeout'] ?? 1800));
+        $sessionDriver = $database !== [] ? 'database' : 'native';
+        $mediaScope = (string)($settings['media_scope'] ?? (!empty($settings['tenancy']) ? 'tenant' : 'global'));
+        if (!in_array($mediaScope, ['global', 'tenant', 'user'], true)) {
+            $mediaScope = !empty($settings['tenancy']) ? 'tenant' : 'global';
+        }
+        $mediaScopeExport = var_export($mediaScope, true);
 
         return <<<PHP
 <?php
@@ -131,15 +171,31 @@ return [
         'name' => env('APP_NAME', {$name}),
         'environment' => env('APP_ENV', {$environment}),
         'debug' => env_bool('APP_DEBUG', {$debug}),
+        'public' => {$public},
         'url' => env('APP_URL', null),
         'timezone' => {$timezone},
         'language' => {$language},
         'supported_languages' => [{$language}],
     ],
     'database' => ['default' => 'main', 'connections' => {$databaseConfig}],
-    'session' => ['name' => null],
+    'session' => [
+        'name' => null,
+        'driver' => env('SESSION_DRIVER', '{$sessionDriver}'),
+        'connection' => 'main',
+        'lifetime' => {$idleTimeout},
+        'idle_timeout' => {$idleTimeout},
+        'redis' => [
+            'host' => env('SESSION_REDIS_HOST', '127.0.0.1'),
+            'port' => env_int('SESSION_REDIS_PORT', 6379),
+            'password' => env('SESSION_REDIS_PASSWORD', ''),
+            'database' => env_int('SESSION_REDIS_DATABASE', 0),
+            'timeout' => 2.0,
+            'prefix' => 'gframe:session:',
+        ],
+    ],
     'auth' => {$auth},
     'tenancy' => {$tenancyExport},
+    'media' => ['scope' => {$mediaScopeExport}],
     'seo' => {$seo},
     'analytics' => {$analytics},
 ];

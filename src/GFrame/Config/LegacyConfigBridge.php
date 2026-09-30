@@ -58,14 +58,6 @@ final class LegacyConfigBridge
         self::define('SEO_ENABLE_ROBOTS_TXT', $seoEnabled && (bool)ConfigRepository::get('seo.robots', true));
         self::define('SEO_ENABLE_LLMS_TXT', $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.llms', true));
 
-        self::define('M_Host', (string)ConfigRepository::get('mail.host', ''));
-        self::define('M_Port', (int)ConfigRepository::get('mail.port', 465));
-        self::define('M_Username', (string)ConfigRepository::get('mail.username', ''));
-        self::define('M_Password', (string)ConfigRepository::get('mail.password', ''));
-        self::define('M_Secure', (string)ConfigRepository::get('mail.encryption', 'ssl'));
-        self::define('M_From', (string)ConfigRepository::get('mail.from', 'noreply@example.test'));
-        self::define('M_Name', (string)ConfigRepository::get('mail.from_name', ConfigRepository::get('app.name', 'GFrame')));
-
         date_default_timezone_set((string)APP_TIMEZONE);
     }
 

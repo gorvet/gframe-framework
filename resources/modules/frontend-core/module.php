@@ -3,7 +3,7 @@
 return [
     'name' => 'frontend-core',
     'type' => 'internal-ui',
-    'description' => 'Utilidades JavaScript comunes de formularios, errores, paginación, tablas y Markdown.',
+    'description' => 'Utilidades JavaScript comunes de formularios, errores, helpers y paginación.',
     'default' => true,
     'dependencies' => ['jquery'],
     'assets' => [

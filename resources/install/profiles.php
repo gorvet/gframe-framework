@@ -7,6 +7,7 @@ return [
         'database' => false,
         'auth' => false,
         'tenancy' => false,
+        'public' => true,
         'modules' => [],
     ],
     'managed' => [
@@ -15,7 +16,17 @@ return [
         'database' => true,
         'auth' => true,
         'tenancy' => false,
-        'modules' => ['user-admin', 'media-library'],
+        'public' => true,
+        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library'],
+    ],
+    'intranet' => [
+        'name' => 'Intranet privada',
+        'description' => 'Aplicación administrada sin vista pública y con acceso autenticado.',
+        'database' => true,
+        'auth' => true,
+        'tenancy' => false,
+        'public' => false,
+        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library'],
     ],
     'saas' => [
         'name' => 'Aplicación SaaS',
@@ -23,6 +34,7 @@ return [
         'database' => true,
         'auth' => true,
         'tenancy' => true,
-        'modules' => ['user-admin', 'media-library', 'notifications'],
+        'public' => true,
+        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library', 'notifications', 'cron-runner'],
     ],
 ];

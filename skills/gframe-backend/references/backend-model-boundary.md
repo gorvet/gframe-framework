@@ -38,6 +38,8 @@ Models should not:
 - enforce middleware-level access rules
 - duplicate generic required-field checks already done in controller
 
+Expected persistence and business failures return structured arrays. Models may catch `Exception` and return `status`, `code`, and `message`; controllers propagate or adapt that response. Do not replace this flow with `Throwable`. Presentation remains outside the model and may become an error view, `swalAlert`, or `alertToast` according to the route and frontend contract.
+
 ## Response Contract Reminder
 
 The stable backend keys are:

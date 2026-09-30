@@ -1,0 +1,6 @@
+ALTER TABLE notification_queue ADD COLUMN deduplication_key TEXT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_notification_deduplication ON notification_queue (deduplication_key);
+CREATE TABLE IF NOT EXISTS notification_campaigns (campaign_id INTEGER PRIMARY KEY AUTOINCREMENT, tenant_id INTEGER NULL, name TEXT NOT NULL, title TEXT NOT NULL, message TEXT NOT NULL, template_id TEXT NOT NULL DEFAULT 'notification', channels_json TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft', scheduled_at TEXT NULL, started_at TEXT NULL, completed_at TEXT NULL, created_by INTEGER NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_campaign_status ON notification_campaigns (tenant_id, status, scheduled_at);
+CREATE TABLE IF NOT EXISTS notification_campaign_recipients (recipient_id INTEGER PRIMARY KEY AUTOINCREMENT, campaign_id INTEGER NOT NULL, channel TEXT NOT NULL, recipient TEXT NOT NULL, variables_json TEXT NULL, status TEXT NOT NULL DEFAULT 'pending', queued_jobs INTEGER NOT NULL DEFAULT 0, last_error TEXT NULL, processing_at TEXT NULL, queued_at TEXT NULL, created_at TEXT NOT NULL, UNIQUE (campaign_id, channel, recipient));
+CREATE INDEX IF NOT EXISTS idx_campaign_recipient_status ON notification_campaign_recipients (campaign_id, status);

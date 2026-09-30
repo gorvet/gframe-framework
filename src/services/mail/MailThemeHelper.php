@@ -6,13 +6,15 @@ class MailThemeHelper
 
     public static function params(): array
     {
+        // Leer de nuevo al generar cada correo, también en workers persistentes.
+        self::$variables = null;
         $primary = self::var('bs-primary', '#3C6AF3');
         $secondary = self::var('bs-secondary', '#6C757D');
         $dark = self::var('bs-dark', '#18283B');
         $white = self::var('bs-white', '#fff');
         $bodyBg = '#f6f6f6';
         $font = self::var('bs-font-sans-serif', "'Montserrat', 'sans-serif', 'helvetica', Arial, Roboto");
-        $siteName = defined('site_name') ? (string)site_name : (defined('M_Name') ? (string)M_Name : 'LiangApp');
+        $siteName = defined('site_name') ? (string)site_name : 'GFrame';
         $siteUrl = defined('site_url') ? rtrim((string)site_url, '/') : '';
 
         return [
@@ -81,6 +83,11 @@ class MailThemeHelper
             return self::$variables;
         }
 
+        if (!defined('ABSPATH')) {
+            self::$variables = [];
+            return self::$variables;
+        }
+
         $path = realpath(ABSPATH . 'public/css/variables.css');
         if ($path === false || !file_exists($path)) {
             self::$variables = [];
@@ -93,15 +100,43 @@ class MailThemeHelper
             return self::$variables;
         }
 
-        preg_match_all('/--([a-z0-9_-]+)\s*:\s*([^;]+);/i', $css, $matches, PREG_SET_ORDER);
-        $variables = [];
-
-        foreach ($matches as $match) {
-            $variables[$match[1]] = trim($match[2]);
-        }
-
-        self::$variables = $variables;
+        self::$variables = self::extractLightVariables($css);
         return self::$variables;
+    }
+
+    private static function extractLightVariables(string $css): array
+    {
+        $css = preg_replace('~/\*.*?\*/~s', '', $css) ?? '';
+        $variables = [];
+        $light = [];
+        $offset = 0;
+        $length = strlen($css);
+        while (preg_match('/([^{}]+)\{/', $css, $block, PREG_OFFSET_CAPTURE, $offset)) {
+            $selector = trim($block[1][0]);
+            $start = $block[0][1] + strlen($block[0][0]);
+            $end = $start;
+            $depth = 1;
+            while ($end < $length && $depth > 0) {
+                if ($css[$end] === '{') $depth++;
+                elseif ($css[$end] === '}') $depth--;
+                $end++;
+            }
+            $offset = $end;
+            if ($depth !== 0 || str_contains(substr($css, $start, $end - $start - 1), '{')) continue;
+            $selectors = array_map('trim', explode(',', $selector));
+            $isBase = in_array(':root', $selectors, true) || in_array('html', $selectors, true);
+            $isLight = false;
+            foreach ($selectors as $candidate) {
+                if (preg_match('/^(?:html|:root)\[data-bs-theme\s*=\s*[\x22\x27]?light[\x22\x27]?\]$/', $candidate)) $isLight = true;
+            }
+            if (!$isBase && !$isLight) continue;
+            preg_match_all('/--([a-z0-9_-]+)\s*:\s*([^;]+);/i', substr($css, $start, $end - $start - 1), $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                if ($isBase) $variables[$match[1]] = trim($match[2]);
+                if ($isLight) $light[$match[1]] = trim($match[2]);
+            }
+        }
+        return array_replace($variables, $light);
     }
 
     private static function resolveValue(string $value, array $variables, string $fallback, int $depth = 0): string

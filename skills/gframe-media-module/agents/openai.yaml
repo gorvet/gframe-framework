@@ -1,0 +1,4 @@
+interface:
+  display_name: "GFrame Media Module"
+  short_description: "Media libraries, scopes, selectors, fields, and relations"
+  default_prompt: "Use $gframe-media-module to implement or review GFrame media libraries, uploads, scopes, selectors, fields, and reusable content relations."

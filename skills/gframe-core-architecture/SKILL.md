@@ -37,6 +37,7 @@ Examples:
 
 - Framework source lives in the standalone `gframe-framework/src` tree and is consumed through Composer.
 - An application normally keeps only `core/Load.php` as its bootstrap bridge. Never recreate or patch a duplicated local core.
+- Treat files published from `resources/modules/` as updater-managed code. Extend modules from separate application services, adapters, composition, and public contracts; direct edits may be overwritten.
 - Never edit `packages/gframe/framework` as the source of a fix. Make shared changes in the GFrame repository and update the application's Composer lock.
 - If project schema, routes, payloads, or naming do not fit the core, adapt the project layer (`app/`, `config/`, views, controllers, models, services, database) instead of patching the framework.
 - Do not add project-specific constants, aliases, fallbacks, or exceptions to core behavior just to make one project fit.
@@ -46,7 +47,7 @@ Examples:
 - Middleware is the first-class place for auth, guest, admin, tenant, and `can:*` authorization checks.
 - `can:*` works globally when tenancy is not configured and requires tenant context only when both the tenant key and table are configured.
 - The protected `superadministrator` role bypasses permission checks. Roles with `admin.access` remain subordinate and do not become superadministrators.
-- Owner fallback permission rows are currently created automatically when a tenant owner has no explicit permission row yet.
+- Tenant authorization requires an explicit active role assignment; ownership alone does not create permission rows.
 - Do not move framework permission behavior into controllers or models unless the change is explicitly framework-level.
 - Keep RouteBuilder and Render inference compatible unless the task is explicitly about changing that inference.
 - Keep framework conventions generic. Do not bake project-specific domain logic into core architecture changes.

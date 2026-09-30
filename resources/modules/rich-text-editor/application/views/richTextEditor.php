@@ -1,6 +1,14 @@
 <?php
 $editor = (array)($richTextEditor ?? []);
 $editorID = trim((string)($editor['id'] ?? 'richTextContent'));
+$editorID = preg_replace('/[^A-Za-z0-9_-]+/', '-', $editorID) ?: 'richTextContent';
+$editorID = trim($editorID, '-_');
+if ($editorID === '') {
+    $editorID = 'richTextContent';
+}
+if (preg_match('/^[0-9]/', $editorID) === 1) {
+    $editorID = 'editor-' . $editorID;
+}
 $editorName = trim((string)($editor['name'] ?? 'contenido'));
 $editorLabel = trim((string)($editor['label'] ?? 'Contenido'));
 $editorValue = (string)($editor['value'] ?? '');
@@ -23,4 +31,3 @@ $editorHelp = trim((string)($editor['help'] ?? ''));
 <?php if ($editorHelp !== ''): ?>
     <div class="form-text"><?= htmlspecialchars($editorHelp, ENT_QUOTES, 'UTF-8') ?></div>
 <?php endif; ?>
-

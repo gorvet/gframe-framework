@@ -3,14 +3,17 @@
 
 class Middleware {
 
-private $middlewareDataProvider;
 private \GFrame\Auth\RolePermissionService $rolePermissionService;
+private \GFrame\Http\Contracts\ApiCredentialProvider $apiCredentialProvider;
 
 
-public function __construct(?\GFrame\Auth\RolePermissionService $rolePermissionService = null) {
-    $this->middlewareDataProvider = new MiddlewareDataProvider();
+public function __construct(
+    ?\GFrame\Auth\RolePermissionService $rolePermissionService = null,
+    ?\GFrame\Http\Contracts\ApiCredentialProvider $apiCredentialProvider = null
+) {
     $this->rolePermissionService = $rolePermissionService
       ?? new \GFrame\Auth\RolePermissionService(new \GFrame\Auth\RoleModel());
+    $this->apiCredentialProvider = $apiCredentialProvider ?? new \GFrame\Http\RouteApiCredentialProvider();
 }
 
     
@@ -42,7 +45,7 @@ public function __construct(?\GFrame\Auth\RolePermissionService $rolePermissionS
         $res = $this->block_external_ajax();
       }
       elseif ($middleware === 'allow_cors_with_token') {//automatico para las apis
-        $res = $this->allow_cors_with_token();
+        $res = $this->allow_cors_with_token($routeParams);
       }
       elseif ($middleware === 'webhook_guard') {//automatico para las webhook
         $res = $this->webhook_guard($routeParams);
@@ -150,51 +153,28 @@ $hasHeaders = !empty($_SERVER['HTTP_ORIGIN']) || !empty($_SERVER['HTTP_REFERER']
 
 
 
-private function allow_cors_with_token(): array {
+private function allow_cors_with_token(array $routeParams): array {
     $origin  = $_SERVER['HTTP_ORIGIN']  ?? '';
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     $method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-
-    // Headers de autorización: soporta distintos casings
     $headers = function_exists('getallheaders') ? getallheaders() : [];
     $auth = $headers['Authorization'] 
          ?? $headers['authorization'] 
          ?? $headers['AUTHORIZATION'] 
+         ?? $_SERVER['HTTP_AUTHORIZATION']
+         ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
          ?? '';
-    // Extrae Bearer y normaliza
-    $bearer = trim(preg_replace('/^Bearer\s+/i', '', $auth));
-    $bearer = strtolower($bearer); // // tokens hex mejor en minúsculas
-
-    // Origen real (prefiere Origin; si no, Referer)
+    $bearer = preg_match('/^Bearer\s+(.+)$/i', trim((string)$auth), $match) === 1 ? trim($match[1]) : '';
     $originFull = $origin ?: $referer ?: '';
     $originHost = parse_url($originFull, PHP_URL_HOST) ?? '';
-
-    // Helper de normalización de host (www. y minúsculas)
-    $canon = function (string $h): string {
-        $h = strtolower($h);
-        return preg_replace('/^www\./', '', $h);
-    };
-
-    $originHostCanon = $canon($originHost);
-
-    // Mapa token => host (desde cache o DB)
-    $tokenDomainMap = apcu_fetch('tokenDomainMap');
-    if ($tokenDomainMap === false || !is_array($tokenDomainMap)) {
-      $apiRes = $this->middlewareDataProvider->getAllApiTokens();
-        $tokenDomainMap = is_array($apiRes['data'] ?? null) ? $apiRes['data'] : [];
-        // Normaliza los hosts del mapa al guardar en cache
-        foreach ($tokenDomainMap as $tk => $host) {
-            $tokenDomainMap[$tk] = $canon((string)$host);
-        }
-        apcu_store('tokenDomainMap', $tokenDomainMap, 3600);
+    $originHostCanon = $this->canonicalApiHost((string)$originHost);
+    $context = (array)($routeParams['context'] ?? []);
+    if ($this->apiCredentialProvider instanceof \GFrame\Http\RouteApiCredentialProvider && !$this->apiCredentialProvider->hasCredentials($context)) {
+        return ['status' => 'error', 'code' => 'api_token_not_configured', 'message' => 'La ruta API no tiene consumidores configurados.', 'http_code' => 500];
     }
 
-    // Prepara lista de hosts permitidos para preflight (normalizados)
-    $allowedOriginsPreflight = array_values(array_map($canon, $tokenDomainMap));
-
-    // 1) Preflight: valida dominio (no token)
     if ($method === 'OPTIONS') {
-        $originAllowed = $originHostCanon && in_array($originHostCanon, $allowedOriginsPreflight, true);
+        $originAllowed = $originHostCanon !== '' && $this->apiCredentialProvider->allowsPreflightOrigin($originHostCanon, $context);
         return [
             'status'       => $originAllowed ? 'preflight' : 'unauthorized',
             'code'         => $originAllowed ? 'cors_ok' : 'forbidden',
@@ -203,22 +183,11 @@ private function allow_cors_with_token(): array {
         ];
     }
 
-    // 2) Request real: validar token
-    if ($bearer === '' || !isset($tokenDomainMap[$bearer])) {
-        return [
-            'status'    => 'unauthorized',
-            'code'      => 'invalid_token',
-            'message'   => 'Token inválido',
-            'http_code' => 401,
-        ];
-    }
+    $authentication = $this->apiCredentialProvider->authenticate($bearer, $context);
+    if (($authentication['status'] ?? '') !== 'success') return $authentication;
+    $consumer = (array)($authentication['data'] ?? []);
 
-    // 3) Si hay origen, validar que coincida (canónico) con el host del token
-    $expectedHostCanon = $canon((string)$tokenDomainMap[$bearer]);
-
-    if ($originHostCanon && $originHostCanon !== $expectedHostCanon) {
-        // Si quieres permitir www.<host> como equivalente, ya está cubierto por $canon
-        // Si quieres permitir subdominios, cambia aquí a "termina con"
+    if ($originHostCanon !== '' && !$this->originAllowedByConsumer($originHostCanon, (array)($consumer['origins'] ?? []))) {
         return [
             'status'    => 'unauthorized',
             'code'      => 'cors_denied',
@@ -230,7 +199,23 @@ private function allow_cors_with_token(): array {
     return [
         'status'       => 'success',
         'cors_headers' => !empty($originHostCanon),
+        'context' => [
+            'api_consumer' => (string)($consumer['name'] ?? ''),
+            'api_tenant_id' => $consumer['tenant_id'] ?? null,
+            'api_scopes' => (array)($consumer['scopes'] ?? []),
+        ],
     ];
+}
+
+private function originAllowedByConsumer(string $origin, array $allowed): bool {
+    return in_array('*', $allowed, true) || in_array($origin, $allowed, true);
+}
+
+private function canonicalApiHost(string $value): string {
+    $value = trim(strtolower($value));
+    if ($value === '*') return '*';
+    $host = parse_url(str_contains($value, '://') ? $value : 'https://' . $value, PHP_URL_HOST) ?: $value;
+    return (string)preg_replace('/^www\./', '', strtolower($host));
 }
 
 
@@ -456,7 +441,8 @@ if ($hasHeaders && !$this->is_same_origin()) {
     if (!$this->hasSessionIdentity()) {
       return ['status' => 'unauthorized', 'code' => 'login_required'];
     }
-      return ['status' => 'success'];
+
+    return ['status' => 'success'];
   }
 
   private  function guest(): array {
@@ -523,7 +509,7 @@ private function checkPermission($permission, $routeParams): array {
             ]];
         }
 
-        if (!projectPermissionsUseTenancy()) {
+        if (!$this->usesTenantPermissions()) {
             $authorization = $this->rolePermissionService->authorize($userId, $module . '.' . $action);
             if (($authorization['status'] ?? '') !== 'success') {
                 return $authorization;
@@ -536,41 +522,13 @@ private function checkPermission($permission, $routeParams): array {
             ]];
         }
 
-        try {
-            $tenantID = null;
-            if (projectPermissionsUseTenancy()) {
-                $tenantID = $this->resolveTenantID($routeParams);
-                if ($tenantID <= 0) {
-                    return ['status' => 'unauthorized', 'code' => 'forbidden'];
-                }
-            }
-
-            $fallbackLevel = $this->sessionRole();
-            $userPerm = $this->middlewareDataProvider->userPermissions($userId, $tenantID, $fallbackLevel);
-        } catch (Throwable $exception) {
-            return [
-                'status' => 'error',
-                'code' => 'permission_config_error',
-                'message' => $exception->getMessage(),
-            ];
-        }
-
-        if (($userPerm['status'] ?? '') !== 'success') {
-            return $userPerm;
-        }
-
-        $data = (array)($userPerm['data'] ?? []);
-        $permissions = (array)($data['permissions'] ?? []);
-        if ($permissions === []) {
-            $permissions = json_decode((string)($data['permissions_json'] ?? ''), true) ?: [];
-        }
-
-        if (!projectPermissionGranted($permissions, $module, $action)) {
-            return ['status' => 'unauthorized', 'code' => 'permission'];
-        }
+        $tenantID = $this->resolveTenantID($routeParams);
+        if ($tenantID <= 0) return ['status' => 'unauthorized', 'code' => 'forbidden'];
+        $authorization = $this->rolePermissionService->authorize($userId, $module . '.' . $action, $tenantID);
+        if (($authorization['status'] ?? '') !== 'success') return $authorization;
 
         return ['status' => 'success', 'context' => [
-            'role' => (string)($data['permission_level'] ?? $fallbackLevel),
+            'role' => (string)($authorization['data']['role'] ?? $this->sessionRole()),
             'permission_module' => $module,
             'permission_action' => $action,
         ]];
@@ -581,6 +539,15 @@ private function sessionRole(): string {
         ? ($_SESSION['auth']['role'] ?? null)
         : null;
     return mb_strtolower(trim((string)($normalized ?? '')), 'UTF-8');
+}
+
+private function usesTenantPermissions(): bool {
+    $hasTenantKey = defined('TENANT') && trim((string)TENANT) !== '';
+    $hasTenantTable = defined('TENANT_TABLE') && trim((string)TENANT_TABLE) !== '';
+    if ($hasTenantKey !== $hasTenantTable) {
+        throw new RuntimeException('La configuración de permisos requiere definir TENANT y TENANT_TABLE juntos.');
+    }
+    return $hasTenantKey && $hasTenantTable;
 }
 
 private function hasSessionIdentity(): bool {
@@ -638,7 +605,7 @@ private function resolveTenantID(array $routeParams): int {
     return 0;
 }
 public  function sessionTimeout($refresh = true): array{
-    $maxIdle = 1800; // 1800 = 30 minutos
+    $maxIdle = max(60, (int)\GFrame\Config\ConfigRepository::get('session.idle_timeout', 1800));
     $last = $_SESSION['lastActivity'] ?? time();
     if (time() - $last > $maxIdle) {
         session_unset();

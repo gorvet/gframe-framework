@@ -100,7 +100,21 @@ class Render {
             $metaData = require $metaFilePath;
         }
 
-        $finalMetaData = $this->mergeMetaArrays($metaGroupData, $metaData);
+        $templateMetaData = [];
+        $templateMetaPath = ABSPATH . 'app/views/templates/' . $templateName . '.meta.php';
+        if (is_file($templateMetaPath)) {
+            $loaded = require $templateMetaPath;
+            if (is_array($loaded)) $templateMetaData = $loaded;
+        }
+        $templateExtensions = glob(ABSPATH . 'app/views/templates/meta/' . $templateName . '/*.meta.php') ?: [];
+        sort($templateExtensions, SORT_NATURAL | SORT_FLAG_CASE);
+        foreach ($templateExtensions as $extensionPath) {
+            $loaded = require $extensionPath;
+            if (is_array($loaded)) $templateMetaData = $this->mergeMetaArrays($templateMetaData, $loaded);
+        }
+
+        $finalMetaData = $this->mergeMetaArrays($templateMetaData, $metaGroupData);
+        $finalMetaData = $this->mergeMetaArrays($finalMetaData, $metaData);
 
         $this->setMetas($finalMetaData, $routeParams);
 
@@ -197,10 +211,6 @@ class Render {
                 $this->metasController->setHeaderJsScripts($metaData['hjs']);
             }
 
-            if (!empty($metaData['credits'])) {
-                $this->metasController->setFooterCredits($metaData['credits']);
-            }
-
             if (!empty($metaData['schema'])) {
                 $this->metasController->setSchema($metaData['schema']);
             }
@@ -228,6 +238,40 @@ class Render {
             }
         }
         return $base;
+    }
+
+    public function renderFooterArea(string $area, array $routeParams = [], array $data = []): string {
+        if (!in_array($area, ['content', 'copyright', 'credits'], true)) {
+            return '';
+        }
+
+        $relativePath = trim(str_replace('\\', '/', (string)($routeParams['relativePath'] ?? '')), '/');
+        $viewName = (string)($routeParams['view'] ?? '');
+        $segments = $relativePath === '' ? [] : explode('/', $relativePath);
+        $validSegment = static fn(string $segment): bool => (bool)preg_match('/^[a-zA-Z0-9_-]+$/', $segment);
+        $candidates = [];
+
+        if ($segments !== [] && array_reduce($segments, static fn(bool $valid, string $segment): bool => $valid && $validSegment($segment), true)) {
+            $viewDirectory = ABSPATH . 'app/views/' . $relativePath . '/';
+            if ($viewName !== '' && $validSegment($viewName)) {
+                $candidates[] = $viewDirectory . $viewName . '.footer.' . $area . '.php';
+            }
+            $candidates[] = $viewDirectory . end($segments) . '.footer.' . $area . '.php';
+        }
+
+        $candidates[] = ABSPATH . 'app/views/templates/footer/' . $area . '.php';
+
+        foreach ($candidates as $candidate) {
+            if (!is_file($candidate)) {
+                continue;
+            }
+
+            ob_start();
+            include $candidate;
+            return (string)ob_get_clean();
+        }
+
+        return '';
     }
 
 

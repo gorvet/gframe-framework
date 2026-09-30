@@ -37,6 +37,7 @@ final class InstallationProfileCatalog
             $profile['database'] = (bool)($profile['database'] ?? false);
             $profile['auth'] = (bool)($profile['auth'] ?? false);
             $profile['tenancy'] = (bool)($profile['tenancy'] ?? false);
+            $profile['public'] = (bool)($profile['public'] ?? true);
             $profile['modules'] = array_values(array_unique(array_map('strval', (array)($profile['modules'] ?? []))));
         }
         unset($profile);
