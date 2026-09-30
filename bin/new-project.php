@@ -6,9 +6,29 @@ use GFrame\Install\ProjectScaffolder;
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'packages' . DIRECTORY_SEPARATOR . 'autoload.php';
 
-$target = trim((string)($argv[1] ?? ''));
+$argument = trim((string)($argv[1] ?? ''));
+$help = static function (): string {
+    return <<<TEXT
+Uso: composer new -- <directorio>
+
+Crea un proyecto GFrame en un directorio nuevo o vacío.
+
+Opciones:
+  -h, --help    Muestra esta ayuda.
+
+Ejemplo:
+  composer new -- ../mi-proyecto
+TEXT;
+};
+
+if (in_array($argument, ['-h', '--help'], true)) {
+    fwrite(STDOUT, $help() . PHP_EOL);
+    exit(0);
+}
+
+$target = $argument;
 if ($target === '') {
-    fwrite(STDERR, "Uso: composer new -- <directorio>\n");
+    fwrite(STDERR, $help() . PHP_EOL);
     exit(1);
 }
 

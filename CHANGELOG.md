@@ -4,6 +4,8 @@
 
 ### Núcleo
 
+- El generador de proyectos reconoce `-h` y `--help` sin crear un directorio accidental.
+
 - Multimedia recupera campo y selector separados, selección múltiple JSON, vista previa segura renderizada por PHP, actualización del listado por fragmentos, carga desde el selector, registro seguro de enlaces HTTPS y navegación, vista previa y copia de URL en el modal de detalles. La URL externa se guarda separada de la ruta local.
 
 - El instalador valida el primer superadministrador y los conflictos de configuración antes de publicar archivos; tras fallos de publicación limpia su configuración y admite reintentos. El primer usuario se crea al final. Se añadieron pruebas HTTP para los cuatro perfiles y una prueba MySQL aislada. `robots.txt` permanece disponible con `Disallow: /` cuando se desactiva la indexación.

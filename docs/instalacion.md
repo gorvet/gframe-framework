@@ -50,6 +50,8 @@ Para crear un proyecto:
 composer new -- ../mi-proyecto
 ```
 
+Use `composer new -- --help` para consultar la ayuda sin crear archivos.
+
 El directorio debe estar vacío. Después se instalan las dependencias dentro del proyecto y se abre `public/install/`. El asistente ofrece los perfiles `static`, `managed`, `intranet` y `saas`; no se mantienen plantillas independientes para cada uno.
 
 SQLite es una alternativa completa para proyectos que no necesitan MySQL. Autenticación, roles, multimedia y notificaciones incluyen esquemas para ambos motores.
