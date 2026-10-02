@@ -9,7 +9,8 @@ final class CampaignEmailWorkerTest extends TestCase
     #[RunInSeparateProcess]
     public function testImmediateEmailStartsAsyncAndFailureKeepsTheQueuedResult(): void
     {
-        define('ABSPATH', __DIR__ . '/fixtures/email-worker-project/');
+        define('ABSPATH', __DIR__ . '/fixtures/');
+        \GFrame\Modules\ModuleRuntime::initialize(\GFrame\Modules\ModuleCatalog::frameworkDefault(), ['notifications-email'], ABSPATH);
         require dirname(__DIR__) . '/resources/modules/notification-campaigns/application/app/controllers/notification-campaigns/CampaignController.php';
         $controller = new class extends \GFrame\Modules\NotificationCampaigns\Controllers\CampaignController {
             public int $starts = 0;
@@ -35,5 +36,8 @@ final class CampaignEmailWorkerTest extends TestCase
         self::assertSame('success', $result['status']);
         self::assertSame('failed', $result['meta']['email_worker']);
         self::assertSame('campaign_started', $result['code']);
+        \GFrame\Modules\ModuleRuntime::initialize(\GFrame\Modules\ModuleCatalog::frameworkDefault(), [], ABSPATH);
+        self::assertSame($success, $controller->trigger($success, true));
+        self::assertSame(1, $controller->starts);
     }
 }

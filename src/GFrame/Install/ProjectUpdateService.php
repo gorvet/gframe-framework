@@ -34,7 +34,7 @@ final class ProjectUpdateService
         $allowed = ['.htaccess', 'index.php', 'core/Load.php', 'install.php', 'public/css/variables.css', 'public/css/common.css', 'public/css/install/install.css', 'public/js/install/install.js'];
         $added = $updated = $unchanged = $conflicts = $overwritten = [];
         foreach ($this->files([], $projectRoot) as $relative => $source) {
-            if (!in_array($relative, $allowed, true) && !str_starts_with($relative, 'config/server/')) continue;
+            if (!in_array($relative, $allowed, true) && !str_starts_with($relative, 'deployment/')) continue;
             $target = $projectRoot . '/' . $relative;
             if (is_file($target) && hash_file('sha256', $source) === hash_file('sha256', $target)) {
                 $unchanged[] = $relative;

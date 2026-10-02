@@ -4,7 +4,7 @@ El servidor entrega los recursos públicos y envía las peticiones de aplicació
 
 ## Nginx
 
-El instalador y `composer gframe:update` publican `config/server/nginx.conf`. Es un fragmento para incluir dentro del bloque `server` del sitio, no un virtual host completo. No instala ni recarga Nginx automáticamente.
+El instalador y `composer gframe:update` publican `deployment/nginx.conf`. Es un fragmento para incluir dentro del bloque `server` del sitio, no un virtual host completo. No instala ni recarga Nginx automáticamente.
 
 ```nginx
 server {
@@ -13,7 +13,7 @@ server {
     root /var/www/mi-proyecto;
 
     set $gframe_php unix:/run/php/php8.1-fpm.sock;
-    include /var/www/mi-proyecto/config/server/nginx.conf;
+    include /var/www/mi-proyecto/deployment/nginx.conf;
 }
 ```
 

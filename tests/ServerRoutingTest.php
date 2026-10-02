@@ -20,7 +20,7 @@ final class ServerRoutingTest extends TestCase
 
     public function testNginxFragmentDoesNotContainProjectOrPanelConfiguration(): void
     {
-        $config = (string)file_get_contents(dirname(__DIR__) . '/resources/skeleton/config/server/nginx.conf');
+        $config = (string)file_get_contents(dirname(__DIR__) . '/resources/skeleton/deployment/nginx.conf');
         foreach (['server_name ', 'listen ', 'ssl_certificate', 'enable-php-81', 'codice.', 'botzy.', 'Access-Control-Allow-Origin', 'http_x_requested_with', 'http_x_webhook_wapi', 'index.php/$1', 'error_code='] as $projectSpecific) self::assertStringNotContainsString($projectSpecific, $config);
         self::assertStringContainsString('fastcgi_intercept_errors off;', $config);
         self::assertStringContainsString('fastcgi_param REQUEST_URI $request_uri;', $config);
@@ -51,7 +51,7 @@ final class ServerRoutingTest extends TestCase
                 if (!is_dir(dirname($project . '/' . $fixture))) mkdir(dirname($project . '/' . $fixture), 0775, true);
                 file_put_contents($project . '/' . $fixture, 'server-fixture-' . $fixture);
             }
-            file_put_contents($root . '/nginx.conf', 'worker_processes 1; daemon off; master_process off; pid logs/nginx.pid; error_log logs/error.log; events { worker_connections 64; } http { access_log off; server { listen 127.0.0.1:' . $httpPort . '; server_name localhost; root "' . $project . '"; set $gframe_php 127.0.0.1:' . $cgiPort . '; include "' . $project . '/config/server/nginx.conf"; location = /test500 { return 500; } location = /test503 { return 503; } } }');
+            file_put_contents($root . '/nginx.conf', 'worker_processes 1; daemon off; master_process off; pid logs/nginx.pid; error_log logs/error.log; events { worker_connections 64; } http { access_log off; server { listen 127.0.0.1:' . $httpPort . '; server_name localhost; root "' . $project . '"; set $gframe_php 127.0.0.1:' . $cgiPort . '; include "' . $project . '/deployment/nginx.conf"; location = /test500 { return 500; } location = /test503 { return 503; } } }');
             $null = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
             foreach ([[$cgi, '-b', '127.0.0.1:' . $cgiPort, '-d', 'cgi.fix_pathinfo=0'], [$nginx, '-p', $root . '/', '-c', 'nginx.conf']] as $command) {
                 $process = proc_open($command, [0 => ['pipe', 'r'], 1 => ['file', $null, 'a'], 2 => ['file', $root . '/logs/process.log', 'a']], $pipes, $root);
@@ -107,8 +107,9 @@ final class ServerRoutingTest extends TestCase
     {
         $root = dirname(__DIR__) . '/resources/skeleton/';
         $apache = (string)file_get_contents($root . '.htaccess');
-        $nginx = (string)file_get_contents($root . 'config/server/nginx.conf');
+        $nginx = (string)file_get_contents($root . 'deployment/nginx.conf');
         self::assertStringContainsString('RewriteRule ^public/ - [END]', $apache);
+        foreach ([$apache, $nginx] as $config) self::assertStringContainsString('core|deployment|packages|storage', $config);
         self::assertStringContainsString('RewriteRule ^(?:uploads|downloads|download)(?:/|$) - [F,NC]', $apache);
         self::assertStringContainsString('RewriteCond %{REQUEST_FILENAME} -f', $apache);
         self::assertStringNotContainsString('RewriteCond %{REQUEST_FILENAME} !-f', $apache);

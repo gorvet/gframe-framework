@@ -257,9 +257,7 @@ class CampaignController
     protected function startEmailDelivery(array $response, bool $requested): array
     {
         if (!$requested || ($response['status'] ?? '') !== 'success') return $response;
-        $modulesFile = defined('ABSPATH') ? ABSPATH . 'config/modules.php' : '';
-        $modules = is_file($modulesFile) ? require $modulesFile : [];
-        if (!in_array('notifications-email', (array)$modules, true)) return $response;
+        if (!\GFrame\Modules\ModuleRuntime::isInstalled('notifications-email')) return $response;
         try {
             $this->dispatchEmailWorker();
             $response['meta']['email_worker'] = 'started';

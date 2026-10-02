@@ -8,14 +8,17 @@ use RuntimeException;
 final class ModuleRuntime
 {
     private static array $modules = [];
+    private static array $installed = [];
     private static string $projectRoot = '';
     private static bool $autoloadRegistered = false;
 
     public static function initialize(ModuleCatalog $catalog, array $installed, string $projectRoot): void
     {
         self::$modules = [];
+        self::$installed = [];
         self::$projectRoot = rtrim($projectRoot, '/\\');
         foreach ($catalog->resolve($installed) as $module) {
+            self::$installed[$module['name']] = true;
             if (!isset($module['runtime'])) continue;
             $runtime = $module['runtime'];
             $root = self::containedFile($module['path'], (string)($runtime['root'] ?? ''));
@@ -42,6 +45,12 @@ final class ModuleRuntime
     public static function has(string $module): bool
     {
         return isset(self::$modules[$module]);
+    }
+
+    /** Consulta el registro cargado al arrancar, incluidos los módulos sin MVC. */
+    public static function isInstalled(string $module): bool
+    {
+        return isset(self::$installed[$module]);
     }
 
     public static function file(string $type, string $relative, ?string $module = null): ?string
@@ -116,7 +125,16 @@ final class ModuleRuntime
     public static function createCustomizationDirectories(array $module, string $projectRoot): void
     {
         if (!isset($module['runtime'])) return;
+        $root = self::containedFile((string)$module['path'], (string)($module['runtime']['root'] ?? ''));
+        if ($root === null || !is_dir($root)) throw new RuntimeException('La raíz runtime del módulo no es válida.');
         foreach (['controllers', 'models', 'services', 'views'] as $type) {
+            if (!is_dir($root . '/' . $type)) continue;
+            $hasFiles = false;
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/' . $type, \FilesystemIterator::SKIP_DOTS));
+            foreach ($files as $file) {
+                if ($file->isFile()) { $hasFiles = true; break; }
+            }
+            if (!$hasFiles) continue;
             $directory = rtrim($projectRoot, '/\\') . '/app/' . $type . '/' . $module['name'];
             if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
                 throw new RuntimeException('No se pudo crear la carpeta de personalización: ' . $directory);

@@ -2,14 +2,12 @@
 
 ## Estructura e instalación
 
-Un módulo runtime conserva sus originales en una estructura equivalente a `app`. El proyecto contiene solamente las personalizaciones activas. El instalador crea las carpetas vacías de controladores, modelos, servicios y vistas; no copia las clases ni las vistas originales. Las rutas se publican en `config/routes` y los CSS/JS siguen publicándose en `public` según el manifiesto.
+Un módulo runtime conserva sus originales en una estructura equivalente a `app`. El proyecto contiene solamente las personalizaciones activas. El instalador crea carpetas vacías únicamente para las capas que contienen archivos originales: controladores, modelos, servicios o vistas. Error-pages solo crea su carpeta de vistas; no copia las clases ni las vistas originales. Las rutas se publican en `config/routes` y los CSS/JS siguen publicándose en `public` según el manifiesto.
 
 ```text
 Proyecto/
 ├── app/
 │   ├── controllers/self-account/
-│   ├── models/self-account/
-│   ├── services/self-account/
 │   └── views/self-account/
 └── packages/gframe/framework/resources/modules/self-account/
     └── application/app/
@@ -20,6 +18,8 @@ Proyecto/
 ```
 
 `packages` es la carpeta Composer del proyecto, no otra capa de ejecución. El catálogo proporciona la raíz física del módulo; el runtime activa solamente los módulos instalados del registro `storage/gframe-installed.json`.
+
+`ModuleRuntime::isInstalled('notifications-email')` consulta ese registro cargado al arrancar e incluye módulos sin MVC. `ModuleRuntime::has('self-account')` comprueba específicamente un módulo runtime activo. No mantenga una lista independiente en `config/modules.php`. Los archivos antiguos de ese nombre no se cargan ni se borran automáticamente. Las carpetas de personalización antiguas tampoco se eliminan: pueden contener trabajo propio; una capa nueva se puede crear manualmente cuando el proyecto la necesite.
 
 ## Manifiesto y rutas
 

@@ -28,6 +28,8 @@ The managed skeleton update includes `app/views/templates/mail/` (HTML and adjac
 
 `ProjectScaffolder::UPDATE_PATHS` is the shared managed skeleton policy used by installation hashes and updates. Do not silently omit new skeleton files: the coverage test requires an update entry or an explicit project-owned exception. Keep project routes, permissions, Composer metadata, footer credits and branding outside managed replacement. Test every module's published files against the updater; runtime controller/model/view files remain in the package and customization directories remain empty.
 
+Create module customization directories only for native layers containing files, not every possible MVC layer. `storage/gframe-installed.json` is the sole installed-module registry; do not generate or consult `config/modules.php`. Use `ModuleRuntime::isInstalled()` for installed modules including non-MVC transports, and `has()` for active MVC runtime modules. Deployment aids belong in root `deployment/`, not PHP `config/`; keep them protected in Apache/Nginx and included in the updater. Preserve old customized files instead of deleting them during migration.
+
 Use semantic versioning for public releases. During `0.x`, document compatibility changes and migration requirements explicitly.
 
 Optional frontend components live in `resources/modules`. Register dependencies in the module manifest and publish them through `ModuleAssetPublisher`; do not duplicate browser libraries across framework directories.

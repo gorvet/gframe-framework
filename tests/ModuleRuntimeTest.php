@@ -263,8 +263,10 @@ final class ModuleRuntimeTest extends TestCase
 
     public function testInstallerCreatesEmptyDirectoriesAndUpdaterPreservesCustomFiles(): void
     {
+        mkdir($this->root . '/modules/demo/app/services/demo', 0777, true);
         (new ModuleAssetPublisher($this->catalog))->publishProject(['demo'], ABSPATH);
-        foreach (['controllers', 'models', 'services', 'views'] as $type) self::assertDirectoryExists(ABSPATH . 'app/' . $type . '/demo');
+        foreach (['controllers', 'models', 'views'] as $type) self::assertDirectoryExists(ABSPATH . 'app/' . $type . '/demo');
+        self::assertDirectoryDoesNotExist(ABSPATH . 'app/services/demo');
         self::assertFileDoesNotExist(ABSPATH . 'app/controllers/demo/DemoController.php');
         self::assertFileDoesNotExist(ABSPATH . 'app/views/demo/demoIndex.php');
         file_put_contents(ABSPATH . 'app/views/demo/demoIndex.php', 'my customization');
@@ -286,9 +288,14 @@ final class ModuleRuntimeTest extends TestCase
         self::assertNotNull(ModuleRuntime::template('adminTemplate.php', 'self-account'));
         self::assertNotNull(ModuleRuntime::template('admin.meta.php', 'self-account'));
         self::assertNotNull(ModuleRuntime::template('errorTemplate.php'));
-        foreach (['admin-panel', 'error-pages', 'heartbeat-client'] as $module) {
-            foreach (['controllers', 'models', 'services', 'views'] as $type) self::assertDirectoryExists(ABSPATH . 'app/' . $type . '/' . $module);
-        }
+        self::assertDirectoryExists(ABSPATH . 'app/controllers/admin-panel');
+        self::assertDirectoryExists(ABSPATH . 'app/views/admin-panel');
+        self::assertDirectoryExists(ABSPATH . 'app/views/error-pages');
+        self::assertDirectoryDoesNotExist(ABSPATH . 'app/controllers/error-pages');
+        self::assertDirectoryDoesNotExist(ABSPATH . 'app/models/error-pages');
+        self::assertDirectoryDoesNotExist(ABSPATH . 'app/services/error-pages');
+        self::assertDirectoryExists(ABSPATH . 'app/controllers/heartbeat-client');
+        self::assertDirectoryDoesNotExist(ABSPATH . 'app/views/heartbeat-client');
         define('site_url', 'https://example.test/');
         $routeParams = (new \ErrorResponder())->buildRouteParams('404');
         self::assertSame('error-pages', $routeParams['sourceModule']);

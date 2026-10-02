@@ -1,5 +1,16 @@
 # Registro de cambios
 
+## 1.0.0 — 2 de octubre de 2026
+
+Primera versión del paquete completo, con PHP 8.1 como entorno probado. Incluye la migración descrita en las notas de preparación anteriores.
+
+- Solo se crean carpetas de personalización para las capas presentes en cada módulo.
+- El fragmento Nginx pasa de `config/server/nginx.conf` a `deployment/nginx.conf` y conserva la protección de archivos internos.
+- `storage/gframe-installed.json` unifica la lista de módulos instalada: arranque, actualización y Campañas usan la misma fuente. No se genera ni se consulta `config/modules.php`.
+- La estructura inicial requiere `gframe/framework:^1.0`. `ProjectConfigWriter::write()` deja de recibir el array de módulos y devuelve únicamente las rutas de configuración y entorno.
+
+Consulte [alcance, comprobaciones y migración de 1.0.0](docs/release-1.0.0.md).
+
 ## Preparación de 0.9.0 (sin publicar)
 
 - Módulos MVC con originales en el paquete y personalizaciones por herencia PHP en `app`, sin copiar controladores ni vistas al instalar.

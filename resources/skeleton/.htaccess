@@ -7,7 +7,7 @@ Options -Indexes
     RewriteCond %{REQUEST_URI} ^/([^/]+)/? [NC]
     RewriteRule ^ - [E=PROJECT:%1]
 
-    RewriteRule ^(?:app|bin|config|core|packages|storage)(?:/|$) - [F,NC]
+    RewriteRule ^(?:app|bin|config|core|deployment|packages|storage)(?:/|$) - [F,NC]
     RewriteRule ^(?:\.env(?:\..*)?|composer\.(?:json|lock)|README\.md)$ - [F,NC]
     RewriteRule (^|/)\. - [F,NC]
     RewriteRule ^(?!index\.php$|install\.php$).*\.(?:php[0-9]*|phtml|phar|sql|sqlite|sqlite3|log|bak)(?:/|$) - [F,NC]

@@ -242,7 +242,7 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['auth-ui'], $project);
 
         self::assertContains('auth-ui', $result['modules']);
-        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+        foreach (['controllers', 'views'] as $type) {
             self::assertDirectoryExists($project . '/app/' . $type . '/auth-ui');
             self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/auth-ui'), ['.', '..'])));
         }
@@ -279,7 +279,7 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['self-account'], $project);
 
         self::assertContains('self-account', $result['modules']);
-        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+        foreach (['controllers', 'views'] as $type) {
             self::assertDirectoryExists($project . '/app/' . $type . '/self-account');
             self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/self-account'), ['.', '..'])));
         }
@@ -318,7 +318,7 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['user-admin'], $project);
 
         self::assertContains('user-admin', $result['modules']);
-        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+        foreach (['controllers', 'views'] as $type) {
             self::assertDirectoryExists($project . '/app/' . $type . '/user-admin');
             self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/user-admin'), ['.', '..'])));
         }
@@ -341,7 +341,7 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['media-library'], $project);
 
         self::assertContains('media-library', $result['modules']);
-        foreach (['controllers', 'models', 'services', 'views'] as $directory) {
+        foreach (['controllers', 'views'] as $directory) {
             self::assertDirectoryExists($project . '/app/' . $directory . '/media-library');
             self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $directory . '/media-library'), ['.', '..'])));
         }
@@ -364,7 +364,7 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['notifications'], $project);
 
         self::assertContains('notifications', $result['modules']);
-        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+        foreach (['controllers', 'views'] as $type) {
             self::assertDirectoryExists($project . '/app/' . $type . '/notifications');
             self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/notifications'), ['.', '..'])));
         }
@@ -398,7 +398,7 @@ final class ModuleCatalogTest extends TestCase
         mkdir($project, 0775, true);
         $result = (new ModuleAssetPublisher(ModuleCatalog::frameworkDefault()))->publishProject(['notification-campaigns'], $project);
         self::assertContains('notification-campaigns', $result['modules']);
-        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+        foreach (['controllers', 'views'] as $type) {
             self::assertDirectoryExists($project . '/app/' . $type . '/notification-campaigns');
             self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/notification-campaigns'), ['.', '..'])));
         }

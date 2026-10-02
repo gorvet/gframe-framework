@@ -91,6 +91,8 @@ final class ProjectUpdateServiceTest extends TestCase
         self::assertSame('installer_updated', $result['code']);
         self::assertSame([], $result['modules']);
         self::assertFileDoesNotExist($project . '/config/app.php');
+        self::assertFileExists($project . '/deployment/nginx.conf');
+        self::assertFileDoesNotExist($project . '/config/server/nginx.conf');
         self::assertFileDoesNotExist($project . '/storage/gframe-installed.json');
         self::assertFileDoesNotExist($project . '/.env');
         self::assertDirectoryDoesNotExist($project . '/app/controllers');

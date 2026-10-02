@@ -21,7 +21,7 @@ Dentro de `config/app.php` pueden utilizarse los ayudantes `env()`, `env_bool()`
 
 ## Compatibilidad
 
-Durante la serie `0.x`, GFrame mantiene las constantes históricas principales. Estas constantes se generan desde la configuración estructurada y permiten actualizar gradualmente las aplicaciones existentes.
+En la versión `1.x`, GFrame mantiene las constantes históricas principales. Estas constantes se generan desde la configuración estructurada y permiten actualizar gradualmente las aplicaciones existentes.
 
 Las aplicaciones con tenant pueden definir `tenancy.key` y `tenancy.table`. Ambas opciones son obligatorias entre sí. Si se omiten, los permisos funcionan en modo global.
 

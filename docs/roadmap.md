@@ -2,7 +2,7 @@
 
 Las mejoras opcionales de baja prioridad se registran en [Mejoras pendientes no urgentes](mejoras-pendientes.md), separadas de los errores y del trabajo en curso.
 
-## Versión 0.9.0
+## Versión 1.0.0
 
 - Validar la integración final en una aplicación real sin tenant.
 - Consolidar la configuración por entorno mediante `.env` y `config/app.php`. **Completado.**

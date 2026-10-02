@@ -6,8 +6,8 @@ use RuntimeException;
 
 final class ProjectConfigWriter
 {
-    /** @return array{config:string,environment:string,modules:string} */
-    public function write(string $projectRoot, array $settings, array $modules, bool $overwrite = false, array $moduleEnvironment = []): array
+    /** @return array{config:string,environment:string} */
+    public function write(string $projectRoot, array $settings, bool $overwrite = false, array $moduleEnvironment = []): array
     {
         $projectRoot = $this->projectRoot($projectRoot);
         $configDirectory = $projectRoot . DIRECTORY_SEPARATOR . 'config';
@@ -17,8 +17,7 @@ final class ProjectConfigWriter
 
         $configPath = $configDirectory . DIRECTORY_SEPARATOR . 'app.php';
         $environmentPath = $projectRoot . DIRECTORY_SEPARATOR . '.env';
-        $modulesPath = $configDirectory . DIRECTORY_SEPARATOR . 'modules.php';
-        $this->guard([$configPath, $environmentPath, $modulesPath], $overwrite);
+        $this->guard([$configPath, $environmentPath], $overwrite);
 
         $tenancy = !empty($settings['tenancy'])
             ? ['key' => (string)($settings['tenant_key'] ?? 'tenant_id'), 'table' => (string)($settings['tenant_table'] ?? 'tenants')]
@@ -27,11 +26,10 @@ final class ProjectConfigWriter
         $database = (array)($settings['database'] ?? []);
         $php = $this->configFile($settings, $database, $tenancy);
         $environment = $this->environment($settings, $database, $moduleEnvironment);
-        $moduleFile = "<?php\n\nreturn " . var_export(array_values($modules), true) . ";\n";
 
         $written = [];
         try {
-            foreach ([$configPath => $php, $environmentPath => $environment, $modulesPath => $moduleFile] as $path => $content) {
+            foreach ([$configPath => $php, $environmentPath => $environment] as $path => $content) {
                 $this->writeFile($path, $content);
                 $written[] = $path;
             }
@@ -44,7 +42,7 @@ final class ProjectConfigWriter
             throw $exception;
         }
 
-        return ['config' => $configPath, 'environment' => $environmentPath, 'modules' => $modulesPath];
+        return ['config' => $configPath, 'environment' => $environmentPath];
     }
 
     public function assertAvailable(string $projectRoot): void
@@ -53,7 +51,6 @@ final class ProjectConfigWriter
         $this->guard([
             $root . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php',
             $root . DIRECTORY_SEPARATOR . '.env',
-            $root . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'modules.php',
         ], false);
     }
 

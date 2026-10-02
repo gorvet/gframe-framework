@@ -10,7 +10,7 @@ final class ProjectScaffolder
     public const UPDATE_PATHS = [
         '.htaccess', 'index.php', 'install.php', 'core/Load.php',
         'config/meta/global.meta.php',
-        'config/server',
+        'deployment',
         'app/views/templates/header.php', 'app/views/templates/footer.php',
         'app/views/templates/mail',
         'public/css/variables.css', 'public/css/bootstrap-buttons-compat.css',

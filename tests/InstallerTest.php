@@ -249,6 +249,12 @@ final class InstallerTest extends TestCase
         self::assertSame('success', $result['status']);
         self::assertContains('error-pages', $result['modules']);
         self::assertDirectoryExists($this->temporaryPath . '/app/views/error-pages');
+        self::assertDirectoryDoesNotExist($this->temporaryPath . '/app/controllers/error-pages');
+        self::assertDirectoryDoesNotExist($this->temporaryPath . '/app/models/error-pages');
+        self::assertDirectoryDoesNotExist($this->temporaryPath . '/app/services/error-pages');
+        self::assertFileDoesNotExist($this->temporaryPath . '/config/modules.php');
+        self::assertFileExists($this->temporaryPath . '/deployment/nginx.conf');
+        self::assertFileDoesNotExist($this->temporaryPath . '/config/server/nginx.conf');
         self::assertFileDoesNotExist($this->temporaryPath . '/app/views/error-pages/error404.php');
         self::assertFileDoesNotExist($this->temporaryPath . '/app/views/templates/errorTemplate.php');
     }

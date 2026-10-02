@@ -112,7 +112,7 @@ final class ProjectInstaller
         foreach ($resolved as $module) {
             $moduleEnvironment = array_merge($moduleEnvironment, (array)($module['environment'] ?? []));
         }
-        $files = $this->configuration->write($projectRoot, $settings, $moduleNames, false, array_values(array_unique($moduleEnvironment)));
+        $files = $this->configuration->write($projectRoot, $settings, false, array_values(array_unique($moduleEnvironment)));
         try {
             $published = $this->publisher->publishProject($moduleNames, $projectRoot);
             if ($database instanceof PDO) {

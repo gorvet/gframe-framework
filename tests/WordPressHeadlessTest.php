@@ -93,7 +93,6 @@ final class WordPressHeadlessTest extends TestCase
         $files = (new ProjectConfigWriter())->write(
             $root,
             ['app_name' => 'WordPress client'],
-            ['wordpress-headless'],
             false,
             ['WORDPRESS_HEADLESS_URL', 'WORDPRESS_HEADLESS_TOKEN']
         );

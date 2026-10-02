@@ -41,7 +41,7 @@ El instalador:
 2. copia el esqueleto de aplicación;
 3. conecta la base de datos, si el perfil la requiere, y crea las tablas de autenticación y de los módulos; en SaaS también instala `tenants` con la clave `tenant_id`;
 4. sincroniza los roles definidos en `config/Permissions.php`;
-5. escribe `config/app.php`, `.env` y `config/modules.php`, publica los recursos y registra las migraciones iniciales;
+5. escribe `config/app.php` y `.env`, publica los recursos y registra las migraciones iniciales;
 6. crea el primer superadministrador y registra `storage/gframe-installed.json` para impedir una segunda ejecución.
 
 Al terminar debe bloquearse `install.php` en producción.
@@ -50,7 +50,7 @@ El instalador no crea un tenant ni asigna membresías a usuarios. En `managed` e
 
 El esqueleto versionado en `resources/skeleton` es la fuente única para crear proyectos. Conserva `install.php` en la raíz y `public/css/home/home.css`, como en los proyectos de referencia.
 Incluye `.htaccess` para enrutar las URL de Apache hacia `index.php` y bloquear el acceso directo a los archivos internos.
-También publica `config/server/nginx.conf`, un fragmento independiente de dominio, SSL y panel. Su integración y el envío de errores a las vistas del framework se describen en [servidores web](servidores-web.md).
+También publica `deployment/nginx.conf`, un fragmento independiente de dominio, SSL y panel. Es una ayuda de despliegue, no configuración cargada por PHP. Su integración y el envío de errores a las vistas del framework se describen en [servidores web](servidores-web.md).
 
 ## Uso y extensión de los perfiles
 
@@ -58,7 +58,7 @@ Los perfiles se definen en `resources/install/profiles.php`. Cada uno fija si ha
 
 `managed` e `intranet` instalan autenticación y administración globales; `saas` agrega `tenants`, notificaciones y cron. La tabla `tenant_memberships` pertenece al esquema de autenticación y registra la relación usuario-tenant-rol; no representa el plan o la suscripción de un tenant. Los datos propios de cada tenant, por ejemplo un bot o una tienda, los define la aplicación. En `static` no se crea usuario ni base de datos.
 
-`config/Permissions.php` sirve como plantilla inicial de roles y capacidades. El instalador la sincroniza tras crear el esquema de autenticación. Los valores de entorno y secretos se escriben en `.env`; `config/app.php` conserva la estructura estable y `config/modules.php` registra los módulos instalados. El bloqueo de instalación se guarda en `storage/gframe-installed.json`.
+`config/Permissions.php` sirve como plantilla inicial de roles y capacidades. El instalador la sincroniza tras crear el esquema de autenticación. Los valores de entorno y secretos se escriben en `.env`; `config/app.php` conserva la estructura estable. `storage/gframe-installed.json` es la única fuente de módulos instalados y conserva además el bloqueo y los hashes usados por el actualizador. Ya no se genera `config/modules.php`.
 
 ## Estado de verificación
 

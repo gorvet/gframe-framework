@@ -34,7 +34,7 @@ Los módulos fundamentales pueden incluir esquemas de instalación portables. El
 
 ## Compatibilidad inicial
 
-La serie `0.x` conserva las clases globales del core actual. Composer genera el mapa de clases y `GFrame\Foundation\Bootstrap` inicia la aplicación. Los namespaces se incorporarán gradualmente, con periodos de compatibilidad y avisos de obsolescencia.
+La versión `1.x` conserva las clases globales históricas del core junto a los componentes con namespace. Composer genera el mapa de clases y `GFrame\Foundation\Bootstrap` inicia la aplicación. Los cambios incompatibles posteriores requieren una nueva versión mayor y una guía de migración.
 
 ## Configuración
 
