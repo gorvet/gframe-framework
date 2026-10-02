@@ -31,7 +31,7 @@ final class ProjectUpdateService
         if (\GFrame\Foundation\Bootstrap::hasProjectConfiguration($projectRoot) || is_file($projectRoot . '/storage/gframe-installed.json')) {
             throw new RuntimeException('El proyecto ya tiene configuración o registro de instalación. Usa la actualización normal.');
         }
-        $allowed = ['.htaccess', 'index.php', 'core/Load.php', 'install.php', 'public/css/variables.css', 'public/css/common.css', 'public/css/install/install.css', 'public/js/install/install.js'];
+        $allowed = ['.htaccess', 'nginx.conf', 'index.php', 'core/Load.php', 'install.php', 'public/css/variables.css', 'public/css/common.css', 'public/css/install/install.css', 'public/js/install/install.js'];
         $added = $updated = $unchanged = $conflicts = $overwritten = [];
         foreach ($this->files([], $projectRoot) as $relative => $source) {
             if (!in_array($relative, $allowed, true) && !str_starts_with($relative, 'deployment/')) continue;

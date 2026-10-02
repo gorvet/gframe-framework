@@ -4,7 +4,7 @@ El servidor entrega los recursos públicos y envía las peticiones de aplicació
 
 ## Nginx
 
-El instalador y `composer gframe:update` publican `deployment/nginx.conf`. Es un fragmento para incluir dentro del bloque `server` del sitio, no un virtual host completo. No instala ni recarga Nginx automáticamente.
+El instalador y `composer gframe:update` publican `nginx.conf`. Es un fragmento para incluir dentro del bloque `server` del sitio, no un virtual host completo. No instala ni recarga Nginx automáticamente.
 
 ```nginx
 server {
@@ -12,16 +12,26 @@ server {
     server_name ejemplo.com;
     root /var/www/mi-proyecto;
 
-    set $gframe_php unix:/run/php/php8.1-fpm.sock;
-    include /var/www/mi-proyecto/deployment/nginx.conf;
+    include /var/www/mi-proyecto/nginx.conf;
+    include enable-php-81.conf;
 }
 ```
 
-Para PHP 8.4, usa el socket real de ese servicio. También se admite `set $gframe_php 127.0.0.1:9000;`. El nombre del socket depende del sistema o del panel; no se deduce de la versión instalada en GFrame.
+Conserva una sola inclusión PHP del panel, con la versión correspondiente al sitio. El fragmento de GFrame no configura sockets, FastCGI ni manejadores PHP.
+
+Para comunicar los errores del servidor, añade esta línea dentro del `location` PHP existente del panel, junto a sus parámetros FastCGI:
+
+```nginx
+fastcgi_param GFRAME_SERVER_ERROR $gframe_server_error;
+```
+
+Mantén allí `fastcgi_intercept_errors off;` para conservar las respuestas de la aplicación. No basta con declarar el parámetro en `server`: los parámetros definidos dentro del manejador PHP sustituyen la herencia de ese nivel. No retires sus parámetros existentes ni crees otro manejador PHP.
+
+El fragmento queda junto a `.htaccess` y bloquea el acceso web a `/nginx.conf`. Si una instalación anterior usa `deployment/nginx.conf` o `config/server/nginx.conf`, cambia su `include` a la raíz después de actualizar. Las copias antiguas se conservan para respetar personalizaciones.
 
 Conserva fuera del fragmento los certificados, redirección HTTPS, dominio, listeners, HTTP/2 o HTTP/3, registros, monitorización y límites del servidor. Ajusta `client_max_body_size` a los límites de Multimedia y los de PHP. El fragmento no habilita CORS indiscriminadamente; las API conservan sus middleware y los recursos que requieran CORS necesitan una política explícita del sitio.
 
-Al integrarlo en el panel, retira las reglas anteriores de `location /`, PHP y estáticos que entren en conflicto. No combines este fragmento con `include enable-php-81.conf` ni otro manejador PHP genérico. Los parámetros FastCGI se definen una sola vez en el nivel `server` y se heredan: añadir parámetros aislados dentro de un `location` sustituye esa herencia y puede romper la integración.
+Incluye GFrame antes del manejador PHP y de los bloques estáticos del panel, para que sus bloqueos se evalúen primero. El archivo de rewrite del panel debe quedar vacío si GFrame ya define `location /`. Conserva el manejador PHP del panel.
 
 Antes de aplicar la configuración:
 
@@ -48,7 +58,7 @@ El fragmento suministrado está preparado para un proyecto en la raíz del domin
 
 ### Errores del servidor y errores de la aplicación
 
-Los `error_page` de 403, 404, 500 y 503 dirigen a ubicaciones internas con nombre. Cada una pasa un `GFRAME_SERVER_ERROR` fijo mediante FastCGI. La petición conserva URL y método originales. El router reconoce el código antes de ejecutar rutas o normalizar la URL y utiliza `ErrorResponder` y las vistas existentes. Nunca acepta ese código desde `?error_code=`, el cuerpo de un formulario ni una cabecera HTTP.
+Los `error_page` de 403, 404, 500 y 503 dirigen a ubicaciones internas con nombre. Cada una fija `$gframe_server_error` y redirige internamente a `/index.php`; el manejador PHP del panel envía el código en `GFRAME_SERVER_ERROR`. La petición conserva URL y método originales. El router reconoce el código antes de ejecutar rutas o normalizar la URL y utiliza `ErrorResponder` y las vistas existentes. Nunca acepta ese código desde `?error_code=`, el cuerpo de un formulario ni una cabecera HTTP.
 
 El resultado depende del canal original: web usa las vistas y estados HTTP correspondientes; AJAX conserva JSON con estado 200; API conserva JSON y el estado HTTP; webhook usa texto y SSE conserva su formato de eventos.
 

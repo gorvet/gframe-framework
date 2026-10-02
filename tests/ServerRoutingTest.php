@@ -20,11 +20,11 @@ final class ServerRoutingTest extends TestCase
 
     public function testNginxFragmentDoesNotContainProjectOrPanelConfiguration(): void
     {
-        $config = (string)file_get_contents(dirname(__DIR__) . '/resources/skeleton/deployment/nginx.conf');
+        $config = (string)file_get_contents(dirname(__DIR__) . '/resources/skeleton/nginx.conf');
         foreach (['server_name ', 'listen ', 'ssl_certificate', 'enable-php-81', 'codice.', 'botzy.', 'Access-Control-Allow-Origin', 'http_x_requested_with', 'http_x_webhook_wapi', 'index.php/$1', 'error_code='] as $projectSpecific) self::assertStringNotContainsString($projectSpecific, $config);
-        self::assertStringContainsString('fastcgi_intercept_errors off;', $config);
-        self::assertStringContainsString('fastcgi_param REQUEST_URI $request_uri;', $config);
-        self::assertStringContainsString('fastcgi_param REQUEST_METHOD $request_method;', $config);
+        foreach (['fastcgi_pass ', 'fastcgi_param ', '$gframe_php', 'location = /index.php', 'location = /install.php'] as $phpHandler) self::assertStringNotContainsString($phpHandler, $config);
+        self::assertStringContainsString('nginx\\.conf|composer', $config);
+        self::assertStringContainsString('if ($gframe_server_error = "")', $config);
         foreach ([403, 404, 500, 503] as $status) self::assertStringContainsString('error_page ' . $status . ' = @gframe_error' . $status . ';', $config);
     }
 
@@ -51,7 +51,12 @@ final class ServerRoutingTest extends TestCase
                 if (!is_dir(dirname($project . '/' . $fixture))) mkdir(dirname($project . '/' . $fixture), 0775, true);
                 file_put_contents($project . '/' . $fixture, 'server-fixture-' . $fixture);
             }
-            file_put_contents($root . '/nginx.conf', 'worker_processes 1; daemon off; master_process off; pid logs/nginx.pid; error_log logs/error.log; events { worker_connections 64; } http { access_log off; server { listen 127.0.0.1:' . $httpPort . '; server_name localhost; root "' . $project . '"; set $gframe_php 127.0.0.1:' . $cgiPort . '; include "' . $project . '/deployment/nginx.conf"; location = /test500 { return 500; } location = /test503 { return 503; } } }');
+            $params = $root . '/fastcgi_params';
+            $serverParams = dirname($nginx) . '/conf/fastcgi_params';
+            if (!is_file($serverParams)) $serverParams = '/etc/nginx/fastcgi_params';
+            self::assertFileExists($serverParams);
+            copy($serverParams, $params);
+            file_put_contents($root . '/nginx.conf', 'worker_processes 1; daemon off; master_process off; pid logs/nginx.pid; error_log logs/error.log; events { worker_connections 64; } http { access_log off; server { listen 127.0.0.1:' . $httpPort . '; server_name localhost; root "' . $project . '"; include "' . $project . '/nginx.conf"; location ~ \\.php$ { try_files $uri =404; fastcgi_pass 127.0.0.1:' . $cgiPort . '; include "' . $params . '"; fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; fastcgi_param GFRAME_SERVER_ERROR $gframe_server_error; fastcgi_intercept_errors off; } location = /test500 { return 500; } location = /test503 { return 503; } } }');
             $null = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
             foreach ([[$cgi, '-b', '127.0.0.1:' . $cgiPort, '-d', 'cgi.fix_pathinfo=0'], [$nginx, '-p', $root . '/', '-c', 'nginx.conf']] as $command) {
                 $process = proc_open($command, [0 => ['pipe', 'r'], 1 => ['file', $null, 'a'], 2 => ['file', $root . '/logs/process.log', 'a']], $pipes, $root);
@@ -107,7 +112,7 @@ final class ServerRoutingTest extends TestCase
     {
         $root = dirname(__DIR__) . '/resources/skeleton/';
         $apache = (string)file_get_contents($root . '.htaccess');
-        $nginx = (string)file_get_contents($root . 'deployment/nginx.conf');
+        $nginx = (string)file_get_contents($root . 'nginx.conf');
         self::assertStringContainsString('RewriteRule ^public/ - [END]', $apache);
         foreach ([$apache, $nginx] as $config) self::assertStringContainsString('core|deployment|packages|storage', $config);
         self::assertStringContainsString('RewriteRule ^(?:uploads|downloads|download)(?:/|$) - [F,NC]', $apache);

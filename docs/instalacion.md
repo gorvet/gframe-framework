@@ -50,7 +50,7 @@ El instalador no crea un tenant ni asigna membresías a usuarios. En `managed` e
 
 El esqueleto versionado en `resources/skeleton` es la fuente única para crear proyectos. Conserva `install.php` en la raíz y `public/css/home/home.css`, como en los proyectos de referencia.
 Incluye `.htaccess` para enrutar las URL de Apache hacia `index.php` y bloquear el acceso directo a los archivos internos.
-También publica `deployment/nginx.conf`, un fragmento independiente de dominio, SSL y panel. Es una ayuda de despliegue, no configuración cargada por PHP. Su integración y el envío de errores a las vistas del framework se describen en [servidores web](servidores-web.md).
+También publica `nginx.conf`, un fragmento independiente de dominio, SSL y panel. Es una ayuda de despliegue, no configuración cargada por PHP. Su integración y el envío de errores a las vistas del framework se describen en [servidores web](servidores-web.md).
 
 ## Uso y extensión de los perfiles
 

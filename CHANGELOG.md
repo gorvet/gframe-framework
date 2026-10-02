@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## 1.0.2 — 2 de octubre de 2026
+
+- El fragmento Nginx conserva el manejador PHP del panel: solo define enrutamiento, protección y destinos de errores. El manejador existente comunica el código mediante `GFRAME_SERVER_ERROR`.
+- El fragmento Nginx se publica como `nginx.conf` en la raíz del proyecto, junto a `.htaccess`, y queda protegido contra acceso web. Las copias anteriores se conservan; cambia el `include` del servidor a la nueva ruta.
+
 ## 1.0.1 — 2 de octubre de 2026
 
 - El paquete Composer pasa de `gframe/framework` a `gorvet/gframe`, porque el proveedor `gframe` de Packagist pertenece a un tercero. La marca, los namespaces PHP, los módulos y el instalador siguen llamándose GFrame.
