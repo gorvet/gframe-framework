@@ -1,6 +1,6 @@
 # GFrame 1.0.0
 
-Primera versión del paquete Composer `gframe/framework`. La publicación en GitHub mediante la etiqueta `v1.0.0` y el alta en Packagist son operaciones distintas; la etiqueta no registra automáticamente un paquete nuevo en Packagist.
+Primera versión publicada en GitHub, originalmente con el nombre Composer `gframe/framework`. Desde 1.0.1 el paquete se llama `gorvet/gframe`; la etiqueta histórica `v1.0.0` no se modifica. La publicación en GitHub y el alta en Packagist son operaciones distintas; una etiqueta no registra automáticamente un paquete nuevo.
 
 ## Alcance
 
@@ -23,7 +23,7 @@ La suite completa tras estos ajustes pasó en PHP 8.1.5 con MySQL habilitado: 32
 
 Actualice el paquete y ejecute primero `composer gframe:update -- --dry-run`. La actualización publica la nueva ayuda Nginx y preserva archivos anteriores y personalizaciones. Si el servidor incluye `config/server/nginx.conf`, cambie su inclusión a `deployment/nginx.conf` antes de retirar manualmente la copia antigua. Ambos servidores bloquean el acceso web a `deployment/`.
 
-Los proyectos anteriores que fijen `gframe/framework:^0.9` deben cambiar su requisito a `^1.0` antes de actualizar Composer. Si usan un repositorio local `path` con una versión simulada, también deben ajustar esa versión. El actualizador no cambia el `composer.json` propio del proyecto.
+Los proyectos anteriores que fijen `gorvet/gframe:^0.9` deben cambiar su requisito a `^1.0` antes de actualizar Composer. Si usan un repositorio local `path` con una versión simulada, también deben ajustar esa versión. El actualizador no cambia el `composer.json` propio del proyecto.
 
 El archivo antiguo `config/modules.php` ya no se carga; puede retirarse después de revisar que ningún código propio lo utilice. Para comprobar un módulo instalado, use `ModuleRuntime::isInstalled()`; `has()` queda reservado para runtime MVC. La actualización no elimina carpetas vacías antiguas ni posibles personalizaciones.
 

@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## 1.0.1 — 2 de octubre de 2026
+
+- El paquete Composer pasa de `gframe/framework` a `gorvet/gframe`, porque el proveedor `gframe` de Packagist pertenece a un tercero. La marca, los namespaces PHP, los módulos y el instalador siguen llamándose GFrame.
+- Los proyectos nuevos requieren `gorvet/gframe` y ejecutan el actualizador desde `packages/gorvet/gframe/bin/gframe-update`. Los proyectos existentes deben cambiar el requisito y el script antes de actualizar Composer.
+- La documentación del panel administrativo describe su uso y personalización, sin informes internos de extracción.
+- Los manifiestos de bibliotecas externas identifican sus fuentes oficiales. La ayuda pública separa integración, uso y personalización de los informes históricos de desarrollo.
+
 ## 1.0.0 — 2 de octubre de 2026
 
 Primera versión del paquete completo, con PHP 8.1 como entorno probado. Incluye la migración descrita en las notas de preparación anteriores.
@@ -7,7 +14,7 @@ Primera versión del paquete completo, con PHP 8.1 como entorno probado. Incluye
 - Solo se crean carpetas de personalización para las capas presentes en cada módulo.
 - El fragmento Nginx pasa de `config/server/nginx.conf` a `deployment/nginx.conf` y conserva la protección de archivos internos.
 - `storage/gframe-installed.json` unifica la lista de módulos instalada: arranque, actualización y Campañas usan la misma fuente. No se genera ni se consulta `config/modules.php`.
-- La estructura inicial requiere `gframe/framework:^1.0`. `ProjectConfigWriter::write()` deja de recibir el array de módulos y devuelve únicamente las rutas de configuración y entorno.
+- La estructura inicial de esta versión requería `gframe/framework:^1.0`; desde 1.0.1 usa `gorvet/gframe`. `ProjectConfigWriter::write()` deja de recibir el array de módulos y devuelve únicamente las rutas de configuración y entorno.
 
 Consulte [alcance, comprobaciones y migración de 1.0.0](docs/release-1.0.0.md).
 
@@ -198,7 +205,7 @@ La verificación y las limitaciones previas a publicación se registran en [prep
 ### Dependencias
 
 - Gestión mediante Composer de PHPMailer, Opis Closure, PHP-SSE y PHP dotenv.
-- Identidad Composer establecida como `gframe/framework`.
+- Identidad Composer establecida como `gorvet/gframe`.
 - Dependencias PHP organizadas bajo `packages/`, con autoload en `packages/autoload.php`.
 - Exclusión de dependencias, pruebas y archivos de desarrollo de los paquetes distribuibles.
 

@@ -6,6 +6,5 @@ Seleccione `aos` en el instalador o publique sus archivos con `php bin/modules.p
 
 Para usarla, declare `aos.css` y `aos.js` en el meta de la vista o del grupo de vistas. La aplicación decide dónde inicializar `AOS` y qué elementos llevan atributos `data-aos`. GFrame no hace esa inicialización automáticamente.
 
-Los archivos de GFrame coinciden con los de Dane y Base Confías. Bebots conserva una variante de `aos.js`; no se trasladó al paquete común.
 
 La distribución incluye el puente visual del módulo. Consulte [Puentes visuales](paquetes-visuales.md) para sus rutas, orden de carga, variables y personalización.

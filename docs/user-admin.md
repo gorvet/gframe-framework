@@ -1,6 +1,6 @@
 # Administración de usuarios
 
-El módulo `user-admin` permite consultar usuarios, filtrar la lista, verificar cuentas, suspender/restablecer el acceso, eliminar cuentas y asignar roles. No crea cuentas ni cambia contraseñas administrativamente. Las acciones se agrupan en el modal «Administrar», siguiendo la estructura administrativa de Dane y Base Confías.
+El módulo `user-admin` permite consultar usuarios, filtrar la lista, verificar cuentas, suspender/restablecer el acceso, eliminar cuentas y asignar roles. No crea cuentas ni cambia contraseñas administrativamente. Las acciones se agrupan en el modal «Administrar», dentro de la plantilla administrativa común.
 
 ## Instalación
 
@@ -10,7 +10,7 @@ php bin/modules.php publish-project user-admin C:\ruta\del\proyecto
 
 El módulo requiere el esquema `auth` y publica el controlador, las rutas, las vistas y el JavaScript. También instala sus dependencias `admin-panel`, `alerts` y `frontend-core`. La pantalla usa la plantilla administrativa y aporta su enlace dentro de Administración cuando el usuario tiene `users.view`. Mi cuenta es un módulo independiente.
 
-La estructura visual procede de `userIndex.php` y `_userList.php` de Bebots: título administrativo, filtros con etiquetas visibles y listado en una tarjeta separada. Se conserva el padding normal de card-body, sin p-0. Los roles se obtienen del contrato de GFrame, sin imponer los roles de Bebots. Las acciones se agrupan en un modal en lugar de controles por columna. La búsqueda sigue siendo por correo; no se incorporan bots, identidad, onboarding ni campos que el repositorio actual no proporciona. Los estados tienen etiquetas en español y la cuenta propia y el superadministrador no muestran acciones de modificación.
+La vista utiliza título administrativo, filtros con etiquetas visibles y listado en una tarjeta separada, con el padding normal de `card-body`. Los roles se obtienen del contrato de GFrame. Las acciones se agrupan en un modal, los estados tienen etiquetas en español y la cuenta propia y el superadministrador no muestran acciones de modificación. La búsqueda se realiza por correo.
 
 Los filtros buscan por AJAX automáticamente: 300 ms después de escribir y al cambiar un selector. No hay botón Filtrar; el botón de limpiar usa gicon-close y solo aparece cuando hay filtros activos. La ruta de lista devuelve el parcial HTML y los metadatos; solo se sustituye userListMount. La URL conserva filtros y página, y se cancelan las peticiones anteriores para evitar respuestas fuera de orden. Sin JavaScript, el formulario conserva el envío GET con Enter.
 

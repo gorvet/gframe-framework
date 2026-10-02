@@ -4,7 +4,7 @@ El home inicial conserva el mensaje «Algo maravilloso se construye aquí.» y l
 
 ## Alcance
 
-`public/js/app/home/mngnoadmin.js` se publica con el esqueleto de la aplicación y se carga desde `home.group.meta.php`. Se extrae del archivo activo de Bebots, compartido con Base Confías y Dane. No es un módulo instalable adicional ni incluye contenido comercial, formularios de contacto o estilos de esas aplicaciones.
+`public/js/app/home/mngnoadmin.js` se publica con el esqueleto de la aplicación y se carga desde `home.group.meta.php`. No es un módulo instalable adicional ni incluye contenido comercial, formularios de contacto o estilos de esas aplicaciones.
 
 No modifica el diseño del header, sidebar ni footer. La portada inicial conserva su estructura; para activar las funciones de menú se usan los selectores siguientes en la plantilla pública del proyecto.
 

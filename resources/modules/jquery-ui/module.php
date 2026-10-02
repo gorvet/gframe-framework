@@ -2,6 +2,7 @@
 
 return [
     'name' => 'jquery-ui',
+    'homepage' => 'https://jqueryui.com/',
     'type' => 'external-ui',
     'description' => 'Componentes para arrastrar, reordenar y redimensionar elementos.',
     'dependencies' => ['jquery'],

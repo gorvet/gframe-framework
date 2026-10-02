@@ -1,27 +1,8 @@
-# Estructura del panel administrativo: auditoría y propuesta
+# Panel administrativo
 
-La auditoría y la extracción inicial están terminadas. Se consultaron Base Confías, Bebots y Dane. Ninguna de esas aplicaciones se modificó.
+El módulo `admin-panel` proporciona el escritorio, la navegación lateral, la barra superior y el tema claro/oscuro para aplicaciones administradas. Los perfiles `managed`, `intranet` y `saas` lo incluyen; `static` no lo instala.
 
 El módulo usa runtime: originales en `resources/modules/admin-panel/application/app/`, personalizaciones en `app/controllers/admin-panel/` y `app/views/admin-panel/`. El instalador crea esas carpetas sin copiar el controlador, las vistas ni las partes originales. Para personalizar el escritorio, herede `GFrame\Modules\AdminPanel\Controllers\AdminController` con namespace `App\Controllers\AdminPanel`. `adminIndex` sigue siendo el nombre explícito de vista. El template compartido `admin` se resuelve desde el módulo salvo que exista una personalización en `app/views/templates/adminTemplate.php`. Las rutas, CSS, JS y aportaciones de menú siguen publicándose.
-
-## Qué existe hoy
-
-Las tres aplicaciones comparten exactamente `app/views/templates/adminTemplate.php`. Su estructura actual es: contenedor, sidebar izquierdo, área principal, navbar dentro del área principal y contenido de la vista. El footer se renderiza después mediante `Render`, fuera de esa plantilla.
-
-También son idénticos en los tres proyectos `sidebar.js`, `darkmode.js`, `persistencia_sidebar.js` y `persistencia_darkmode.js`. El sidebar tiene un estado persistente para escritorio y un cajón temporal para móvil. El tema admite preferencia local, preferencia del sistema y sincronización entre pestañas. La persistencia temprana del sidebar está duplicada dentro de `persistencia_darkmode.js`; debe quedar en un único lugar cuando se extraiga.
-
-`admin.css` es idéntico entre Base Confías y Bebots. Dane parte de la misma base y agrega, entre otros estilos, el componente de notificaciones. Por ello, el CSS común puede formar la base visual de GFrame, mientras que los estilos exclusivos de cada módulo o aplicación deben permanecer separados.
-
-Las plantillas `navbar.php` y `aside.php` conservan la misma disposición general, pero mezclan estructura compartida con decisiones de cada aplicación:
-
-- Logo, enlace de inicio, rutas y nombres del proyecto.
-- Menús, secciones y reglas de acceso propias del proyecto.
-- Indicador y menú de notificaciones, aunque notificaciones es un módulo instalable.
-- Saludo y cierre de sesión, actualmente tomados de variables históricas de `$_SESSION`.
-
-El navegador de menús existente (`MenuHelper::build`) acepta elementos, encabezados, divisores y submenús. Puede seguir utilizándose como renderizador visual mientras se define de dónde recibe las entradas y cómo se comprueban sus permisos. Las tres aplicaciones construyen actualmente sus arreglos de navegación dentro de `aside.php`.
-
-`dashboard.js` también es idéntico, pero su contenido funcional está comentado. No justifica publicarlo como recurso del panel. `udashboard.php` no aporta una vista compartida; los escritorios reales corresponden a cada aplicación. El archivo histórico `.adminTemplate.php` no es la plantilla activa.
 
 ## Implementación en GFrame
 
@@ -45,7 +26,7 @@ Route::get('admin/reportes', 'admin/reportes/ReportController@index')
     ->registerFinal();
 ```
 
-Cree `app/views/admin-panel/parts/menu.php` para personalizar las secciones y enlaces propios del proyecto; si no existe, se usa el original. La plantilla imprime ese archivo dentro de `#sidebar-nav`: primero «Escritorio», fuera de cualquier sección, y después el encabezado «Administración». Los módulos pueden publicar archivos en `app/views/admin-panel/parts/menu-items/`; cada archivo comprueba el permiso antes de mostrar su enlace. El módulo `user-admin` aporta «Gestión de usuarios» dentro de Administración. `aside.php` imprime «Mi cuenta» después de todas las aportaciones de módulos, siempre al final, siguiendo el orden de Bebots y Dane.
+Cree `app/views/admin-panel/parts/menu.php` para personalizar las secciones y enlaces propios del proyecto; si no existe, se usa el original. La plantilla imprime ese archivo dentro de `#sidebar-nav`: primero «Escritorio», fuera de cualquier sección, y después el encabezado «Administración». Los módulos pueden publicar archivos en `app/views/admin-panel/parts/menu-items/`; cada archivo comprueba el permiso antes de mostrar su enlace. El módulo `user-admin` aporta «Gestión de usuarios» dentro de Administración. `aside.php` imprime «Mi cuenta» después de todas las aportaciones de módulos, siempre al final.
 
 Biblioteca multimedia (`admin/media`) y Campañas (`admin/notifications/campaigns`) aportan enlaces al menú cuando el usuario tiene, respectivamente, `media.view` y `notifications.campaigns.view`. Notificaciones (`notifications`) aporta un enlace para usuarios autenticados y conserva la campana de la barra superior. Las tres pantallas usan la plantilla `admin`; sus URLs y permisos no cambian. Estos fragmentos se publican tanto al instalar como al actualizar los módulos.
 
@@ -83,27 +64,10 @@ GFTheme.set('light', false);    // Aplica sin cambiar la preferencia guardada.
 GFTheme.resetToSystem();        // Borra la elección y sigue al sistema.
 ```
 
-La persistencia es local al navegador, no un ajuste guardado en la cuenta. Si el almacenamiento está bloqueado, el cambio funciona en la página pero no se garantiza entre recargas. El panel sigue el sistema cuando no existe una elección guardada; el modo público no incorpora automáticamente este controlador. La adaptación visual completa sigue pendiente de la revisión HTTP acordada.
+La persistencia es local al navegador, no un ajuste guardado en la cuenta. Si el almacenamiento está bloqueado, el cambio funciona en la página pero no se garantiza entre recargas. El panel sigue el sistema cuando no existe una elección guardada; el modo público no incorpora automáticamente este controlador.
 
 ### Visor de variables
 
-El esqueleto incluye `public/css/colores.html` junto a `variables.css`, basado en el visor original de Bebots. Conserva su vista rápida, agrupación por intención, muestras de tipografía y sombras, copia individual y copia de la lista. Añade detección automática de variables globales, muestras de bordes y radios, interpretación de colores RGB y componentes reales de Bootstrap. Abre el HTML por HTTP desde una instalación con Bootstrap publicado. Permite alternar claro/oscuro y buscar por nombre o valor.
+El esqueleto incluye `public/css/colores.html` junto a `variables.css`. Permite consultar las variables globales, tipografía, sombras, bordes, radios y componentes de Bootstrap; alternar claro/oscuro; buscar por nombre o valor y copiar los valores. Ábrelo por HTTP desde una instalación con Bootstrap publicado.
 
 El catálogo presenta los valores calculados de las variables globales; las variables locales de componentes no se enumeran en ese catálogo. Los componentes reales muestran su resultado visual. Al añadir variables globales en `variables.css`, el visor las detecta sin mantener una lista manual. No edita CSS ni modifica la preferencia de tema del panel. Los archivos de personalización de botones adicionales deben incluirse después de `variables.css` para que la muestra los refleje. Las variables `--ui-*` pertenecen únicamente al visor y se excluyen del catálogo.
-
-## Qué no se extrae del proyecto
-
-- Los menús de Base Confías, Bebots o Dane.
-- El HTML, CSS y JavaScript de NiceAdmin; solo se tomaron referencias estructurales para el skill de diseño.
-- El `dashboard.js` comentado ni los fragmentos de escritorio vacíos.
-- Los estilos de notificaciones exclusivos de Dane dentro del CSS base del panel.
-- La plantilla oculta `.adminTemplate.php`.
-
-## Comprobaciones realizadas
-
-- Publicación de la plantilla, meta, CSS y JavaScript con `user-admin`.
-- Publicación de la acción y meta de notificaciones cuando se instala ese módulo.
-- Carga de meta de plantilla y módulo antes del meta de una vista anidada.
-- Instalación del módulo en perfiles administrados.
-
-La revisión visual e interactiva en una instalación HTTP limpia queda pendiente para la fase general de validación de perfiles. La publicación y el render de metadatos están cubiertos por pruebas automatizadas.

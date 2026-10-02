@@ -42,7 +42,7 @@ Las vistas, mensajes de correo, perfiles, áreas, redirecciones y reglas particu
 
 ## Separación MVC y migración
 
-El modelo `AuthModel` recupera las operaciones originales de Base Confías y Bebots: `registerAcount()`, `login()`, `validateAcount()`, `recoveryAcount()`, `resetPassword()` y `verifyAcount()`. Ejecuta las consultas de autenticación directamente mediante ORM, sin `AuthService` ni dependencia de `UserModel`. No crea tenants, negocios, planes, wallets, suscripciones ni membresías.
+El modelo `AuthModel` gestiona las operaciones `registerAcount()`, `login()`, `validateAcount()`, `recoveryAcount()`, `resetPassword()` y `verifyAcount()`. Ejecuta las consultas de autenticación directamente mediante ORM, sin `AuthService` ni dependencia de `UserModel`. No crea tenants, negocios, planes, wallets, suscripciones ni membresías.
 
 Se conservan el esquema normalizado `users`/`roles`, la política de contraseña, la caducidad de tokens, la recuperación sin revelar cuentas y el contrato `status`/`code`/`data`. El controlador mantiene los correos, las redirecciones y la creación de sesión mediante `SessionManager`; no se copian las claves de sesión ni las reglas particulares de los proyectos originales.
 

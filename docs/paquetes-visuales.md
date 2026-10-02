@@ -8,7 +8,7 @@ Cargue primero el CSS original y después su puente. Mantenga Bootstrap, variabl
 
 | Módulo | Puente publicado, relativo a public |
 | --- | --- |
-| GFSelect | `vendors/internal/gfselect/gf-select.css`, personalización de Dane |
+| GFSelect | `vendors/internal/gfselect/gf-select.css`, integración con variables de GFrame |
 | GFTable | Indicadores en `css/common.css`; usa tablas de Bootstrap |
 | Flatpickr | `vendors/external/flatpickr/gframe-flatpickr.css` |
 | Coloris | `vendors/external/coloris/gframe-coloris.css` |

@@ -32,7 +32,7 @@ La publicación agrega el controlador, las rutas web y AJAX, las vistas, la plan
 | `POST` | `/ajax/recovery` | Solicitar el correo de recuperación |
 | `POST` | `/ajax/reset-password` | Aplicar la contraseña nueva |
 
-Las cuatro rutas originales de Base Confías son parte del contrato del módulo. Las rutas con nombres nuevos quedan como alias de compatibilidad. Si se cambia el nombre de una ruta o de un parámetro, hay que documentar la equivalencia, actualizar todas las llamadas del JavaScript y las vistas, y comprobar el flujo completo antes de publicar el módulo. No basta con renombrar la ruta del servidor.
+Las rutas `verifyacount`, `validateacount`, `lostpassword` y `resetpassword` son parte del contrato del módulo. Las rutas con nombres nuevos quedan como alias de compatibilidad. Si se cambia el nombre de una ruta o de un parámetro, hay que documentar la equivalencia, actualizar todas las llamadas del JavaScript y las vistas, y comprobar el flujo completo antes de publicar el módulo. No basta con renombrar la ruta del servidor.
 
 Las operaciones públicas usan `guest`, protección de mismo origen para AJAX y `honeypot`. Se excluye CSRF porque el token se genera al iniciar sesión. El cierre de sesión exige autenticación y conserva el CSRF automático.
 
@@ -58,7 +58,7 @@ Si se activa la expiración o se utiliza `force_password_change`, la aplicación
 
 Las acciones devuelven arreglos estables. El controlador no lanza excepciones hacia la vista.
 
-El canal AJAX devuelve JSON también ante errores como `invalid_token`, `expired` o `forbidden`; el router no sustituye esa respuesta por una página HTML. Los módulos pueden incluir un fragmento renderizado en `html`, como hacen los listados de Base Confías y Bebots. En Auth se conserva el patrón original: el servidor devuelve `status`, `code` y `message`, y el JS construye las opciones de SweetAlert según el código. Las páginas web de error siguen siendo HTML.
+El canal AJAX devuelve JSON también ante errores como `invalid_token`, `expired` o `forbidden`; el router no sustituye esa respuesta por una página HTML. Los módulos pueden incluir un fragmento renderizado en `html`. En Auth se conserva el patrón original: el servidor devuelve `status`, `code` y `message`, y el JS construye las opciones de SweetAlert según el código. Las páginas web de error siguen siendo HTML.
 
 ```php
 [
@@ -98,26 +98,24 @@ El registro, el reenvío de verificación y la recuperación envían enlaces abs
 
 El asunto identifica la operación y el proyecto; el cuerpo saluda al destinatario sin repetir el enlace del botón. `mailRecipientName()` utiliza `name` si lo proporciona el modelo y, en su ausencia, el identificador del correo antes de `@`. Un controlador personalizado puede sobrescribir este método para consultar el perfil propio sin añadir campos al esquema estándar.
 
-## Auditoría conjunta del frontend
+## Comportamiento de la interfaz
 
-Se cotejaron `AuthLogin.js`, `AuthLogout.js`, `AuthLostpassword.js`, `AuthRegister.js`, `AuthResetpassword.js` y `auth.css` de Base Confías, Bebots y Dane. La lógica JS de acceso, recuperación y registro coincide salvo diferencias de archivo sin cambios funcionales en el cotejo. Restablecimiento coincide en las tres fuentes. El cierre de Bebots admite el aviso fuera de vistas protegidas; Base Confías y Dane lo restringen a vistas protegidas. El CSS reciente de Base Confías incorpora más estructura y accesibilidad; Bebots y Dane conservan una variante anterior. La identidad y el fondo fotográfico de Base Confías no se deben copiar como valores obligatorios del framework.
 
 GFrame publica los cuatro archivos JS originales de las pantallas de Auth. El cierre/inactividad está en `heartbeat-client/session.js`; el panel aporta el control de cierre, pero no duplica su envío.
 
-Conexiones restauradas tomando Bebots como referencia funcional:
+Los formularios y scripts mantienen estas conexiones:
 
 - El meta carga CSS/JS de `password-utils`; registro y restablecimiento conectan generador, medidor, validación de 8–72 bytes UTF-8 y mostrar/ocultar. La fuerza es orientativa y el backend valida de nuevo. Si no hay API criptográfica, el generador deja el campo para entrada manual.
 - Los formularios usan `needs-validation`, `validationFeedback` con objeto jQuery y destinos `.validation_<id>`. Los envíos usan jQuery AJAX; mensajes normales pasan por `alertToast` y decisiones de autenticación por `swalAlert`, conservando los códigos exactos.
 - El único cierre está en `heartbeat-client/session.js`, con `[data-gf-logout]`, confirmación, tokens globales, presentación de fallos y notificación mediante BroadcastChannel y storage. El panel no duplica ese envío. Sin almacenamiento, el canal sigue funcionando si está disponible.
 - `rd` viaja con el login; el controlador solo admite rutas relativas dentro de la aplicación, sin esquemas, barras iniciales ni segmentos de recorrido. Un destino inválido usa la redirección configurada. El cambio obligatorio de contraseña siempre prevalece.
 - El reenvío usa `/ajax/verifyacount`, `AuthModel::verifyAcount()` y Mail. El token se elimina de la respuesta pública. `/ajax/verification` permanece como alias.
-- `auth.css` conserva la estructura de las pantallas de Base Confías y las variables compartidas de Bootstrap. La plantilla utiliza el logotipo original de GFrame publicado en `public/img/logo.png`; el fondo fotográfico de Base Confías sigue siendo propio de esa aplicación.
+- `auth.css` conserva la estructura de las pantallas de autenticación y las variables compartidas de Bootstrap. La plantilla utiliza el logotipo original de GFrame publicado en `public/img/logo.png`; la aplicación puede personalizar el fondo.
 
-Se añaden pruebas de comportamiento JS para validación, doble envío, retorno, reenvío y cierre entre pestañas; pruebas PHP verifican el destino seguro, meta y plantilla de reenvío sin exponer el token. La revisión visual HTTP y la entrega real por SMTP siguen pendientes. El cotejo general de todos los módulos se realizará al final, según lo acordado.
 
 ## Reglas de seguridad
 
-### Cotejo final con Bebots
+### Sesiones y estados de cuenta
 
 El saludo del panel usa el nombre que aporte el perfil del proyecto; si no existe, muestra la parte del correo anterior a `@`. Este respaldo se calcula al renderizar y no se guarda como nombre en la sesión ni exige una columna `name` en `users`.
 
@@ -131,7 +129,6 @@ La rotación invalida enlaces. La revocación de sesiones es independiente y la 
 
 El esqueleto inicia `SessionRuntime`. Las aplicaciones con base de datos utilizan el driver `database`; las instalaciones de alta concurrencia pueden cambiar a `redis`. Ambos relacionan cada usuario con hashes de sus identificadores de sesión, nunca con los identificadores en claro. Suspender o desactivar bloquea al usuario y elimina todas sus sesiones; reactivar retira el bloqueo sin restaurarlas. Un fallo del registro se transforma en el contrato estable de la operación correspondiente.
 
-Las pruebas cubren el saludo sin persistencia de nombre, `already_logged` por ambos caminos HTTP, escrituras fallidas, suspensión posterior a recuperación y rotación real en SQLite. Sigue pendiente la validación visual y HTTP en instalaciones limpias.
 
 - No revele si una dirección desconocida existe durante la recuperación.
 - Mantenga el estado suspendido fuera de los flujos de acceso y verificación.

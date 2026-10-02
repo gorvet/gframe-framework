@@ -10,4 +10,4 @@ Router, Middleware, ORM, Render y los demás componentes internos no tienen vers
 
 Un componente solo tendrá ciclo de versión propio si se extrae como paquete instalable independiente. Cada proyecto fija la versión exacta resuelta mediante `composer.lock`.
 
-La estructura inicial y el instalador se versionan junto con `gframe/framework`. De esta forma, cada versión del framework conserva una plantilla compatible sin coordinar repositorios separados.
+La estructura inicial y el instalador se versionan junto con `gorvet/gframe`. De esta forma, cada versión del framework conserva una plantilla compatible sin coordinar repositorios separados.

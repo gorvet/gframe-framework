@@ -14,7 +14,7 @@ Hasta que el paquete se publique en Packagist, una aplicación puede enlazarlo d
         }
     ],
     "require": {
-        "gframe/framework": "dev-main"
+        "gorvet/gframe": "dev-main"
     }
 }
 ```
@@ -22,7 +22,7 @@ Hasta que el paquete se publique en Packagist, una aplicación puede enlazarlo d
 Después se ejecuta:
 
 ```bash
-composer update gframe/framework
+composer update gorvet/gframe
 ```
 
 Esta modalidad permite probar cambios localmente. En producción, cada aplicación debe instalar una versión etiquetada y desplegar su `composer.lock`.

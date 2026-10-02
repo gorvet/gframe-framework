@@ -26,7 +26,7 @@ GFrame debe funcionar como un framework instalable y versionado. El núcleo no p
 
 ### Módulos opcionales
 
-Los módulos reutilizables que no sean necesarios en todas las aplicaciones se seleccionan desde el catálogo durante la instalación. Entre ellos están la biblioteca multimedia, el editor enriquecido, las notificaciones y WordPress headless. Los algoritmos propios de un dominio, como `TextClassifier` en Bebots, permanecen en su aplicación.
+Los módulos reutilizables que no sean necesarios en todas las aplicaciones se seleccionan desde el catálogo durante la instalación. Entre ellos están la biblioteca multimedia, el editor enriquecido, las notificaciones y WordPress headless. Los algoritmos propios de un dominio, como `TextClassifier` en una aplicación de bots, permanecen en su aplicación.
 
 El núcleo y los archivos publicados por esos módulos son código administrado: una actualización puede reemplazarlos. Las aplicaciones personalizan el comportamiento desde sus propios servicios, adaptadores y contratos, sin editar directamente los archivos administrados.
 
@@ -53,4 +53,4 @@ Los estilos propios de cada aplicación permanecen en `public/css/app` y se carg
 
 ## Proyecto inicial
 
-`gframe/framework` contiene el núcleo y mantiene en `resources/skeleton` la fuente única del proyecto inicial. El comando `composer new` genera desde allí la portada pública, la estructura MVC mínima y el instalador visual. No existen aplicaciones base diferentes por perfil: el mismo instalador configura un sitio estático, una aplicación administrada o un SaaS.
+`gorvet/gframe` contiene el núcleo y mantiene en `resources/skeleton` la fuente única del proyecto inicial. El comando `composer new` genera desde allí la portada pública, la estructura MVC mínima y el instalador visual. No existen aplicaciones base diferentes por perfil: el mismo instalador configura un sitio estático, una aplicación administrada o un SaaS.

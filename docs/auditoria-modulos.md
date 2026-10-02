@@ -126,7 +126,7 @@ Todos los manifiestos consultados apuntan a archivos de origen existentes.
 
 ## Dependencias y paquetes PHP
 
-- [x] Paquete Composer identificado como `gframe/framework`.
+- [x] Paquete Composer identificado como `gorvet/gframe`.
 - [x] PHPMailer, Opis Closure, PHP-SSE y Dotenv declarados mediante Composer.
 - [x] PHPAsync permanece en el núcleo y utiliza Opis Closure.
 - [x] Cifrado, utilidades, ORM, Router, Render, middleware y servicios comunes están en `src`.

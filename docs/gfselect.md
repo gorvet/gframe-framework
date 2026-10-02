@@ -50,8 +50,6 @@ El CSS del proyecto puede cambiar las clases `gf-select-*` y las variables de Bo
 
 El puente visual utiliza las variables de GFrame/Bootstrap para tipografía, fondo del campo, bordes, selección, foco y estado deshabilitado. Respeta `data-bs-theme` sin otro selector de tema; las flechas y marcas de selección heredan el color del texto. La validación utiliza `--bs-danger` sin cambiar el grosor del borde. Al deshabilitar un campo abierto, su menú se cierra.
 
-La personalización visual procede de `public/css/app/app/gf-select-app.css` de Dane, copiado como base del CSS del módulo. Se elimina únicamente la dependencia de `.tpl-app .gf-select--app`: ahora se aplica a cualquier GFSelect. Incluye controles redondeados, flecha giratoria, menú con espacios interiores y selección múltiple resaltada. Los estilos equivalentes de los selects nativos se distribuyen en `public/css/common.css`, sin depender de una vista concreta. No hace falta añadir `wrapperClass: 'gf-select--app'` ni cargar otro archivo de estilos.
+El módulo incluye controles redondeados, flecha giratoria, menú con espacios interiores y selección múltiple resaltada. Los estilos de los selects nativos se distribuyen en `public/css/common.css`, sin depender de una vista concreta. No hace falta añadir `wrapperClass: 'gf-select--app'` ni cargar otra hoja para aplicar el estilo predeterminado.
 
 La prueba visual aislada está en `tests/fixtures/gfselect-preview.php`: incluye selección simple/múltiple, validación, reemplazo de opciones y un modal. Ejecútela desde el repositorio con `php -S 127.0.0.1:8767 -t . tests/fixtures/gfselect-preview.php`.
-
-La integración de Dane contiene ejemplos de selección múltiple y refresco tras reemplazo de fragmentos; Bebots contiene ejemplos de selección simple. Esos proyectos son referencias y no se modifican al publicar el módulo.

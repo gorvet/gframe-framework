@@ -38,7 +38,7 @@ Examples:
 - Framework source lives in the standalone `gframe-framework/src` tree and is consumed through Composer.
 - An application normally keeps only `core/Load.php` as its bootstrap bridge. Never recreate or patch a duplicated local core.
 - Treat files published from `resources/modules/` as updater-managed code. Extend modules from separate application services, adapters, composition, and public contracts; direct edits may be overwritten.
-- Never edit `packages/gframe/framework` as the source of a fix. Make shared changes in the GFrame repository and update the application's Composer lock.
+- Never edit `packages/gorvet/gframe` as the source of a fix. Make shared changes in the GFrame repository and update the application's Composer lock.
 - If project schema, routes, payloads, or naming do not fit the core, adapt the project layer (`app/`, `config/`, views, controllers, models, services, database) instead of patching the framework.
 - Do not add project-specific constants, aliases, fallbacks, or exceptions to core behavior just to make one project fit.
 - If there is a mismatch between project requirements and core conventions, surface it before coding and ask for direction rather than silently changing the framework.

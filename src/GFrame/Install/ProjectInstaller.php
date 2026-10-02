@@ -141,8 +141,8 @@ final class ProjectInstaller
             'installed_at' => date(DATE_ATOM),
             'profile' => $profile['slug'],
             'modules' => $moduleNames,
-            'framework_version' => class_exists(InstalledVersions::class) && InstalledVersions::isInstalled('gframe/framework')
-                ? (string)(InstalledVersions::getPrettyVersion('gframe/framework') ?? 'unknown')
+            'framework_version' => class_exists(InstalledVersions::class) && InstalledVersions::isInstalled('gorvet/gframe')
+                ? (string)(InstalledVersions::getPrettyVersion('gorvet/gframe') ?? 'unknown')
                 : 'development',
             'managed_files' => $this->managedHashes($projectRoot, $published, $scaffolded),
             ]);

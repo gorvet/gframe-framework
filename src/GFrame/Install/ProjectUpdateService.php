@@ -208,8 +208,8 @@ final class ProjectUpdateService
 
     private function frameworkVersion(): string
     {
-        if (class_exists(InstalledVersions::class) && InstalledVersions::isInstalled('gframe/framework')) {
-            return (string)(InstalledVersions::getPrettyVersion('gframe/framework') ?? InstalledVersions::getReference('gframe/framework') ?? 'unknown');
+        if (class_exists(InstalledVersions::class) && InstalledVersions::isInstalled('gorvet/gframe')) {
+            return (string)(InstalledVersions::getPrettyVersion('gorvet/gframe') ?? InstalledVersions::getReference('gorvet/gframe') ?? 'unknown');
         }
         return 'development';
     }

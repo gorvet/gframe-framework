@@ -3,7 +3,7 @@
 Los proyectos actualizan primero el paquete PHP y después sincronizan los módulos y la base de datos:
 
 ```bash
-composer update gframe/framework
+composer update gorvet/gframe
 composer gframe:update
 ```
 
@@ -39,12 +39,12 @@ composer gframe:update -- --modules=auth-ui,self-account,user-admin,media-librar
 
 Los archivos existentes que pertenezcan a los módulos indicados pasan a quedar administrados y pueden ser reemplazados. Después de esta primera ejecución, el proyecto utiliza el registro generado.
 
-Si el proyecto aún no utiliza Composer, primero debe incorporar `gframe/framework`, cargar `packages/autoload.php` y añadir este script a su `composer.json`:
+Si el proyecto aún no utiliza Composer, primero debe incorporar `gorvet/gframe`, cargar `packages/autoload.php` y añadir este script a su `composer.json`:
 
 ```json
 {
     "scripts": {
-        "gframe:update": "@php packages/gframe/framework/bin/gframe-update"
+        "gframe:update": "@php packages/gorvet/gframe/bin/gframe-update"
     }
 }
 ```

@@ -11,8 +11,8 @@ Auth registra cuentas y no crea tenants ni membresías. El módulo de permisos d
 | Perfil | Qué instala y quién recibe acceso |
 | --- | --- |
 | `static` | No instala Auth ni usuarios. |
-| `managed` e `intranet` | Instalan Auth y permisos globales, sin tenants. El primer usuario es `superadministrator`; los registros posteriores reciben `registered`. Las capacidades se toman del rol global y sus excepciones en `users`. Dane corresponde a este modelo de autorización, aunque tenga suscripciones comerciales. |
-| `saas` | Instala Auth, la tabla genérica `tenants` y `tenant_memberships`. Conserva el rol global `registered` al registrarse. No crea tenant ni membresía por registrar al usuario: cada módulo de negocio los crea cuando corresponde. Bebots usa este modelo, con cada bot como tenant en su adaptación. |
+| `managed` e `intranet` | Instalan Auth y permisos globales, sin tenants. El primer usuario es `superadministrator`; los registros posteriores reciben `registered`. Las capacidades se toman del rol global y sus excepciones en `users`. Una aplicación global corresponde a este modelo de autorización, aunque tenga suscripciones comerciales. |
+| `saas` | Instala Auth, la tabla genérica `tenants` y `tenant_memberships`. Conserva el rol global `registered` al registrarse. No crea tenant ni membresía por registrar al usuario: cada módulo de negocio los crea cuando corresponde. Una aplicación de bots puede usar este modelo, con cada bot como tenant en su adaptación. |
 
 Los esquemas base crean solo los roles `superadministrator` y `registered`. Si el proyecto necesita `owner`, `gestor`, `editor` u otros roles, los declara en `config/Permissions.php` antes de instalar o ejecuta `composer gframe:update` después de añadirlos. No se asignan solos a usuarios existentes. En una aplicación global, un administrador asigna el rol global mediante `RolePermissionService::assignRole()` o el flujo administrativo del proyecto. En una multitenant, la creación del tenant asigna su primera membresía; después el dueño gestiona las de sus gestores.
 
@@ -49,7 +49,7 @@ La membresía debe existir y estar activa. El dueño de un registro no recibe pe
 
 En el caso habitual, la ruta exige `auth`. El controlador obtiene el ID de `$_SESSION['auth']['id']`, nunca de un campo `user_id` enviado por el cliente. El servicio de negocio crea el tenant y su membresía `owner` en la **misma transacción y conexión**. Así se comprueba la propiedad inicial: el tenant procede de esa operación autenticada, su ID se obtiene del `INSERT` recién efectuado y solo a ese usuario se le concede `owner`. Si cualquiera de las escrituras falla, se revierte todo.
 
-Este ejemplo usa la tabla `tenants` del perfil SaaS. El proyecto adapta el `INSERT` si su entidad es otra, como `bots` en Bebots:
+Este ejemplo usa la tabla `tenants` del perfil SaaS. El proyecto adapta el `INSERT` si su entidad es otra, como `bots` en una aplicación de bots:
 
 ```php
 use GFrame\Session\SessionRuntime;

@@ -2,6 +2,7 @@
 
 return [
     'name' => 'bootstrap',
+    'homepage' => 'https://getbootstrap.com/',
     'type' => 'external-ui',
     'version' => '5.3.8',
     'description' => 'Base visual y componentes interactivos de Bootstrap.',

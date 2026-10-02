@@ -9,7 +9,7 @@ Proyecto/
 ├── app/
 │   ├── controllers/self-account/
 │   └── views/self-account/
-└── packages/gframe/framework/resources/modules/self-account/
+└── packages/gorvet/gframe/resources/modules/self-account/
     └── application/app/
         ├── controllers/self-account/SelfAccountController.php
         └── views/self-account/

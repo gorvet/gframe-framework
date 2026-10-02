@@ -18,6 +18,18 @@ use RuntimeException;
 
 final class OptionalModulesTest extends TestCase
 {
+    public function testExternalLibrariesDeclareTheirOfficialSource(): void
+    {
+        foreach (\GFrame\Modules\ModuleCatalog::frameworkDefault()->all() as $module) {
+            if (!str_starts_with((string)$module['type'], 'external')) continue;
+            self::assertStringStartsWith('https://', (string)($module['homepage'] ?? ''), $module['name']);
+        }
+        $composer = json_decode(file_get_contents(dirname(__DIR__) . '/composer.json'), true);
+        self::assertSame('gorvet/gframe', $composer['name']);
+        $skeleton = json_decode(file_get_contents(dirname(__DIR__) . '/resources/skeleton/composer.json'), true);
+        self::assertArrayHasKey('gorvet/gframe', $skeleton['require']);
+        self::assertStringContainsString('packages/gorvet/gframe/bin/gframe-update', $skeleton['scripts']['gframe:update']);
+    }
     private string $temporaryPath;
 
     protected function setUp(): void

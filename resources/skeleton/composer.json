@@ -5,7 +5,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "gframe/framework": "^1.0"
+        "gorvet/gframe": "^1.0"
     },
     "config": {
         "vendor-dir": "packages",
@@ -14,6 +14,6 @@
         "optimize-autoloader": true
     },
     "scripts": {
-        "gframe:update": "@php packages/gframe/framework/bin/gframe-update"
+        "gframe:update": "@php packages/gorvet/gframe/bin/gframe-update"
     }
 }

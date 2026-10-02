@@ -18,7 +18,7 @@ La primera versión pública es `1.0.0`, probada en PHP 8.1. No se declara certi
 ## Instalación
 
 ```bash
-composer require gframe/framework
+composer require gorvet/gframe
 ```
 
 Mientras el paquete no esté publicado en Packagist, puede instalarse desde GitHub o mediante un repositorio local de tipo `path`.
@@ -41,7 +41,7 @@ composer check
 Los proyectos existentes se actualizan con:
 
 ```bash
-composer update gframe/framework
+composer update gorvet/gframe
 composer gframe:update
 ```
 

@@ -4,7 +4,7 @@
 
 GFrame utiliza `packages/` como directorio de instalación de Composer. El autoload se carga desde `packages/autoload.php` y los ejecutables se generan en `packages/bin/`.
 
-Composer mantiene su estructura estándar `proveedor/paquete` dentro de esa carpeta. Por ejemplo, el framework se instala en una aplicación como `packages/gframe/framework` y PHPMailer como `packages/phpmailer/phpmailer`.
+Composer mantiene su estructura estándar `proveedor/paquete` dentro de esa carpeta. Por ejemplo, el framework se instala en una aplicación como `packages/gorvet/gframe` y PHPMailer como `packages/phpmailer/phpmailer`.
 
 `packages/` es generado, no se versiona y nunca forma parte del archivo distribuible de GFrame.
 
@@ -26,7 +26,7 @@ Estas librerías no deben copiarse dentro de `src` ni mantenerse manualmente en 
 - `password-utils`: utilidad propia extraída y documentada en [Password Utils](password-utils.md).
 - Fuente de iconos [`gframe-icons`](gframe-icons.md): recurso propio extraído y documentado.
 
-`TextClassifier` permanece en Bebots porque es un algoritmo específico para bots conversacionales. `opusConverter` es propio, pero queda retirado porque ya no se necesita. PHPMailer, Opis Closure y PHP-SSE son dependencias externas y no se copiarán al repositorio.
+`TextClassifier` permanece en una aplicación de bots porque es un algoritmo específico para bots conversacionales. `opusConverter` es propio, pero queda retirado porque ya no se necesita. PHPMailer, Opis Closure y PHP-SSE son dependencias externas y no se copiarán al repositorio.
 
 Los componentes propios podrán incorporarse al núcleo o convertirse en paquetes `gframe/*`. Las dependencias específicas de un proyecto permanecerán en ese proyecto.
 

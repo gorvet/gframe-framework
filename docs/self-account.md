@@ -69,7 +69,7 @@ $service = new SelfAccountService(
 );
 ```
 
-La implementación predeterminada protege el rol `superadministrator`. Una aplicación puede añadir restricciones, transacciones o limpieza de relaciones. Por ejemplo, Bebots debe desconectar canales y eliminar recursos dependientes; Base Confías puede retirar áreas y permisos. Esas operaciones pertenecen al repositorio de la aplicación, no al núcleo.
+La implementación predeterminada protege el rol `superadministrator`. Una aplicación puede añadir restricciones, transacciones o limpieza de relaciones. Por ejemplo, Una aplicación de bots puede desconectar canales y eliminar recursos dependientes; Una aplicación de gestión puede retirar áreas y permisos. Esas operaciones pertenecen al repositorio de la aplicación, no al núcleo.
 
 ## Personalización
 

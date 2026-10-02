@@ -4,6 +4,6 @@
 
 Para usarla, seleccione el módulo en el instalador o publíquelo con `php bin/modules.php publish /ruta/del/proyecto/public coloris`. Incluya `coloris.min.css` y `coloris.min.js` desde esa carpeta en el meta de la vista que los necesita. La aplicación decide qué campos activan el selector y cómo guardar el color.
 
-Los archivos principales de GFrame coinciden con los de Dane y Base Confías; Bebots tiene otra variante de `coloris.min.js`. El manifiesto también publica `examples.html` deliberadamente, como referencia de uso para quien instale el módulo.
+El manifiesto publica también `examples.html` como referencia de uso.
 
 La distribución incluye el puente visual del módulo. Consulte [Puentes visuales](paquetes-visuales.md) para sus rutas, orden de carga, variables y personalización.

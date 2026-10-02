@@ -1,6 +1,6 @@
 # Markdown
 
-Componente reutilizable de conversión entre Markdown y HTML, independiente de Bebots. El código PHP se encuentra en `resources/modules/markdown/src/` y Composer carga `MarkdownHelper`. No contiene transportes ni lógica de bots.
+Componente reutilizable de conversión entre Markdown y HTML, independiente de la lógica de aplicación. El código PHP se encuentra en `resources/modules/markdown/src/` y Composer carga `MarkdownHelper`. No contiene transportes ni lógica de bots.
 
 ## Backend
 

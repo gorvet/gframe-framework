@@ -42,10 +42,10 @@ El proyecto puede editar `app/views/templates/footer.php` para definir las etiqu
 
 Una instalación existente que use la antigua clave meta `credits` debe trasladar ese HTML a la plantilla `credits.php` y separar el copyright en `copyright.php` durante su migración completa. GFrame no actualiza automáticamente los proyectos existentes.
 
-## Funciones compartidas cotejadas con Base Confías y Bebots
+## Funciones compartidas
 
-El contenedor conserva `id="footer"`, `footer-credits`, copyright y créditos, la carga ordenada de los JS declarados, el punto de montaje `#toastBox`, el aviso entre pestañas `session_expired_<scope>` de Bebots y la carga opcional de Metricool. `site_url` e `is_protected` se declaran en el footer antes de cargar los scripts, como en Base Confías y Bebots. Los scripts del header se reservan para precarga y no deben depender de esas variables. Heartbeat y sesión se publican mediante `heartbeat-client` y se declaran en `config/meta/global.meta.php`, después de sus dependencias. El footer solo imprime la lista recibida; no añade estos archivos por su cuenta.
+El contenedor conserva `id="footer"`, `footer-credits`, copyright y créditos, la carga ordenada de los JS declarados, el punto de montaje `#toastBox`, el aviso entre pestañas `session_expired_<scope>` y la carga opcional de Metricool. `site_url` e `is_protected` se declaran en el footer antes de cargar los scripts. Los scripts del header se reservan para precarga y no deben depender de esas variables. Heartbeat y sesión se publican mediante `heartbeat-client` y se declaran en `config/meta/global.meta.php`, después de sus dependencias. El footer solo imprime la lista recibida; no añade estos archivos por su cuenta.
 
-El contenido público específico de Base Confías (áreas, procesos, bases legales y exportación offline) pertenece a esa aplicación y se coloca en `content.php` al migrarla. Los créditos configurados en los antiguos metadatos deben trasladarse completos a las áreas del footer; el texto predeterminado del esqueleto no sustituye los créditos del proyecto.
+El contenido público específico del proyecto se coloca en `content.php`. Los créditos configurados en metadatos antiguos deben trasladarse completos a las áreas del footer; el texto predeterminado del esqueleto no sustituye los créditos del proyecto.
 
 La lista final de JS mantiene el orden declarado en los metadatos y elimina duplicados. Cada archivo se imprime una sola vez. El metadato global solo incluye los JS publicados por los módulos instalados; un proyecto estático sin `heartbeat-client` no solicita sus archivos.
