@@ -1,0 +1,114 @@
+/* Bebots calendar bridge, using GFrame's shared typography and theme tokens. */
+.flatpickr-calendar {
+  z-index: 1060;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  line-height: var(--bs-body-line-height, 1.5);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--bs-box-shadow-card);
+}
+.flatpickr-calendar *,
+.flatpickr-calendar input,
+.flatpickr-calendar select {
+  font-family: inherit;
+  color: var(--bs-body-color);
+}
+.flatpickr-current-month,
+.flatpickr-current-month input.cur-year,
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  font-size: var(--bs-body-font-size);
+  font-weight: 600;
+  background: var(--bs-body-bg);
+}
+.flatpickr-months .flatpickr-month,
+.flatpickr-calendar .flatpickr-weekdays {
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+.flatpickr-calendar span.flatpickr-weekday {
+  font-size: .875em;
+  color: var(--bs-secondary-color);
+  background: transparent;
+}
+.flatpickr-calendar .flatpickr-day {
+  font-size: 1em;
+  color: var(--bs-body-color);
+  border-color: transparent;
+}
+.flatpickr-calendar .flatpickr-day.prevMonthDay,
+.flatpickr-calendar .flatpickr-day.nextMonthDay {
+  color: var(--bs-secondary-color);
+}
+.flatpickr-calendar .flatpickr-day:hover,
+.flatpickr-calendar .flatpickr-day:focus,
+.flatpickr-calendar .flatpickr-day.inRange {
+  background: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary-border-subtle);
+  color: var(--bs-body-color);
+}
+.flatpickr-calendar .flatpickr-day.today {
+  border-color: var(--bs-primary);
+}
+.flatpickr-calendar .flatpickr-day.selected,
+.flatpickr-calendar .flatpickr-day.selected:hover,
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: var(--bs-white);
+}
+.flatpickr-calendar .flatpickr-day.flatpickr-disabled,
+.flatpickr-calendar .flatpickr-day.flatpickr-disabled:hover {
+  color: var(--bs-secondary-color);
+  background: var(--bs-tertiary-bg);
+  opacity: .5;
+}
+.flatpickr-calendar .flatpickr-prev-month,
+.flatpickr-calendar .flatpickr-next-month {
+  color: var(--bs-body-color);
+  fill: currentColor;
+}
+.flatpickr-calendar .flatpickr-prev-month:hover svg,
+.flatpickr-calendar .flatpickr-next-month:hover svg {
+  fill: var(--bs-primary);
+}
+.flatpickr-calendar.hasTime .flatpickr-time {
+  border-top-color: var(--bs-border-color);
+}
+.flatpickr-calendar .flatpickr-time .flatpickr-time-separator {
+  color: var(--bs-body-color);
+}
+.flatpickr-calendar .flatpickr-monthDropdown-months option {
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+}
+.flatpickr-calendar .flatpickr-time input,
+.flatpickr-calendar .flatpickr-time .flatpickr-am-pm {
+  font-size: 1em;
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+}
+.flatpickr-calendar .flatpickr-time input:hover,
+.flatpickr-calendar .flatpickr-time input:focus,
+.flatpickr-calendar .flatpickr-time .flatpickr-am-pm:hover,
+.flatpickr-calendar .numInputWrapper:hover {
+  background: var(--bs-tertiary-bg);
+}
+.flatpickr-calendar .numInputWrapper span {
+  border-color: var(--bs-border-color);
+}
+.flatpickr-calendar .numInputWrapper span.arrowUp::after { border-bottom-color: var(--bs-body-color); }
+.flatpickr-calendar .numInputWrapper span.arrowDown::after { border-top-color: var(--bs-body-color); }
+.flatpickr-calendar.arrowTop::before { border-bottom-color: var(--bs-border-color); }
+.flatpickr-calendar.arrowTop::after { border-bottom-color: var(--bs-body-bg); }
+.flatpickr-calendar.arrowBottom::before { border-top-color: var(--bs-border-color); }
+.flatpickr-calendar.arrowBottom::after { border-top-color: var(--bs-body-bg); }
+
+.flatpickr-calendar .flatpickr-day.inRange { box-shadow: -5px 0 0 var(--bs-primary-bg-subtle), 5px 0 0 var(--bs-primary-bg-subtle); }
+.flatpickr-calendar .flatpickr-weekwrapper .flatpickr-weeks { box-shadow: 1px 0 0 var(--bs-border-color); }
+.flatpickr-calendar .flatpickr-weekwrapper span.flatpickr-day { color: var(--bs-secondary-color); }
+.flatpickr-calendar .flatpickr-time .flatpickr-am-pm:focus { background: var(--bs-tertiary-bg); }
+.flatpickr-calendar .flatpickr-months svg { fill: currentColor; }

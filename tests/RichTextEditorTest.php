@@ -22,8 +22,8 @@ final class RichTextEditorTest extends TestCase
 
         self::assertSame('rich-text-editor', $manifest['name']);
         self::assertSame(['jquery', 'tinymce'], $manifest['dependencies']);
-        self::assertFileExists($this->modulePath . '/application/views/richTextEditor.php');
-        self::assertFileExists($this->modulePath . '/application/views/richTextEditor.meta.php');
+        self::assertFileExists($this->modulePath . '/application/app/views/rich-text-editor/richTextEditor.php');
+        self::assertFileExists($this->modulePath . '/application/app/views/rich-text-editor/richTextEditor.meta.php');
         self::assertFileExists($this->modulePath . '/public/rich-text-editor.js');
     }
 
@@ -61,7 +61,7 @@ final class RichTextEditorTest extends TestCase
 
     public function testComponentEscapesValuesAndNormalizesIdentifiers(): void
     {
-        $view = (string)file_get_contents($this->modulePath . '/application/views/richTextEditor.php');
+        $view = (string)file_get_contents($this->modulePath . '/application/app/views/rich-text-editor/richTextEditor.php');
 
         self::assertGreaterThanOrEqual(5, substr_count($view, 'htmlspecialchars('));
         self::assertStringContainsString("preg_replace('/[^A-Za-z0-9_-]+/'", $view);
@@ -80,5 +80,36 @@ final class RichTextEditorTest extends TestCase
         self::assertStringContainsString('destroyAll: function(root)', $javascript);
         self::assertStringContainsString('valid_elements:', $javascript);
         self::assertStringContainsString('paste_preprocess: pastePreprocess', $javascript);
+    }
+
+    public function testNativeComponentAndProjectOverrideArePreservedByUpdate(): void
+    {
+        $root = sys_get_temp_dir() . '/gframe-rich-editor-' . bin2hex(random_bytes(6));
+        mkdir($root);
+        $catalog = \GFrame\Modules\ModuleCatalog::frameworkDefault();
+        try {
+            (new \GFrame\Modules\ModuleAssetPublisher($catalog))->publishProject(['rich-text-editor'], $root);
+            \GFrame\Modules\ModuleRuntime::initialize($catalog, ['rich-text-editor'], $root);
+            $native = \GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditor.php', 'rich-text-editor');
+            self::assertNotNull($native);
+            $richTextEditor = ['id'=>'2 test', 'value'=>'<script>evil()</script>', 'label'=>'Texto'];
+            ob_start();
+            include $native;
+            $html = ob_get_clean();
+            self::assertStringContainsString('id="editor-2-test"', $html);
+            self::assertStringContainsString('&lt;script&gt;evil()&lt;/script&gt;', $html);
+            file_put_contents($root . '/app/views/rich-text-editor/richTextEditor.php', '<p>custom-editor</p>');
+            file_put_contents($root . '/app/views/rich-text-editor/richTextEditor.meta.php', '<?php return ["js"=>["public/custom.js"]];');
+            \GFrame\Install\ProjectUpdateService::frameworkDefault()->update($root, ['rich-text-editor']);
+            ob_start();
+            include \GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditor.php', 'rich-text-editor');
+            self::assertSame('<p>custom-editor</p>', ob_get_clean());
+            self::assertSame(['js'=>['public/custom.js']], require \GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditor.meta.php', 'rich-text-editor'));
+            self::assertFileDoesNotExist($root . '/app/views/admin/components/richTextEditor.php');
+        } finally {
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+            foreach ($files as $file) $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+            rmdir($root);
+        }
     }
 }

@@ -9,6 +9,25 @@ use PHPUnit\Framework\TestCase;
 
 final class NotificationCampaignsTest extends TestCase
 {
+    public function testEachRecipientReceivesResolvedTitleAndMessageOnBothChannels(): void
+    {
+        $queue = new MemoryCampaignQueue();
+        $service = new CampaignService(new MemoryCampaignRepository(), $queue, new \CronTaskService(new MemoryCampaignCronRepository()));
+        $response = $service->create(['name' => 'Saludo', 'title' => 'Hola {{user_name}}', 'message' => 'Tu correo: {{user_email}}', 'channels' => ['inbox', 'email']], [
+            ['recipients' => ['inbox' => '1', 'email' => 'ada@example.test'], 'variables' => ['user_name' => 'Ada', 'user_email' => 'ada@example.test']],
+            ['recipients' => ['inbox' => '2'], 'variables' => ['user_name' => 'Luis', 'user_email' => 'luis@example.test']],
+        ]);
+        self::assertSame('success', $response['status']);
+        self::assertCount(3, $queue->jobs);
+        foreach (array_values($queue->jobs) as $index => $job) {
+            $name = $index < 2 ? 'Ada' : 'Luis';
+            self::assertSame('Hola ' . $name, $job['payload']['title']);
+            self::assertSame($job['payload']['title'], $job['payload']['subject']);
+            self::assertStringNotContainsString('{{', $job['payload']['message']);
+            self::assertSame($job['payload']['message'], $job['payload']['variables']['message']);
+        }
+    }
+
     public function testImmediateCampaignQueuesEachChannelRecipientOnce(): void
     {
         $campaigns = new MemoryCampaignRepository(); $queue = new MemoryCampaignQueue(); $cronRepository = new MemoryCampaignCronRepository();
@@ -61,9 +80,9 @@ final class MemoryCampaignRepository implements CampaignRepository
 {
     public array $campaigns = []; public array $recipients = [];
     public function create(array $campaign, array $recipients): int { $id = count($this->campaigns) + 1; $this->campaigns[$id] = ['campaign_id' => $id] + $campaign; foreach ($recipients as $recipient) { $rid = count($this->recipients) + 1; $this->recipients[$rid] = ['recipient_id' => $rid, 'campaign_id' => $id, 'status' => 'pending'] + $recipient; } return $id; }
-    public function find(int $campaignID, ?int $tenantID = null): ?array { $row = $this->campaigns[$campaignID] ?? null; return $row !== null && ($row['tenant_id'] ?? null) === $tenantID ? $row : null; }
-    public function paginate(int $page, int $perPage, ?int $tenantID = null, string $status = 'all'): array { return ['data' => array_values($this->campaigns), 'meta' => []]; }
-    public function updateStatus(int $campaignID, string $status, ?int $tenantID = null): bool { if ($this->find($campaignID, $tenantID) === null) return false; $this->campaigns[$campaignID]['status'] = $status; return true; }
+    public function findCampaign(int $campaignID, ?int $tenantID = null): ?array { $row = $this->campaigns[$campaignID] ?? null; return $row !== null && ($row['tenant_id'] ?? null) === $tenantID ? $row : null; }
+    public function paginateCampaigns(int $page, int $perPage, ?int $tenantID = null, string $status = 'all'): array { return ['data' => array_values($this->campaigns), 'meta' => []]; }
+    public function updateStatus(int $campaignID, string $status, ?int $tenantID = null): bool { if ($this->findCampaign($campaignID, $tenantID) === null) return false; $this->campaigns[$campaignID]['status'] = $status; return true; }
     public function reserveRecipients(int $campaignID, int $limit): array { $rows = []; foreach ($this->recipients as &$row) if ($row['campaign_id'] === $campaignID && $row['status'] === 'pending') { $row['status'] = 'processing'; $rows[] = $row; } return array_slice($rows, 0, $limit); }
     public function recoverRecipients(int $campaignID, int $seconds): int { return 0; }
     public function markRecipientQueued(int $recipientID, int $jobs): void { $this->recipients[$recipientID]['status'] = 'queued'; }

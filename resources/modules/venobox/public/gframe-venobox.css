@@ -1,0 +1,8 @@
+.vbox-overlay { font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); }
+.vbox-overlay .vbox-title, .vbox-overlay .vbox-num, .vbox-overlay .vbox-close {
+  color: var(--bs-body-color); background: var(--bs-body-bg);
+}
+.vbox-overlay .vbox-next span, .vbox-overlay .vbox-prev span { border-top-color: var(--bs-white); border-right-color: var(--bs-white); }
+.vbox-overlay .vbox-close:focus-visible, .vbox-overlay .vbox-next:focus-visible,
+.vbox-overlay .vbox-prev:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+/* El telón permanece oscuro para conservar el contraste de las imágenes. */

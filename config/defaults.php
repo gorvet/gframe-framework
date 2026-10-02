@@ -31,6 +31,10 @@ return [
         ],
     ],
     'auth' => [
+        'deactivation' => [
+            'retention_days' => 60,
+            'warning_hours' => 72,
+        ],
         'login_redirect' => '',
         'password_change_redirect' => 'account',
         'password_expiration' => [

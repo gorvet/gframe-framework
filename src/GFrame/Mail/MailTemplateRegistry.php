@@ -36,6 +36,12 @@ final class MailTemplateRegistry
         if ($template === null) throw new InvalidArgumentException('No se encontró la plantilla de correo.');
         $html = (string)file_get_contents($template['path']);
         $values = array_merge(\MailThemeHelper::params(), $variables);
+        $name = trim((string)($variables['recipient_name'] ?? $variables['user_name'] ?? ''));
+        $hasGreeting = preg_match('/^\s*(?:hola\b|estimad[oa]s?\b|buenos días\b|buenas tardes\b|buenas noches\b)/iu', (string)($variables['message'] ?? '')) === 1;
+        $values += [
+            'greeting' => $hasGreeting ? '' : ($name !== '' ? 'Hola, ' . $name . '.' : 'Hola.'),
+            'greeting_display' => $hasGreeting ? 'none' : 'block',
+        ];
         return preg_replace_callback(
             '/{{\s*([a-zA-Z][a-zA-Z0-9_.-]*)\s*}}/',
             static fn(array $match): string => htmlspecialchars((string)($values[$match[1]] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),

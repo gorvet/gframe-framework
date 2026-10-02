@@ -12,7 +12,7 @@
 	<meta content="width=device-width" name="viewport" />
 	<meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no" />
 	<style type="text/css">
-		
+
 		body {
 			min-width:100%;
 			Margin:0px;
@@ -38,7 +38,7 @@
 		.logo{max-height: 55px;}
 
 		.card{
-			display:inline-table; 
+			display:inline-table;
 			max-width:600px;
 			width:100%;
 			text-align:center;
@@ -57,7 +57,7 @@
 			font-size:28px;
 			color:{{mailPrimary}};
 			text-align: left;
-			margin-top: 0;	
+			margin-top: 0;
 
 		}
 		p {
@@ -96,16 +96,17 @@
 	<div class="fw">
 		<div class="container">
 			<div class="card">
-				<div class="card-header"> 
-					<img class="logo"     alt="{{mailSiteName}}" src="{{mailLogo}}"/>
+				<div class="card-header">
+					<img class="logo" alt="{{mailSiteName}}" src="{{mailLogo}}" height="55" style="height:55px;width:auto;max-width:100%;border:0"/>
 				</div>
 				<div class="card-body" style="{{mailCardBodyStyle}}">
+					<h1 style="{{mailH1Style}}">{{subject}}</h1>
+					<p style="{{mailTextStyle}}display:{{greeting_display}};">{{greeting}}</p>
 					<p style="{{mailTextStyle}}"><strong>De: </strong>{{name}}</p>
-					<p style="{{mailTextStyle}}"><strong>Asunto: </strong>{{subject}}</p>
-					<br>
 					<div style="{{mailTextStyle}}white-space:pre-wrap;">{{message}}</div>
 				</div>
 			</div>
+			<div style="padding:20px 12px 0;text-align:center;color:{{mailSecondary}};font-size:12px;line-height:1.6">&copy; {{mailYear}} {{mailSiteName}}. Todos los derechos reservados.<br>Construido con GFrame.</div>
 		</div>
 	</div>
 </body>

@@ -3,6 +3,23 @@
 
   var registrations = {};
 
+  function syncEditorTheme(editor) {
+    var body = editor.getBody();
+    if (!body) return;
+    var source = window.getComputedStyle(document.documentElement);
+    ['--bs-body-font-family', '--bs-body-font-size', '--bs-body-line-height',
+      '--bs-body-color', '--bs-body-bg', '--bs-border-color', '--bs-secondary-bg',
+      '--bs-tertiary-bg', '--bs-link-color'].forEach(function(name) {
+      body.style.setProperty(name, source.getPropertyValue(name));
+    });
+    body.style.fontFamily = 'var(--bs-body-font-family)';
+    body.style.fontSize = 'var(--bs-body-font-size)';
+    body.style.lineHeight = 'var(--bs-body-line-height)';
+    body.style.color = 'var(--bs-body-color)';
+    body.style.backgroundColor = 'var(--bs-body-bg)';
+    body.style.colorScheme = document.documentElement.dataset.bsTheme === 'dark' ? 'dark' : 'light';
+  }
+
   function hasMeaningfulSiblingBefore(node) {
     var sibling = node.previousSibling;
     while (sibling) {
@@ -208,8 +225,12 @@
       },
       init_instance_callback: function(editor) {
         normalizeTableCells(editor.getBody());
+        syncEditorTheme(editor);
+        var observer = new MutationObserver(function() { syncEditorTheme(editor); });
+        observer.observe(document.documentElement, {attributes: true, attributeFilter: ['data-bs-theme', 'style', 'class']});
+        editor.on('remove', function() { observer.disconnect(); });
       },
-      content_style: "body { font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.65; } h1 { font-size: 2rem; } h2 { font-size: 1.75rem; } h3 { font-size: 1.4rem; } h4 { font-size: 1.2rem; } h5 { font-size: 1.1rem; } h6 { font-size: 1rem; } img { max-width: 100%; height: auto; } table { width: 100%; border-collapse: collapse; font-size: 0.8rem; } td, th { border: 1px solid #d9dee5; padding: 0.5rem; } td > p, th > p { margin: 0; } thead th { background: #e9ecef; font-weight: 700; } tbody tr:nth-child(odd) td { background: #f8f9fa; }"
+      content_style: "body { font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); line-height: var(--bs-body-line-height); color: var(--bs-body-color); background: var(--bs-body-bg); } a { color: var(--bs-link-color); } h1 { font-size: 2rem; } h2 { font-size: 1.75rem; } h3 { font-size: 1.4rem; } h4 { font-size: 1.2rem; } h5 { font-size: 1.1rem; } h6 { font-size: 1rem; } img { max-width: 100%; height: auto; } table { width: 100%; border-collapse: collapse; font-size: 0.8rem; } td, th { border: 1px solid var(--bs-border-color); padding: 0.5rem; } td > p, th > p { margin: 0; } thead th { background: var(--bs-secondary-bg); font-weight: 700; } tbody tr:nth-child(odd) td { background: var(--bs-tertiary-bg); }"
     };
   }
 

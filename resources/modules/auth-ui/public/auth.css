@@ -1,54 +1,124 @@
-/*--------------------------------------------------------------
-# Estilos de auth
---------------------------------------------------------------*/
-body.tpl-auth{ 
-    background: var(--bs-gray-100); 
-}
-:root[data-bs-theme="dark"] body.tpl-auth {
-     background:var(--bs-body-bg);
-}
-
-body.tpl-auth {  
-  min-height: calc(100vh);
+body.tpl-auth {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  background-color: var(--bs-gray-100);
 }
-.login-card .card-header h1 {
-  font-weight: bold;
-  font-size: 1.4rem;
+
+.auth-page {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-height: 0;
+  width: 100%;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: fit-content;
+  margin: 0 auto 1rem;
+  color: var(--bs-white);
+  font-size: 1.35rem;
+  font-weight: 700;
   text-decoration: none;
-  line-height: 1;
-  margin: 0;
 }
 
-.tpl-auth .lead {
-  font-weight: bold;
-  text-align: center;
-  font-size: 1.5rem;
-  padding-bottom: 10px;
-  line-height: 1.5;
+.auth-brand:hover,
+.auth-brand:focus-visible,
+.auth-home-link:hover,
+.auth-home-link:focus-visible {
+  color: var(--bs-primary);
 }
 
-.tpl-auth .tolostp { 
-  color: var(--bs-danger); 
+.auth-brand:focus-visible,
+.auth-home-link:focus-visible,
+.login-card a:focus-visible,
+.login-card .btn:focus-visible {
+  outline: 0.2rem solid var(--bs-primary-border-subtle);
+  outline-offset: 0.2rem;
 }
 
-.tpl-auth .tolostp:hover { 
-  color: var(--bs-danger); 
-}
-
-.tpl-auth .logo-auth {
-  max-height: 70px;
+.auth-brand img {
   width: auto;
+  height: 2.5rem;
+  object-fit: contain;
 }
 
+.login-card {
+  overflow: hidden;
+  background: var(--bs-body-bg);
+  box-shadow: var(--bs-navbar-shadow);
+}
 
-.auth-page { display:flex; flex:1 1 auto; align-items:center; width:100%; }
-.auth-brand { display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.25rem; text-decoration:none; }
-.auth-brand img { display:block; max-width:min(230px, 70vw); height:auto; }
-.login-card .card-header { background:var(--bs-primary); color:var(--bs-white); }
-.auth-home-link { color:var(--bs-body-color); }
-.login-card .showPassword { cursor:pointer; }
-.login-card a:focus-visible, .login-card button:focus-visible { outline:.2rem solid var(--bs-primary-border-subtle); outline-offset:.2rem; }
-@media(max-width:575.98px) { .auth-page { align-items:flex-start; } }
+.login-card .card-header {
+  border-bottom: 0;
+  background: var(--bs-gradient);
+}
+
+.login-card .card-header h1 {
+  margin: 0;
+  color: var(--bs-white);
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.login-card .form-label {
+  color: var(--bs-heading-color);
+  font-weight: 600;
+}
+
+.login-card a {
+  color: var(--bs-primary-text);
+  text-underline-offset: 0.16em;
+}
+
+.login-card a:hover,
+.login-card a:focus-visible {
+  color: var(--bs-primary-hover);
+}
+
+.login-card .showPassword {
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-home-link {
+  color: var(--bs-dark);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+body.tpl-auth #footer {
+  flex: 0 0 auto;
+  color: var(--bs-body-color);
+  background: var(--bs-gray-100);
+}
+
+body.tpl-auth #footer a {
+  color: var(--bs-primary);
+}
+
+body.tpl-auth #footer a:hover,
+body.tpl-auth #footer a:focus-visible {
+  color: var(--bs-primary-hover);
+}
+
+.tolostp,
+.tolostp:hover,
+.tolostp:focus-visible {
+  color: var(--bs-danger);
+}
+
+@media (max-width: 575.98px) {
+  .auth-page {
+    align-items: flex-start;
+  }
+
+  .login-card .card-body {
+    padding: 1.5rem !important;
+  }
+}

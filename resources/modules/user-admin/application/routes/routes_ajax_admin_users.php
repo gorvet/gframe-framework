@@ -2,10 +2,12 @@
 
 use RouteBuilder as Route;
 
-Route::post('ajax/admin/users/list', 'admin/users/UserAdminController@list')
+Route::post('ajax/admin/users/list', 'user-admin/UserAdminController@list')
+    ->module('user-admin')
     ->middleware(['auth', 'can:users.view'])
     ->registerFinal();
 
-Route::post('ajax/admin/users/update', 'admin/users/UserAdminController@update')
+Route::post('ajax/admin/users/update', 'user-admin/UserAdminController@update')
+    ->module('user-admin')
     ->middleware(['auth', 'can:users.manage'])
     ->registerFinal();

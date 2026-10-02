@@ -4,6 +4,7 @@ namespace GFrame\Install;
 
 use InvalidArgumentException;
 use RuntimeException;
+use GFrame\Modules\ModuleCatalog;
 
 final class InstallationProfileCatalog
 {
@@ -54,5 +55,28 @@ final class InstallationProfileCatalog
         }
 
         return $profiles[$slug];
+    }
+
+    /** Opcionales agrupados, excluyendo base común, requisitos del perfil e incompatibles. */
+    public function optionalModules(ModuleCatalog $catalog): array
+    {
+        $groups = require __DIR__ . '/../../../resources/install/optional-modules.php';
+        $options = [];
+        $defaults = array_column($catalog->defaults(), 'name');
+        foreach ($this->all() as $slug => $profile) {
+            $required = array_column($catalog->resolve(array_merge($defaults, $profile['modules'])), 'name');
+            $options[$slug] = [];
+            foreach ($groups as $title => $entries) {
+                foreach ($entries as $name => $label) {
+                    if (in_array($name, $required, true)) continue;
+                    $dependencies = $catalog->resolve([$name]);
+                    if (!$profile['database'] && array_filter($dependencies, static fn(array $module): bool => !empty($module['schemas']) || !empty($module['requires_schema']))) continue;
+                    $module = $catalog->get($name);
+                    if (array_filter($dependencies, static fn(array $dependency): bool => isset($dependency['install_profiles']) && !in_array($slug, (array)$dependency['install_profiles'], true))) continue;
+                    $options[$slug][$title][$name] = ['name' => $name, 'label' => $label, 'description' => (string)($module['description'] ?? '')];
+                }
+            }
+        }
+        return $options;
     }
 }

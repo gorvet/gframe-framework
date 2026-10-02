@@ -6,6 +6,21 @@ use RuntimeException;
 
 final class ProjectScaffolder
 {
+    /** Archivos gestionados que deben mantenerse al actualizar un proyecto. */
+    public const UPDATE_PATHS = [
+        '.htaccess', 'index.php', 'install.php', 'core/Load.php',
+        'config/meta/global.meta.php',
+        'config/server',
+        'app/views/templates/header.php', 'app/views/templates/footer.php',
+        'app/views/templates/mail',
+        'public/css/variables.css', 'public/css/bootstrap-buttons-compat.css',
+        'public/css/common.css', 'public/css/colores.html',
+        'public/css/install/install.css', 'public/js/install/install.js',
+        'app/views/home/homeIndex.php', 'app/views/home/home.group.meta.php',
+        'app/views/templates/homeTemplate.php', 'public/css/home/home.css',
+        'public/js/app/home/mngnoadmin.js',
+    ];
+
     public function __construct(private readonly string $skeletonPath)
     {
     }

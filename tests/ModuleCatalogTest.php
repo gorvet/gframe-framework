@@ -8,6 +8,58 @@ use PHPUnit\Framework\TestCase;
 
 final class ModuleCatalogTest extends TestCase
 {
+    public function testVisualBridgesArePublishedWithTheirModules(): void
+    {
+        $paths = [
+            'coloris' => 'coloris/gframe-coloris.css',
+            'flatpickr' => 'flatpickr/gframe-flatpickr.css',
+            'intl-tel-input' => 'intlTelInput/css/gframe-intl-tel-input.css',
+            'tinymce' => 'tinymce/gframe-tinymce.css',
+            'swiper' => 'swiper/gframe-swiper.css',
+            'owl-carousel' => 'owl.carousel/assets/gframe-owl-carousel.css',
+            'venobox' => 'venobox/gframe-venobox.css',
+            'jquery-ui' => 'jquery-ui/gframe-jquery-ui.css',
+            'chartjs' => 'chartjs/gframe-chartjs.js',
+            'aos' => 'aos/gframe-aos.css',
+        ];
+        (new ModuleAssetPublisher(ModuleCatalog::frameworkDefault()))
+            ->publishProject(array_keys($paths), $this->temporaryPath);
+        foreach ($paths as $path) {
+            self::assertFileExists($this->temporaryPath . '/public/vendors/external/' . $path);
+        }
+    }
+
+    public function testAdministrativeModulesPublishMenusAndUseTheAdminTemplate(): void
+    {
+        $publisher = new ModuleAssetPublisher(ModuleCatalog::frameworkDefault());
+        $publisher->publishProject(['media-library', 'notification-campaigns'], $this->temporaryPath);
+
+        $menus = [
+            'media' => ['Biblioteca multimedia', 'media.view', '/admin/media'],
+            'campaigns' => ['Campañas', 'notifications.campaigns.view', '/admin/notifications/campaigns'],
+            'notifications' => ['Notificaciones', null, '/notifications'],
+        ];
+        foreach ($menus as $name => [$label, $permission, $url]) {
+            $file = $this->temporaryPath . '/app/views/admin-panel/parts/menu-items/' . $name . '.php';
+            self::assertFileExists($file);
+            $source = (string)file_get_contents($file);
+            self::assertStringContainsString($label, $source);
+            self::assertStringContainsString($url, $source);
+            self::assertStringContainsString('htmlspecialchars', $source);
+            if ($permission !== null) {
+                self::assertStringContainsString("authorize(\$userID, '" . $permission . "')", $source);
+            } else {
+                self::assertStringContainsString('if ($userID > 0)', $source);
+            }
+        }
+        self::assertFileExists($this->temporaryPath . '/app/views/admin-panel/parts/header-actions/notifications.php');
+        foreach (['routes_admin_media', 'routes_admin_notification_campaigns', 'routes_web_notifications'] as $route) {
+            $source = (string)file_get_contents($this->temporaryPath . '/config/routes/' . $route . '.php');
+            self::assertStringContainsString("->template('admin')", $source);
+            self::assertStringNotContainsString("->template('account')", $source);
+        }
+    }
+
     private string $temporaryPath;
 
     protected function setUp(): void
@@ -163,16 +215,12 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['rich-text-editor'], $project);
 
         self::assertContains('rich-text-editor', $result['modules']);
-        self::assertFileExists(
-            $project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views'
-            . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'components'
-            . DIRECTORY_SEPARATOR . 'richTextEditor.php'
-        );
-        self::assertFileExists(
-            $project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views'
-            . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'components'
-            . DIRECTORY_SEPARATOR . 'richTextEditor.meta.php'
-        );
+        self::assertDirectoryExists($project . '/app/views/rich-text-editor');
+        self::assertFileDoesNotExist($project . '/app/views/rich-text-editor/richTextEditor.php');
+        self::assertFileDoesNotExist($project . '/app/views/admin/components/richTextEditor.php');
+        \GFrame\Modules\ModuleRuntime::initialize(ModuleCatalog::frameworkDefault(), ['rich-text-editor'], $project);
+        self::assertNotNull(\GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditor.php', 'rich-text-editor'));
+        self::assertNotNull(\GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditor.meta.php', 'rich-text-editor'));
         self::assertFileExists(
             $project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js'
             . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'admin'
@@ -194,12 +242,11 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['auth-ui'], $project);
 
         self::assertContains('auth-ui', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'auth' . DIRECTORY_SEPARATOR . 'AuthController.php');
+        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+            self::assertDirectoryExists($project . '/app/' . $type . '/auth-ui');
+            self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/auth-ui'), ['.', '..'])));
+        }
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_auth.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'auth' . DIRECTORY_SEPARATOR . 'authRegister.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'auth' . DIRECTORY_SEPARATOR . 'authRecovery.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'auth' . DIRECTORY_SEPARATOR . 'authReset.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'auth' . DIRECTORY_SEPARATOR . 'authVerify.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'auth' . DIRECTORY_SEPARATOR . 'auth.css');
     }
 
@@ -212,15 +259,15 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['error-pages'], $project);
 
         self::assertContains('error-pages', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . '_errorCard.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . 'error403.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . 'error404.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . 'error500.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . 'error503.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . 'errorPermissions.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . 'error.group.meta.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'errorTemplate.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'error-pages' . DIRECTORY_SEPARATOR . 'error-pages.css');
+        \GFrame\Modules\ModuleRuntime::initialize(ModuleCatalog::frameworkDefault(), ['error-pages'], $project);
+        self::assertDirectoryExists($project . '/app/views/error-pages');
+        self::assertSame([], array_values(array_diff(scandir($project . '/app/views/error-pages'), ['.', '..'])));
+        foreach (['_errorCard', 'error403', 'error404', 'error500', 'error503', 'errorPermissions', 'error-pages.group.meta'] as $view) {
+            self::assertNotNull(\GFrame\Modules\ModuleRuntime::file('views', 'error-pages/' . $view . '.php', 'error-pages'));
+        }
+        self::assertNotNull(\GFrame\Modules\ModuleRuntime::template('errorTemplate.php'));
+        self::assertFileDoesNotExist($project . '/app/views/templates/errorTemplate.php');
+        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR . '404' . DIRECTORY_SEPARATOR . '404.css');
     }
 
     public function testSelfAccountPublishesItsCompleteUiFlow(): void
@@ -232,10 +279,13 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['self-account'], $project);
 
         self::assertContains('self-account', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'account' . DIRECTORY_SEPARATOR . 'SelfAccountController.php');
+        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+            self::assertDirectoryExists($project . '/app/' . $type . '/self-account');
+            self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/self-account'), ['.', '..'])));
+        }
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_account.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_ajax_account.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'account' . DIRECTORY_SEPARATOR . 'accountIndex.php');
+        self::assertFileDoesNotExist($project . '/app/views/self-account/self-accountIndex.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'self-account' . DIRECTORY_SEPARATOR . 'self-account.js');
     }
 
@@ -248,7 +298,8 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['heartbeat-client'], $project);
 
         self::assertContains('heartbeat-client', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'heartbeat' . DIRECTORY_SEPARATOR . 'HeartbeatController.php');
+        self::assertDirectoryExists($project . '/app/controllers/heartbeat-client');
+        self::assertFileDoesNotExist($project . '/app/controllers/heartbeat-client/HeartbeatController.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_system_heartbeat.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'heartbeat.js');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'session.js');
@@ -267,14 +318,17 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['user-admin'], $project);
 
         self::assertContains('user-admin', $result['modules']);
+        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+            self::assertDirectoryExists($project . '/app/' . $type . '/user-admin');
+            self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/user-admin'), ['.', '..'])));
+        }
         self::assertContains('admin-panel', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'adminTemplate.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'admin.meta.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'parts' . DIRECTORY_SEPARATOR . 'menu-items' . DIRECTORY_SEPARATOR . 'users.php');
+        self::assertFileDoesNotExist($project . '/app/views/templates/adminTemplate.php');
+        self::assertDirectoryExists($project . '/app/views/admin-panel');
+        self::assertFileDoesNotExist($project . '/app/views/templates/admin.meta.php');
+        self::assertFileExists($project . '/app/views/admin-panel/parts/menu-items/users.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'admin-panel' . DIRECTORY_SEPARATOR . 'admin.js');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'UserAdminController.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_admin_users.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'usersIndex.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'user-admin' . DIRECTORY_SEPARATOR . 'user-admin.js');
     }
 
@@ -287,9 +341,14 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['media-library'], $project);
 
         self::assertContains('media-library', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'MediaController.php');
+        foreach (['controllers', 'models', 'services', 'views'] as $directory) {
+            self::assertDirectoryExists($project . '/app/' . $directory . '/media-library');
+            self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $directory . '/media-library'), ['.', '..'])));
+        }
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_admin_media.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'mediaIndex.php');
+        self::assertFileDoesNotExist($project . '/app/controllers/admin/media/MediaController.php');
+        self::assertFileDoesNotExist($project . '/app/views/admin/media/mediaIndex.php');
+        self::assertFileExists($project . '/public/img/admin/file.png');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'media-library' . DIRECTORY_SEPARATOR . 'media-library.js');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'mediaField.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'mediaPicker.php');
@@ -305,11 +364,15 @@ final class ModuleCatalogTest extends TestCase
             ->publishProject(['notifications'], $project);
 
         self::assertContains('notifications', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'notifications' . DIRECTORY_SEPARATOR . 'NotificationController.php');
+        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+            self::assertDirectoryExists($project . '/app/' . $type . '/notifications');
+            self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/notifications'), ['.', '..'])));
+        }
+        self::assertFileDoesNotExist($project . '/app/controllers/notifications/NotificationController.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_ajax_notifications.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'notifications' . DIRECTORY_SEPARATOR . '_inbox.php');
+        self::assertFileDoesNotExist($project . '/app/views/notifications/_inbox.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'notifications' . DIRECTORY_SEPARATOR . 'notifications.js');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'parts' . DIRECTORY_SEPARATOR . 'header-actions' . DIRECTORY_SEPARATOR . 'notifications.php');
+        self::assertFileExists($project . '/app/views/admin-panel/parts/header-actions/notifications.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'meta' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'notifications.meta.php');
     }
 
@@ -335,8 +398,12 @@ final class ModuleCatalogTest extends TestCase
         mkdir($project, 0775, true);
         $result = (new ModuleAssetPublisher(ModuleCatalog::frameworkDefault()))->publishProject(['notification-campaigns'], $project);
         self::assertContains('notification-campaigns', $result['modules']);
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'notifications' . DIRECTORY_SEPARATOR . 'CampaignController.php');
-        self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'notifications' . DIRECTORY_SEPARATOR . 'campaigns' . DIRECTORY_SEPARATOR . 'index.php');
+        foreach (['controllers', 'models', 'services', 'views'] as $type) {
+            self::assertDirectoryExists($project . '/app/' . $type . '/notification-campaigns');
+            self::assertSame([], array_values(array_diff(scandir($project . '/app/' . $type . '/notification-campaigns'), ['.', '..'])));
+        }
+        self::assertFileDoesNotExist($project . '/app/controllers/notification-campaigns/CampaignController.php');
+        self::assertFileDoesNotExist($project . '/app/views/notification-campaigns/index.php');
         self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'notification-campaigns' . DIRECTORY_SEPARATOR . 'campaigns.js');
     }
 

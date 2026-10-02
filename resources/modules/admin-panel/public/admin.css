@@ -55,7 +55,7 @@ body.tpl-admin {
 }
 
 .actions a{
- color: var(--bs-gray-900);
+ color: var(--bs-body-color);
  display: inline-block; 
 }
 .actions a:hover{
@@ -253,14 +253,27 @@ display: inline-block;
   background-color: var(--bs-primary);
 }
 
-.tpl-admin .footer-credits {
-text-align: left;
+.tpl-admin #footer.gframe-footer .footer-credits {
+  text-align: left;
+  padding: .75rem 30px !important;
+}
+.tpl-admin #footer.gframe-footer .footer-credits .container {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+  text-align: left !important;
+}
+@media (max-width: 1199px) {
+  .tpl-admin #footer.gframe-footer .footer-credits {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
 }
 
 
 @media (min-width: 992px) {
-  #main,
-  .gframe-footer {
+  .tpl-admin #main,
+  .tpl-admin .gframe-footer {
     margin-left: 260px;
   }
 }
@@ -289,8 +302,8 @@ text-align: left;
 }
 
 
-  .toggle-sidebar #main,
-  .toggle-sidebar .gframe-footer
+  .tpl-admin.toggle-sidebar #main,
+  .tpl-admin.toggle-sidebar .gframe-footer
  {
    margin-left: 60px;
   }
@@ -443,7 +456,7 @@ line-height:1.5;
 }
 
 :root[data-bs-theme="dark"] .sidebar-nav .nav-link i {
-  color: var(--bs-gray-600);
+  color: var(--bs-secondary-color);
 }
 
 .sidebar-nav .nav-link.collapsed {
@@ -539,7 +552,21 @@ background: var(--bs-primary-bg-subtle);
   html[data-gf-sidebar="collapsed"] .tpl-admin .sidebar:hover .nav-heading { visibility: visible; }
 }
 .tpl-admin [data-notifications-count][hidden] { display: none !important; }
+.tpl-admin .btn-list-actions {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: var(--bs-body-bg);
+  --bs-btn-border-color: var(--bs-secondary-color);
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-tertiary-bg);
+  --bs-btn-hover-border-color: var(--bs-secondary-color);
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: var(--bs-tertiary-bg);
+  --bs-btn-active-border-color: var(--bs-secondary-color);
+}
+/* La barra de acciones del admin no es el menú móvil de las páginas públicas. */
+.tpl-admin #header .navbar { position: relative; padding: 0; }
+.tpl-admin #header .navbar > ul.navbar-nav { position: static; width: auto; height: auto; inset: auto; }
+.tpl-admin #header .navbar ul.dropdown-menu { position: absolute !important; inset: 100% 0 auto auto !important; transform: none !important; min-width: var(--bs-dropdown-min-width, 10rem); margin: .25rem 0 0; box-shadow: var(--bs-box-shadow-card); border: 1px solid var(--bs-border-color); border-radius: var(--bs-border-radius); }
 @media (prefers-reduced-motion: reduce) {
   .tpl-admin .sidebar, .tpl-admin #main { transition: none; }
 }
-

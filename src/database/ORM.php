@@ -177,7 +177,7 @@ abstract class ORM {
     public function whereLikePattern($column, $pattern, $boolean = 'AND') {
     $pattern = (string)$pattern;
     if ($pattern === '') return $this;
-    return $this->whereRaw("$column LIKE ? ESCAPE '\\\\'", [$pattern], $boolean);
+    return $this->whereRaw($this->dialect()->likeExpression((string)$column), [$pattern], $boolean);
     }
 
     public function orWhereLikePattern($column, $pattern) {
@@ -201,7 +201,7 @@ abstract class ORM {
     $parts = [];
     $params = [];
     foreach ($columns as $col) {
-        $parts[] = "$col LIKE ? ESCAPE '\\\\'";
+        $parts[] = $this->dialect()->likeExpression((string)$col);
         $params[] = $like;
     }
 

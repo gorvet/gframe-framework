@@ -371,6 +371,7 @@
       else this.menu.removeAttribute("aria-multiselectable");
       this.wrapper.classList.toggle("is-disabled", this.select.disabled);
       this.toggle.disabled = this.select.disabled;
+      if (this.select.disabled) this.closeMenu();
       this.renderSelection();
       this.renderOptions();
       this.syncValidity();
@@ -522,7 +523,7 @@
         || this.select.classList.contains("is-invalid")
         || Boolean(form && form.classList.contains("was-validated") && !this.select.validity.valid);
       this.wrapper.classList.toggle("is-invalid", shouldShow);
-      this.toggle.setAttribute("aria-invalid", this.select.validity.valid ? "false" : "true");
+      this.toggle.setAttribute("aria-invalid", shouldShow ? "true" : "false");
     }
 
     focus() {

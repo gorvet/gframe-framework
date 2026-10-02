@@ -1,0 +1,35 @@
+/* Puente de la interfaz; no modifica skins ni contenido almacenado. */
+:root .tox { font-family: var(--bs-body-font-family); color: var(--bs-body-color); }
+:root .tox.tox-tinymce { border-color: var(--bs-border-color); border-radius: var(--bs-border-radius); }
+:root .tox .tox-editor-header, :root .tox .tox-toolbar, :root .tox .tox-toolbar__primary,
+:root .tox .tox-toolbar-overlord, :root .tox .tox-menubar, :root .tox .tox-statusbar,
+:root .tox .tox-dialog, :root .tox .tox-dialog__header, :root .tox .tox-dialog__footer,
+:root .tox .tox-menu, :root .tox .tox-collection--list, :root .tox .tox-sidebar {
+  color: var(--bs-body-color); background: var(--bs-body-bg); border-color: var(--bs-border-color);
+}
+:root .tox .tox-toolbar__group { border-color: var(--bs-border-color); }
+:root .tox .tox-editor-header {
+  background-color: var(--bs-body-bg) !important;
+  box-shadow: none !important;
+}
+:root .tox .tox-tbtn,
+:root .tox .tox-mbtn { background: transparent; }
+:root .tox .tox-tbtn--disabled { opacity: .45; }
+:root .tox .tox-tbtn, :root .tox .tox-mbtn, :root .tox .tox-label, :root .tox .tox-dialog__title,
+:root .tox .tox-statusbar a, :root .tox .tox-statusbar__path-item, :root .tox .tox-statusbar__wordcount,
+:root .tox .tox-collection__item { color: var(--bs-body-color); font-family: var(--bs-body-font-family); }
+:root .tox .tox-tbtn svg, :root .tox .tox-collection__item-icon svg { fill: currentColor; }
+:root .tox .tox-tbtn:hover, :root .tox .tox-mbtn:hover, :root .tox .tox-tbtn--enabled,
+:root .tox .tox-collection--list .tox-collection__item--active,
+:root .tox .tox-collection--list .tox-collection__item--enabled {
+  color: var(--bs-primary-text-emphasis); background: var(--bs-primary-bg-subtle);
+}
+:root .tox .tox-textfield, :root .tox .tox-textarea, :root .tox .tox-listboxfield .tox-listbox--select {
+  color: var(--bs-body-color); background: var(--bs-form-control-bg); border-color: var(--bs-border-color); font-family: var(--bs-body-font-family);
+}
+:root .tox .tox-textfield:focus, :root .tox .tox-textarea:focus { border-color: var(--bs-primary); box-shadow: 0 0 0 .2rem var(--bs-primary-bg-subtle); }
+:root .tox .tox-button { color: var(--bs-white); background: var(--bs-primary); border-color: var(--bs-primary); font-family: var(--bs-body-font-family); }
+:root .tox .tox-button--secondary { color: var(--bs-body-color); background: var(--bs-secondary-bg); border-color: var(--bs-border-color); }
+:root .tox .tox-button--naked { color: var(--bs-body-color); background: transparent; border-color: transparent; }
+:root .tox .tox-dialog-wrap { z-index: 1070; }
+:root .tox .tox-dialog__body-content { color: var(--bs-body-color); }

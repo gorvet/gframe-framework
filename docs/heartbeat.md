@@ -6,7 +6,7 @@ Normalmente se instala como dependencia de `auth-ui`. Incluye:
 
 - `public/js/core/heartbeat.js`, cliente y coordinación entre pestañas;
 - `public/js/core/session.js`, cierre y expiración sincronizados;
-- `app/controllers/system/heartbeat/HeartbeatController.php`, registro de canales;
+- controlador original en `resources/modules/heartbeat-client/application/app/controllers/heartbeat-client/HeartbeatController.php`, registro de canales;
 - `config/routes/routes_system_heartbeat.php`, endpoint del sistema.
 
 ## Funcionamiento
@@ -24,7 +24,8 @@ Cuando la pestaña está oculta, el cliente reduce la frecuencia. Al recuperar e
 La ruta instalada es:
 
 ```php
-Route::post('ajax/heartbeat', 'system/heartbeat/HeartbeatController@dispatch')
+Route::post('ajax/heartbeat', 'heartbeat-client/HeartbeatController@dispatch')
+    ->module('heartbeat-client')
     ->middleware(['auth'])
     ->excludeMiddleware(['CSRF'])
     ->noRefreshSession()
@@ -45,7 +46,7 @@ El tiempo predeterminado de inactividad es de 1800 segundos:
 
 ## Registrar un canal
 
-Los canales se registran en el constructor del `HeartbeatController` publicado en la aplicación:
+La ampliación habitual consiste en registrar canales, no en sustituir el dispatcher. Cree `app/controllers/heartbeat-client/HeartbeatController.php` con namespace `App\Controllers\HeartbeatClient`, extienda `GFrame\Modules\HeartbeatClient\Controllers\HeartbeatController` y llame a `parent::__construct()` antes de registrar sus canales. Así conserva sesión y notificaciones. El instalador crea la carpeta, pero no copia el controlador original. Ejemplo de registro dentro de ese constructor:
 
 ```php
 $this->registerChannel('orders.pending', [
@@ -74,6 +75,8 @@ public function heartbeatPendingChannel(array $payload = [], array $context = []
 ```
 
 El controlador propietario del canal puede usar `HeartbeatChannelTrait`, que proporciona `hbInt`, `hbSuccess` y `hbError`.
+
+La respuesta general incluye `status=success`, `code=heartbeat_dispatched` y `data.channels`. `hbSuccess()` incluye `code=channel_updated` si el handler no proporciona uno específico; el dispatcher completa los códigos omitidos por handlers antiguos sin sustituir los que ya existen. Los datos del canal siguen dentro de `data` y los fragmentos opcionales pueden conservarse en `html`.
 
 ## Contrato de errores
 
@@ -137,13 +140,17 @@ La ruta excluye CSRF porque realiza polling de infraestructura. Cualquier operac
 
 ## Coordinación entre pestañas
 
+El cliente `session.js` pide confirmación antes del logout voluntario. Tras cerrarlo correctamente, notifica a las demás pestañas y redirige la pestaña que lo solicitó sin mostrar otro SweetAlert. Las demás pestañas protegidas conservan el aviso de sesión cerrada; la expiración por inactividad también conserva su aviso.
+
+El logout voluntario lleva a `login` sin `rd`, también en las otras pestañas. Solo la expiración conserva `login?rd=...` para poder regresar a la página interrumpida después de iniciar sesión.
+
 El cliente usa `BroadcastChannel` cuando está disponible y `localStorage` como respaldo. Solo la pestaña líder consulta el servidor; las demás reciben el resultado y emiten los mismos eventos localmente.
 
 El identificador se deriva de `site_url`, por lo que dos aplicaciones abiertas en el mismo dominio no comparten liderazgo ni eventos si utilizan rutas base distintas.
 
 ## Personalización
 
-La aplicación puede editar su `HeartbeatController` para registrar canales. La lógica de cada canal debe permanecer en el controlador, servicio o modelo propietario del módulo correspondiente.
+La aplicación puede heredar del controlador original para registrar canales. La lógica de cada canal debe permanecer en el controlador, servicio o modelo propietario del módulo correspondiente. No edite el original dentro de Composer ni modifique el dispatcher para añadir un canal.
 
 No se deben añadir canales específicos de notificaciones, multimedia u otro negocio al núcleo de GFrame. Cada módulo registra su integración desde la aplicación que lo instala.
 

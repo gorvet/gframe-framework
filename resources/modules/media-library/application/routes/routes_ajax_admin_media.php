@@ -2,13 +2,13 @@
 
 use RouteBuilder as Route;
 
-Route::post('ajax/admin/media/list', 'admin/media/MediaController@list')->middleware(['auth', 'can:media.view'])->registerFinal();
-Route::post('ajax/admin/media/field', 'admin/media/MediaController@field')->middleware(['auth', 'can:media.view'])->registerFinal();
-Route::post('ajax/admin/media/upload', 'admin/media/MediaController@upload')->middleware(['auth', 'can:media.add'])->registerFinal();
-Route::post('ajax/admin/media/hotlink', 'admin/media/MediaController@hotlink')->middleware(['auth', 'can:media.add'])->registerFinal();
-Route::post('ajax/admin/media/delete', 'admin/media/MediaController@delete')->middleware(['auth', 'can:media.delete'])->registerFinal();
-Route::post('ajax/admin/media/details', 'admin/media/MediaController@details')->middleware(['auth', 'can:media.view'])->registerFinal();
-Route::post('ajax/admin/media/save', 'admin/media/MediaController@save')->middleware(['auth', 'can:media.edit'])->registerFinal();
-Route::post('ajax/admin/media/base64', 'admin/media/MediaController@base64')->middleware(['auth', 'can:media.add'])->registerFinal();
-Route::post('ajax/admin/media/quota', 'admin/media/MediaController@quota')->middleware(['auth', 'can:media.view'])->registerFinal();
-Route::post('ajax/admin/media/sync', 'admin/media/MediaController@sync')->middleware(['auth', 'can:media.sync'])->registerFinal();
+Route::post('ajax/admin/media/list', 'media-library/MediaController@list')->module('media-library')->middleware(['auth', 'can:media.view'])->registerFinal();
+Route::post('ajax/admin/media/field', 'media-library/MediaController@field')->module('media-library')->middleware(['auth', 'can:media.view'])->registerFinal();
+Route::post('ajax/admin/media/upload', 'media-library/MediaController@upload')->module('media-library')->middleware(['auth', 'can:media.add'])->registerFinal();
+Route::post('ajax/admin/media/hotlink', 'media-library/MediaController@hotlink')->module('media-library')->middleware(['auth', 'can:media.add'])->registerFinal();
+Route::post('ajax/admin/media/delete', 'media-library/MediaController@delete')->module('media-library')->middleware(['auth', 'can:media.delete'])->registerFinal();
+Route::post('ajax/admin/media/details', 'media-library/MediaController@details')->module('media-library')->middleware(['auth', 'can:media.view'])->registerFinal();
+Route::post('ajax/admin/media/save', 'media-library/MediaController@save')->module('media-library')->middleware(['auth', 'can:media.edit'])->registerFinal();
+Route::post('ajax/admin/media/base64', 'media-library/MediaController@base64')->module('media-library')->middleware(['auth', 'can:media.add'])->registerFinal();
+Route::post('ajax/admin/media/quota', 'media-library/MediaController@quota')->module('media-library')->middleware(['auth', 'can:media.view'])->registerFinal();
+Route::post('ajax/admin/media/sync', 'media-library/MediaController@sync')->module('media-library')->middleware(['auth', 'can:media.sync'])->registerFinal();

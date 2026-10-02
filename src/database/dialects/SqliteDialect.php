@@ -12,6 +12,11 @@ final class SqliteDialect implements DatabaseDialectInterface
         return "json('{}')";
     }
 
+    public function likeExpression(string $column): string
+    {
+        return "$column LIKE ? ESCAPE '\\'";
+    }
+
     public function jsonValuePlaceholder($value, array &$params, bool $useJsonCast): string
     {
         if (is_bool($value)) {

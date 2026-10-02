@@ -29,6 +29,10 @@ Keep one-screen styling in its module. Promote a rule to application shared CSS 
 
 ## Meta File Strategy
 
+The rich-text-editor component also uses runtime originals: resolve rich-text-editor/richTextEditor.php and richTextEditor.meta.php through ModuleRuntime::file('views', ..., 'rich-text-editor'). Project overrides live in app/views/rich-text-editor/. Do not depend on copied originals under app/views/admin/components; its public JS destination remains unchanged. Sanitize untrusted saved rich HTML in backend through GFrame\Security\HtmlSanitizer, not only TinyMCE paste cleanup.
+
+The distributable admin-panel now keeps its original controller, dashboard, template, meta and parts under resources/modules/admin-panel/application/app/. Project customizations use app/controllers/admin-panel/ and app/views/admin-panel/; parts use app/views/admin-panel/parts/. Shared admin templates and meta resolve project first and the runtime template provider second. Do not require copied admin originals in app. Module menu/header contributions remain published under admin-panel/parts; use ModuleRuntime::file for original/custom panel partials. Old app/views/admin personalizations require explicit migration, not automatic deletion.
+
 Use meta files to load assets.
 
 The admin template's shared assets live in `app/views/templates/admin.meta.php`. Modules may add template-level assets through `app/views/templates/meta/admin/*.meta.php`; these are loaded before group and view meta.

@@ -4,7 +4,7 @@ function alertToast(toastOptions) {
 // Valores por defecto
 const defaultOptions = {
 	position: 'bottom-end',  
-	timer: 26000,
+	timer: 5000,
 	icon:'success',
 	title:'Nada que mostrar' 
 // Otros valores por defecto aquí
@@ -12,7 +12,7 @@ const defaultOptions = {
 // Fusionar los valores por defecto con los proporcionados
 const options = { ...defaultOptions, ...toastOptions };
  
-generaBsToast(options.title, options.icon)
+return generaBsToast(options.title, options.icon, options.timer)
 
 /*iziToast.settings({
 timeout: options.timer,
@@ -47,7 +47,7 @@ else if (options.icon=='error') {iziToast.error()}
 
 }
 
-function generaBsToast(msg, type) {
+function generaBsToast(msg, type, timer = 5000) {
 
   var kind = String(type || 'info').toLowerCase();
   if (kind !== 'success' && kind !== 'error' && kind !== 'warning' && kind !== 'info') {
@@ -67,19 +67,24 @@ function generaBsToast(msg, type) {
   		<div class="gtoast-body">
   			<i class="gicon-`+ icon +`"></i>
   			<div><p>`;
-  			toast += msg;
   			toast += `
-  			<p></div>
+      </p></div>
   		</div>
   	</div>
   </div>`;
 
   var $toast = $(toast);
+  $toast.find('p').text(String(msg == null ? '' : msg));
+  var duration = Number(timer);
+  if (!Number.isFinite(duration) || duration < 0) duration = 5000;
+  $toast.css('--gframe-toast-duration', duration + 'ms');
+  if (duration === 0) $toast.addClass('gtoast-persistent');
   $('#toastBox').append($toast);
 
-  setTimeout(()=>{
+  if (duration > 0) setTimeout(()=>{
 		$toast.remove()
-	},5000)
+	},duration)
+  return $toast;
   
 
 }
@@ -91,6 +96,7 @@ function swalAlert(swalOptions) {
 		allowOutsideClick: false,
 		allowEscapeKey:false,
 		buttonsStyling: false,
+		reverseButtons: true,
 		customClass: {
 			confirmButton: "btn btn-primary",
 			denyButton: "btn btn-tercero",
@@ -104,20 +110,17 @@ function swalAlert(swalOptions) {
 
 
 function mergeDeep(target, source) {
-  if (typeof target !== 'object' || typeof source !== 'object') {
-    return source;
-  }
-
-  for (const key in source) {
-    if (source.hasOwnProperty(key)) {
-      if (source[key] instanceof Object) {
-        Object.assign(source[key], mergeDeep(target[key], source[key]));
-      }
+  const result = Object.assign({}, target || {});
+  for (const key of Object.keys(source || {})) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    const value = source[key];
+    if (value && Object.getPrototypeOf(value) === Object.prototype) {
+      result[key] = mergeDeep(result[key], value);
+    } else {
+      result[key] = Array.isArray(value) ? value.slice() : value;
     }
   }
-
-  Object.assign(target || {}, source);
-  return target;
+  return result;
 }
 
 function showSpinner(id='', text='', show = true, ) {

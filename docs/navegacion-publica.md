@@ -1,5 +1,7 @@
 # Navegación pública
 
+El home inicial conserva el mensaje «Algo maravilloso se construye aquí.» y la navegación de acceso o administración según la sesión. Su header está en el flujo normal; el body usa flexbox con altura mínima de ventana y el contenido ocupa el espacio restante, dejando visible el footer común. No se fija el alto ni se oculta contenido: con contenido ampliado o zoom elevado puede aparecer scroll natural. La animación de entrada se desactiva con `prefers-reduced-motion`. El acabado visual no requiere React ni otro módulo adicional.
+
 ## Alcance
 
 `public/js/app/home/mngnoadmin.js` se publica con el esqueleto de la aplicación y se carga desde `home.group.meta.php`. Se extrae del archivo activo de Bebots, compartido con Base Confías y Dane. No es un módulo instalable adicional ni incluye contenido comercial, formularios de contacto o estilos de esas aplicaciones.

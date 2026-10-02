@@ -7,3 +7,5 @@ Seleccione el módulo en el instalador o publíquelo con `php bin/modules.php pu
 Incluya `public/vendors/external/chartjs/chart.umd.min.js` en el meta de la vista que necesita gráficas. La aplicación define sus datos, configuración e inicialización.
 
 El archivo distribuido coincide con los de Dane y Base Confías. Bebots conserva una variante diferente; no se trasladó al paquete común.
+
+La distribución incluye el puente visual del módulo. Consulte [Puentes visuales](paquetes-visuales.md) para sus rutas, orden de carga, variables y personalización.

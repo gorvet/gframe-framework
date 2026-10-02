@@ -10,6 +10,29 @@ use PHPUnit\Framework\TestCase;
 
 final class UserAdministrationServiceTest extends TestCase
 {
+    public function testModerationTransitionsAndProtectedIdentities(): void
+    {
+        $users = new InMemoryUserAdministrationRepository();
+        $registry = new UserAdministrationRegistry();
+        $service = new UserAdministrationService($users, new InMemoryRoleAdministrationRepository(), $registry);
+        self::assertSame('forbidden', $service->moderate(2, 5, 'suspend')['code']);
+        self::assertSame('protected_user', $service->moderate(3, 1, 'delete')['code']);
+        self::assertSame('protected_user', $service->moderate(3, 6, 'delete')['code']);
+        self::assertSame('self_protection', $service->moderate(3, 3, 'delete')['code']);
+        self::assertSame('invalid_operation', $service->moderate(1, 5, 'disable')['code']);
+        self::assertSame('user_suspended', $service->moderate(1, 5, 'suspend')['code']);
+        self::assertSame('suspended', $users->users[5]['status']);
+        self::assertSame('invalid_status_transition', $service->moderate(1, 5, 'verify')['code']);
+        self::assertSame('user_restored', $service->moderate(1, 5, 'restore')['code']);
+        self::assertSame('verify', $users->users[5]['status']);
+        $users->users[5]['status'] = 'unverify';
+        self::assertSame('invalid_status_transition', $service->moderate(1, 5, 'suspend')['code']);
+        self::assertSame('user_verified', $service->moderate(1, 5, 'verify')['code']);
+        $users->users[5]['status'] = 'disabled';
+        self::assertSame('invalid_status_transition', $service->moderate(1, 5, 'restore')['code']);
+        self::assertSame('user_deleted', $service->moderate(1, 5, 'delete')['code']);
+        self::assertArrayNotHasKey(5, $users->users);
+    }
     public function testPermissionsControlViewingAndManagement(): void
     {
         $users = new InMemoryUserAdministrationRepository();
@@ -99,7 +122,7 @@ final class UserAdministrationRegistry implements ActiveSessionRegistry
     public function updateTenantAuthorization(int $userID, string $sessionID, int $roleID, int $roleVersion): void {}
 }
 
-class InMemoryUserAdministrationRepository implements UserAdministrationRepository
+class InMemoryUserAdministrationRepository implements UserAdministrationRepository, \GFrame\Auth\Contracts\UserModerationRepository
 {
     public array $lastFilters = [];
     public array $users = [
@@ -120,6 +143,8 @@ class InMemoryUserAdministrationRepository implements UserAdministrationReposito
     public function findUserByID(int $userID): ?array { return $this->users[$userID] ?? null; }
     public function setActive(int $userID, bool $active): void { $this->users[$userID]['status'] = $active ? 'verify' : 'disabled'; }
     public function assignRole(int $userID, int $roleID): void { $this->users[$userID]['role_id'] = $roleID; }
+    public function setAccountStatus(int $userID, string $status): void { $this->users[$userID]['status'] = $status; }
+    public function deleteAccount(int $userID): void { unset($this->users[$userID]); }
 }
 
 final class FailingUserAdministrationRepository extends InMemoryUserAdministrationRepository

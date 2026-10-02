@@ -9,6 +9,9 @@ return [
     ],
     'css' => [
         'public/vendors/external/bootstrap/css/bootstrap.min.css',
+        'public/css/variables.css',
+        'public/css/bootstrap-buttons-compat.css',
+        'public/css/common.css',
         'public/css/home/home.css',
     ],
     'js' => [

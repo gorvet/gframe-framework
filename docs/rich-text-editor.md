@@ -8,11 +8,11 @@ El módulo `rich-text-editor` publica un componente reutilizable basado en TinyM
 php bin/modules.php publish-project rich-text-editor C:\ruta\del\proyecto
 ```
 
-La publicación instala automáticamente jQuery y TinyMCE. También agrega:
+La publicación instala automáticamente jQuery y TinyMCE. Conserva las vistas originales en `resources/modules/rich-text-editor/application/app/views/rich-text-editor/` y crea carpetas vacías de personalización en `app`. Publica únicamente el JavaScript:
 
-- `app/views/admin/components/richTextEditor.php`;
-- `app/views/admin/components/richTextEditor.meta.php`;
 - `public/js/app/admin/components/rich-text-editor.js`.
+
+Personalice el campo o sus metadatos creando `app/views/rich-text-editor/richTextEditor.php` o `richTextEditor.meta.php`. Si no existen, se usan los originales. Los archivos antiguos de `app/views/admin/components/` no se borran automáticamente: adapte sus includes o traslade expresamente sus personalizaciones. La estructura del campo, el JavaScript y el puente visual no se han rediseñado.
 
 La distribución incluida utiliza TinyMCE 8.6.0 bajo GPL-2.0-or-later.
 
@@ -21,11 +21,12 @@ La distribución incluida utiliza TinyMCE 8.6.0 bajo GPL-2.0-or-later.
 La vista que use el editor debe incorporar los recursos declarados en `richTextEditor.meta.php`. Puede combinarlos con su archivo meta:
 
 ```php
-$editorAssets = require realpath(
-    ABSPATH . 'app/views/admin/components/richTextEditor.meta.php'
+$editorAssets = require \GFrame\Modules\ModuleRuntime::file(
+    'views', 'rich-text-editor/richTextEditor.meta.php', 'rich-text-editor'
 );
 
 return [
+    'css' => $editorAssets['css'],
     'hjs' => $editorAssets['hjs'],
     'js' => [
         ...$editorAssets['js'],
@@ -35,6 +36,8 @@ return [
 ```
 
 El JavaScript específico del formulario debe cargarse después de `rich-text-editor.js` cuando registre opciones adicionales.
+
+El meta incluye el puente visual `gframe-tinymce.css`. La interfaz y el contenido del iframe utilizan las variables del framework; cambiar `data-bs-theme` actualiza el contenido sin reiniciar el editor ni modificar el HTML guardado. El observador se desconecta al destruir la instancia. Si sustituye `init_instance_callback` mediante `register()`, debe conservar esa sincronización o gestionar su propio tema.
 
 ## Renderizar el campo
 
@@ -51,8 +54,8 @@ $richTextEditor = [
     'help' => 'Organiza el contenido con títulos, listas y tablas.',
 ];
 
-include realpath(
-    ABSPATH . 'app/views/admin/components/richTextEditor.php'
+include \GFrame\Modules\ModuleRuntime::file(
+    'views', 'rich-text-editor/richTextEditor.php', 'rich-text-editor'
 );
 ?>
 ```
@@ -122,7 +125,13 @@ Como mínimo:
 - aplique límites de tamaño;
 - valide las imágenes mediante el módulo multimedia cuando permita cargas o selección de archivos.
 
-El módulo no guarda contenido ni impone un sanitizador concreto. Esa responsabilidad pertenece al controlador, servicio o modelo que recibe el campo.
+El módulo no guarda contenido. El core incluye `GFrame\Security\HtmlSanitizer`, extraído de BaseConfías, para limpiar HTML enriquecido en backend. Su uso es explícito en el controlador o servicio receptor:
+
+```php
+$content = \GFrame\Security\HtmlSanitizer::sanitize((string)($_POST['content'] ?? ''));
+```
+
+No use `sanitize()` de texto plano para este campo si desea conservar su formato. Consulte [limpieza de HTML](html-sanitizer.md) para conocer la política, la dependencia DOM y sus límites.
 
 ## API del componente
 

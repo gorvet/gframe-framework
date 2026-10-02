@@ -12,6 +12,7 @@ class RouteBuilder {
     protected array $excludedMiddleware = [];
     protected ?string $templateName  = null;
     protected ?string $view = null;
+    protected ?string $sourceModule = null;
     protected ?string $permission = null;
     protected array $context = [];
     protected bool $useAutoSlug = false;
@@ -94,6 +95,14 @@ class RouteBuilder {
         return $this;
     }
 
+    public function module(string $name): static {
+        if (!preg_match('/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/', $name)) {
+            throw new InvalidArgumentException('Nombre de módulo inválido.');
+        }
+        $this->sourceModule = $name;
+        return $this;
+    }
+
     public function permission(string $permission): static {
         $this->permission = $permission;
         return $this;
@@ -140,6 +149,7 @@ class RouteBuilder {
             'excludedMiddleware' => $this->excludedMiddleware,
             'templateName' => $this->templateName, // <-- nuevo
             'view' => $this->view,
+            'sourceModule' => $this->sourceModule,
             'permission' => $this->permission,
             'context' => $context,
             'type' => $this->type,

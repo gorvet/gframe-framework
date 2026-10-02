@@ -4,6 +4,8 @@ interface DatabaseDialectInterface
 {
     public function name(): string;
 
+    public function likeExpression(string $column): string;
+
     public function jsonEmptyObjectExpression(): string;
 
     public function jsonValuePlaceholder($value, array &$params, bool $useJsonCast): string;

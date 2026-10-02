@@ -1,10 +1,10 @@
 # GFSelect
 
-GFSelect presenta un `<select>` nativo como desplegable con búsqueda. El valor, el nombre del campo y la validación siguen perteneciendo al elemento nativo; los formularios se envían como siempre. Es un componente visual opcional, sin dependencia de jQuery.
+GFSelect presenta un `<select>` nativo como desplegable con búsqueda. El valor, el nombre del campo y la validación siguen perteneciendo al elemento nativo; los formularios se envían como siempre. Se instala como componente básico obligatorio en todos los perfiles, sin dependencia de jQuery. Su utilización en cada campo sigue siendo explícita.
 
 ## Instalación y carga
 
-Seleccione `gfselect` en el instalador o publíquelo con `php bin/modules.php publish /ruta/del/proyecto/public gfselect`. Los archivos quedan en `public/vendors/internal/gfselect/`. Incluya `gf-select.js` en el meta de la vista; el componente carga automáticamente `gf-select.css` desde la misma carpeta al crear la primera instancia. También puede incluir ambos archivos en el meta y usar `loadStyles: false` para evitar esa carga automática.
+El instalador publica `gfselect` automáticamente. Para una publicación manual, use `php bin/modules.php publish /ruta/del/proyecto/public gfselect`. Los archivos quedan en `public/vendors/internal/gfselect/`. Incluya `gf-select.js` en el meta de la vista; el componente carga automáticamente `gf-select.css` desde la misma carpeta al crear la primera instancia. También puede incluir ambos archivos en el meta y usar `loadStyles: false` para evitar esa carga automática.
 
 No se publican el README ni la demo incluidos en el código fuente del módulo.
 
@@ -47,5 +47,11 @@ Las opciones principales son `searchable`, `autoFocusSearch`, `searchLabel`, `em
 ## Personalización
 
 El CSS del proyecto puede cambiar las clases `gf-select-*` y las variables de Bootstrap. La lógica no impone estilos del panel ni de una aplicación concreta. Si el proyecto aplica un tema propio, incluya su CSS después de `gf-select.css` y use `loadStyles: false`.
+
+El puente visual utiliza las variables de GFrame/Bootstrap para tipografía, fondo del campo, bordes, selección, foco y estado deshabilitado. Respeta `data-bs-theme` sin otro selector de tema; las flechas y marcas de selección heredan el color del texto. La validación utiliza `--bs-danger` sin cambiar el grosor del borde. Al deshabilitar un campo abierto, su menú se cierra.
+
+La personalización visual procede de `public/css/app/app/gf-select-app.css` de Dane, copiado como base del CSS del módulo. Se elimina únicamente la dependencia de `.tpl-app .gf-select--app`: ahora se aplica a cualquier GFSelect. Incluye controles redondeados, flecha giratoria, menú con espacios interiores y selección múltiple resaltada. Los estilos equivalentes de los selects nativos se distribuyen en `public/css/common.css`, sin depender de una vista concreta. No hace falta añadir `wrapperClass: 'gf-select--app'` ni cargar otro archivo de estilos.
+
+La prueba visual aislada está en `tests/fixtures/gfselect-preview.php`: incluye selección simple/múltiple, validación, reemplazo de opciones y un modal. Ejecútela desde el repositorio con `php -S 127.0.0.1:8767 -t . tests/fixtures/gfselect-preview.php`.
 
 La integración de Dane contiene ejemplos de selección múltiple y refresco tras reemplazo de fragmentos; Bebots contiene ejemplos de selección simple. Esos proyectos son referencias y no se modifican al publicar el módulo.

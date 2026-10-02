@@ -19,6 +19,7 @@ class MailThemeHelper
 
         return [
             'mailSiteName' => $siteName,
+            'mailYear' => date('Y'),
             'mailSiteUrl' => $siteUrl,
             'mailLogo' => $siteUrl . '/public/img/logo.png',
             'mailBodyBg' => $bodyBg,

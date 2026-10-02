@@ -78,13 +78,13 @@ class Render {
         $groupName = end($parts);
         //$groupName=$groupName==$relativePath?"":$groupName;
 
-        $metaGroupPath = realpath(ABSPATH . "app/views/" . $relativePath . "/" . $groupName . ".group.meta.php");
+        $metaGroupPath = \GFrame\Modules\ModuleRuntime::file('views', $relativePath . '/' . $groupName . '.group.meta.php', $routeParams['sourceModule'] ?? null) ?? false;
 
 
 
         //print_r($routeParams);
 
-        $metaFilePath = realpath(ABSPATH . "app/views/" . $relativePath . "/" . $viewName . ".meta.php");
+        $metaFilePath = \GFrame\Modules\ModuleRuntime::file('views', $relativePath . '/' . $viewName . '.meta.php', $routeParams['sourceModule'] ?? null) ?? false;
 
 
         $metaGroupData = [];
@@ -92,7 +92,7 @@ class Render {
             $metaGroupData = require $metaGroupPath;
         }
 
-        $viewPath = realpath(ABSPATH . "app/views/" . $relativePath . "/" . $viewName . ".php");
+        $viewPath = \GFrame\Modules\ModuleRuntime::file('views', $relativePath . '/' . $viewName . '.php', $routeParams['sourceModule'] ?? null) ?? false;
 
         $metaData = [];
         if (file_exists($metaFilePath)) {
@@ -101,8 +101,8 @@ class Render {
         }
 
         $templateMetaData = [];
-        $templateMetaPath = ABSPATH . 'app/views/templates/' . $templateName . '.meta.php';
-        if (is_file($templateMetaPath)) {
+        $templateMetaPath = \GFrame\Modules\ModuleRuntime::template($templateName . '.meta.php', $routeParams['sourceModule'] ?? null);
+        if ($templateMetaPath !== null) {
             $loaded = require $templateMetaPath;
             if (is_array($loaded)) $templateMetaData = $loaded;
         }
@@ -135,14 +135,15 @@ class Render {
     private function getControllerInstance(array $routeParams) {
         $controller=$routeParams['controller'];
         //var_dump($controller);
-        $controllerPath = $this->resolveControllerPath($controller);
+        $resolvedController = \GFrame\Modules\ModuleRuntime::controller($controller, $routeParams['sourceModule'] ?? null);
+        $controllerPath = $resolvedController['path'] ?? $this->resolveControllerPath($controller);
         // echo'app/controllers/'.$controller.'.php';
 
         if ($controllerPath !== null && file_exists($controllerPath)) {
             //comprobamos la existencia del controlador
             require_once $controllerPath;
             $parts = explode('/', str_replace('\\', '/', $controller));
-            $className = end($parts);
+            $className = $resolvedController['class'] ?? end($parts);
             $controllerInstance = $this->instantiateController($className, $routeParams);
             return $controllerInstance;
 
@@ -154,18 +155,18 @@ class Render {
 
     public function loadTemplate($content, array $routeParams, array $data = []) {
         //print_r($routeParams);
-        $templateFile = ABSPATH . 'app/views/templates/' . $routeParams['templateName'] . 'Template.php';
+        $templateFile = \GFrame\Modules\ModuleRuntime::template($routeParams['templateName'] . 'Template.php', $routeParams['sourceModule'] ?? null);
         $bodyClass = $this->buildBodyClasses($routeParams);
 
 
-        if (!file_exists(realpath($templateFile))) {
+        if ($templateFile === null) {
             DebugMode ? $this->errorControl('404', '', 'Template no encontrado') : $this->errorControl('404');
         }
 
 
 
         include realpath(ABSPATH . "app/views/templates/header.php");
-        include realpath(ABSPATH . "app/views/templates/" . $routeParams['templateName'] . 'Template.php');
+        include $templateFile;
         include realpath(ABSPATH . "app/views/templates/footer.php");
 
     }
@@ -262,7 +263,9 @@ class Render {
         $candidates[] = ABSPATH . 'app/views/templates/footer/' . $area . '.php';
 
         foreach ($candidates as $candidate) {
-            if (!is_file($candidate)) {
+            $relative = substr($candidate, strlen(ABSPATH . 'app/views/'));
+            $candidate = \GFrame\Modules\ModuleRuntime::file('views', $relative, $routeParams['sourceModule'] ?? null);
+            if ($candidate === null) {
                 continue;
             }
 

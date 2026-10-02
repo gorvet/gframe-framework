@@ -2,6 +2,7 @@
 
 return [
     'name' => 'gfselect',
+    'default' => true,
     'type' => 'internal-ui',
     'description' => 'Selector enriquecido propio de GFrame.',
     'dependencies' => ['bootstrap'],

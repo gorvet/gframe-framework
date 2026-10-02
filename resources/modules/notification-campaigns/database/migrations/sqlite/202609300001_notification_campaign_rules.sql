@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS notification_campaign_rules (rule_id INTEGER PRIMARY KEY AUTOINCREMENT, scope_id INTEGER NOT NULL DEFAULT 0, rule_key TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 0, title TEXT NOT NULL, message TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE (scope_id, rule_key));

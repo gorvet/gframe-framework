@@ -63,7 +63,7 @@
             }
             if (response.status !== 'success') { errorFeedback(response); return; }
             if (form.id === 'auth-login-form' && !verification) {
-                window.location.assign(response.redirect || base);
+                window.location.assign(base + (response.redirect || ''));
                 return;
             }
             const message = response.message || 'Solicitud completada.';

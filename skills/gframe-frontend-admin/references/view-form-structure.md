@@ -11,6 +11,20 @@ Typical admin screens keep this order:
 
 Keep hierarchy readable and avoid deeply nested wrappers.
 
+Supporting text is optional: add a subtitle only when it provides useful information, never merely to fill the title area. For Notifications, summaries open the server-rendered detail modal through the protected AJAX endpoint; keep read-state changes CSRF-protected and row padding inside the highlighted background.
+
+## Mandatory reference and acceptance gate
+
+Before changing an admin screen, compare its markup with an approved screen of the same type. In the framework repository, the approved list reference is `resources/modules/notification-campaigns/application/app/views/notification-campaigns/index.php` and `_list.php`; in applications, use the corresponding published views or the user's explicit reference. Do not use an unfinished screen as a design reference or create another title, spacing, card or pagination convention. Keep these conventions in this skill, not duplicated in `AGENTS.md`.
+
+When the user requests original files from Bebots, Dane or Base Confías, copy the specified originals rather than reinterpreting them. Apply only the explicitly agreed exceptions.
+
+Use the common admin template and CSS without local heading size, weight or margin overrides. Keep New/Add beside the title, supporting text below it, and consecutive cards separated with the existing spacing (for example `mb-4`). Do not remove list padding with `p-0` by default. Form actions stay right-aligned, with Cancel before the primary action; creation and editing share the applicable form structure.
+
+Before delivery, compare title/subtitle/actions, card spacing and padding, footer, assets and button order with the approved reference. Check empty, single-page and multi-page lists, including filtered AJAX replacement. Check responsive layout and themes when affected. Report unverified checks rather than claiming completion. The agent owns this verification; do not require the user to repeat these conventions for each screen.
+
+The admin `.pagetitle` headings are inline-block. Put supporting text in `span.d-block` below the heading, inside the same title wrapper; use the existing title-and-adjacent-action structure. Campaign creation and editing share delivery controls. Group content separately from delivery, keep date and frequency on the same responsive row, and put channels last among the delivery fields, before preview/test and final actions. Use distinct emphasis for preview/test controls versus Cancel and the primary action. Notification header dropdowns are module-owned; admin header actions must not inherit the public mobile navigation drawer's static dropdown or full-height list rules.
+
 ## Layout Preference
 
 Prefer this order for layout decisions:

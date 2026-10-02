@@ -8,12 +8,13 @@ use GFrame\Notifications\Contracts\NotificationQueueRepository;
 use Exception;
 use InvalidArgumentException;
 
-final class CampaignService
+class CampaignService
 {
     public function __construct(
-        private readonly CampaignRepository $campaigns,
-        private readonly NotificationQueueRepository $queue,
-        private readonly \CronTaskService $cron
+        protected readonly CampaignRepository $campaigns,
+        protected readonly NotificationQueueRepository $queue,
+        protected readonly \CronTaskService $cron,
+        protected readonly ?\GFrame\Notifications\Campaigns\Contracts\CampaignRecipientGuard $recipientGuard = null
     ) {
     }
 
@@ -24,6 +25,11 @@ final class CampaignService
         $message = trim((string)($input['message'] ?? ''));
         $channels = array_values(array_unique(array_filter(array_map(static fn($value): string => strtolower(trim((string)$value)), (array)($input['channels'] ?? [])))));
         $scheduledAt = trim((string)($input['scheduled_at'] ?? ''));
+        $recurrence = (string)($input['recurrence'] ?? 'once');
+        $importance = (string)($input['importance'] ?? 'info');
+        $actionURL = trim((string)($input['action_url'] ?? ''));
+        $expiry = (int)($input['expires_after_days'] ?? 0);
+        if (!in_array($recurrence, ['once', 'daily', 'weekly'], true) || !in_array($importance, ['info', 'warning', 'danger'], true) || $expiry < 0 || $expiry > 3650 || mb_strlen($actionURL) > 255 || !CampaignPlaceholders::validActionURL($actionURL)) return ['status' => 'error', 'code' => 'invalid_campaign_options'];
         if ($name === '' || $title === '' || $message === '' || $channels === []) return ['status' => 'error', 'code' => 'invalid_campaign'];
         foreach ($channels as $channel) if (preg_match('/^[a-z0-9][a-z0-9_.-]{0,79}$/', $channel) !== 1) return ['status' => 'error', 'code' => 'invalid_campaign_channel'];
         if ($scheduledAt !== '' && strtotime($scheduledAt) === false) return ['status' => 'error', 'code' => 'invalid_campaign_schedule'];
@@ -35,9 +41,11 @@ final class CampaignService
             $status = 'scheduled';
             $id = $this->campaigns->create([
                 'tenant_id' => $tenantID, 'name' => $name, 'title' => $title, 'message' => $message,
+                'audience_json' => json_encode((array)($input['audience'] ?? []), JSON_UNESCAPED_SLASHES),
                 'template_id' => trim((string)($input['template_id'] ?? 'notification')),
                 'channels_json' => json_encode($channels, JSON_UNESCAPED_SLASHES),
                 'status' => $status, 'scheduled_at' => $scheduledAt !== '' ? $scheduledAt : null, 'created_by' => $createdBy,
+                'recurrence' => $recurrence, 'parent_id' => $input['parent_id'] ?? null, 'importance' => $importance, 'action_url' => $actionURL !== '' ? $actionURL : null, 'expires_after_days' => $expiry,
             ], $recipients);
             $runAt = $scheduledAt !== '' ? $scheduledAt : gmdate('Y-m-d H:i:s');
             $task = $this->cron->schedule('notification-campaign.' . $id, CampaignCronHandler::class, $runAt, ['campaign_id' => $id, 'tenant_id' => $tenantID], 60);
@@ -58,8 +66,13 @@ final class CampaignService
     public function dispatch(int $campaignID, ?int $tenantID = null, int $batch = 200): array
     {
         try {
-            $campaign = $this->campaigns->find($campaignID, $tenantID);
+            $campaign = $this->campaigns->findCampaign($campaignID, $tenantID);
             if ($campaign === null) return ['status' => 'error', 'code' => 'campaign_not_found'];
+            if (!empty($campaign['parent_id'])) {
+                $parent = $this->campaigns->findCampaign((int)$campaign['parent_id'], $tenantID);
+                if (!$parent || $parent['status'] === 'cancelled') return ['status' => 'error', 'code' => 'campaign_parent_cancelled'];
+                if ($parent['status'] === 'paused') return ['status' => 'error', 'code' => 'campaign_parent_paused'];
+            }
             if (in_array((string)$campaign['status'], ['paused', 'cancelled', 'completed'], true)) return ['status' => 'error', 'code' => 'campaign_not_dispatchable'];
             $this->campaigns->updateStatus($campaignID, 'running', $tenantID);
             $this->campaigns->recoverRecipients($campaignID, 900);
@@ -67,10 +80,21 @@ final class CampaignService
             foreach ($this->campaigns->reserveRecipients($campaignID, $batch) as $recipient) {
                 $jobs = 0;
                 try {
+                    if ($this->recipientGuard !== null && !$this->recipientGuard->allows($recipient, $tenantID)) {
+                        $this->campaigns->markRecipientFailed((int)$recipient['recipient_id'], 'recipient_excluded');
+                        $failed++;
+                        continue;
+                    }
+                    $context = (array)($recipient['variables'] ?? []);
+                    $title = CampaignPlaceholders::render((string)$campaign['title'], $context);
+                    $message = CampaignPlaceholders::render((string)$campaign['message'], $context);
+                    $actionURL = CampaignPlaceholders::actionURL((string)($campaign['action_url'] ?? ''), $context);
+                    $importance = (string)($campaign['importance'] ?? 'info');
+                    $expiresAt = !empty($campaign['expires_after_days']) ? date('Y-m-d H:i:s', time() + (int)$campaign['expires_after_days'] * 86400) : null;
                     $this->queue->enqueue([
                             'tenant_id' => $tenantID, 'channel' => (string)$recipient['channel'], 'recipient' => (string)$recipient['recipient'],
                             'deduplication_key' => 'campaign:' . $campaignID . ':recipient:' . (int)$recipient['recipient_id'],
-                            'payload' => ['campaign_id' => $campaignID, 'subject' => (string)$campaign['title'], 'title' => (string)$campaign['title'], 'message' => (string)$campaign['message'], 'template' => (string)($campaign['template_id'] ?? 'notification'), 'variables' => (array)($recipient['variables'] ?? []) + ['title' => (string)$campaign['title'], 'message' => (string)$campaign['message']]],
+                            'payload' => ['campaign_id' => $campaignID, 'subject' => $title, 'title' => $title, 'message' => $message, 'importance' => $importance, 'action_url' => $actionURL, 'expires_at' => $expiresAt, 'template' => (string)($campaign['template_id'] ?? 'notification'), 'variables' => ['title' => $title, 'message' => $message, 'importance' => $importance, 'action_url' => $actionURL] + $context],
                         ]);
                     $jobs = 1;
                     $this->campaigns->markRecipientQueued((int)$recipient['recipient_id'], $jobs);
@@ -89,17 +113,31 @@ final class CampaignService
         }
     }
 
-    public function pause(int $id, ?int $tenantID = null): array { $this->cron->pause('notification-campaign.' . $id); return $this->status($id, 'paused', 'campaign_paused', $tenantID); }
-    public function resume(int $id, ?int $tenantID = null): array { $this->cron->resume('notification-campaign.' . $id); return $this->status($id, 'scheduled', 'campaign_resumed', $tenantID); }
-    public function cancel(int $id, ?int $tenantID = null): array { $this->cron->cancel('notification-campaign.' . $id); return $this->status($id, 'cancelled', 'campaign_cancelled', $tenantID); }
+    public function pause(int $id, ?int $tenantID = null): array { return $this->control($id, 'pause', 'paused', 'campaign_paused', $tenantID); }
+    public function resume(int $id, ?int $tenantID = null): array { return $this->control($id, 'resume', 'scheduled', 'campaign_resumed', $tenantID); }
+    public function cancel(int $id, ?int $tenantID = null): array { return $this->control($id, 'cancel', 'cancelled', 'campaign_cancelled', $tenantID); }
 
-    private function status(int $id, string $status, string $code, ?int $tenantID): array
+    protected function control(int $id, string $action, string $status, string $code, ?int $tenantID): array
+    {
+        try {
+            $campaign = $this->campaigns->findCampaign($id, $tenantID);
+            if (!$campaign) return ['status' => 'error', 'code' => 'campaign_not_found'];
+            $this->cron->{$action}('notification-campaign.' . $id);
+            if (($campaign['recurrence'] ?? 'once') !== 'once') $this->cron->{$action}('campaign-recurrence.' . $id);
+            return $this->status($id, $status, $code, $tenantID);
+        } catch (Exception $exception) {
+            error_log('[GFrame Campaigns] ' . $exception->getMessage());
+            return ['status' => 'error', 'code' => 'campaign_update_failed'];
+        }
+    }
+
+    protected function status(int $id, string $status, string $code, ?int $tenantID): array
     {
         try { return $this->campaigns->updateStatus($id, $status, $tenantID) ? ['status' => 'success', 'code' => $code] : ['status' => 'error', 'code' => 'campaign_not_found']; }
         catch (Exception $exception) { error_log('[GFrame Campaigns] ' . $exception->getMessage()); return ['status' => 'error', 'code' => 'campaign_update_failed']; }
     }
 
-    private function normalizeRecipients(iterable $source, array $allowedChannels): array
+    protected function normalizeRecipients(iterable $source, array $allowedChannels): array
     {
         $recipients = [];
         foreach ($source as $item) {

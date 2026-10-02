@@ -8,7 +8,9 @@ El módulo `self-account` permite que un usuario autenticado consulte sus datos 
 php bin/modules.php publish-project self-account C:\ruta\del\proyecto
 ```
 
-La publicación resuelve `auth-ui`, `alerts` y `frontend-core`, y agrega el controlador, las rutas, la vista, la plantilla, el CSS y el JavaScript. También requiere el esquema `auth`.
+La publicación resuelve `admin-panel`, `auth-ui`, `alerts` y `frontend-core`, publica rutas y CSS/JS y crea carpetas vacías `app/{controllers,models,services,views}/self-account` para personalizar. El controlador y las vistas originales permanecen en el módulo. También requiere el esquema `auth`. `/account` utiliza la plantilla administrativa, sin una plantilla independiente. Conserva el middleware `auth`, sin exigir un rol administrativo, para permitir el cambio obligatorio de contraseña y la cuenta propia de cualquier usuario autenticado.
+
+«Mi cuenta» contiene únicamente operaciones sobre la cuenta conectada. La gestión de otras cuentas pertenece al módulo independiente `user-admin`, bajo el apartado «Gestión de usuarios» del panel.
 
 ## Rutas
 
@@ -71,9 +73,13 @@ La implementación predeterminada protege el rol `superadministrator`. Una aplic
 
 ## Personalización
 
-El constructor de `SelfAccountController` permite inyectar `SelfAccountService` y `SessionManager`. Los archivos publicados pueden personalizarse para añadir nombre, avatar, preferencias o enlaces, manteniendo los datos de perfil fuera del esquema base de autenticación.
+Mi cuenta usa la estructura runtime: declare una subclase en `app/controllers/self-account/SelfAccountController.php`, con namespace `App\Controllers\SelfAccount`, o una vista propia `app/views/self-account/self-accountIndex.php`. Los originales son el respaldo cuando faltan las personalizaciones. La actualización no reemplaza estos archivos. Consulte [estructura, namespaces y migración](modulos-runtime.md).
 
-La operación predeterminada desactiva la cuenta; no elimina físicamente registros. Si una aplicación necesita borrado definitivo, debe implementar explícitamente sus reglas de integridad, confirmación y recuperación.
+Para conectar un repositorio o una política propios, construya `SelfAccountService` en su controlador personalizado y entréguelo a `parent::__construct(...)`. Consulte [herencia desde proyectos](extensibilidad.md#herencia-de-auth-mi-cuenta-y-gestión-de-usuarios). No se necesita un archivo adicional de fábricas.
+
+El constructor de `SelfAccountController` permite inyectar `SelfAccountService` y `SessionManager`. Las clases y vistas del proyecto pueden personalizarse para añadir nombre, avatar, preferencias o enlaces, manteniendo los datos de perfil fuera del esquema base de autenticación.
+
+El servicio de cuenta desactiva, no borra. Cuando está activo `notification-campaigns`, el controlador integra el ciclo estándar: correo inmediato, fecha de eliminación a 60 días y aviso previo de 72 horas. La presencia del módulo se comprueba con `ModuleRuntime::has('notification-campaigns')`, no por la existencia de vistas copiadas en `app`. Los valores se configuran en `auth.deactivation.retention_days` y `auth.deactivation.warning_hours`; Mi cuenta muestra la política antes de confirmar con la contraseña. Sin el módulo se conserva la desactivación sin eliminación automática. La ejecución y las salvaguardas se describen en [Campañas](notification-campaigns.md#cuentas-desactivadas).
 
 Una desactivación correcta revoca todas las sesiones abiertas de la cuenta, incluidas las de otros navegadores o dispositivos. El controlador cierra además la sesión actual. Esta invalidación se realiza al cambiar el estado, no mediante consultas periódicas desde heartbeat.
 

@@ -3,21 +3,26 @@ Options -Indexes
     Options -MultiViews
     RewriteEngine On
 
-    RewriteCond %{HTTP_HOST} localhost [NC]
+    RewriteCond %{HTTP_HOST} ^localhost(?::[0-9]+)?$ [NC]
     RewriteCond %{REQUEST_URI} ^/([^/]+)/? [NC]
     RewriteRule ^ - [E=PROJECT:%1]
 
     RewriteRule ^(?:app|bin|config|core|packages|storage)(?:/|$) - [F,NC]
     RewriteRule ^(?:\.env(?:\..*)?|composer\.(?:json|lock)|README\.md)$ - [F,NC]
+    RewriteRule (^|/)\. - [F,NC]
+    RewriteRule ^(?!index\.php$|install\.php$).*\.(?:php[0-9]*|phtml|phar|sql|sqlite|sqlite3|log|bak)(?:/|$) - [F,NC]
 
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
+    # Solo estas ubicaciones entregan archivos físicos directamente.
+    RewriteRule ^(?:index|install)\.php$ - [END]
+    RewriteRule ^public/ - [END]
+    # Biblioteca pública estándar; no concede permisos sobre otras fuentes.
+    RewriteRule ^uploads/(?:library|(?:user|tenant)/[1-9][0-9]*/library)/ - [END]
+    RewriteRule ^(?:uploads|downloads|download)(?:/|$) - [F,NC]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [F]
+    RewriteRule ^ index.php [END]
 
-    RewriteCond %{REQUEST_URI} ^/.*/public(/.*)?$ [NC]
-    RewriteRule ^ - [L]
-
-    <If "%{HTTP_HOST} = 'localhost'">
+    <If "%{HTTP_HOST} =~ m#^localhost(?::[0-9]+)?$#">
         ErrorDocument 403 /%{ENV:PROJECT}/index.php
         ErrorDocument 404 /%{ENV:PROJECT}/index.php
         ErrorDocument 500 /%{ENV:PROJECT}/index.php

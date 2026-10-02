@@ -5,6 +5,7 @@ return [
     'type' => 'backend-module',
     'description' => 'Biblioteca multimedia global o por tenant con almacenamiento seguro y procesamiento de archivos.',
     'dependencies' => ['self-account', 'alerts', 'frontend-core'],
+    'runtime' => ['root' => 'application/app', 'namespace' => 'GFrame\\Modules\\MediaLibrary'],
     'schemas' => [
         'mysql' => 'database/mysql.sql',
         'sqlite' => 'database/sqlite.sql',
@@ -16,12 +17,12 @@ return [
     'assets' => [
         ['source' => 'public', 'target' => 'css/modules/media-library'],
         ['source' => 'javascript', 'target' => 'js/modules/media-library'],
+        ['source' => 'images', 'target' => 'img/admin'],
     ],
     'application' => [
-        ['source' => 'application/controllers/MediaController.php', 'target' => 'app/controllers/admin/media/MediaController.php'],
+        ['source' => 'application/admin/media-menu.php', 'target' => 'app/views/admin-panel/parts/menu-items/media.php'],
         ['source' => 'application/routes/routes_admin_media.php', 'target' => 'config/routes/routes_admin_media.php'],
         ['source' => 'application/routes/routes_ajax_admin_media.php', 'target' => 'config/routes/routes_ajax_admin_media.php'],
-        ['source' => 'application/views', 'target' => 'app/views/admin/media'],
         ['source' => 'application/components', 'target' => 'app/views/components/media'],
     ],
 ];

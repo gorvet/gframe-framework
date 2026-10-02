@@ -1,12 +1,217 @@
-/* Personalización de las variables de Bootstrap. Cargar después de Bootstrap. */
+/*Configuración y sustitución de los estilos por defecto de Bootstrap*/
+:root { color-scheme: light; }
+:root[data-bs-theme="dark"] { color-scheme: dark; }
+
+/* =========================
+    PRIMITIVOS (FIJOS)
+   ========================= */
+:root {
+
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease;
+
+  /* Marca */
+  --bs-primary: #5733FF;
+  --brand-accent: #03A9F4;
+  --bs-secondary: #6C757D;
+  --bs-success: #28b147;
+  --bs-info: #1a6dd6;
+  --bs-warning: #ffb400;
+  --bs-danger: #ff3366;
+
+  /* Hovers de marca (estas no son var de bs) */
+  --bs-primary-hover: color-mix(in srgb, var(--bs-primary), black 20%);
+  --bs-secondary-hover: color-mix(in srgb, var(--bs-secondary), black 20%);
+  --bs-success-hover: color-mix(in srgb, var(--bs-success), black 20%);
+  --bs-info-hover: color-mix(in srgb, var(--bs-info), black 20%);
+  --bs-warning-hover: color-mix(in srgb, var(--bs-warning), black 20%);
+  --bs-danger-hover: color-mix(in srgb, var(--bs-danger), black 20%);
+
+
+  /* Auxiliares */
+  --bs-blue: var(--bs-secondary);
+  --bs-red: var(--bs-danger);
+  --bs-green: var(--bs-success);
+  --bs-yellow: var(--bs-warning);
+  --bs-black: #000;
+  --bs-white: #fff;
+
+  /* Gradiente de marca */
+  --bs-gradient: linear-gradient(to right, var(--bs-primary) 0%, var(--brand-accent) 100%);
+
+  /* Tipografía */
+  --bs-font-sans-serif: 'Montserrat','Helvetica','Arial','Roboto',sans-serif;
+  --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --bs-body-font-family: var(--bs-font-sans-serif);
+
+}
+
+/* =======================================
+   B) SEMÁNTICOS (LIGHT por defecto)
+   ======================================= */
+:root {
+  /* Escala de grises (light) */
+  --bs-dark: #0A2540;
+  --bs-gray-100: color-mix(in srgb, var(--bs-dark), var(--bs-white)  95%);
+  --bs-gray-200: color-mix(in srgb, var(--bs-dark), var(--bs-white)  90%);
+  --bs-gray-300: color-mix(in srgb, var(--bs-dark), var(--bs-white)  85%);
+  --bs-gray-400: color-mix(in srgb, var(--bs-dark), var(--bs-white)  80%);
+  --bs-gray-500: color-mix(in srgb, var(--bs-dark), var(--bs-white)  60%);
+  --bs-gray-600: color-mix(in srgb, var(--bs-dark), var(--bs-white)  40%);
+  --bs-gray-700: color-mix(in srgb, var(--bs-dark), var(--bs-white)  20%);
+  --bs-gray-800: color-mix(in srgb, var(--bs-dark), var(--bs-white)  10%);
+  --bs-gray-900: color-mix(in srgb, var(--bs-dark), var(--bs-white)  5%);
+
+  --bs-light: var(--bs-gray-100);
+  --bs-gray: var(--bs-gray-600);
+  --bs-gray-dark: var(--bs-gray-800);
+
+  /* Superficies */
+    --light-background: color-mix(in srgb, var(--bs-primary), transparent 95%);
+
+    /* Subtle backgrounds (light) */
+  --bs-primary-bg-subtle: color-mix(in srgb, var(--bs-primary), white  80%);
+  --bs-secondary-bg-subtle: color-mix(in srgb, var(--bs-secondary), white  80%);
+  --bs-success-bg-subtle: color-mix(in srgb, var(--bs-success), white 80%);
+  --bs-info-bg-subtle: color-mix(in srgb, var(--bs-info), white  80%);
+  --bs-warning-bg-subtle: color-mix(in srgb, var(--bs-warning), white  80%);
+  --bs-danger-bg-subtle: color-mix(in srgb, var(--bs-danger), white  80%);
+  --bs-light-bg-subtle: var(--bs-gray-100);
+  --bs-dark-bg-subtle: var(--bs-gray-400);
+
+
+  /* Bordes */
+  --bs-border-color: var(--bs-gray-300);
+  --bs-primary-border-subtle: color-mix(in srgb, var(--bs-primary-bg-subtle), black  20%);
+  --bs-secondary-border-subtle:color-mix(in srgb, var(--bs-primary-bg-subtle), black  20%);
+  --bs-success-border-subtle: color-mix(in srgb, var(--bs-success-bg-subtle), black  20%);
+  --bs-info-border-subtle: color-mix(in srgb, var(--bs-info-bg-subtle), black  20%);
+  --bs-warning-border-subtle: color-mix(in srgb, var(--bs-warning-bg-subtle), black  20%);
+  --bs-danger-border-subtle: color-mix(in srgb, var(--bs-danger-bg-subtle), black  20%);
+
+  --bs-light-border-subtle: var(--bs-gray-200);
+  --bs-dark-border-subtle: var(--bs-gray-500);
+
+
+  /* Texto y fondo base */
+  --bs-body-bg: var(--bs-white);
+  --bs-body-color: var(--bs-dark-text);
+  --bs-emphasis-color: var(--bs-black);
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.5;
+  --bs-body-font-size:14px;
+
+  /* Texto por intención */
+  --bs-primary-text: var(--bs-primary);
+  --bs-secondary-text: var(--bs-secondary);
+  --bs-success-text: var(--bs-success);
+  --bs-info-text: var(--bs-info);
+  --bs-warning-text: var(--bs-warning);
+  --bs-danger-text: var(--bs-danger);
+  --bs-light-text: var(--bs-gray);
+  --bs-dark-text: var(--bs-dark);
+
+
+  /* Links */
+  --bs-link-color: var(--bs-primary);
+  --bs-link-hover-color: var(--bs-primary-hover);
+
+
+  /* Sombras */
+  --bs-navbar-shadow: 0px 2px 15px rgba(0, 0, 0, 0.1);/*no es var d bs*/
+  --bs-box-shadow: 0px 0px 5px 5px rgba(1, 41, 112, 0.1);
+  --bs-box-shadow-card: 0 7px 14px 0 rgba(65, 69, 88, 0.1), 0 3px 6px 0 rgba(0, 0, 0, 0.07);
+  --bs-box-shadow-sm: var(--bs-box-shadow);
+  --bs-box-shadow-lg: var(--bs-box-shadow);
+  --bs-box-shadow-inset: var(--bs-box-shadow);
+
+  /* Formularios */
+  --bs-form-control-bg: var(--bs-body-bg);
+  --bs-form-control-disabled-bg: var(--bs-secondary-bg);
+
+
+
+  /* Otros */
+  --bs-code-color: #d63384;
+  --bs-highlight-bg: #fff3cd;
+
+
+  --bs-gorvet:#EE3054;
+}
+
+
+
+/* =======================================
+   C) THEME OVERRIDES — LIGHT / DARK
+   Nota: pon el atributo en <html>
+   ======================================= */
+
+/* LIGHT explícito (opcional si ya es el default) */
+:root[data-bs-theme="light"] {
+  /* Aquí solo si quieres forzar algo distinto al default */
+}
+
+
+/* DARK: sobreescribe SOLO lo dependiente */
 :root[data-bs-theme="dark"] {
-    --bs-body-bg: #051321;
-    --bs-body-bg-rgb: 5, 19, 33;
-    --bs-body-color: #e7e9ee;
-    --bs-body-color-rgb: 231, 233, 238;
-    --bs-secondary-bg: #212734;
-    --bs-secondary-bg-rgb: 33, 39, 52;
-    --bs-tertiary-bg: #1a1f27;
-    --bs-tertiary-bg-rgb: 26, 31, 39;
-    --bs-border-color: #4b566c;
+
+  /* Escala de grises (dark) */
+  --bs-gray-100: #1a1f27;
+  --bs-gray-200: #212734;
+  --bs-gray-300: #2a3141;
+  --bs-gray-400: #343c51;
+  --bs-gray-500: #4b566c;
+  --bs-gray-600: #6a758a;
+  --bs-gray-700: #8a94a6;
+  --bs-gray-800: #aab2bf;
+  --bs-gray-900: #cbd1da;
+
+  --bs-gray-dark: var(--bs-gray-800);
+
+  /* Superficies */
+  --bs-secondary-bg: var(--bs-gray-200);
+  --bs-tertiary-bg: var(--bs-gray-100);
+
+  /* Subtle backgrounds (oscurecidos) */
+  --bs-primary-bg-subtle: color-mix(in oklab, var(--bs-primary), black 60%);
+  --bs-secondary-bg-subtle: color-mix(in oklab, var(--bs-secondary), black 60%);
+  --bs-success-bg-subtle: color-mix(in oklab, var(--bs-success), black 60%);
+  --bs-info-bg-subtle: color-mix(in oklab, var(--bs-info) ,black 60%);
+  --bs-warning-bg-subtle: color-mix(in oklab, var(--bs-warning),black 60%);
+  --bs-danger-bg-subtle: color-mix(in oklab, var(--bs-danger) ,black 60%);
+  --bs-light-bg-subtle: #141923;       /* el “light” en dark es una surface más clara */
+  --bs-dark-bg-subtle: #2a3141;
+
+  /* Bordes (menos contrastados) */
+  --bs-border-color: var(--bs-gray-500);
+  --bs-primary-border-subtle: color-mix(in oklab, var(--bs-primary) ,black 30%);
+  --bs-secondary-border-subtle: color-mix(in oklab, var(--bs-secondary),black 30%);
+  --bs-success-border-subtle: color-mix(in oklab, var(--bs-success) ,black 30%);
+  --bs-info-border-subtle: color-mix(in oklab, var(--bs-info) ,black 30%);
+  --bs-warning-border-subtle: color-mix(in oklab, var(--bs-warning) ,black 30%);
+  --bs-danger-border-subtle: color-mix(in oklab, var(--bs-danger),black 30%);
+  --bs-light-border-subtle: #3a4152;
+  --bs-dark-border-subtle: #4b566c;
+
+  /* Fondo y texto base */
+  --bs-body-bg:#051321;;               /* gris casi negro con un pelín de azul */
+  --bs-body-color: #e7e9ee;            /* texto alto contraste */
+  --bs-emphasis-color: #ffffff;
+
+  /* Links (ligeramente más claros en hover) */
+  --bs-link-color: #9fa7ff;            /* primary aclarado para dark */
+  --bs-link-hover-color: #b7bdff;
+
+   /* Sombras */
+  --bs-navbar-shadow: 0px 2px 15px rgba(0, 0, 0, 0.3);
+  --bs-box-shadow: 0px 0px 20px 10px rgba(0, 0, 0, 0.3);
+  --bs-box-shadow-card: 0 7px 10px 0 rgba(0, 0, 0, 0.3), 0 3px 6px 0 rgba(0, 0, 0, 0.14);
+
+
+
+  /* Formularios */
+  --bs-form-control-bg: #141923;
+  --bs-form-control-disabled-bg: #1d2430;
+
+  /* Highlights */
+  --bs-highlight-bg: #3a2f00; /* amarillos queman en dark; mueve a ocre oscuro */
 }

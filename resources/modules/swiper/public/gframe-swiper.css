@@ -1,0 +1,13 @@
+.swiper {
+  --swiper-theme-color: var(--bs-primary);
+  --swiper-pagination-color: var(--bs-primary);
+  --swiper-navigation-color: var(--bs-primary);
+  --swiper-pagination-bullet-inactive-color: var(--bs-secondary-color);
+  --swiper-pagination-bullet-inactive-opacity: .4;
+  --swiper-scrollbar-bg-color: var(--bs-secondary-bg);
+  --swiper-scrollbar-drag-bg-color: var(--bs-primary);
+  font-family: var(--bs-body-font-family); color: var(--bs-body-color);
+}
+.swiper-button-next:focus-visible, .swiper-button-prev:focus-visible,
+.swiper-pagination-bullet:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .swiper-wrapper { transition-duration: 0ms !important; } }

@@ -94,9 +94,48 @@ PHP);
                 if ($profile !== 'static') {
                     [$loginStatus, $loginBody, $loginHeaders] = $this->request($base . '/login');
                     self::assertSame(200, $loginStatus, $profile . ': login');
-                    self::assertStringContainsString('auth-login-form', $loginBody);
+                    self::assertStringContainsString('id="login"', $loginBody);
                     self::assertStringContainsString('/login/lostpassword', $loginBody);
+                    self::assertStringContainsString('Crear una cuenta', $loginBody);
+                    self::assertStringContainsString('class="auth-page"', $loginBody);
+                    self::assertStringContainsString('gframe-footer', $loginBody);
                     self::assertStringContainsString('public/img/logo.png', $loginBody);
+                    self::assertStringContainsString('id="toastBox"', $loginBody);
+                    $headEnd = strpos($loginBody, '</head>');
+                    $siteUrlDeclaration = strpos($loginBody, 'window.site_url =');
+                    $jqueryScript = strpos($loginBody, 'public/vendors/external/jquery/jquery.min.js');
+                    self::assertNotFalse($siteUrlDeclaration);
+                    self::assertGreaterThan($headEnd, $siteUrlDeclaration, 'site_url se declara en el footer');
+                    self::assertLessThan($jqueryScript, $siteUrlDeclaration, 'site_url está disponible antes del JS');
+                    foreach ([
+                        '/login' => 'AuthLogin.js',
+                        '/login/register' => 'AuthRegister.js',
+                        '/login/lostpassword' => 'AuthLostpassword.js',
+                        '/login/resetpassword?rp=prueba' => 'AuthResetpassword.js',
+                    ] as $path => $script) {
+                        [$pageStatus, $page] = $this->request($base . $path);
+                        self::assertSame(200, $pageStatus, $profile . ': ' . $path);
+                        self::assertStringContainsString('public/js/modules/auth/' . $script, $page);
+                        self::assertStringNotContainsString('public/js/modules/auth/auth.js', $page);
+                        foreach (['public/js/modules/auth/' . $script, 'public/vendors/external/sweetalert2/sweetalert2.all.min.js', 'public/vendors/external/sweetalert2/sweetalert2.min.css', 'public/vendors/external/sweetalert2/sweetTheme.css', 'public/js/core/heartbeat.js', 'public/js/core/session.js'] as $asset) {
+                            self::assertStringContainsString($asset, $page);
+                            self::assertSame(200, $this->request($base . '/' . $asset)[0], $profile . ': ' . $asset);
+                        }
+                    }
+                    foreach ([
+                        '/ajax/lostpassword' => ['recovery_email' => 'unknown@example.test'],
+                        '/ajax/resetpassword' => ['rpuser_token' => 'prueba', 'reset_password' => 'Password-123'],
+                        '/ajax/verifyacount' => ['login_email' => 'unknown@example.test'],
+                        '/ajax/validateacount' => ['vtoken' => 'prueba'],
+                    ] as $path => $fields) {
+                        [$endpointStatus, $endpointBody] = $this->request($base . $path, 'POST', http_build_query($fields + ['middle_name' => '']));
+                        self::assertSame(200, $endpointStatus, $profile . ': ' . $path . ': ' . substr($endpointBody, 0, 200));
+                        self::assertIsArray(json_decode($endpointBody, true), $profile . ': ' . $path . ': ' . substr($endpointBody, 0, 1000));
+                        self::assertArrayHasKey('code', json_decode($endpointBody, true));
+                        if (in_array($path, ['/ajax/resetpassword', '/ajax/validateacount'], true)) {
+                            self::assertSame('invalid_token', json_decode($endpointBody, true)['code']);
+                        }
+                    }
                     self::assertSame(200, $this->request($base . '/login/lostpassword')[0], $profile . ': recuperación');
                     self::assertSame(200, $this->request($base . '/login/resetpassword?rp=prueba')[0], $profile . ': restablecimiento');
 
@@ -116,16 +155,21 @@ PHP);
                     self::assertSame(200, $authStatus, $profile . ': autenticación ' . substr($authBody, 0, 200));
                     $auth = json_decode($authBody, true);
                     self::assertSame('success', $auth['status'] ?? null, $profile . ': autenticación');
-                    self::assertSame($base . '/admin', $auth['redirect'] ?? null, $profile . ': destino administrativo: ' . $authBody);
+                    self::assertSame('admin', $auth['redirect'] ?? null, $profile . ': destino administrativo: ' . $authBody);
                     foreach ($authHeaders as $header) {
                         if (stripos($header, 'Set-Cookie: ') === 0) {
                             $cookie = explode(';', substr($header, 12), 2)[0];
                             break;
                         }
                     }
+                    [$repeatStatus, $repeatBody] = $this->request($base . '/ajax/login', 'POST', http_build_query(['middle_name' => '']), $cookie);
+                    self::assertSame(200, $repeatStatus);
+                    self::assertSame('already_logged', json_decode($repeatBody, true)['code'] ?? null, $repeatBody);
                     [$adminStatus, $adminBody] = $this->request($base . '/admin', 'GET', null, $cookie);
                     self::assertSame(200, $adminStatus, $profile . ': panel');
                     self::assertStringContainsString('Escritorio', $adminBody, $profile . ': panel');
+                    self::assertSame(1, substr_count($adminBody, 'src="' . $base . '/public/js/core/heartbeat.js'), $profile . ': heartbeat único');
+                    self::assertSame(1, substr_count($adminBody, 'src="' . $base . '/public/js/core/session.js'), $profile . ': sesión única');
                 }
 
                 [$robotsStatus, $robotsBody] = $this->request($base . '/robots.txt');
@@ -139,12 +183,18 @@ PHP);
 
                 [$assetStatus] = $this->request($base . '/public/vendors/external/bootstrap/css/bootstrap.min.css');
                 self::assertSame(200, $assetStatus, $profile . ': Bootstrap');
+                foreach (['variables.css', 'bootstrap-buttons-compat.css', 'common.css', 'colores.html'] as $asset) {
+                    self::assertSame(200, $this->request($base . '/public/css/' . $asset)[0], $profile . ': ' . $asset);
+                }
+                $pageBody = $profile === 'intranet' ? $loginBody : $body;
+                self::assertStringContainsString('public/css/variables.css', $pageBody, $profile . ': variables cargadas');
+                self::assertStringContainsString('public/css/common.css', $pageBody, $profile . ': estilos comunes cargados');
                 self::assertSame(200, $this->request($base . '/public/img/logo.png')[0], $profile . ': logotipo');
                 self::assertSame(200, $this->request($base . '/public/img/favicon.png')[0], $profile . ': favicon');
 
-                [$installerStatus, $installerBody] = $this->request($base . '/install.php');
-                self::assertSame(200, $installerStatus, $profile . ': instalador bloqueado');
-                self::assertStringContainsString('La aplicación quedó instalada correctamente', $installerBody);
+                [$installerStatus, $installerBody, $installerHeaders] = $this->request($base . '/install.php', 'GET', null, '', false);
+                self::assertSame(303, $installerStatus, $profile . ': instalador bloqueado');
+                self::assertContains('Location: /', $installerHeaders);
                 self::assertStringNotContainsString('id="installer-form"', $installerBody);
             } finally {
                 proc_terminate($process);
@@ -153,13 +203,14 @@ PHP);
         }
     }
 
-    private function request(string $url, string $method = 'GET', ?string $content = null, string $cookie = ''): array
+    private function request(string $url, string $method = 'GET', ?string $content = null, string $cookie = '', bool $follow = true): array
     {
         $headers = ['X-Requested-With: XMLHttpRequest'];
         if ($content !== null) $headers[] = 'Content-Type: application/x-www-form-urlencoded';
         if ($cookie !== '') $headers[] = 'Cookie: ' . $cookie;
         $context = stream_context_create(['http' => [
             'ignore_errors' => true,
+            'follow_location' => $follow ? 1 : 0,
             'timeout' => 5,
             'method' => $method,
             'header' => implode("\r\n", $headers),

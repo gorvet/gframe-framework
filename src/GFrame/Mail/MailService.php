@@ -33,6 +33,7 @@ final class MailService implements MailSender
     public function sendTemplate(string $recipient, string $subject, string $template, array $variables = [], array $options = []): array
     {
         try {
+            $variables += ['recipient_name' => trim((string)($options['recipient_name'] ?? '')) ?: (trim((string)($variables['user_name'] ?? '')) ?: (string)strtok($recipient, '@'))];
             $html = ($this->templates ?? new MailTemplateRegistry())->render($template, $variables);
         } catch (Exception $exception) {
             error_log('[GFrame Mail] ' . $exception->getMessage());

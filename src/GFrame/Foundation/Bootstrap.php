@@ -14,6 +14,14 @@ final class Bootstrap
 {
     private static bool $booted = false;
 
+    public static function hasProjectConfiguration(string $projectRoot): bool
+    {
+        foreach (['config/app.php', 'config/bootstrap.php', 'core/Config.php'] as $relative) {
+            if (is_file(rtrim($projectRoot, '/\\') . '/' . $relative)) return true;
+        }
+        return false;
+    }
+
     public static function boot(string $projectRoot): void
     {
         if (self::$booted) {
@@ -38,6 +46,10 @@ final class Bootstrap
             LegacyConfigBridge::defineConstants();
         }
         self::registerProjectAutoload($projectRoot . DIRECTORY_SEPARATOR . 'app');
+        $moduleLock = $projectRoot . '/storage/gframe-installed.json';
+        $installed = is_file($moduleLock) ? json_decode((string)file_get_contents($moduleLock), true) : [];
+        if (!is_array($installed)) throw new RuntimeException('El registro de módulos instalados no es válido.');
+        \GFrame\Modules\ModuleRuntime::initialize(\GFrame\Modules\ModuleCatalog::frameworkDefault(), (array)($installed['modules'] ?? []), $projectRoot);
         self::loadRoutes($projectRoot . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes');
 
         self::$booted = true;

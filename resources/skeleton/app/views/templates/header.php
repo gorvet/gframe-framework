@@ -15,10 +15,6 @@
     <?php foreach ($this->metasController->getCssLinks() as $css): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars(UrlHelper::assetUrl($css), ENT_QUOTES, 'UTF-8') ?>">
     <?php endforeach; ?>
-    <script>
-        window.site_url = <?= json_encode(rtrim((string)site_url, '/') . '/', JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
-        window.is_protected = <?= !empty($routeParams['isProtected']) ? 'true' : 'false' ?>;
-    </script>
     <?= $this->metasController->renderSchema() ?>
 </head>
 <body class="<?= htmlspecialchars((string)$bodyClass, ENT_QUOTES, 'UTF-8') ?>">

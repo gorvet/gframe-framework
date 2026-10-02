@@ -59,19 +59,44 @@ class MediaProcessor {
 
   private const MAX_IMAGE_PIXELS = 80000000; // 80 MP
 
-  private array $variants = [
-    'small' => ['w' => 320, 'h' => 320, 'mode' => 'crop'],
-    'optimized' => ['mode' => 'optimize'],
-  ];
+  protected function configuration(): array {
+    return require dirname(__DIR__, 3) . '/resources/modules/media-library/config/media.php';
+  }
+
+  public function getMaxUploadBytes(): int {
+    return max(1, (int)($this->configuration()['max_upload_bytes'] ?? 26214400));
+  }
+
+  public function getVariantDefinitions(): array {
+    $variants = (array)($this->configuration()['variants'] ?? []);
+    foreach ($variants as $key => $variant) {
+      if (!preg_match('/^[a-z][a-z0-9_-]{0,31}$/D', (string)$key)
+          || !is_array($variant) || !in_array($variant['mode'] ?? '', ['crop', 'fit'], true)
+          || (int)($variant['w'] ?? 0) < 1 || (int)($variant['h'] ?? 0) < 1
+          || (int)$variant['w'] > 16384 || (int)$variant['h'] > 16384
+          || (int)$variant['w'] * (int)$variant['h'] > self::MAX_IMAGE_PIXELS) {
+        throw new \InvalidArgumentException('La configuración de tamaños multimedia no es válida.');
+      }
+    }
+    return $variants;
+  }
 
   private string $watermarkPath = 'public/img/shop/watermark.png';
 
   public function getAllowedByKind(): array {
-    return array_keys(self::ALLOWED_BY_KIND);
+    return array_keys($this->getAllowedByKindMap());
   }
 
   public function getAllowedByKindMap(): array {
-    return self::ALLOWED_BY_KIND;
+    $map = [];
+    foreach ((array)($this->configuration()['allowed_extensions'] ?? []) as $kind => $extensions) {
+      if (!isset(self::ALLOWED_BY_KIND[$kind])) continue;
+      $allowed = self::ALLOWED_BY_KIND[$kind];
+      $extensions = array_map(static fn($ext) => strtolower(trim((string)$ext)), (array)$extensions);
+      $allowed['exts'] = array_values(array_intersect($allowed['exts'], $extensions));
+      if ($allowed['exts'] !== []) $map[$kind] = $allowed;
+    }
+    return $map;
   }
 
   public function getBlockedExts(): array {
@@ -84,7 +109,7 @@ class MediaProcessor {
   }
 
   public function getVariantKeys(): array {
-    return array_keys($this->variants);
+    return array_keys($this->getVariantDefinitions());
   }
 
   public function classify(?string $mimeType, ?string $nameOrUrl = null): array {
@@ -244,7 +269,10 @@ class MediaProcessor {
     $sizes = [];
     $stem  = pathinfo($fileName, PATHINFO_FILENAME);
 
-    foreach ($this->variants as $key => $cfg) {
+    $originalInfo = @getimagesize($absOriginal);
+    foreach ($this->getVariantDefinitions() as $key => $cfg) {
+      if (!$originalInfo || ((int)$originalInfo[0] <= (int)$cfg['w'] && (int)$originalInfo[1] <= (int)$cfg['h'])) continue;
+      if ($cfg['mode'] === 'crop' && ((int)$originalInfo[0] < (int)$cfg['w'] || (int)$originalInfo[1] < (int)$cfg['h'])) continue;
       $variantFile = "{$stem}-{$key}.{$ext}";
       $variantAbs  = $folderAbs . '/' . $variantFile;
 

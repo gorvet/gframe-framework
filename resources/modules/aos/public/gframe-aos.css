@@ -1,0 +1,4 @@
+/* Las preferencias de movimiento prevalecen sobre las animaciones opcionales. */
+@media (prefers-reduced-motion: reduce) {
+  [data-aos] { opacity: 1 !important; transform: none !important; transition: none !important; }
+}

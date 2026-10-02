@@ -26,3 +26,5 @@ Common data attributes used by the UI:
 - keep thumb rendering in backend fragments
 - reload the owned media region from backend HTML after upload or library actions
 - do not embed media thumb templates directly in JS
+- load `media-library.js`, `media-picker.js`, then `media-field.js`; include the picker modal once and preserve the global `#tokens` form
+- preserve the original Base Confías fragments; backend URLs and scope filtering must remain authoritative

@@ -81,6 +81,19 @@ class NotificationModel extends \ORM implements NotificationRepository
         return (int)($result['affected'] ?? 0);
     }
 
+    public function findNotification(int $notificationID, int $userID, ?int $tenantID): ?array
+    {
+        $items = $this->active($userID, $tenantID)->where('notification_id', '=', $notificationID)->limit(1)->get();
+        return $this->cleanItems($items)[0] ?? null;
+    }
+
+    public function markUnread(int $notificationID, int $userID, ?int $tenantID): bool
+    {
+        $result = $this->active($userID, $tenantID)->where('notification_id', '=', $notificationID)
+            ->update(['is_read' => 0, 'read_at' => null]);
+        return (int)($result['matched'] ?? $result['affected'] ?? 0) > 0;
+    }
+
     public function deleteForUser(int $notificationID, int $userID, ?int $tenantID): bool
     {
         $now = date('Y-m-d H:i:s');

@@ -6,9 +6,9 @@ La composición de plantillas de rol y excepciones individuales se documenta en 
 
 GFrame separa la autenticación, los perfiles y la autorización por roles sin abandonar el flujo MVC.
 
-El flujo estándar es `AuthController → AuthService → UserModel → ORM`. `UserModel` utiliza las tablas normalizadas `users` y `roles`. La tabla de usuarios no exige un nombre: los datos personales pertenecen al perfil de la aplicación.
+El flujo estándar es `AuthController → AuthModel → ORM`. El modelo `AuthModel` utiliza las tablas normalizadas `users` y `roles`. La tabla de usuarios no exige un nombre: los datos personales pertenecen al perfil de la aplicación.
 
-`GFrame\Auth\AuthService` proporciona:
+`GFrame\Auth\AuthModel` proporciona:
 
 - registro con normalización de correo y política de contraseña;
 - verificación de cuenta;
@@ -39,3 +39,11 @@ La expiración de contraseñas está desactivada por defecto. Cuando se activa, 
 Los esquemas de referencia para MySQL y SQLite están en `resources/database/schema`. El esquema normalizado no utiliza `is_super_admin` ni listas configurables de roles administrativos.
 
 Las vistas, mensajes de correo, perfiles, áreas, redirecciones y reglas particulares permanecen en cada aplicación.
+
+## Separación MVC y migración
+
+El modelo `AuthModel` recupera las operaciones originales de Base Confías y Bebots: `registerAcount()`, `login()`, `validateAcount()`, `recoveryAcount()`, `resetPassword()` y `verifyAcount()`. Ejecuta las consultas de autenticación directamente mediante ORM, sin `AuthService` ni dependencia de `UserModel`. No crea tenants, negocios, planes, wallets, suscripciones ni membresías.
+
+Se conservan el esquema normalizado `users`/`roles`, la política de contraseña, la caducidad de tokens, la recuperación sin revelar cuentas y el contrato `status`/`code`/`data`. El controlador mantiene los correos, las redirecciones y la creación de sesión mediante `SessionManager`; no se copian las claves de sesión ni las reglas particulares de los proyectos originales.
+
+Cambio incompatible: sustituir `new AuthService(new UserModel())` por `new AuthModel()`. Los métodos anteriores `register`, `authenticate`, `verify`, `requestRecovery` y `requestVerification` pasan respectivamente a `registerAcount`, `login`, `validateAcount`, `recoveryAcount` y `verifyAcount`. `resetPassword` conserva su nombre. Actualizar conjuntamente controladores y pruebas; no quedan alias del servicio eliminado.

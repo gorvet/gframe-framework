@@ -14,7 +14,7 @@ La revisión de una capacidad debe cubrir, cuando corresponda: núcleo PHP, mode
 
 ## Resultado general
 
-El núcleo principal y los módulos reutilizables están extraídos. Quedan pendientes la verificación visual e integral en instalaciones limpias, la validación de PHP 8.4 y la integración en aplicaciones reales.
+El núcleo principal y los módulos reutilizables están extraídos. Quedan pendientes las comprobaciones integrales que requieren servidores locales y la integración en aplicaciones reales. El cierre del 2 de octubre de 2026 verifica la suite completa en PHP 8.1 y la suite sin servidores en PHP 8.4; registra las restricciones de entorno y las comprobaciones todavía abiertas en [preparación de 0.9.0](preparacion-0.9.0.md). Los resultados históricos siguientes conservan su fecha y alcance.
 
 ## Núcleo
 

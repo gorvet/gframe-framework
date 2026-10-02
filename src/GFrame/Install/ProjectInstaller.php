@@ -144,7 +144,7 @@ final class ProjectInstaller
             'framework_version' => class_exists(InstalledVersions::class) && InstalledVersions::isInstalled('gframe/framework')
                 ? (string)(InstalledVersions::getPrettyVersion('gframe/framework') ?? 'unknown')
                 : 'development',
-            'managed_files' => $this->managedHashes($projectRoot, $published),
+            'managed_files' => $this->managedHashes($projectRoot, $published, $scaffolded),
             ]);
         } catch (\Exception $exception) {
             if ($database instanceof PDO && ($adminResult['status'] ?? '') === 'success') {
@@ -178,12 +178,20 @@ final class ProjectInstaller
         }
     }
 
-    private function managedHashes(string $projectRoot, array $published): array
+    private function managedHashes(string $projectRoot, array $published, array $scaffolded): array
     {
         $paths = array_merge(
             array_map(static fn(string $path): string => 'public/' . ltrim($path, '/'), (array)($published['public_files'] ?? [])),
             (array)($published['application_files'] ?? [])
         );
+        foreach ($scaffolded as $path) {
+            foreach (ProjectScaffolder::UPDATE_PATHS as $managed) {
+                if ($path === $managed || str_starts_with($path, $managed . '/')) {
+                    $paths[] = $path;
+                    break;
+                }
+            }
+        }
         $hashes = [];
         foreach ($paths as $path) {
             $normalized = str_replace('\\', '/', (string)$path);

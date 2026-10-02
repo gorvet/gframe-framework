@@ -1,8 +1,102 @@
 # Registro de cambios
 
+## Preparación de 0.9.0 (sin publicar)
+
+- Módulos MVC con originales en el paquete y personalizaciones por herencia PHP en `app`, sin copiar controladores ni vistas al instalar.
+- Instalador por pasos, módulos obligatorios por perfil y opcionales agrupados; actualización antes y después de instalar, con bloqueo automático del instalador.
+- Autenticación, administración de usuarios, multimedia, notificaciones y campañas integradas con contratos, colas, migraciones MySQL/SQLite y documentación propia.
+- Recursos visuales conectados a las variables del framework, plantillas de correo homogéneas y configuraciones de Apache/Nginx separadas del servidor del proyecto.
+- Cuenta y seguridad detecta Campañas mediante el runtime activo, sin depender de vistas publicadas antiguas.
+
+La verificación y las limitaciones previas a publicación se registran en [preparación de la versión](docs/preparacion-0.9.0.md). Las notas siguientes conservan el historial de desarrollo; no representan versiones publicadas independientes.
+
+- Los filtros de Notificaciones mantienen el mismo color de texto al pasar el puntero, enfocar o seleccionar; solo cambia el fondo del seleccionado. Los iconos de importancia quedan sin borde.
+
+- Notificaciones: filtros con fondo suave y texto contrastado, iconos de importancia más visibles y retirada de «Marcar todas» de la campana y del listado.
+
+- El contador de la campana aumenta ligeramente de tamaño y usa el rojo de `--bs-danger`, manteniendo su posición junto al icono.
+
+- Notificaciones: filas clicables con resumen, icono de importancia y punto para no leídas. Vista completa protegida y marcado por POST con CSRF al abrir. Menú solo para cambiar lectura, sin borrar ni archivar; filtros en campana y listado. Se reutilizan título, espaciado y paginación del admin, únicamente cuando hay varias páginas. `NotificationRepository` añade consulta individual y marcado como no leída; los adaptadores deben implementar ambas operaciones.
+
+- Las convenciones de vistas admin y sus comprobaciones se mantienen exclusivamente en la skill canónica, sin duplicarlas en `AGENTS.md`. La skill instalada se sincroniza con el repositorio. Canales pasa al final de los campos de entrega en crear y editar campañas.
+
+- Campañas automáticas: «Enviar ahora» es directo, con audiencia determinada por la regla en el backend y protección contra duplicados. Se añade historial inmutable por ejecución y destinatario, enlazado a la cola para mostrar el estado real de entrega. Incluye migración MySQL/SQLite y rutas protegidas; se documenta la retirada de `user_ids[]` y `reason` del envío directo.
+
+- Creación y edición de Campañas comparten formulario completo, con bloques de contenido y entrega, fecha junto a frecuencia y botones auxiliares diferenciados. Una campaña pendiente permite editar también audiencia, canales y programación de forma transaccional. Las recurrentes editan la próxima ejecución sin alterar trabajos anteriores. El botón indica «Enviar ahora» o «Programar campaña» según la fecha.
+
+- Notificaciones: contador anclado a la campana, desplegable bajo la cabecera y desplazamiento interno con título y enlace final visibles. Se corrige en el módulo admin la interferencia de los estilos del menú móvil público, sin cambiar la navegación pública. Comprobados escritorio, móvil y temas.
+
+- Completada la política de desactivación voluntaria: 60 días de retención y aviso previo de 72 horas configurables, correo inmediato y borrado condicionado a aviso enviado, estado, protección del superadministrador e integridad transaccional. Mi cuenta muestra la política. Incluye migraciones sin asignar fechas a cuentas antiguas.
+
+- Campañas añade recurrencia diaria/semanal siguiendo la programación UTC de Base Confías, audiencia dinámica y ocurrencias sin duplicados, vista previa, prueba exclusiva para la cuenta conectada, enlace de acción, importancia y caducidad. Se documentan campos y contratos nuevos. Pausa y cancelación respetan el ámbito y las ocurrencias.
+
+- Corregida la entrega inbox: consumidor transaccional, registro cron y actualización de la campana al abrirla. El calendario adopta variables de tipografía y tema; destinatarios manuales preceden al mensaje y las acciones de formularios y modales se alinean a la derecha con Cancelar antes del principal.
+
+- Campañas automáticas pasa a listado con edición y envío manual en modales. Añade revisión horaria de suspendidos, bloqueados y cuentas sin verificar. Automático, evento inmediato y manual comparten un registro transaccional por ámbito/regla/usuario y un plazo configurable sin repetir (7 días iniciales). La verificación reutiliza AuthModel y revierte la renovación del token si falla la cola; un aviso omitido no cambia el token. Desactivación sigue pendiente de una política real de eliminación. Se añaden migraciones para el plazo y el registro.
+
+- Campañas automáticas añade vista, enlace protegido, reglas editables por ámbito y migraciones MySQL/SQLite. Recupera el patrón de reglas de Base Confías. Gestión de usuarios conecta el aviso de suspensión a la cola de correo, con comprobación de estado y deduplicación. Se documentan las integraciones aún necesarias para bloqueo, enlaces de verificación y recordatorios sujetos a una política real de eliminación. La cola de correcciones acordada queda en `docs/cola-correcciones-campanas.md`.
+
+- Barra lateral ordenada por áreas: Escritorio, módulos del usuario (Multimedia y Notificaciones), Administración (Campañas y Usuarios) y Mi cuenta al final. Los fragmentos personales declaran `$menuSection = 'user'`; los fragmentos existentes sin declaración mantienen su ubicación administrativa. El encabezado Administración solo aparece si hay enlaces autorizados en esa área.
+
+- Destinatarios queda junto al título de la campaña, sin la nota de exclusiones. Flatpickr recupera los estilos de `bebots/public/css/app/admin/b/business.css` en `gframe-flatpickr.css`; el selector de tema cambia de `data-gf-theme` a `data-bs-theme`, utilizado en GFrame. El CSS se carga después del proveedor y no modifica sus archivos originales.
+
+- El desplegable Administrar de Campañas utiliza posicionamiento fijo de Popper para evitar el recorte dentro de la tabla responsive, conservando el desplazamiento horizontal de la tabla.
+
+- Campañas recupera las ocho variables comunes de Base Confías y Dane, con inserción en título o mensaje y sustitución por destinatario antes de encolar. Añade audiencias de activos, administradores activos y selección manual con GFSelect; excluye cuentas sin verificar, desactivadas y suspendidas, y vuelve a comprobar su elegibilidad al procesar. El cambio de campos del formulario y los adaptadores personalizados se documentan en `docs/notification-campaigns.md`.
+
+- Cada módulo administrativo aporta su encabezado de sección. Campañas añade el enlace Nueva campaña, unifica el nombre interno con el título, acorta el subtítulo y utiliza Flatpickr para fecha y hora. Permite editar contenido antes de procesar destinatarios y reciclar mediante una nueva campaña sin modificar el envío original.
+
+- Campañas copia el patrón de título, subtítulo y botón contiguo de Bots en Bebots; se añade separación entre la tarjeta de filtros y la de resultados mediante `mb-4`, sin modificar el CSS común.
+
+- Campañas usa el título y las tarjetas comunes de administración. Se separa el listado de la vista de creación/edición; «Nueva campaña» deja de desplegar un formulario incrustado. La paginación solo se muestra con varias páginas; el filtro de estado es automático. Corregida la carga de los metadatos de las vistas anidadas y de los recursos del módulo. La edición de contenido comprueba permiso, tenant, estado pausado y destinatarios pendientes; conserva audiencia y programación. Sin cambios en el template ni en el CSS común del admin.
+
+- Creada la lista de mejoras pendientes no urgentes en `docs/mejoras-pendientes.md`. Añadir usuarios desde el admin queda registrado como mejora opcional de baja prioridad, sin implementar y sin desplazar el trabajo actual de Campañas.
+
+- Corregido el error 500 al cargar Campañas: `CampaignModel` y `CampaignRepository` usan `findCampaign` y `paginateCampaigns` para evitar colisiones con los métodos heredados del ORM. Controlador, servicio y pruebas actualizados; los adaptadores personalizados deben renombrar esos dos métodos, según docs/notification-campaigns.md. No se modifica el ORM.
+
+- Biblioteca multimedia, Notificaciones y Campañas publican accesos en el menú administrativo. Notificaciones conserva también la campana de la barra superior. Los enlaces respetan la autenticación y los permisos de sus rutas; las tres pantallas usan la plantilla `admin`, sin cambiar sus URLs.
+
+- Modal de usuarios ordenado: selector de rol a ancho completo, estado y acción de acceso separados por un borde, y pie con eliminación secundaria a la izquierda y Cerrar/Guardar rol a la derecha. Conserva los contratos y operaciones existentes, sin cambios de backend.
+
+- Administración de usuarios agrupa las acciones en el modal Administrar: cambiar rol, verificar, suspender/restablecer y eliminar con confirmación. Desactivar queda reservado a Mi cuenta. Se añade UserModerationRepository sin modificar el contrato previo de repositorios. Las nuevas operaciones protegen la cuenta propia, al superadministrador y la jerarquía administrativa; la eliminación de la cuenta, membresías y sesiones es transaccional y revierte ante relaciones que impidan el borrado. Transiciones, parámetros y compatibilidad documentados en docs/user-admin.md.
+
+- Listado de usuarios conserva el padding normal de card-body. Los filtros buscan automáticamente mediante AJAX (300 ms al escribir y cambios inmediatos en selectores), sin botón Filtrar; Limpiar usa gicon-close y solo aparece con filtros activos. El controlador devuelve el parcial HTML con el contrato de lista existente, conserva los filtros en la URL y cancela solicitudes anteriores.
+
+- ORM delega la expresión `LIKE ... ESCAPE` en MySqlDialect y SqliteDialect mediante `likeExpression()`. Se conserva el escape original de MySQL y SQLite recibe una sola barra, evitando el error 500 de los filtros. La API de búsqueda y los parámetros enlazados no cambian. Los dialectos personalizados deben implementar el nuevo método de DatabaseDialectInterface.
+
+- Gestión de usuarios recupera la estructura de vistas de Bebots: título, tarjeta de filtros con etiquetas y botón Limpiar, y parcial `_userList.php` con tabla y estados legibles. Se mantienen las rutas y operaciones actuales, sin añadir campos exclusivos de Bebots o Dane. Se bloquean en la vista los controles sobre la cuenta propia y el superadministrador y se inicializa el valor anterior del selector de rol para restaurarlo ante errores.
+
+- Orden del menú administrativo corregido: Escritorio fuera de Administración, Gestión de usuarios dentro de Administración y Mi cuenta al final, después de los módulos, como en Bebots y Dane.
+
+- El footer administrativo recupera la alineación izquierda y el desplazamiento de la barra lateral de Bebots, sin heredar el centrado público. Mi cuenta utiliza la plantilla administrativa y la estructura de tarjetas de Base Confías, conservando los campos, identificadores y operaciones compatibles con el contrato actual. Gestión de usuarios tiene un apartado propio y deja de depender de Mi cuenta. `common.css` utiliza `data-bs-theme`, como Bootstrap y el selector de tema, y colores semánticos para navegación, iconos y superficies oscuras. La barra saluda con «Hola, nombre de usuario».
+
+- Home conserva su portada y mensaje, con tipografía y navegación refinadas y animación opcional de entrada. Header, contenido y footer comparten el alto de la ventana mediante flexbox; el footer usa el espaciado común. El actualizador publica también los archivos del home.
+
+- Espaciado del footer centralizado en `common.css` para home, Auth y errores, sin duplicarlo por vista. Se restaura la explicación breve de la 404 y se usa el mismo logo y tamaño de Auth. El logout voluntario redirige a `login` sin `rd`; la expiración conserva el destino de retorno.
+
+- La 404 predeterminada queda en código, título y botón de retorno, sin explicación ni contacto añadidos. Los errores 404/500 solo muestran ayuda si se proporciona expresamente. El footer de errores elimina el padding vertical duplicado de los fragmentos de copyright y créditos, igual que Auth.
+
+- Las páginas de error usan el fondo del login (`var(--bs-gray-100)`), sin imagen de fondo; footer y marca conservan contraste sobre ese fondo claro.
+
+- El actualizador publica el metadato global, header/footer y CSS compartidos del esqueleto, antes omitidos en proyectos existentes. Respeta la vista previa y `--preserve-custom`; evita páginas de error sin Bootstrap, variables ni cargas comunes de JavaScript.
+
+- Vistas, plantilla, fragmento, metadato y CSS de errores copiados de Base Confías sin rediseño. El CSS se publica en su ubicación original `public/css/404/404.css`. El router conserva el enlace de retorno, la ayuda y el contexto al convertir respuestas de error web.
+
+- El logout voluntario muestra solo la confirmación previa y redirige al acceso sin un segundo aviso. Las otras pestañas conservan el aviso de sesión cerrada.
+
+- Auth vuelve al flujo MVC de Base Confías y Bebots: `AuthController → AuthModel → ORM`. Se elimina `AuthService`, se restauran los nombres originales de las operaciones y se retira de `UserModel` la persistencia exclusiva del registro y los tokens de Auth. Se conservan los contratos y las protecciones actuales; la creación de tenants y membresías permanece en cada aplicación. Migración documentada en `docs/autenticacion.md`.
+
 ## [0.9.0] - Sin publicar
 
 ### Núcleo
+
+- Auth unifica los datos de sus operaciones bajo `data` y actualiza controladores y consumidores; los tokens internos se eliminan antes de responder al navegador. Heartbeat incorpora `heartbeat_dispatched` en la respuesta general y un `code` por canal, conservando los códigos específicos declarados por cada handler.
+
+- El canal AJAX conserva JSON ante errores de controlador o middleware, incluidos `invalid_token` y `expired`; el frontend decide cómo mostrar la respuesta. El footer declara `site_url` e `is_protected` antes de cargar los JS y conserva `#toastBox` y el aviso de sesión expirada entre pestañas.
+
+- Se unifica `redirect` en las respuestas como ruta relativa a la aplicación, sin barra inicial ni protocolo. Auth devuelve `admin`, `account` o `login`; los JS de Auth y Mi cuenta añaden `site_url` una sola vez. Las aplicaciones existentes deben actualizar conjuntamente productores y consumidores del campo.
+
+- Auth recupera las rutas AJAX originales de Base Confías (`verifyacount`, `validateacount`, `lostpassword`, `resetpassword`) y sus campos de formulario; las rutas renombradas permanecen como alias. Regla de migración: cualquier cambio de nombre de una ruta o parámetro debe documentarse, actualizar todas las llamadas JS y vistas, y probar el flujo completo antes de publicarse.
 
 - La portada inicial recupera el mensaje, la estructura y los logotipos del proyecto GFrame original; el instalador publica también favicon e icono táctil.
 - `auth-ui` recupera las rutas `/login/lostpassword` y `/login/resetpassword?rp=...`, la composición visual de las vistas originales y la redirección al panel administrativo.

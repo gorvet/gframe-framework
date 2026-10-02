@@ -37,14 +37,19 @@ try {
     $projectRoot = realpath((string)$options['project']) ?: (string)$options['project'];
     $pdo = null;
     $driver = '';
-    if (!$options['no-database']) {
+    $uninstalled = !Bootstrap::hasProjectConfiguration($projectRoot) && !is_file($projectRoot . '/storage/gframe-installed.json');
+    if (!$uninstalled && !$options['no-database']) {
         Bootstrap::boot($projectRoot);
-        $connection = DatabaseManager::connection();
-        if (!$connection instanceof PDO) throw new RuntimeException((string)($connection['message'] ?? 'No se pudo conectar con la base de datos.'));
-        $pdo = $connection;
-        $driver = DatabaseManager::driver();
+        if ((array)\GFrame\Config\ConfigRepository::get('database.connections', []) !== [] || (defined('DB_NAME') && (string)DB_NAME !== '')) {
+            $connection = DatabaseManager::connection();
+            if (!$connection instanceof PDO) throw new RuntimeException((string)($connection['message'] ?? 'No se pudo conectar con la base de datos.'));
+            $pdo = $connection;
+            $driver = DatabaseManager::driver();
+        }
     }
-    $result = ProjectUpdateService::frameworkDefault()->update(
+    $result = $uninstalled
+        ? ProjectUpdateService::frameworkDefault()->updateInstaller($projectRoot, $options['preserve-custom'], $options['dry-run'])
+        : ProjectUpdateService::frameworkDefault()->update(
         $projectRoot,
         $options['modules'],
         $pdo,
@@ -52,7 +57,7 @@ try {
         $options['preserve-custom'],
         $options['dry-run']
     );
-    echo ($options['dry-run'] ? 'Vista previa completada.' : 'Proyecto actualizado.') . PHP_EOL;
+    echo ($options['dry-run'] ? 'Vista previa completada.' : ($uninstalled ? 'Instalador actualizado. El proyecto sigue pendiente de instalación.' : 'Proyecto actualizado.')) . PHP_EOL;
     echo 'Módulos: ' . implode(', ', $result['modules']) . PHP_EOL;
     echo 'Nuevos: ' . count($result['added']) . ' | Actualizados: ' . count($result['updated']) . ' | Sin cambios: ' . count($result['unchanged']) . PHP_EOL;
     echo ($options['dry-run'] ? 'Migraciones pendientes: ' : 'Migraciones ejecutadas: ') . (int)$result['migrations']['count'] . PHP_EOL;

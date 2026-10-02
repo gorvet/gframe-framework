@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use GFrame\Install\InstallationProfileCatalog;
 use GFrame\Install\ProjectInstaller;
+use GFrame\Install\DatabasePreflight;
 use GFrame\Modules\ModuleCatalog;
+use GFrame\Modules\ModuleAssetPublisher;
 
 session_start();
+header('Cache-Control: no-store');
 
 $projectRoot = __DIR__;
 $autoloadCandidates = [
@@ -27,14 +30,35 @@ if ($autoload === null) {
 require $autoload;
 
 $escape = static fn(mixed $value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+$assetVersion = static fn(string $path): string => substr((string)hash_file('sha256', __DIR__ . '/' . $path), 0, 12);
 $requestPath = (string)(parse_url((string)($_SERVER['REQUEST_URI'] ?? '/install.php'), PHP_URL_PATH) ?: '/install.php');
 $basePath = preg_replace('#/install\.php$#i', '', $requestPath) ?: '';
 $scheme = !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off' ? 'https' : 'http';
 $appUrl = $scheme . '://' . (string)($_SERVER['HTTP_HOST'] ?? 'localhost') . rtrim($basePath, '/');
 $lock = $projectRoot . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'gframe-installed.json';
 $installed = is_file($lock);
+if ($installed) {
+    header('Location: /' . ltrim(trim($basePath, '/') . '/', '/'), true, 303);
+    exit;
+}
+$moduleCatalog = ModuleCatalog::frameworkDefault();
+if (!$installed) {
+    // Solo activos del asistente; no instala rutas, tablas ni módulos de aplicación.
+    (new ModuleAssetPublisher($moduleCatalog))->publish(['sweetalert2', 'password-utils'], $projectRoot . '/public');
+}
 $profiles = InstallationProfileCatalog::frameworkDefault()->all();
-$modules = ModuleCatalog::frameworkDefault()->all();
+$optionalByProfile = InstallationProfileCatalog::frameworkDefault()->optionalModules($moduleCatalog);
+$optionalGroups = [];
+$optionalDependencies = [];
+foreach ($optionalByProfile as $slug => $groups) {
+    foreach ($groups as $title => $entries) {
+        foreach ($entries as $name => $module) {
+            $optionalGroups[$title][$name] ??= $module + ['profiles' => []];
+            $optionalGroups[$title][$name]['profiles'][] = $slug;
+            $optionalDependencies[$name] ??= array_values(array_diff(array_column($moduleCatalog->resolve([$name]), 'name'), [$name]));
+        }
+    }
+}
 $error = null;
 $result = null;
 
@@ -47,8 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
         if (!hash_equals((string)$_SESSION['gframe_installer_csrf'], (string)($_POST['csrf'] ?? ''))) {
             throw new RuntimeException('La sesión del instalador venció. Recarga la página.');
         }
-        if ((string)($_POST['password'] ?? '') !== (string)($_POST['password_confirmation'] ?? '')) {
-            throw new RuntimeException('Las contraseñas no coinciden.');
+        $selectedProfile = (string)($_POST['profile'] ?? 'managed');
+        InstallationProfileCatalog::frameworkDefault()->get($selectedProfile);
+        $allowedOptional = [];
+        foreach ($optionalByProfile[$selectedProfile] as $entries) $allowedOptional = array_merge($allowedOptional, array_keys($entries));
+        if (array_diff((array)($_POST['modules'] ?? []), $allowedOptional) !== []) {
+            throw new RuntimeException('Hay módulos opcionales que no corresponden al tipo de proyecto. Revisa la selección.');
         }
 
         $driver = (string)($_POST['database_driver'] ?? 'mysql');
@@ -61,8 +89,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
                 'database' => (string)($_POST['database_name'] ?? ''),
                 'username' => (string)($_POST['database_user'] ?? ''),
                 'password' => (string)($_POST['database_password'] ?? ''),
-                'auto_create' => !empty($_POST['database_auto_create']),
+                'auto_create' => true,
             ];
+
+        if (($_POST['installer_action'] ?? '') === 'check_database') {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode((new DatabasePreflight())->check($projectRoot, $database), JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if (!empty($profiles[(string)($_POST['profile'] ?? 'managed')]['database'])) {
+            $check = (new DatabasePreflight())->check($projectRoot, $database);
+            if ($check['status'] !== 'success') throw new RuntimeException($check['message']);
+        }
 
         $result = ProjectInstaller::frameworkDefault()->install([
             'project_root' => $projectRoot,
@@ -71,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
             'app_url' => $appUrl,
             'environment' => 'production',
             'debug' => false,
-            'timezone' => (string)($_POST['timezone'] ?? 'America/Havana'),
             'language' => 'es',
             'database' => $database,
             'superadministrator' => [
@@ -81,16 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
             'modules' => array_values(array_map('strval', (array)($_POST['modules'] ?? []))),
             'tenant_key' => 'tenant_id',
             'tenant_table' => 'tenants',
-            'seo_enabled' => !empty($_POST['seo_enabled']),
-            'seo_allow_indexing' => !empty($_POST['seo_enabled']),
-            'seo_sitemap' => !empty($_POST['seo_sitemap']),
-            'seo_robots' => !empty($_POST['seo_robots']),
-            'seo_llms' => !empty($_POST['seo_llms']),
-            'metricool_enabled' => !empty($_POST['metricool_enabled']),
-            'metricool_hash' => trim((string)($_POST['metricool_hash'] ?? '')),
-            'password_expiration_enabled' => !empty($_POST['password_expiration_enabled']),
-            'password_expiration_days' => (int)($_POST['password_expiration_days'] ?? 90),
-            'password_expiration_warning_days' => 7,
+            'seo_robots' => true,
+            'seo_llms' => true,
         ]);
         if (($result['status'] ?? '') !== 'success') {
             throw new RuntimeException('No se pudo completar la instalación: ' . (string)($result['code'] ?? 'error'));
@@ -98,6 +127,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
         unset($_SESSION['gframe_installer_csrf']);
         $installed = true;
     } catch (Exception $exception) {
+        if (($_POST['installer_action'] ?? '') === 'check_database') {
+            http_response_code(400);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['status' => 'error', 'code' => 'installer_check_failed', 'message' => $exception->getMessage()], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
         $error = $exception->getMessage();
     }
 }
@@ -108,125 +143,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Instalar GFrame</title>
-    <style>
-        :root{color-scheme:light;--primary:#0aa6d5;--dark:#0b0a28;--border:#d9e1e8;--muted:#667085;--bg:#f4f7f9}
-        *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--dark);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-        .shell{width:min(960px,calc(100% - 32px));margin:48px auto}.brand{text-align:center;margin-bottom:24px}.brand strong{font-size:1.5rem}
-        .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 36px rgba(11,10,40,.08);overflow:hidden}
-        .header{padding:24px 32px;background:linear-gradient(100deg,var(--primary),#1673a6);color:#fff}.header h1{margin:0;font-size:1.6rem}.header p{margin:.35rem 0 0;opacity:.9}
-        form,.result{padding:32px}.section{padding-bottom:28px;margin-bottom:28px;border-bottom:1px solid var(--border)}.section:last-of-type{border:0}
-        h2{font-size:1.05rem;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.full{grid-column:1/-1}
-        label{display:block;font-weight:600;font-size:.9rem;margin-bottom:6px}.help{font-size:.82rem;color:var(--muted);font-weight:400;margin-top:4px}
-        input,select{width:100%;border:1px solid #cbd5df;border-radius:8px;padding:.72rem .8rem;background:#fff;font:inherit}
-        input[type=checkbox]{width:auto}.check{display:flex;gap:9px;align-items:flex-start;font-weight:500}.check input{margin-top:.3rem}
-        .modules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px}.module{border:1px solid var(--border);border-radius:9px;padding:10px 12px}
-        button{width:100%;border:0;border-radius:8px;background:var(--primary);color:#fff;padding:.85rem 1rem;font:600 1rem inherit;cursor:pointer}
-        .alert{padding:12px 14px;border-radius:8px;margin:0 0 20px}.error{background:#fff1f0;color:#9d261d}.success{background:#edfdf5;color:#176b47}
-        [hidden]{display:none!important}@media(max-width:700px){.shell{margin:20px auto}.grid,.modules{grid-template-columns:1fr}.header,form,.result{padding:22px}}
-    </style>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="icon" href="public/img/favicon.png">
+    <link rel="stylesheet" href="public/css/variables.css">
+    <link rel="stylesheet" href="public/css/common.css">
+    <?php if (!$installed): ?>
+    <link rel="stylesheet" href="public/vendors/external/sweetalert2/sweetalert2.min.css">
+    <link rel="stylesheet" href="public/vendors/external/sweetalert2/sweetTheme.css">
+    <link rel="stylesheet" href="public/vendors/internal/passwordUtils/passwordUtils.css">
+    <?php endif; ?>
+    <link rel="stylesheet" href="public/css/install/install.css?v=<?= $assetVersion('public/css/install/install.css') ?>">
 </head>
 <body>
 <main class="shell">
-    <div class="brand"><strong>GFrame</strong></div>
-    <section class="card">
-        <header class="header">
-            <h1>Configurar la aplicación</h1>
-            <p>Base de datos, módulos y primera cuenta administrativa.</p>
-        </header>
+    <div class="brand"><img src="public/img/logo.png" class="install-logo" alt="GFrame"></div>
+    <section class="card install-card">
         <?php if ($installed): ?>
             <div class="result">
                 <div class="alert success">La aplicación quedó instalada correctamente.</div>
-                <p>La aplicación ya está instalada. Bloquea el acceso a <code>install.php</code> antes de publicarla.</p>
-                <a href="../../">Abrir la aplicación</a>
+                <p>El instalador ha quedado bloqueado automáticamente.</p>
+                <a href="<?= $escape(rtrim($basePath, '/') . '/') ?>">Abrir la aplicación</a>
+                <?php if (!empty($result['superadministrator'])): ?><a href="<?= $escape(rtrim($basePath, '/') . '/login') ?>">Acceder</a><?php endif; ?>
             </div>
         <?php else: ?>
             <form method="post" id="installer-form">
+                <noscript><p class="alert error" role="alert">Activa JavaScript para utilizar el instalador.</p></noscript>
                 <input type="hidden" name="csrf" value="<?= $escape($_SESSION['gframe_installer_csrf']) ?>">
-                <?php if ($error !== null): ?><div class="alert error"><?= $escape($error) ?></div><?php endif; ?>
+                <?php if ($error !== null): ?><div class="alert error" role="alert"><?= $escape($error) ?></div><?php endif; ?>
 
-                <div class="section grid">
-                    <h2 class="full">Aplicación</h2>
-                    <div><label for="app_name">Nombre</label><input id="app_name" name="app_name" required value="<?= $escape($_POST['app_name'] ?? '') ?>"></div>
-                    <div><label for="profile">Tipo de proyecto</label><select id="profile" name="profile"><?php foreach ($profiles as $profile): ?><option value="<?= $escape($profile['slug']) ?>" data-database="<?= $profile['database'] ? '1' : '0' ?>" data-auth="<?= $profile['auth'] ? '1' : '0' ?>" data-tenancy="<?= $profile['tenancy'] ? '1' : '0' ?>" data-public="<?= $profile['public'] ? '1' : '0' ?>"><?= $escape($profile['name']) ?></option><?php endforeach; ?></select></div>
-                    <div><label for="timezone">Zona horaria</label><input id="timezone" name="timezone" value="America/Havana" required></div>
+                <div class="section" data-step="Aplicación">
+                    <h1>Tu proyecto</h1>
+                    <div class="installer-field"><label for="app_name">Nombre del proyecto</label><input id="app_name" name="app_name" required value="<?= $escape($_POST['app_name'] ?? '') ?>"><p>El nombre que aparecerá en tu aplicación.</p></div>
+                    <div class="installer-field"><label for="profile">Tipo de proyecto</label><select id="profile" name="profile"><?php foreach ($profiles as $profile): ?><option value="<?= $escape($profile['slug']) ?>" data-database="<?= $profile['database'] ? '1' : '0' ?>" data-auth="<?= $profile['auth'] ? '1' : '0' ?>" data-tenancy="<?= $profile['tenancy'] ? '1' : '0' ?>" data-public="<?= $profile['public'] ? '1' : '0' ?>"><?= $escape($profile['name']) ?></option><?php endforeach; ?></select><p id="profile-description"></p></div>
+                    <fieldset id="installer-account" class="installer-account">
+                        <legend>Cuenta administrativa</legend>
+                        <div class="installer-field"><label for="email">Correo electrónico</label><input id="email" name="email" type="email" autocomplete="email"><p>Lo usarás para iniciar sesión.</p></div>
+                        <div class="installer-field"><label for="password">Contraseña</label><div><div class="installer-password"><input id="password" name="password" type="password" minlength="8" autocomplete="new-password"><button type="button" id="installer-show-password" aria-controls="password" aria-pressed="false">Mostrar</button></div><div class="passwordMeter d-none" role="status"></div></div><p>Al menos ocho caracteres.</p></div>
+                    </fieldset>
                 </div>
 
-                <div class="section grid" data-section="database">
-                    <h2 class="full">Base de datos</h2>
-                    <div><label for="database_driver">Motor</label><select id="database_driver" name="database_driver"><option value="mysql">MySQL</option><option value="sqlite">SQLite</option></select></div>
-                    <div data-mysql><label for="database_host">Servidor</label><input id="database_host" name="database_host" value="localhost"></div>
-                    <div data-mysql><label for="database_port">Puerto</label><input id="database_port" name="database_port" type="number" value="3306"></div>
-                    <div data-mysql><label for="database_name">Base de datos</label><input id="database_name" name="database_name"></div>
-                    <div data-mysql><label for="database_user">Usuario</label><input id="database_user" name="database_user"></div>
-                    <div data-mysql><label for="database_password">Contraseña</label><input id="database_password" name="database_password" type="password"></div>
-                    <label class="check full" data-mysql><input type="checkbox" name="database_auto_create" value="1"><span>Crear la base de datos si el usuario tiene permisos</span></label>
+                <div class="section" data-step="Base de datos" data-section="database" hidden>
+                    <h1>Conexión con la base de datos</h1>
+                    <p>Introduce los datos de conexión. Si no los conoces, consulta con tu proveedor de alojamiento.</p>
+                    <div class="installer-field"><label for="database_driver">Motor</label><select id="database_driver" name="database_driver"><option value="mysql">MySQL</option><option value="sqlite">SQLite</option></select><p>MySQL usa un servidor; SQLite guarda un archivo en el proyecto.</p></div>
+                    <div class="installer-field" data-mysql><label for="database_name">Base de datos</label><input id="database_name" name="database_name"><p>Usa una base vacía. Si no existe, intentaremos crearla.</p></div>
+                    <div class="installer-field" data-mysql><label for="database_user">Usuario</label><input id="database_user" name="database_user" autocomplete="off"><p>El usuario con permisos para instalar las tablas.</p></div>
+                    <div class="installer-field" data-mysql><label for="database_password">Contraseña</label><input id="database_password" name="database_password" type="password" autocomplete="off"><p>La contraseña del usuario de la base de datos.</p></div>
+                    <div class="installer-field" data-mysql><label for="database_host">Servidor</label><input id="database_host" name="database_host" value="localhost"><p>Normalmente es <code>localhost</code>.</p></div>
+                    <div class="installer-field" data-mysql><label for="database_port">Puerto</label><input id="database_port" name="database_port" type="number" value="3306" min="1" max="65535"><p>Usa 3306 salvo que tu alojamiento indique otro.</p></div>
                     <p class="help full" data-sqlite hidden>SQLite guardará la base de datos en <code>storage/database.sqlite</code>.</p>
+                    <p class="help full" id="database-status" role="status"></p>
                 </div>
 
-                <div class="section grid" data-section="auth">
-                    <h2 class="full">Superadministrador</h2>
-                    <div><label for="email">Correo electrónico</label><input id="email" name="email" type="email" autocomplete="email"></div>
-                    <div></div>
-                    <div><label for="password">Contraseña</label><input id="password" name="password" type="password" minlength="8" autocomplete="new-password"></div>
-                    <div><label for="password_confirmation">Confirmar contraseña</label><input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password"></div>
-                    <label class="check full"><input type="checkbox" id="password_expiration_enabled" name="password_expiration_enabled" value="1"><span>Exigir renovación periódica de contraseñas</span></label>
-                    <div id="password-expiration-days" hidden><label for="expiration_days">Días de vigencia</label><input id="expiration_days" name="password_expiration_days" type="number" min="1" value="90"></div>
-                </div>
-
-                <div class="section grid" data-section="tenancy" hidden>
-                    <h2 class="full">Tenancy</h2>
-                    <p class="help full">Se instalará la estructura multitenant estándar con la tabla <code>tenants</code> y la clave <code>tenant_id</code>.</p>
-                </div>
-
-                <div class="section">
-                    <h2>Módulos opcionales</h2>
-                    <div class="modules">
-                        <?php foreach ($modules as $module): if (!empty($module['default'])) continue; ?>
-                            <?php $needsDatabase = !empty($module['schemas']) || !empty($module['requires_schema']); ?>
-                            <label class="check module" data-module-database="<?= $needsDatabase ? '1' : '0' ?>"><input type="checkbox" name="modules[]" value="<?= $escape($module['name']) ?>"><span><?= $escape($module['name']) ?><small class="help"><?= $escape($module['description'] ?? '') ?></small></span></label>
+                <div class="section" data-step="Módulos" hidden>
+                    <h1>Módulos opcionales</h1>
+                    <p>Puedes instalar estos módulos más adelante.</p>
+                    <div class="installer-module-groups">
+                        <?php foreach ($optionalGroups as $title => $entries): ?>
+                        <fieldset class="installer-module-group">
+                            <legend><?= $escape($title) ?></legend>
+                            <div class="modules">
+                            <?php foreach ($entries as $module): ?>
+                            <label class="check module" data-module-profiles="<?= $escape(implode(' ', $module['profiles'])) ?>"><input type="checkbox" name="modules[]" value="<?= $escape($module['name']) ?>"><span><?= $escape($module['label']) ?><small class="help"><?= $escape($module['description']) ?></small></span></label>
+                            <?php endforeach; ?>
+                            </div>
+                        </fieldset>
                         <?php endforeach; ?>
                     </div>
                 </div>
 
-                <div class="section grid" data-section="publication">
-                    <h2 class="full">Publicación y medición</h2>
-                    <label class="check"><input type="checkbox" name="seo_enabled" value="1" checked><span>Activar SEO</span></label>
-                    <label class="check"><input type="checkbox" name="seo_sitemap" value="1" checked><span>Generar sitemap</span></label>
-                    <label class="check"><input type="checkbox" name="seo_robots" value="1" checked><span>Generar robots.txt</span></label>
-                    <label class="check"><input type="checkbox" name="seo_llms" value="1" checked><span>Generar llms.txt</span></label>
-                    <label class="check"><input type="checkbox" name="metricool_enabled" value="1"><span>Activar Metricool</span></label>
-                    <div class="full"><label for="metricool_hash">Hash de Metricool</label><input id="metricool_hash" name="metricool_hash"><p class="help">Déjalo vacío si todavía no has configurado la medición.</p></div>
+                <div class="section" data-step="Resumen" hidden>
+                    <h2>Revisar e instalar</h2>
+                    <dl id="installer-summary"></dl>
                 </div>
-
-                <button type="submit">Instalar GFrame</button>
+                <div class="installer-actions">
+                    <button type="button" id="installer-back" hidden>Anterior</button>
+                    <button type="button" id="installer-next" hidden>Continuar</button>
+                    <button type="submit" id="installer-submit">Instalar GFrame</button>
+                </div>
             </form>
         <?php endif; ?>
     </section>
 </main>
-<script>
-(() => {
-    const profile = document.querySelector('#profile');
-    const driver = document.querySelector('#database_driver');
-    const expiration = document.querySelector('#password_expiration_enabled');
-    const toggle = () => {
-        const option = profile?.selectedOptions[0];
-        document.querySelector('[data-section="database"]')?.toggleAttribute('hidden', option?.dataset.database !== '1');
-        document.querySelector('[data-section="auth"]')?.toggleAttribute('hidden', option?.dataset.auth !== '1');
-        document.querySelector('[data-section="tenancy"]')?.toggleAttribute('hidden', option?.dataset.tenancy !== '1');
-        document.querySelector('[data-section="publication"]')?.toggleAttribute('hidden', option?.dataset.public !== '1');
-        document.querySelectorAll('[data-module-database="1"] input').forEach(input => {
-            input.disabled = option?.dataset.database !== '1';
-            if (input.disabled) input.checked = false;
-        });
-        document.querySelectorAll('[data-mysql]').forEach(el => el.toggleAttribute('hidden', driver?.value !== 'mysql'));
-        document.querySelectorAll('[data-sqlite]').forEach(el => el.toggleAttribute('hidden', driver?.value !== 'sqlite'));
-        document.querySelector('#password-expiration-days')?.toggleAttribute('hidden', !expiration?.checked);
-    };
-    profile?.addEventListener('change', toggle);
-    driver?.addEventListener('change', toggle);
-    expiration?.addEventListener('change', toggle);
-    toggle();
-})();
-</script>
+<?php if (!$installed): ?>
+<script type="application/json" id="installer-data"><?= json_encode([
+    'descriptions' => array_map(static fn(array $profile): string => (string)$profile['description'], $profiles),
+    'dependencies' => $optionalDependencies,
+    'values' => array_intersect_key($_POST, array_flip(['app_name', 'profile', 'database_driver', 'database_host', 'database_port', 'database_name', 'database_user', 'email', 'modules'])),
+    'posted' => $_SERVER['REQUEST_METHOD'] === 'POST',
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script src="public/vendors/external/jquery/jquery.min.js"></script>
+<script src="public/vendors/external/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="public/vendors/internal/passwordUtils/passwordUtils.js"></script>
+<script src="public/js/install/install.js?v=<?= $assetVersion('public/js/install/install.js') ?>"></script>
+<?php endif; ?>
 </body>
 </html>

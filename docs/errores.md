@@ -7,6 +7,8 @@ GFrame separa la gestión de errores en dos partes:
 
 El módulo se instala automáticamente en todos los perfiles. No requiere rutas ni un controlador propio.
 
+El router acepta también errores 403/404/500/503 originados por el servidor: `GFRAME_SERVER_ERROR` de FastCGI en Nginx y `REDIRECT_STATUS` en Apache. No interpreta `error_code` de la URL ni cabeceras HTTP como códigos de error del servidor. Las peticiones web usan estas mismas vistas; los otros canales conservan su contrato. Véase [configuración de servidores web](servidores-web.md).
+
 ## Errores web disponibles
 
 | Código o alias | Vista | Estado HTTP |
@@ -17,7 +19,13 @@ El módulo se instala automáticamente en todos los perfiles. No requiere rutas 
 | `500`, `internal_error` | `error500.php` | 500 |
 | `503`, `service_unavailable`, errores de conexión conocidos | `error503.php` | 503 |
 
-Las vistas se publican en `app/views/error/`, la plantilla en `app/views/templates/errorTemplate.php` y los estilos en `public/css/modules/error-pages/error-pages.css`.
+Las vistas y la plantilla originales permanecen en `resources/modules/error-pages/application/app/views/`. El instalador crea `app/views/error-pages/` para personalizaciones, sin copiar originales. El template puede personalizarse en `app/views/templates/errorTemplate.php`; los estilos se publican en `public/css/404/404.css`. Base Confías es la referencia de contenido, estructura y estilos, con las excepciones solicitadas abajo. La marca utiliza el mismo archivo `public/img/logo.png` y tamaño que Auth.
+
+El CSS específico depende de Bootstrap y de los estilos comunes cargados por `config/meta/global.meta.php`. `composer gframe:update` publica también ese metadato, el header/footer y los CSS compartidos del esqueleto, aplicando la misma política de archivos administrados y `--preserve-custom` que a los módulos. `composer update` por sí solo actualiza el paquete, no los archivos publicados de la aplicación.
+
+Excepción solicitada a la referencia de Base Confías: las páginas de error utilizan el mismo fondo que el login, `var(--bs-gray-100)`, sin imagen. El footer comparte ese fondo y la marca conserva sus colores originales.
+
+La 404 predeterminada muestra el código, «Página no encontrada», «La dirección puede ser incorrecta o el contenido ya no está disponible.» y el botón de retorno. Los errores 404/500 no inventan un enlace de contacto: los textos y enlaces de ayuda solo aparecen cuando se proporcionan mediante el contrato. El espaciado del footer reside en `common.css` y se comparte con home y Auth.
 
 ## Devolver un error desde un controlador
 
@@ -75,11 +83,11 @@ Fuera del modo de depuración, las excepciones internas no exponen mensajes, rut
 
 Los archivos publicados pertenecen a la aplicación y pueden personalizarse sin modificar el núcleo:
 
-- edita `app/views/error/_errorCard.php` para cambiar la estructura compartida;
+- crea `app/views/error-pages/_errorCard.php` para personalizar la estructura compartida;
 - edita una vista concreta para cambiar textos o acciones por código;
 - edita `app/views/templates/errorTemplate.php` para cambiar la envoltura visual;
-- edita `app/views/error/error.group.meta.php` para cambiar metadatos y recursos;
-- edita `public/css/modules/error-pages/error-pages.css` para adaptar el diseño.
+- crea `app/views/error-pages/error-pages.group.meta.php` para personalizar metadatos y recursos;
+- edita `public/css/404/404.css` para adaptar el diseño.
 
 La publicación de módulos conserva archivos existentes salvo que se solicite sobrescribirlos. Por eso, una actualización del framework no debe reemplazar automáticamente las personalizaciones de la aplicación.
 
@@ -96,6 +104,8 @@ Si se necesita una categoría de error nueva con su propio código HTTP y vista,
 5. documentación del nuevo código.
 
 No es necesario crear un `ErrorController` vacío. `ErrorResponder` genera una ruta interna con `skipAction`, y `Render` carga directamente la vista correspondiente.
+
+Base Confías y Bebots incluyen ese controlador vacío como extensión de `ErrorResponder`, sin modelo ni servicio de errores. GFrame utiliza directamente `ErrorResponder` y `ErrorHandler`; sus implementaciones coinciden con Base Confías, que incorpora además los campos de ayuda que faltan en Bebots. El router conserva esos campos al transformar errores web de middleware. AJAX mantiene el contrato JSON corregido en GFrame y no vuelve a devolver páginas HTML como en los proyectos originales.
 
 ## Depuración y producción
 

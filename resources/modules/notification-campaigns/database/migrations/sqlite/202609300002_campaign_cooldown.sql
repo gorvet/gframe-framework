@@ -1,0 +1,2 @@
+ALTER TABLE notification_campaign_rules ADD COLUMN cooldown_days INTEGER NOT NULL DEFAULT 7;
+CREATE TABLE IF NOT EXISTS notification_campaign_deliveries (delivery_id INTEGER PRIMARY KEY AUTOINCREMENT, scope_id INTEGER NOT NULL DEFAULT 0, rule_key TEXT NOT NULL, user_id INTEGER NOT NULL, event_id TEXT NOT NULL, source TEXT NOT NULL, notification_id INTEGER NULL, queued_at TEXT NOT NULL, UNIQUE (scope_id, rule_key, user_id));

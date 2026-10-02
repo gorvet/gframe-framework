@@ -5,9 +5,9 @@ namespace GFrame\Notifications;
 use Exception;
 use GFrame\Notifications\Contracts\NotificationRepository;
 
-final class NotificationService
+class NotificationService
 {
-    public function __construct(private readonly NotificationRepository $notifications)
+    public function __construct(protected readonly NotificationRepository $notifications)
     {
     }
 
@@ -70,6 +70,25 @@ final class NotificationService
         } catch (Exception $exception) { return $this->failure($exception, 'notifications_read_failed'); }
     }
 
+    public function detail(int $notificationID, int $userID, ?int $tenantID = null): array
+    {
+        if ($notificationID <= 0 || $userID <= 0) return $this->error('notification_not_found');
+        try {
+            $item = $this->notifications->findNotification($notificationID, $userID, $tenantID);
+            if ($item === null) return $this->error('notification_not_found');
+            return ['status' => 'success', 'code' => 'notification_loaded', 'data' => ['notification' => $item]];
+        } catch (Exception $exception) { return $this->failure($exception, 'notification_load_failed'); }
+    }
+
+    public function markUnread(int $notificationID, int $userID, ?int $tenantID = null): array
+    {
+        try {
+            return $this->notifications->markUnread($notificationID, $userID, $tenantID)
+                ? ['status' => 'success', 'code' => 'notification_unread', 'data' => ['notification_id' => $notificationID]]
+                : $this->error('notification_not_found');
+        } catch (Exception $exception) { return $this->failure($exception, 'notification_read_failed'); }
+    }
+
     public function delete(int $notificationID, int $userID, ?int $tenantID = null): array
     {
         try {
@@ -84,9 +103,9 @@ final class NotificationService
         catch (Exception $exception) { return $this->failure($exception, 'notifications_cleanup_failed'); }
     }
 
-    private function token(string $value, string $fallback): string { $value = preg_replace('/[^a-z0-9_.-]+/', '_', strtolower(trim($value))) ?: ''; return $value !== '' ? mb_substr($value, 0, 80) : $fallback; }
-    private function url(string $value): ?string { $value = trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?? ''); return preg_match('~^https?://[^\s]+$|^/(?!/)[^\s]*$~i', $value) === 1 ? mb_substr($value, 0, 255) : null; }
-    private function date(string $value): ?string { return $value !== '' && strtotime($value) !== false ? date('Y-m-d H:i:s', strtotime($value)) : null; }
-    private function error(string $code): array { return ['status' => 'error', 'code' => $code]; }
-    private function failure(Exception $exception, string $code): array { error_log('[GFrame Notifications] ' . $exception->getMessage()); return $this->error($code); }
+    protected function token(string $value, string $fallback): string { $value = preg_replace('/[^a-z0-9_.-]+/', '_', strtolower(trim($value))) ?: ''; return $value !== '' ? mb_substr($value, 0, 80) : $fallback; }
+    protected function url(string $value): ?string { $value = trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?? ''); return preg_match('~^https?://[^\s]+$|^/(?!/)[^\s]*$~i', $value) === 1 ? mb_substr($value, 0, 255) : null; }
+    protected function date(string $value): ?string { return $value !== '' && strtotime($value) !== false ? date('Y-m-d H:i:s', strtotime($value)) : null; }
+    protected function error(string $code): array { return ['status' => 'error', 'code' => $code]; }
+    protected function failure(Exception $exception, string $code): array { error_log('[GFrame Notifications] ' . $exception->getMessage()); return $this->error($code); }
 }

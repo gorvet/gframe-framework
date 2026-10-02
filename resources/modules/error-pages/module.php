@@ -6,11 +6,8 @@ return [
     'description' => 'Plantillas reutilizables para errores web 403, 404, 500 y 503.',
     'default' => true,
     'dependencies' => ['bootstrap'],
+    'runtime' => ['root' => 'application/app', 'namespace' => 'GFrame\\Modules\\ErrorPages', 'templates' => ['error']],
     'assets' => [
-        ['source' => 'public', 'target' => 'css/modules/error-pages'],
-    ],
-    'application' => [
-        ['source' => 'application/views', 'target' => 'app/views/error'],
-        ['source' => 'application/templates/errorTemplate.php', 'target' => 'app/views/templates/errorTemplate.php'],
+        ['source' => 'public', 'target' => 'css/404'],
     ],
 ];

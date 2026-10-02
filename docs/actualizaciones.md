@@ -15,6 +15,12 @@ El segundo comando:
 - reemplaza los archivos administrados de los módulos, aunque hayan sido modificados directamente;
 - registra la versión, las migraciones y las nuevas huellas de archivos.
 
+También sincroniza los archivos base gestionados de `ProjectScaffolder::UPDATE_PATHS`: `.htaccess`, arranque e instalador, metadatos globales, header/footer generales, plantillas de correo, CSS compartido, `colores.html` y presentación y JavaScript del home. El instalador registra sus huellas desde el primer día para que `--preserve-custom` distinga una versión anterior intacta de una modificación local.
+
+No reemplaza los archivos propios del proyecto: `.env`, configuración generada, rutas base del proyecto, permisos propios, `composer.json`, README, `.gitignore`, controlador del home, fragmentos de copyright/créditos ni imágenes de marca. Son decisiones explícitas, no omisiones. Los controladores, modelos y vistas runtime de módulos se actualizan con el paquete Composer; no se copian encima de las personalizaciones de `app`.
+
+Las pruebas de `ProjectUpdateServiceTest` comparan todos los archivos publicados por todos los módulos con la actualización y exigen que cada archivo del esqueleto esté cubierto o tenga una excepción explícita. Añadir un archivo base sin decidir su política hace fallar esa comprobación.
+
 ## Vista previa
 
 ```bash

@@ -12,6 +12,11 @@ final class MySqlDialect implements DatabaseDialectInterface
         return 'JSON_OBJECT()';
     }
 
+    public function likeExpression(string $column): string
+    {
+        return "$column LIKE ? ESCAPE '\\\\'";
+    }
+
     public function jsonValuePlaceholder($value, array &$params, bool $useJsonCast): string
     {
         if ($useJsonCast) {

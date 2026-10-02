@@ -28,6 +28,8 @@ final class MediaSyncService
                 return ['status' => 'success', 'code' => 'media_synchronized', 'data' => ['added' => 0, 'ignored' => 0]];
             }
             $existing = array_fill_keys($this->media->paths($scope), true);
+            $variantNames = array_unique(array_merge(['small', 'optimized', 'xsmall', 'medium', 'preview', 'large'], $this->processor->getVariantKeys()));
+            $variantPattern = '/-(' . implode('|', array_map(static fn(string $key): string => preg_quote($key, '/'), $variantNames)) . ')\.[a-z0-9]+$/i';
             $added = 0;
             $ignored = 0;
             $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($rootAbsolute, FilesystemIterator::SKIP_DOTS));
@@ -35,7 +37,7 @@ final class MediaSyncService
                 if (!$file instanceof SplFileInfo || !$file->isFile()) continue;
                 $relative = $this->relativePath($rootAbsolute, $rootRelative, $file->getPathname());
                 $name = $file->getFilename();
-                if (isset($existing[$relative]) || preg_match('/-(small|optimized|xsmall|medium|preview|large)\.[a-z0-9]+$/i', $name)) {
+                if (isset($existing[$relative]) || preg_match($variantPattern, $name)) {
                     $ignored++;
                     continue;
                 }

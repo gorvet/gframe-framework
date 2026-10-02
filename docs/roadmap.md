@@ -1,5 +1,7 @@
 # Hoja de ruta
 
+Las mejoras opcionales de baja prioridad se registran en [Mejoras pendientes no urgentes](mejoras-pendientes.md), separadas de los errores y del trabajo en curso.
+
 ## Versión 0.9.0
 
 - Validar la integración final en una aplicación real sin tenant.
@@ -27,6 +29,9 @@
 - Documentar cómo instalar y actualizar esas instrucciones en cada asistente.
 
 ## Próximas integraciones
+
+- Extraer únicamente infraestructura común y herramientas reutilizables (editor enriquecido, HTML a Markdown y Markdown a HTML); no convertir la lógica propia de Bebots, Dane o Base Confías en módulos genéricos por defecto.
+- Mejorar el instalador visual por pasos, con módulos incluidos por perfil y dependencias resueltas sin selección redundante.
 
 - Validar en aplicaciones reales los módulos opcionales de multimedia, notificaciones, WordPress headless y administración de usuarios.
 - Integrar el catálogo de módulos y su publicador con el instalador visual. **Completado.**

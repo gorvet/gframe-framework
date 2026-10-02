@@ -43,12 +43,13 @@
         swalAlert({
             icon: 'warning',
             title: '¿Desactivar tu cuenta?',
-            text: 'Perderás el acceso inmediatamente.',
+            text: $(this).attr('data-confirm-message'),
             input: 'password',
             inputPlaceholder: 'Contraseña actual',
             showCancelButton: true,
             confirmButtonText: 'Desactivar cuenta',
             cancelButtonText: 'Cancelar',
+            reverseButtons: true,
             inputValidator: function (value) {
                 return value ? undefined : 'Escribe tu contraseña.';
             }
@@ -56,7 +57,7 @@
             if (!result.isConfirmed) return;
             request('ajax/account/deactivate', {password: result.value}).done(function (response) {
                 if (response.status === 'success') {
-                    window.location.assign(response.redirect || site_url + 'login');
+                    window.location.assign(site_url + (response.redirect || 'login'));
                     return;
                 }
                 alertToast({icon: 'error', title: response.message || 'No se pudo desactivar la cuenta.'});

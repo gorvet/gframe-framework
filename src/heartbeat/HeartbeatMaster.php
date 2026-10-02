@@ -25,6 +25,9 @@ class HeartbeatMaster {
             try {
                 $payload = (array)($definition['payload'] ?? []);
                 $out[$key] = $this->runChannel($definition['handler'] ?? null, $payload, $context);
+                if (!isset($out[$key]['code']) || $out[$key]['code'] === '') {
+                    $out[$key]['code'] = ($out[$key]['status'] ?? '') === 'success' ? 'channel_updated' : 'channel_failed';
+                }
                 $this->markChannelRun($key);
             } catch (Exception $e) {
                 $out[$key] = [
@@ -37,6 +40,7 @@ class HeartbeatMaster {
 
         return [
             'status' => 'success',
+            'code' => 'heartbeat_dispatched',
             'data' => [
                 'channels' => $out,
             ],
@@ -118,14 +122,11 @@ class HeartbeatMaster {
             return ['status' => 'error', 'code' => 'bad_handler', 'message' => 'Handler invalido'];
         }
 
-        $path = realpath(ABSPATH . 'app/controllers/' . str_replace('\\', '/', $controller) . '.php');
-        if ($path === false || !file_exists($path)) {
+        $resolved = \GFrame\Modules\ModuleRuntime::controller($controller, \GFrame\Modules\ModuleRuntime::inferModule($controller));
+        if ($resolved === null) {
             return ['status' => 'error', 'code' => 'bad_controller', 'message' => 'Controlador no encontrado'];
         }
-        require_once $path;
-
-        $parts = explode('/', str_replace('\\', '/', $controller));
-        $className = end($parts);
+        $className = $resolved['class'];
         if (!class_exists($className)) {
             return ['status' => 'error', 'code' => 'missing_class', 'message' => 'Clase no encontrada'];
         }

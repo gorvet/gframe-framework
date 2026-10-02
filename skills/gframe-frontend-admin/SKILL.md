@@ -5,7 +5,7 @@ description: Implement admin frontend in GFrame PHP apps with view meta files, m
 
 # GFrame Frontend Admin
 
-Use this when creating or modifying admin views in `app/views/admin/*` and their paired assets in `public/js/app/admin/*` and `public/css/app/admin/*`.
+Use this when creating or modifying admin views in `app/views/admin/*` and their paired assets in `public/js/app/admin/*` and `public/css/app/admin/*`, including their distributable sources under `resources/modules/*` in the framework repository. Follow the approved layout and acceptance checks in the references below; do not rely on conversation memory.
 
 ## Read Order
 

@@ -39,7 +39,7 @@ class MediaModel extends \ORM implements MediaRepository
                 $query->where('kind', '=', (string)$filters['kind']);
             }
             if (!empty($filters['search'])) {
-                $query->whereAnyLike(['name', 'original_name'], (string)$filters['search']);
+                $query->whereAnyLike(['name', 'original_name', 'alt_text'], (string)$filters['search']);
             }
             if (!empty($filters['ym'])) {
                 $query->where('created_at', 'LIKE', (string)$filters['ym'] . '%');
@@ -134,7 +134,24 @@ class MediaModel extends \ORM implements MediaRepository
         );
     }
 
-    private function applyScope(self $query, MediaScope $scope): self
+    public function filterOptions(MediaScope $scope): array
+    {
+        $sources = $this->applyScope($this->reset(), $scope)
+            ->select('source AS value', 'COUNT(*) AS total')->groupBy('source')->orderBy('source')->get();
+        $dates = $this->applyScope($this->reset(), $scope)
+            ->select('SUBSTR(created_at, 1, 7) AS value', 'COUNT(*) AS total')
+            ->groupBy('SUBSTR(created_at, 1, 7)')->orderBy('value', 'DESC')->get();
+        foreach ($sources as &$source) $source['label'] = (string)$source['value'];
+        unset($source);
+        $months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        foreach ($dates as &$date) {
+            $month = (int)substr((string)$date['value'], 5, 2);
+            $date['label'] = ($months[$month - 1] ?? '') . ' ' . substr((string)$date['value'], 0, 4);
+        }
+        return ['sources' => $sources, 'dates' => $dates];
+    }
+
+    protected function applyScope(self $query, MediaScope $scope): self
     {
         $query->where('scope_type', '=', $scope->type());
         if ($scope->id() === null) {

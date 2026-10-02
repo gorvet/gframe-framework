@@ -1,1 +1,1 @@
-{"name":"Notificación general","variables":["title","message","app_name"]}
+{"name":"Notificación general","variables":["title","message","action_url","action_display"]}

@@ -43,7 +43,7 @@ Para una aplicación global, GFrame combina `roles.permissions_json` con `users.
 
 La membresía debe existir y estar activa. El dueño de un registro no recibe permisos automáticamente por esa sola condición. El proyecto debe crear su membresía cuando corresponda.
 
-`AuthService::register()` y la instalación inicial solo crean usuarios y su rol global; nunca crean membresías. El perfil SaaS instala una tabla `tenants` con `tenant_id`, `name`, `slug` y `status`, pero **no** una columna de dueño. GFrame tampoco deduce el dueño de una petición ni crea una membresía de reserva. La aplicación define qué entidad es su tenant y cómo acredita su propiedad.
+`AuthModel::registerAcount()` y la instalación inicial solo crean usuarios y su rol global; nunca crean membresías. El perfil SaaS instala una tabla `tenants` con `tenant_id`, `name`, `slug` y `status`, pero **no** una columna de dueño. GFrame tampoco deduce el dueño de una petición ni crea una membresía de reserva. La aplicación define qué entidad es su tenant y cómo acredita su propiedad.
 
 ### Crear un tenant y su primer dueño
 

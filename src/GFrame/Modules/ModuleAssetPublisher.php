@@ -52,6 +52,7 @@ final class ModuleAssetPublisher
         $public = $this->publish($modules, $projectRoot . DIRECTORY_SEPARATOR . 'public', $overwrite);
         $applicationFiles = [];
         foreach ($this->catalog->resolve($modules) as $module) {
+            ModuleRuntime::createCustomizationDirectories($module, $projectRoot);
             foreach ((array)($module['application'] ?? []) as $entry) {
                 if (!is_array($entry)) {
                     throw new RuntimeException("Archivo de aplicación inválido en el módulo {$module['name']}.");

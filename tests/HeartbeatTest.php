@@ -52,6 +52,8 @@ final class HeartbeatTest extends TestCase
         $result = $heartbeat->dispatch();
 
         self::assertSame('success', $result['status']);
+        self::assertSame('heartbeat_dispatched', $result['code']);
+        self::assertSame('channel_updated', $result['data']['channels']['status']['code']);
         self::assertSame('orders', $result['data']['channels']['status']['data']['resource']);
         self::assertTrue($result['data']['channels']['status']['data']['visible']);
     }
@@ -122,6 +124,11 @@ final class HeartbeatTest extends TestCase
             {
                 return $this->hbInt(['limit' => $value], 'limit', 10, 1, 40);
             }
+
+            public function defaultSuccess(): array
+            {
+                return $this->hbSuccess();
+            }
         };
 
         self::assertSame(
@@ -133,6 +140,7 @@ final class HeartbeatTest extends TestCase
             $handler->error()
         );
         self::assertSame(40, $handler->limit(100));
+        self::assertSame('channel_updated', $handler->defaultSuccess()['code']);
         self::assertSame(1, $handler->limit(-5));
     }
 }

@@ -122,6 +122,11 @@ final class InstallerTest extends TestCase
         ]);
 
         self::assertSame('success', $result['status']);
+        $lock = json_decode((string)file_get_contents($result['lock']), true);
+        self::assertArrayHasKey('app/views/templates/mail/mailTemplate.html', $lock['managed_files']);
+        self::assertArrayHasKey('.htaccess', $lock['managed_files']);
+        self::assertArrayNotHasKey('public/img/logo.png', $lock['managed_files']);
+        self::assertArrayNotHasKey('config/routes/routes_web.php', $lock['managed_files']);
         self::assertFileExists($databasePath);
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . '.env');
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php');
@@ -243,8 +248,9 @@ final class InstallerTest extends TestCase
 
         self::assertSame('success', $result['status']);
         self::assertContains('error-pages', $result['modules']);
-        self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'error' . DIRECTORY_SEPARATOR . 'error404.php');
-        self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'errorTemplate.php');
+        self::assertDirectoryExists($this->temporaryPath . '/app/views/error-pages');
+        self::assertFileDoesNotExist($this->temporaryPath . '/app/views/error-pages/error404.php');
+        self::assertFileDoesNotExist($this->temporaryPath . '/app/views/templates/errorTemplate.php');
     }
 
     public function testDatabaseProfilesInstallTheirCompleteModuleSets(): void
@@ -274,7 +280,8 @@ final class InstallerTest extends TestCase
             self::assertContains('heartbeat-client', $result['modules']);
             self::assertContains('media-library', $result['modules']);
             self::assertContains('admin-panel', $result['modules']);
-            self::assertFileExists($project . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'adminTemplate.php');
+            self::assertDirectoryExists($project . '/app/views/admin-panel');
+            self::assertFileDoesNotExist($project . '/app/views/templates/adminTemplate.php');
             self::assertFileExists($project . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'session.js');
 
             $pdo = new PDO('sqlite:' . $database);

@@ -18,6 +18,16 @@ class Router {
     // Detectamos el "origen de la ruta"
     $this->intendedType = $this->detectIntendedType();
 
+    $serverError = (new ErrorResponder())->serverErrorStatus($_SERVER);
+    if ($serverError !== null) {
+        $this->getLanguageAndUri();
+        if ($this->intendedType !== 'web') {
+            $this->sendErrorResponse((string)$serverError, 'Error del servidor HTTP.');
+        }
+        $this->toRender($this->buildErrorRouteParams((string)$serverError));
+        return;
+    }
+
     // Si es api o webhook, no "embellecer" la URL para evitar 301
     if (!in_array($this->intendedType, ['ajax', 'api', 'webhook', 'sse'])) {
         $this->fixUrl();
@@ -138,6 +148,7 @@ echo "</pre>";*/
             'method'       => $routeMethod,
             'controller'   => $route['controller'],
             'relativePath' => $relativePath,
+            'sourceModule' => $route['sourceModule'] ?? \GFrame\Modules\ModuleRuntime::inferModule($route['controller']),
             'templateName' => $templateName,
             'view'         => $view,
             'actionName'  => $actionName,
@@ -183,14 +194,15 @@ echo "</pre>";*/
     $controllerName = $routeParams['controller'];
     $actionName     = $routeParams['actionName'];
 
-    $controllerPath = $this->resolveControllerPath((string)$controllerName);
+    $resolvedController = \GFrame\Modules\ModuleRuntime::controller((string)$controllerName, $routeParams['sourceModule'] ?? null);
+    $controllerPath = $resolvedController['path'] ?? $this->resolveControllerPath((string)$controllerName);
     if ($controllerPath === null) {
         return $this->sendErrorResponse('not_found', 'El controlador no existe.');
     }
 
     require_once $controllerPath;
     $parts     = explode('/', str_replace('\\', '/', $controllerName));
-    $className = end($parts);
+    $className = $resolvedController['class'] ?? end($parts);
 
     if (!class_exists($className)) {
         return $this->sendErrorResponse('not_found', "La clase '$className' no esta definida.");
@@ -403,10 +415,6 @@ private function getCurrentURL() {
     }
 
     if ($this->intendedType=='ajax') {
-      if ($this->shouldRenderAjaxErrorView($res, $errorController)) {
-        $this->renderAjaxErrorView($res, $routeParams);
-      }
-
       http_response_code(200);
       header('Content-Type: application/json; charset=utf-8');
       echo $this->safeJsonEncode($res);
@@ -457,7 +465,9 @@ private function getCurrentURL() {
     return $this->buildErrorRouteParams(
       $routeCode,
       (isset($res['message']) && DebugMode) ? $res['message'] : '',
-      $routeParams
+      array_replace($routeParams, array_intersect_key($res, array_flip([
+        'tolink', 'helpMsg', 'helpUrl', 'helpLabel', 'helpEnabled', 'context',
+      ])))
     );
   }
 

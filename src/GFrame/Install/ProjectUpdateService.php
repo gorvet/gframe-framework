@@ -12,14 +12,50 @@ final class ProjectUpdateService
     public function __construct(
         private readonly ModuleCatalog $modules,
         private readonly MigrationRunner $migrations,
-        private readonly PermissionTemplateSynchronizer $permissions = new PermissionTemplateSynchronizer()
+        private readonly PermissionTemplateSynchronizer $permissions = new PermissionTemplateSynchronizer(),
+        private readonly ?string $skeletonPath = null
     ) {
     }
 
     public static function frameworkDefault(): self
     {
         $modules = ModuleCatalog::frameworkDefault();
-        return new self($modules, new MigrationRunner($modules));
+        return new self($modules, new MigrationRunner($modules), skeletonPath: dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'skeleton');
+    }
+
+    /** Actualiza el asistente sin configurar, instalar módulos ni escribir el bloqueo. */
+    public function updateInstaller(string $projectRoot, bool $preserveCustom = false, bool $dryRun = false): array
+    {
+        $projectRoot = realpath($projectRoot) ?: '';
+        if ($projectRoot === '' || !is_file($projectRoot . '/install.php')) throw new RuntimeException('No se encontró un proyecto con instalador.');
+        if (\GFrame\Foundation\Bootstrap::hasProjectConfiguration($projectRoot) || is_file($projectRoot . '/storage/gframe-installed.json')) {
+            throw new RuntimeException('El proyecto ya tiene configuración o registro de instalación. Usa la actualización normal.');
+        }
+        $allowed = ['.htaccess', 'index.php', 'core/Load.php', 'install.php', 'public/css/variables.css', 'public/css/common.css', 'public/css/install/install.css', 'public/js/install/install.js'];
+        $added = $updated = $unchanged = $conflicts = $overwritten = [];
+        foreach ($this->files([], $projectRoot) as $relative => $source) {
+            if (!in_array($relative, $allowed, true) && !str_starts_with($relative, 'config/server/')) continue;
+            $target = $projectRoot . '/' . $relative;
+            if (is_file($target) && hash_file('sha256', $source) === hash_file('sha256', $target)) {
+                $unchanged[] = $relative;
+                continue;
+            }
+            if (is_file($target)) {
+                if ($preserveCustom) { $conflicts[] = $relative; continue; }
+                $updated[] = $relative;
+                $overwritten[] = $relative;
+            } else {
+                $added[] = $relative;
+            }
+            if (!$dryRun) $this->copy($source, $target);
+        }
+        return [
+            'status' => 'success', 'code' => $dryRun ? 'installer_update_previewed' : 'installer_updated',
+            'modules' => [], 'added' => $added, 'updated' => $updated, 'unchanged' => $unchanged,
+            'conflicts' => $conflicts, 'overwritten_custom' => $overwritten,
+            'migrations' => ['executed' => [], 'count' => 0],
+            'permissions' => ['roles' => 0, 'granted' => 0, 'revoked' => 0],
+        ];
     }
 
     public function update(
@@ -82,6 +118,7 @@ final class ProjectUpdateService
         }
 
         if (!$dryRun) {
+            foreach ($resolved as $module) \GFrame\Modules\ModuleRuntime::createCustomizationDirectories($module, $projectRoot);
             foreach ($copies as $source => $target) $this->copy($source, $target);
             $lock['modules'] = $moduleNames;
             $lock['managed_files'] = $nextManaged;
@@ -102,6 +139,11 @@ final class ProjectUpdateService
     private function files(array $modules, string $projectRoot): array
     {
         $files = [];
+        if ($this->skeletonPath !== null) {
+            foreach (ProjectScaffolder::UPDATE_PATHS as $relative) {
+                $this->collect($this->skeletonPath, ['source' => $relative, 'target' => $relative], '', $files);
+            }
+        }
         foreach ($modules as $module) {
             foreach ((array)($module['assets'] ?? []) as $entry) {
                 $this->collect((string)$module['path'], (array)$entry, 'public', $files);

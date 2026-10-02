@@ -12,6 +12,7 @@ trait HeartbeatChannelTrait {
         return array_merge([
             'status' => 'success',
             'data' => $data,
+            'code' => 'channel_updated',
         ], $extra);
     }
 

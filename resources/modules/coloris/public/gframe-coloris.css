@@ -1,0 +1,24 @@
+/* Conserva los colores reales de muestras y gradientes. */
+.clr-picker, .clr-picker.clr-dark {
+  color: var(--bs-body-color); background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color); border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--bs-navbar-shadow); font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size); z-index: 1060; max-width: calc(100vw - 1rem);
+}
+.clr-picker.clr-polaroid::before,
+.clr-picker.clr-polaroid.clr-dark::before { color: var(--bs-body-bg); }
+.clr-picker input.clr-color, .clr-picker.clr-dark input.clr-color {
+  color: var(--bs-body-color); background: var(--bs-form-control-bg);
+  border-color: var(--bs-border-color); font: inherit;
+}
+.clr-picker input.clr-color:focus { border-color: var(--bs-primary); box-shadow: 0 0 0 .2rem var(--bs-primary-bg-subtle); }
+.clr-picker .clr-segmented { color: var(--bs-secondary-color); border-color: var(--bs-border-color); }
+.clr-picker .clr-segmented input:checked + label, .clr-picker .clr-close { color: var(--bs-white); background: var(--bs-primary); }
+.clr-picker .clr-clear { color: var(--bs-body-color); background: var(--bs-secondary-bg); }
+.clr-picker .clr-close, .clr-picker .clr-clear { font: inherit; }
+.clr-keyboard-nav .clr-marker:focus, .clr-keyboard-nav .clr-hue input:focus + div,
+.clr-keyboard-nav .clr-alpha input:focus + div, .clr-keyboard-nav .clr-segmented input:focus + label {
+  box-shadow: 0 0 0 2px var(--bs-primary), 0 0 2px 2px var(--bs-body-bg);
+}
+.clr-field:has(input.form-control) { width: 100%; }
+.clr-field input.form-control { padding-right: 2.5rem; }

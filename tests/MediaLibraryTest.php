@@ -44,10 +44,12 @@ final class MediaLibraryTest extends TestCase
         $file = $this->temporaryPath . DIRECTORY_SEPARATOR . 'archivo.bin';
         file_put_contents($file, 'contenido');
 
-        ConfigRepository::replace(['media' => ['max_upload_bytes' => 4]]);
+        $processor = $this->getMockBuilder(MediaProcessor::class)->onlyMethods(['getMaxUploadBytes'])->getMock();
+        $processor->method('getMaxUploadBytes')->willReturn(4);
+        $service = new MediaLibraryService($repository, new MediaStorage($this->temporaryPath), $processor);
         self::assertSame('file_size_not_allowed', $service->registerLocalFile($file, 'archivo.txt')['code']);
 
-        ConfigRepository::replace(['media' => ['max_upload_bytes' => 1024]]);
+        $service = new MediaLibraryService($repository, new MediaStorage($this->temporaryPath));
         self::assertSame('not_image', $service->registerLocalFile($file, 'imagen.jpg')['code']);
         self::assertSame([], $repository->records);
     }
@@ -83,7 +85,7 @@ final class MediaLibraryTest extends TestCase
         self::assertStringContainsString('can:media.edit', $routes);
         self::assertStringContainsString('can:media.sync', $routes);
 
-        foreach ([$root . '/src/GFrame/Media/MediaLibraryService.php', $root . '/resources/modules/media-library/application/controllers/MediaController.php'] as $file) {
+        foreach ([$root . '/src/GFrame/Media/MediaLibraryService.php', $root . '/resources/modules/media-library/application/app/controllers/media-library/MediaController.php'] as $file) {
             self::assertStringNotContainsString('Throwable', (string)file_get_contents($file));
         }
 
@@ -95,9 +97,9 @@ final class MediaLibraryTest extends TestCase
             self::assertStringContainsString('remote_url', $sql);
         }
         $picker = (string)file_get_contents($root . '/resources/modules/media-library/javascript/media-picker.js');
-        self::assertStringContainsString("fragment', value: 'picker'", $picker);
-        self::assertStringContainsString('data-media-picker-next', $picker);
-        self::assertFileExists($root . '/resources/modules/media-library/application/views/_mediaPickerItems.php');
+        self::assertStringContainsString('opts.endpoints', $picker);
+        self::assertStringContainsString('highlightSelected()', $picker);
+        self::assertFileExists($root . '/resources/modules/media-library/application/app/views/media-library/_mlist.php');
     }
 
     public function testMetadataQuotaAndBase64Ingestion(): void
@@ -179,8 +181,7 @@ final class MediaLibraryTest extends TestCase
         $views = $this->temporaryPath . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'media';
         mkdir($views, 0775, true);
         mkdir($this->temporaryPath . DIRECTORY_SEPARATOR . 'public');
-        copy(dirname(__DIR__) . '/resources/modules/media-library/application/views/_mediaFieldThumbs.php', $views . '/_mediaFieldThumbs.php');
-        require_once dirname(__DIR__) . '/resources/modules/media-library/application/controllers/MediaController.php';
+        \GFrame\Modules\ModuleRuntime::initialize(\GFrame\Modules\ModuleCatalog::frameworkDefault(), ['media-library'], $this->temporaryPath);
 
         $repository = new InMemoryMediaRepository();
         $repository->records[1] = [
@@ -199,7 +200,7 @@ final class MediaLibraryTest extends TestCase
             'path' => 'remote/abc', 'remote_url' => 'https://example.test/remota.jpg', 'alt_text' => 'Imagen remota',
         ];
         $storage = new MediaStorage($this->temporaryPath);
-        $controller = new \MediaController(
+        $controller = new \GFrame\Modules\MediaLibrary\Controllers\MediaController(
             new MediaLibraryService($repository, $storage),
             new MediaScopeResolver(),
             new MediaSyncService($repository, $storage, new MediaProcessor())
@@ -212,10 +213,72 @@ final class MediaLibraryTest extends TestCase
         self::assertSame('success', $result['status']);
         self::assertCount(2, $result['data']);
         self::assertStringContainsString('Foto de prueba', $result['html']);
-        self::assertStringContainsString('media-thumb--large', $result['html']);
+        self::assertStringContainsString('class="media-thumb"', $result['html']);
         self::assertStringNotContainsString('Privado', $result['html']);
         self::assertStringContainsString('https://example.test/remota.jpg', $result['html']);
         self::assertStringNotContainsString('data-ml-media-remove', $result['html']);
+    }
+
+    public function testModulePolicyCanBeChangedByInheritanceAndPreservesOriginals(): void
+    {
+        $processor = new MediaProcessor();
+        self::assertSame(['small', 'medium'], $processor->getVariantKeys());
+        self::assertSame(150, $processor->getVariantDefinitions()['small']['w']);
+        self::assertSame('fit', $processor->getVariantDefinitions()['medium']['mode']);
+        $custom = new class extends MediaProcessor {
+            protected function configuration(): array {
+                $config = parent::configuration();
+                $config['max_upload_bytes'] = 1024;
+                $config['allowed_extensions'] = ['images' => ['png', 'php']];
+                $config['variants'] = ['banner' => ['w' => 400, 'h' => 100, 'mode' => 'fit']];
+                return $config;
+            }
+        };
+        self::assertSame(1024, $custom->getMaxUploadBytes());
+        self::assertSame(['images'], $custom->getAllowedByKind());
+        self::assertSame(['png'], $custom->getAllowedByKindMap()['images']['exts']);
+        self::assertSame(['banner'], $custom->getVariantKeys());
+        $repository = new InMemoryMediaRepository();
+        $service = new MediaLibraryService($repository, new MediaStorage($this->temporaryPath), $custom);
+        $text = $this->temporaryPath . '/text.txt';
+        file_put_contents($text, 'Documento');
+        self::assertSame('media_not_allowed', $service->registerLocalFile($text, 'text.txt')['code']);
+        self::assertSame(1024, $service->paginate()['meta']['max_upload_bytes']);
+        if (!function_exists('imagecreatetruecolor')) self::markTestSkipped('GD no disponible.');
+        $image = imagecreatetruecolor(600, 400);
+        $source = $this->temporaryPath . '/original.png';
+        imagepng($image, $source);
+        imagedestroy($image);
+        $hash = hash_file('sha256', $source);
+        $sizes = $processor->generateVariants($this->temporaryPath, 'uploads', $source, 'original.png', 'png', 'library');
+        self::assertSame($hash, hash_file('sha256', $source));
+        self::assertSame([150, 150], array_slice(getimagesize($this->temporaryPath . '/original-small.png'), 0, 2));
+        self::assertSame([300, 200], array_slice(getimagesize($this->temporaryPath . '/original-medium.png'), 0, 2));
+        self::assertArrayNotHasKey('optimized', $sizes);
+        self::assertCount(3, glob($this->temporaryPath . '/*.png'));
+        $custom->generateVariants($this->temporaryPath, 'uploads', $source, 'original.png', 'png', 'library');
+        self::assertSame([150, 100], array_slice(getimagesize($this->temporaryPath . '/original-banner.png'), 0, 2));
+        $image = imagecreatetruecolor(20, 20);
+        imagepng($image, $this->temporaryPath . '/tiny.png');
+        imagedestroy($image);
+        self::assertSame([], $processor->generateVariants($this->temporaryPath, 'uploads', $this->temporaryPath . '/tiny.png', 'tiny.png', 'png', 'library'));
+    }
+
+    public function testUploaderIsExplicitMetadataAndSurvivesEditing(): void
+    {
+        $_SESSION = ['auth' => ['id' => 999, 'name' => 'No debe leerse desde el servicio']];
+        $repository = new InMemoryMediaRepository();
+        $service = new MediaLibraryService($repository, new MediaStorage($this->temporaryPath));
+        $file = $this->temporaryPath . '/manual.txt';
+        file_put_contents($file, 'Contenido');
+        $result = $service->registerLocalFile($file, 'manual.txt', 'form', MediaScope::tenant(4), ['id' => 27, 'name' => 'Juank']);
+        self::assertSame('success', $result['status']);
+        $id = $result['data']['media_id'];
+        self::assertSame(['id' => 27, 'name' => 'Juank'], $service->details($id, MediaScope::tenant(4))['data']['metadata']['uploader']);
+        $service->updateMetadata($id, ['original_name' => 'Manual', 'alt_text' => 'Documento de prueba'], MediaScope::tenant(4));
+        self::assertSame(27, $service->details($id, MediaScope::tenant(4))['data']['metadata']['uploader']['id']);
+        self::assertSame('media_not_found', $service->details($id, MediaScope::tenant(5))['code']);
+        $_SESSION = [];
     }
 
     private function removeDirectory(string $path): void

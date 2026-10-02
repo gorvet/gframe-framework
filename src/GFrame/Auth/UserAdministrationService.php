@@ -5,6 +5,7 @@ namespace GFrame\Auth;
 use Exception;
 use GFrame\Auth\Contracts\RoleAdministrationRepository;
 use GFrame\Auth\Contracts\UserAdministrationRepository;
+use GFrame\Auth\Contracts\UserModerationRepository;
 use GFrame\Session\ActiveSessionRegistry;
 use GFrame\Session\SessionRuntime;
 
@@ -146,6 +147,42 @@ final class UserAdministrationService
     private function canViewUsers(int $actorID): bool
     {
         return $this->hasPermission($actorID, 'users.view') || $this->hasPermission($actorID, 'users.manage');
+    }
+
+    public function moderate(int $actorID, int $userID, string $operation): array
+    {
+        try {
+            if (!$this->canManageUsers($actorID)) return $this->denied();
+            if (!in_array($operation, ['verify', 'suspend', 'restore', 'delete'], true)) return $this->error('invalid_operation');
+            if ($userID === $actorID) return $this->error('self_protection');
+            $target = $userID > 0 ? $this->users->findUserByID($userID) : null;
+            if ($target === null) return $this->error('user_not_found');
+            if ($this->isSuperadministratorRole($target)
+                || (!$this->actorIsSuperadministrator($actorID) && $this->isAdministratorRole($target))) {
+                return $this->error('protected_user');
+            }
+            if (!$this->users instanceof UserModerationRepository) return $this->error('moderation_not_supported');
+            $status = (string)($target['status'] ?? '');
+            $requiredStatus = ['verify' => 'unverify', 'suspend' => 'verify', 'restore' => 'suspended'];
+            if (isset($requiredStatus[$operation]) && $status !== $requiredStatus[$operation]) {
+                return $this->error('invalid_status_transition');
+            }
+            if ($operation === 'delete') {
+                $this->users->deleteAccount($userID);
+                $this->sessions?->revokeUser($userID, true);
+            } else {
+                $newStatus = $operation === 'suspend' ? 'suspended' : 'verify';
+                $this->users->setAccountStatus($userID, $newStatus);
+                if ($newStatus === 'suspended') $this->sessions?->revokeUser($userID, true);
+                else $this->sessions?->allowUser($userID);
+            }
+            return ['status' => 'success', 'code' => [
+                'verify' => 'user_verified', 'suspend' => 'user_suspended',
+                'restore' => 'user_restored', 'delete' => 'user_deleted',
+            ][$operation]];
+        } catch (Exception $exception) {
+            return $this->failure($exception, 'user_moderation_failed');
+        }
     }
 
     private function canManageUsers(int $actorID): bool

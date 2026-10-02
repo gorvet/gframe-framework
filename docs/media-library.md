@@ -4,7 +4,9 @@
 
 ## Instalación
 
-Incluye el módulo en el perfil del instalador o publícalo mediante el catálogo de módulos. El manifiesto instala las rutas, el controlador, las vistas, los componentes, los recursos y el esquema correspondiente a MySQL o SQLite.
+Incluye el módulo en el perfil del instalador o publícalo mediante el catálogo de módulos. El controlador y las vistas originales permanecen en `resources/modules/media-library/application/app/`, dentro del paquete. Se publican las rutas, los componentes de inclusión, los recursos públicos y el esquema de MySQL o SQLite; se crean carpetas vacías de personalización en `app/controllers/media-library`, `app/models/media-library`, `app/services/media-library` y `app/views/media-library`.
+
+Las rutas declaran `->module('media-library')`. Primero se busca en `app` y después en el módulo, sin duplicar archivos. El controlador nativo es `GFrame\Modules\MediaLibrary\Controllers\MediaController`; puede extenderse desde un controlador del proyecto. Las vistas personalizadas usan el mismo nombre relativo que las nativas. Un archivo personalizado no se sobrescribe al actualizar.
 
 El módulo depende de `self-account`, `alerts` y `frontend-core`.
 
@@ -13,12 +15,52 @@ El módulo depende de `self-account`, `alerts` y `frontend-core`.
 ```php
 'media' => [
     'scope' => 'global',
-    'max_upload_bytes' => 26214400,
     'quota_bytes' => 0,
 ],
 ```
 
-`scope` admite `global`, `tenant` o `user`. En ámbitos no globales, `MediaScopeResolver` obtiene el identificador desde la sesión normalizada. `max_upload_bytes` establece el límite por archivo. `quota_bytes` limita el consumo total del ámbito; `0` lo deja sin límite.
+`scope` admite `global`, `tenant` o `user`. En ámbitos no globales, `MediaScopeResolver` obtiene el identificador desde la sesión normalizada. `quota_bytes` limita el consumo total del ámbito; `0` lo deja sin límite. Estos dos valores describen la integración del proyecto, no el procesamiento de los archivos.
+
+Los tipos, límites por archivo y tamaños pertenecen al módulo: `resources/modules/media-library/config/media.php`. No se modifica esa copia instalada para personalizar un proyecto. Sus valores predeterminados son 25 MB, los formatos seguros habituales, `small` de 150×150 recortado y `medium` de hasta 300×300 proporcional. Se conserva el original intacto; no se genera `optimized` ni se amplían imágenes pequeñas. Las claves de compatibilidad de las miniaturas pueden referirse a un mismo archivo, sin generar copias adicionales.
+
+La personalización se realiza por herencia, por ejemplo en `app/services/media-library/ProjectMediaProcessor.php`:
+
+```php
+<?php
+namespace App\Services\MediaLibrary;
+
+class ProjectMediaProcessor extends \GFrame\Media\MediaProcessor
+{
+    protected function configuration(): array
+    {
+        $config = parent::configuration();
+        $config['max_upload_bytes'] = 10 * 1024 * 1024;
+        $config['allowed_extensions'] = ['images' => ['jpg', 'jpeg', 'png', 'webp']];
+        $config['variants'] = [
+            'small' => ['w' => 150, 'h' => 150, 'mode' => 'crop'],
+            'banner' => ['w' => 1200, 'h' => 600, 'mode' => 'fit'],
+        ];
+        return $config;
+    }
+}
+```
+
+El controlador del proyecto, en `app/controllers/media-library/MediaController.php`, conecta el procesador sin cambiar las rutas ni el controlador nativo:
+
+```php
+<?php
+class MediaController extends \GFrame\Modules\MediaLibrary\Controllers\MediaController
+{
+    protected function createProcessor(): \GFrame\Media\MediaProcessor
+    {
+        return new \App\Services\MediaLibrary\ProjectMediaProcessor();
+    }
+}
+```
+
+La clase del servicio debe estar registrada en el autoload del proyecto o incluida explícitamente; no se carga automáticamente por estar en una carpeta. El mismo procesador se utiliza en biblioteca, selector y sincronización. Las integraciones PHP externas deben inyectar la misma subclase en su servicio. Omitir una variante la desactiva; `variants => []` conserva solo el original. Los formatos configurados se intersectan con los formatos seguros soportados; esta configuración no habilita PHP, HTML ni otros ejecutables. Añadir un formato realmente nuevo requiere ampliar la validación por herencia, no solo cambiar su extensión.
+
+Los cambios afectan únicamente a archivos nuevos. No se borran ni regeneran los tamaños existentes. `media.max_upload_bytes` de la antigua configuración del proyecto ya no define el límite: ahora lo define el procesador del módulo, y el backend lo comunica a los selectores.
 
 ## Permisos
 
@@ -32,7 +74,7 @@ El superadministrador conserva acceso por la jerarquía general de permisos. Los
 
 ## Uso administrativo
 
-La página `admin/media` permite buscar, filtrar por tipo y mes, cargar, registrar enlaces externos, editar, eliminar y sincronizar archivos. El modal de detalles muestra vista previa, tipo, tamaño, fecha, URL copiable y navegación entre los archivos de la página. También muestra el consumo de la cuota. Los tipos canónicos son `images`, `videos`, `audios` y `docs`.
+La página `admin/media` conserva el HTML, CSS y JavaScript de Base Confías: biblioteca, filtros por origen, tipo y mes, búsqueda automática, carga y modal de detalles con texto alternativo, URL copiable y eliminación. El selector conserva las pestañas Biblioteca, Subir y Desde URL. Los tipos canónicos son `images`, `videos`, `audios` y `docs`. La cuota y la sincronización siguen disponibles mediante el servicio y sus rutas; esta vista original no añade controles nuevos para ellas ni muestra navegación anterior/siguiente.
 
 El campo reutilizable se incluye desde `app/views/components/media/mediaField.php`. El selector requiere también `mediaPicker.php` una sola vez en la vista o plantilla que aloje el modal. Admite selección simple o múltiple, filtro por tipo, búsqueda, paginación, carga desde el modal y conservación de la selección entre páginas. Las vistas previas se obtienen como HTML del servidor; nunca se construyen con rutas enviadas por el navegador.
 
@@ -42,6 +84,7 @@ En una vista que no sea la biblioteca, registra los recursos en su meta, despué
 // En el meta de la vista, además de Bootstrap, jQuery y alertas:
 'css' => ['public/css/modules/media-library/media-library.css'],
 'js' => [
+    'public/js/modules/media-library/media-library.js',
     'public/js/modules/media-library/media-picker.js',
     'public/js/modules/media-library/media-field.js',
 ],
@@ -70,7 +113,11 @@ Un campo simple guarda un ID entero o una cadena vacía. Un campo múltiple guar
 
 Para contenido insertado después de cargar la página, llama a `MediaField.bindAll(contenedor)`. Si se integra el selector directamente, `MediaPicker.open({selected, multiple, max, kind, saveSource})` devuelve una promesa con `{ids, items}` o `null` cuando se cancela. El componente necesita las rutas AJAX del módulo y el formulario global `#tokens`.
 
-La biblioteca expone `window.MediaLibrary`. Al encontrar `[data-ml-mount]` se inicia automáticamente y actualiza solo `[data-ml-results]` con el fragmento PHP. Acepta filtros, paginación sincronizada con la URL, carga múltiple y `data-ml-save-source`; también puede iniciarse con `new MediaLibrary({mount, syncUrl, saveSource, kind, uploadMaxMB})` cuando el contenedor tiene `data-ml-noauto`.
+La biblioteca expone `window.MediaLibrary`. La pantalla administrativa la inicia mediante `media-admin.js`; otras integraciones pueden usar `new MediaLibrary({mount, uiRoot, mode, syncUrlEnabled, saveSource, kind, uploadMaxMB, endpoints})`. El fragmento PHP reemplaza el contenido del contenedor asignado; no se construyen tarjetas en JavaScript.
+
+`MediaPicker.open({selected, multiple, max, kind, saveSource, endpoints})` admite `endpoints: {list: URL, upload: URL}`. Esto permite usar el mismo selector en otros formularios con rutas propias; no elige una vista ni cambia el propietario de la biblioteca. Las rutas predeterminadas son `ajax/admin/media/list` y `ajax/admin/media/upload`. El campo acepta `data-ml-field-endpoint` para su vista previa. Todas las rutas alternativas deben conservar permisos, tokens y resolución del ámbito en el servidor.
+
+El listado acepta `q`, `source`, `kind`, `ym` y `page`; devuelve `status`, `code`, `data`, `meta` y `html`. La vista previa recibe `media_ids`, `variant` y `allow_remove_one`; recupera los archivos por ID bajo el ámbito activo. El backend construye las URL de los archivos y miniaturas; no acepta rutas de archivo aportadas por el navegador.
 
 ## Uso desde PHP
 
@@ -153,7 +200,9 @@ Los fragmentos rechazan variantes fuera de la lista permitida con `invalid_media
 
 ## Cotejo con los proyectos de origen
 
-El módulo incluye campo reutilizable, selector, vistas previas, carga, listado, filtros, enlaces externos y controles de detalles del modal. La URL remota se persiste separada de la clave interna. A diferencia de los proyectos de origen, los enlaces HTTP y las redirecciones remotas se rechazan para evitar consultas del servidor a destinos no verificados. Los datos de negocio como «subido por» o «subido a» no se muestran en el modal genérico porque dependen del modelo de cada aplicación.
+Los archivos de Base Confías se copiaron íntegros antes de ajustar rutas, tokens, contratos y variables de color. Dane comparte estos componentes; las cuotas y reglas de planes de Bebots no se trasladan como reglas generales. La URL remota se persiste separada de la clave interna. A diferencia de los proyectos de origen, se rechazan HTTP y redirecciones remotas para proteger las consultas del servidor. El controlador toma el autor de la sesión y el servicio lo guarda como `metadata.uploader` (ID y nombre al subir); no confía en `uploaded_by` enviado desde el navegador. Las cargas, enlaces y archivos base64 registran ese dato. Integraciones PHP pasan el autor explícitamente; una sincronización o archivo antiguo sin autor muestra «—». No se inventa el autor de archivos anteriores. «Subido a» muestra el origen. La búsqueda incluye nombre, nombre original y `alt_text`, que corresponde al «Título descriptivo».
+
+Las instalaciones antiguas pueden conservar vistas o controladores publicados en `app`; al tener prioridad sobre el módulo, deben revisarse explícitamente antes de retirarlos. La actualización no elimina personalizaciones ni modifica automáticamente archivos antiguos.
 
 ## Actualización del esquema
 

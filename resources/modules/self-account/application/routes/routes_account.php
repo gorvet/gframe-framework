@@ -2,8 +2,8 @@
 
 use RouteBuilder as Route;
 
-Route::get('account', 'account/SelfAccountController@index')
-    ->template('account')
-    ->view('accountIndex')
+Route::get('account', 'self-account/SelfAccountController@index')
+    ->module('self-account')
+    ->template('admin')
     ->middleware(['auth'])
     ->registerFinal();

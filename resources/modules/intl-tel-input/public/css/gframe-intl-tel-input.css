@@ -1,0 +1,21 @@
+/* Variables nativas; no altera sprites ni países. */
+:root, [data-bs-theme] {
+  --iti-hover-color: var(--bs-primary-bg-subtle);
+  --iti-border-color: var(--bs-border-color);
+  --iti-dialcode-color: var(--bs-secondary-color);
+  --iti-dropdown-bg: var(--bs-body-bg);
+  --iti-arrow-color: var(--bs-body-color);
+}
+.iti { width: 100%; }
+.iti, .iti__dropdown-content, .iti--container {
+  color: var(--bs-body-color); font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size); line-height: var(--bs-body-line-height);
+}
+.iti__dropdown-content { border-radius: var(--bs-border-radius); box-shadow: var(--bs-navbar-shadow); }
+.iti__search-input {
+  color: var(--bs-body-color); background: var(--bs-form-control-bg);
+  font: inherit; border-bottom-color: var(--bs-border-color);
+}
+.iti__search-input:focus-visible, .iti__selected-country:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
+.iti__search-input::placeholder { color: var(--bs-secondary-color); }
+.iti__country.iti__highlight { color: var(--bs-primary-text-emphasis); }

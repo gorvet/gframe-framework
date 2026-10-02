@@ -13,8 +13,9 @@
     const expiredKey = 'session_expired_' + scope;
     let handling = false;
 
-    function redirectTarget() {
+    function redirectTarget(reason) {
         const base = String(window.site_url || '/');
+        if (reason === 'logout') return base + 'login';
         const current = String(window.location.href || '').replace(base, '').replace(/^\/+/, '');
         return base + 'login?rd=' + encodeURIComponent(current);
     }
@@ -35,17 +36,23 @@
 
         if (typeof window.swalAlert === 'function') {
             window.swalAlert({icon: 'info', title: title, confirmButtonText: 'Acceder', allowOutsideClick: false})
-                .then(() => window.location.assign(redirectTarget()));
+                .then(() => window.location.assign(redirectTarget(reason)));
             return;
         }
 
-        window.location.assign(redirectTarget());
+        window.location.assign(redirectTarget(reason));
     }
 
-    function broadcast(reason) {
+    function broadcast(reason, showNotice = true) {
         channel?.postMessage({type: reason});
         try { localStorage.setItem(reason === 'expired' ? expiredKey : closedKey, String(Date.now())); } catch (_) {}
-        showClosed(reason);
+        if (showNotice) {
+            showClosed(reason);
+        } else {
+            handling = true;
+            stop(reason);
+            window.location.assign(redirectTarget(reason));
+        }
     }
 
     function csrfData() {
@@ -65,7 +72,7 @@
             if (!confirmed) return;
             $.post(window.site_url + 'ajax/logout', csrfData(), function (response) {
                 if (response?.status === 'success') {
-                    broadcast('logout');
+                    broadcast('logout', false);
                 } else {
                     window.alertToast?.({ icon: 'error', title: response?.message || 'No se pudo cerrar la sesión.' });
                 }

@@ -24,9 +24,15 @@ La publicación agrega el controlador, las rutas web y AJAX, las vistas, la plan
 | `POST` | `/ajax/login` | Procesar el acceso |
 | `POST` | `/ajax/logout` | Cerrar la sesión |
 | `POST` | `/ajax/register` | Procesar el registro |
+| `POST` | `/ajax/verifyacount` | Reenviar el enlace de verificación desde el JS original |
+| `POST` | `/ajax/validateacount` | Validar el token desde el JS original |
+| `POST` | `/ajax/lostpassword` | Solicitar recuperación desde el JS original |
+| `POST` | `/ajax/resetpassword` | Aplicar la contraseña nueva desde el JS original |
 | `POST` | `/ajax/verification` | Reenviar el enlace de verificación |
 | `POST` | `/ajax/recovery` | Solicitar el correo de recuperación |
 | `POST` | `/ajax/reset-password` | Aplicar la contraseña nueva |
+
+Las cuatro rutas originales de Base Confías son parte del contrato del módulo. Las rutas con nombres nuevos quedan como alias de compatibilidad. Si se cambia el nombre de una ruta o de un parámetro, hay que documentar la equivalencia, actualizar todas las llamadas del JavaScript y las vistas, y comprobar el flujo completo antes de publicar el módulo. No basta con renombrar la ruta del servidor.
 
 Las operaciones públicas usan `guest`, protección de mismo origen para AJAX y `honeypot`. Se excluye CSRF porque el token se genera al iniciar sesión. El cierre de sesión exige autenticación y conserva el CSRF automático.
 
@@ -44,13 +50,15 @@ Las operaciones públicas usan `guest`, protección de mismo origen para AJAX y 
 ],
 ```
 
-`login_redirect` define el destino habitual. Si no se configura, el acceso lleva a `/admin`, publicado por `admin-panel`. Cuando `AuthService` devuelve `must_change_password`, se utiliza `password_change_redirect`; su valor predeterminado es `/account`, del módulo `self-account`.
+`login_redirect` define el destino habitual. Si no se configura, el acceso lleva a `/admin`, publicado por `admin-panel`. Cuando `AuthModel` devuelve `must_change_password`, se utiliza `password_change_redirect`; su valor predeterminado es `/account`, del módulo `self-account`.
 
 Si se activa la expiración o se utiliza `force_password_change`, la aplicación debe instalar `self-account` o reemplazar esa ruta por una pantalla equivalente.
 
 ## Contrato de respuestas
 
 Las acciones devuelven arreglos estables. El controlador no lanza excepciones hacia la vista.
+
+El canal AJAX devuelve JSON también ante errores como `invalid_token`, `expired` o `forbidden`; el router no sustituye esa respuesta por una página HTML. Los módulos pueden incluir un fragmento renderizado en `html`, como hacen los listados de Base Confías y Bebots. En Auth se conserva el patrón original: el servidor devuelve `status`, `code` y `message`, y el JS construye las opciones de SweetAlert según el código. Las páginas web de error siguen siendo HTML.
 
 ```php
 [
@@ -60,31 +68,41 @@ Las acciones devuelven arreglos estables. El controlador no lanza excepciones ha
 ]
 ```
 
-El acceso exitoso añade `redirect` y `must_change_password`. Los servicios registran internamente las excepciones y devuelven `status` y `code`; el controlador agrega el mensaje. La vista o JavaScript decide si lo presenta en el formulario, mediante `alertToast`, `swalAlert` o una vista de error.
+El acceso exitoso añade `redirect` y `data.must_change_password`. El campo `redirect` siempre contiene una ruta relativa a la raíz de la aplicación, sin barra inicial, dominio ni protocolo: `admin`, `account` o `admin/items?page=2`. El cierre devuelve `login`. Todos los consumidores construyen el destino con `site_url + response.redirect`; no aceptan alternativamente una URL absoluta. El retorno `rd` se valida en el servidor y el cambio obligatorio de contraseña tiene prioridad.
+
+`AuthModel` conserva `status` y `code` en la raíz y coloca los datos de la operación en `data`: `data.user`, `data.first_login`, `data.must_change_password`, `data.user_id` y `data.token`, según la operación. El controlador elimina `data.token` y el identificador interno del registro antes de responder al navegador. Las operaciones sin datos adicionales pueden omitir `data`, igual que los otros servicios. Este cambio requiere actualizar los consumidores de Auth al mismo tiempo; no se duplican las claves antiguas fuera de `data`.
+
+Esta regla sustituye el comportamiento anterior, que devolvía URLs absolutas en Auth. Al actualizar una aplicación, deben actualizarse juntos el controlador y todos los JS que consumen `redirect`. Los enlaces completos de correos, activos y cabeceras HTTP se construyen a partir de estas rutas cuando su uso requiere una URL completa; no son variantes del campo `redirect`.
+
+Los servicios registran internamente las excepciones y devuelven `status` y `code`; el controlador agrega el mensaje. La vista o JavaScript decide si lo presenta en el formulario, mediante `alertToast`, `swalAlert` o una vista de error.
 
 ## Personalización y extensión
 
-Los archivos publicados pertenecen a la aplicación y pueden adaptarse allí:
+Declare una subclase en `app/controllers/auth-ui/AuthController.php`, con namespace `App\Controllers\AuthUi`, que extienda `GFrame\Modules\AuthUi\Controllers\AuthController`. Inyecte su modelo propio en el constructor mediante `parent::__construct(...)`. Consulte [herencia y migración](modulos-runtime.md) y [extensión desde proyectos](extensibilidad.md#herencia-de-auth-mi-cuenta-y-gestión-de-usuarios). Las URLs y el contrato MVC no cambian.
 
-- `app/controllers/auth/AuthController.php`: reglas del proyecto y envío de correos;
-- `app/views/auth`: campos y contenido de las pantallas;
+Los originales permanecen en el módulo. Cree solo las personalizaciones que necesite:
+
+- `app/controllers/auth-ui/AuthController.php`: reglas del proyecto y envío de correos;
+- `app/views/auth-ui`: campos y contenido de las pantallas;
 - `app/views/templates/authTemplate.php`: estructura visual;
 - `public/css/modules/auth/auth.css`: apariencia;
-- `public/js/modules/auth/auth.js`: interacción y presentación de respuestas.
+- `public/js/modules/auth/AuthLogin.js`, `AuthRegister.js`, `AuthLostpassword.js` y `AuthResetpassword.js`: interacción y presentación de respuestas.
 
-El constructor de `AuthController` admite un `AuthService` y un `SessionManager` alternativos. Esto permite probar el controlador o sustituir el acceso a usuarios sin cambiar las rutas.
+El constructor de `AuthController` admite un modelo `AuthModel` y un `SessionManager` alternativos. Esto permite probar el controlador o sustituir el acceso a usuarios sin cambiar las rutas.
 
-Los consentimientos legales, perfiles, planes, áreas, datos personales y acciones posteriores al registro pertenecen a la aplicación. Pueden añadirse al controlador publicado sin incorporar esas reglas al framework.
+Los consentimientos legales, perfiles, planes, áreas, datos personales y acciones posteriores al registro pertenecen a la aplicación. Pueden añadirse al controlador personalizado sin incorporar esas reglas al framework.
 
 ## Correos
 
-El registro, el reenvío de verificación y la recuperación envían enlaces absolutos construidos con `site_url`, usando `mailTemplate` y `MailService::sendTemplateAsync()`. La respuesta confirma la entrega al ejecutor asíncrono, no la recepción del correo; el worker registra fallos posteriores. Para aplicar otra plantilla, adapta `sendAccessMail()` en el controlador publicado o delega el envío a un servicio propio. Nunca devuelvas al navegador la excepción del transporte.
+El registro, el reenvío de verificación y la recuperación envían enlaces absolutos construidos con `site_url`, usando `mailTemplate` y `MailService::sendTemplateAsync()`. La respuesta confirma la entrega al ejecutor asíncrono, no la recepción del correo; el worker registra fallos posteriores. Para aplicar otra plantilla, adapta `sendAccessMail()` en el controlador personalizado o delega el envío a un servicio propio. Nunca devuelvas al navegador la excepción del transporte.
+
+El asunto identifica la operación y el proyecto; el cuerpo saluda al destinatario sin repetir el enlace del botón. `mailRecipientName()` utiliza `name` si lo proporciona el modelo y, en su ausencia, el identificador del correo antes de `@`. Un controlador personalizado puede sobrescribir este método para consultar el perfil propio sin añadir campos al esquema estándar.
 
 ## Auditoría conjunta del frontend
 
 Se cotejaron `AuthLogin.js`, `AuthLogout.js`, `AuthLostpassword.js`, `AuthRegister.js`, `AuthResetpassword.js` y `auth.css` de Base Confías, Bebots y Dane. La lógica JS de acceso, recuperación y registro coincide salvo diferencias de archivo sin cambios funcionales en el cotejo. Restablecimiento coincide en las tres fuentes. El cierre de Bebots admite el aviso fuera de vistas protegidas; Base Confías y Dane lo restringen a vistas protegidas. El CSS reciente de Base Confías incorpora más estructura y accesibilidad; Bebots y Dane conservan una variante anterior. La identidad y el fondo fotográfico de Base Confías no se deben copiar como valores obligatorios del framework.
 
-En GFrame los flujos públicos se agrupan en `auth.js`; la verificación se resuelve por ruta web y el cierre/inactividad está en `heartbeat-client/session.js`. El panel aporta el control de cierre, pero no duplica su envío. No hace falta copiar los cinco archivos antiguos ni conservar sus nombres para cubrir sus capacidades.
+GFrame publica los cuatro archivos JS originales de las pantallas de Auth. El cierre/inactividad está en `heartbeat-client/session.js`; el panel aporta el control de cierre, pero no duplica su envío.
 
 Conexiones restauradas tomando Bebots como referencia funcional:
 
@@ -92,7 +110,7 @@ Conexiones restauradas tomando Bebots como referencia funcional:
 - Los formularios usan `needs-validation`, `validationFeedback` con objeto jQuery y destinos `.validation_<id>`. Los envíos usan jQuery AJAX; mensajes normales pasan por `alertToast` y decisiones de autenticación por `swalAlert`, conservando los códigos exactos.
 - El único cierre está en `heartbeat-client/session.js`, con `[data-gf-logout]`, confirmación, tokens globales, presentación de fallos y notificación mediante BroadcastChannel y storage. El panel no duplica ese envío. Sin almacenamiento, el canal sigue funcionando si está disponible.
 - `rd` viaja con el login; el controlador solo admite rutas relativas dentro de la aplicación, sin esquemas, barras iniciales ni segmentos de recorrido. Un destino inválido usa la redirección configurada. El cambio obligatorio de contraseña siempre prevalece.
-- El reenvío usa `/ajax/verification`, `AuthService::requestVerification()` y Mail. El token se elimina de la respuesta pública. El aviso de cuenta sin verificar aporta el botón desde un fragmento PHP, no HTML generado en JS.
+- El reenvío usa `/ajax/verifyacount`, `AuthModel::verifyAcount()` y Mail. El token se elimina de la respuesta pública. `/ajax/verification` permanece como alias.
 - `auth.css` conserva la estructura de las pantallas de Base Confías y las variables compartidas de Bootstrap. La plantilla utiliza el logotipo original de GFrame publicado en `public/img/logo.png`; el fondo fotográfico de Base Confías sigue siendo propio de esa aplicación.
 
 Se añaden pruebas de comportamiento JS para validación, doble envío, retorno, reenvío y cierre entre pestañas; pruebas PHP verifican el destino seguro, meta y plantilla de reenvío sin exponer el token. La revisión visual HTTP y la entrega real por SMTP siguen pendientes. El cotejo general de todos los módulos se realizará al final, según lo acordado.
@@ -105,7 +123,7 @@ El saludo del panel usa el nombre que aporte el perfil del proyecto; si no exist
 
 Si otra pestaña ya inició sesión, `auth.js` reconoce `already_logged` tanto en JSON normal como en un fallo HTTP con `responseJSON`. Continúa por `/login`, dejando al middleware web resolver el acceso autenticado; no concatena `rd` sin validación.
 
-`UserModel::updateAuthUser()` acepta resultados `updated` y `no_change`, pero rechaza una fila inexistente. Los servicios capturan `Exception` y devuelven errores estables; no envían detalles técnicos al navegador.
+`AuthModel::updateAuthUser()` acepta resultados `updated` y `no_change`, pero rechaza una fila inexistente. El modelo de autenticación captura `Exception` y devuelve errores estables; no envía detalles técnicos al navegador. `UserModel` conserva su actualización de cuentas para administración y Mi cuenta, sin ejecutar los flujos de login, registro, verificación ni recuperación.
 
 Al cambiar el estado a `suspended` o `disabled`, el modelo genera un token nuevo y actualiza su fecha en la misma escritura. `setActive(false)` y la desactivación de cuenta pasan por esa operación. Reactivar no restaura los enlaces viejos. Recuperación no emite enlaces para esos estados y verificación/restablecimiento rechazan cuentas bloqueadas. Las implementaciones propias deben mantener esas garantías; cambiar directamente el estado mediante SQL evita la protección.
 

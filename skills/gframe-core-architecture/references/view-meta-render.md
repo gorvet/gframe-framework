@@ -2,6 +2,8 @@
 
 ## Render Role
 
+For a route associated with an installed runtime module, file lookup uses app first and the module's mirrored app root second. Apply the same sourceModule to controller, view, group/view meta and footer partials. Templates remain under views/templates; shared providers declare runtime.templates. Do not replace naming inference or search unrelated modules by basename. Direct include paths do not gain fallback automatically; use ModuleRuntime::file for module partials. See docs/modulos-runtime.md for namespaces and migration.
+
 For web routes, Render:
 
 1. normalizes route params

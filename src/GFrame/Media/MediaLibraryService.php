@@ -6,17 +6,17 @@ use Exception;
 use GFrame\Config\ConfigRepository;
 use GFrame\Media\Contracts\MediaRepository;
 
-final class MediaLibraryService
+class MediaLibraryService
 {
     public function __construct(
-        private readonly MediaRepository $media,
-        private readonly MediaStorage $storage,
-        private readonly MediaProcessor $processor = new MediaProcessor(),
-        private readonly RemoteMediaInspector $remote = new RemoteMediaInspector()
+        protected readonly MediaRepository $media,
+        protected readonly MediaStorage $storage,
+        protected readonly MediaProcessor $processor = new MediaProcessor(),
+        protected readonly RemoteMediaInspector $remote = new RemoteMediaInspector()
     ) {
     }
 
-    public function registerRemoteUrl(string $url, string $name = '', string $source = 'library', ?MediaScope $scope = null): array
+    public function registerRemoteUrl(string $url, string $name = '', string $source = 'library', ?MediaScope $scope = null, array $uploader = []): array
     {
         $scope ??= MediaScope::global();
         try {
@@ -33,7 +33,7 @@ final class MediaLibraryService
                 'source' => $this->normalizeSource($source), 'kind' => $inspection['kind'],
                 'name' => $name, 'original_name' => $name, 'path' => $recordPath, 'remote_url' => $url,
                 'mime_type' => $inspection['mime'], 'size_bytes' => 0, 'alt_text' => '',
-                'metadata_json' => $this->encodeJson(['origin' => 'hotlink', 'host' => $inspection['host'], 'remote_size_bytes' => $inspection['size']]),
+                'metadata_json' => $this->encodeJson(['origin' => 'hotlink', 'host' => $inspection['host'], 'remote_size_bytes' => $inspection['size']] + $this->uploaderMetadata($uploader)),
                 'variants_json' => '{}', 'status' => 'ready',
             ]);
             return ['status' => 'success', 'code' => 'media_created', 'data' => ['media_id' => $mediaID, 'path' => $recordPath, 'remote_url' => $url, 'origin' => 'hotlink']];
@@ -42,7 +42,7 @@ final class MediaLibraryService
         }
     }
 
-    public function registerLocalFile(string $filePath, string $originalName, string $source = 'library', ?MediaScope $scope = null): array
+    public function registerLocalFile(string $filePath, string $originalName, string $source = 'library', ?MediaScope $scope = null, array $uploader = []): array
     {
         $scope ??= MediaScope::global();
         if (!is_file($filePath)) {
@@ -51,7 +51,7 @@ final class MediaLibraryService
 
         try {
             $size = (int)(filesize($filePath) ?: 0);
-            $maxBytes = max(1, (int)ConfigRepository::get('media.max_upload_bytes', 25 * 1024 * 1024));
+            $maxBytes = $this->processor->getMaxUploadBytes();
             if ($size <= 0 || $size > $maxBytes) {
                 return $this->error('file_size_not_allowed');
             }
@@ -92,9 +92,9 @@ final class MediaLibraryService
 
             $relative = $directory['relative'] . '/' . $filename;
             $variants = [];
-            $metadata = [];
+            $metadata = $this->uploaderMetadata($uploader);
             if ($kind === 'images') {
-                $metadata = ['width' => (int)($validation['w'] ?? 0), 'height' => (int)($validation['h'] ?? 0), 'extension' => $extension];
+                $metadata += ['width' => (int)($validation['w'] ?? 0), 'height' => (int)($validation['h'] ?? 0), 'extension' => $extension];
                 $variants = $this->processor->generateVariants(
                     $directory['absolute'], $directory['relative'], $destination, $filename, $extension, $source
                 );
@@ -140,16 +140,25 @@ final class MediaLibraryService
         $scope ??= MediaScope::global();
         try {
             $filters['search'] = mb_substr(trim((string)($filters['search'] ?? '')), 0, 120, 'UTF-8');
-            $filters['source'] = $this->normalizeSource((string)($filters['source'] ?? 'library'));
+            $source = trim((string)($filters['source'] ?? ''));
+            $filters['source'] = $source === '' || $source === 'all' ? '' : $this->normalizeSource($source);
             $filters['kind'] = $this->normalizeKind((string)($filters['kind'] ?? 'all'));
             $filters['ym'] = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string)($filters['ym'] ?? '')) === 1
                 ? (string)$filters['ym'] : '';
-            return ['status' => 'success', 'code' => 'media_loaded'] + $this->media->paginateMedia(
+            $response = ['status' => 'success', 'code' => 'media_loaded'] + $this->media->paginateMedia(
                 max(1, $page),
                 max(1, min(100, $perPage)),
                 $scope,
                 $filters
             );
+            $response['meta'] = (array)($response['meta'] ?? []) + [
+                'max_upload_bytes' => $this->processor->getMaxUploadBytes(),
+                'source' => $filters['source'] ?: 'all', 'kind' => $filters['kind'],
+                'ym' => $filters['ym'] ?: 'all', 'q' => $filters['search'],
+            ];
+            $response['filters'] = method_exists($this->media, 'filterOptions')
+                ? $this->media->filterOptions($scope) : ['sources' => [], 'dates' => []];
+            return $response;
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_list_failed');
         }
@@ -204,7 +213,7 @@ final class MediaLibraryService
         }
     }
 
-    public function ingestBase64(string $base64, string $originalName, ?MediaScope $scope = null): array
+    public function ingestBase64(string $base64, string $originalName, ?MediaScope $scope = null, array $uploader = []): array
     {
         $scope ??= MediaScope::global();
         $base64 = preg_replace('/^data:[^;]+;base64,/i', '', trim($base64)) ?? '';
@@ -214,7 +223,7 @@ final class MediaLibraryService
         if ($temporary === false) return $this->error('media_temporary_failed');
         try {
             if (file_put_contents($temporary, $binary) === false) return $this->error('media_temporary_failed');
-            return $this->registerLocalFile($temporary, $originalName, 'generated', $scope);
+            return $this->registerLocalFile($temporary, $originalName, 'generated', $scope, $uploader);
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_create_failed');
         } finally {
@@ -279,6 +288,13 @@ final class MediaLibraryService
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_related_failed');
         }
+    }
+
+    protected function uploaderMetadata(array $uploader): array
+    {
+        $id = (int)($uploader['id'] ?? 0);
+        if ($id <= 0) return [];
+        return ['uploader' => ['id' => $id, 'name' => mb_substr(trim(strip_tags((string)($uploader['name'] ?? ''))), 0, 255, 'UTF-8')]];
     }
 
     private function kindForExtension(string $extension): ?string

@@ -2,8 +2,8 @@
 
 use RouteBuilder as Route;
 
-Route::get('admin/users', 'admin/users/UserAdminController@index')
+Route::get('admin/users', 'user-admin/UserAdminController@index')
+    ->module('user-admin')
     ->template('admin')
-    ->view('usersIndex')
     ->middleware(['auth', 'can:users.view'])
     ->registerFinal();

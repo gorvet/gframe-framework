@@ -2,6 +2,8 @@
 
 La auditoría y la extracción inicial están terminadas. Se consultaron Base Confías, Bebots y Dane. Ninguna de esas aplicaciones se modificó.
 
+El módulo usa runtime: originales en `resources/modules/admin-panel/application/app/`, personalizaciones en `app/controllers/admin-panel/` y `app/views/admin-panel/`. El instalador crea esas carpetas sin copiar el controlador, las vistas ni las partes originales. Para personalizar el escritorio, herede `GFrame\Modules\AdminPanel\Controllers\AdminController` con namespace `App\Controllers\AdminPanel`. `adminIndex` sigue siendo el nombre explícito de vista. El template compartido `admin` se resuelve desde el módulo salvo que exista una personalización en `app/views/templates/adminTemplate.php`. Las rutas, CSS, JS y aportaciones de menú siguen publicándose.
+
 ## Qué existe hoy
 
 Las tres aplicaciones comparten exactamente `app/views/templates/adminTemplate.php`. Su estructura actual es: contenedor, sidebar izquierdo, área principal, navbar dentro del área principal y contenido de la vista. El footer se renderiza después mediante `Render`, fuera de esa plantilla.
@@ -43,11 +45,15 @@ Route::get('admin/reportes', 'admin/reportes/ReportController@index')
     ->registerFinal();
 ```
 
-Edite `app/views/admin/parts/menu.php` para las secciones y enlaces propios del proyecto. La plantilla imprime ese archivo dentro de `#sidebar-nav`. Los módulos pueden publicar archivos en `app/views/admin/parts/menu-items/`; cada archivo comprueba el permiso antes de mostrar su enlace. El módulo `user-admin` aporta así su entrada «Usuarios».
+Cree `app/views/admin-panel/parts/menu.php` para personalizar las secciones y enlaces propios del proyecto; si no existe, se usa el original. La plantilla imprime ese archivo dentro de `#sidebar-nav`: primero «Escritorio», fuera de cualquier sección, y después el encabezado «Administración». Los módulos pueden publicar archivos en `app/views/admin-panel/parts/menu-items/`; cada archivo comprueba el permiso antes de mostrar su enlace. El módulo `user-admin` aporta «Gestión de usuarios» dentro de Administración. `aside.php` imprime «Mi cuenta» después de todas las aportaciones de módulos, siempre al final, siguiendo el orden de Bebots y Dane.
 
-Edite `app/views/admin/parts/navbar.php` para el logo, el enlace de inicio o acciones propias. Las acciones aportadas por módulos viven en `app/views/admin/parts/header-actions/`. Los archivos meta de esas acciones se colocan en `app/views/templates/meta/admin/`. La identidad del usuario se lee de `$_SESSION['auth']` y se escapa antes de imprimirla.
+Biblioteca multimedia (`admin/media`) y Campañas (`admin/notifications/campaigns`) aportan enlaces al menú cuando el usuario tiene, respectivamente, `media.view` y `notifications.campaigns.view`. Notificaciones (`notifications`) aporta un enlace para usuarios autenticados y conserva la campana de la barra superior. Las tres pantallas usan la plantilla `admin`; sus URLs y permisos no cambian. Estos fragmentos se publican tanto al instalar como al actualizar los módulos.
+
+Cree `app/views/admin-panel/parts/navbar.php` para personalizar el logo, el enlace de inicio o acciones propias; si no existe, se usa el original. Las acciones aportadas por módulos viven en `app/views/admin-panel/parts/header-actions/`. Los archivos meta de esas acciones se colocan en `app/views/templates/meta/admin/`. La identidad del usuario se lee de `$_SESSION['auth']` y se escapa antes de imprimirla.
 
 Los estilos del proyecto van en su CSS administrativo; los de una vista, en su hoja específica. Regístrelos en los meta correspondientes. Las vistas son responsables de su contenido y no duplican el header ni el sidebar. El footer conserva las áreas opcionales de `content`, `copyright` y `credits` descritas en `docs/footer.md`.
+
+Los botones de acciones de los listados usan `btn btn-outline-secondary btn-list-actions btn-sm`, añadiendo `dropdown-toggle` si despliegan un menú. La clase compartida de `admin.css` mantiene un fondo claro, contorno neutro y estados de interacción suaves; respeta el tema oscuro. Reutiliza esta clase en nuevos listados, sin botones secundarios de relleno oscuro ni estilos duplicados por vista.
 
 ## Tema Bootstrap y personalización
 

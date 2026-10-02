@@ -1,6 +1,7 @@
 /vendor/
 /packages/
 /.phpunit.cache/
+/.playwright-mcp/
 /.idea/
 /.vscode/
 /.env

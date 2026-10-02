@@ -46,7 +46,7 @@ test('el acceso transmite rd, evita doble envío y respeta el destino del servid
   submit.call(state.form, { preventDefault() {} });
   assert.equal(state.requests.length, 1);
   assert.equal(state.requests[0].options.data.find(item => item.name === 'rd').value, 'admin/items');
-  state.requests[0].callbacks.done({ status: 'success', redirect: '/app/account', must_change_password: true });
+  state.requests[0].callbacks.done({ status: 'success', redirect: 'account', must_change_password: true });
   assert.deepEqual(state.redirects, ['/app/account']);
   state.requests[0].callbacks.always();
   assert.equal(state.form.dataset.submitting, undefined);

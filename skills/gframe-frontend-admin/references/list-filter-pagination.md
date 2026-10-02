@@ -16,6 +16,8 @@ For initial GET screens:
 
 ## Rendering Strategy
 
+List action-menu triggers use `btn btn-outline-secondary btn-list-actions btn-sm` (plus `dropdown-toggle` when needed): a light/white background and neutral outline, never a solid dark secondary button. Reuse the shared admin CSS class in future lists instead of styling each view separately. Preserve theme-aware text and light hover/open states.
+
 1. Controller calls the model list method.
 2. Controller renders the list partial with output buffering.
 3. Controller appends the rendered markup as `html`.
@@ -26,6 +28,8 @@ This keeps list markup in PHP views and prevents JS from embedding large HTML te
 ## Pagination Pattern
 
 Common admin pagination uses backend-rendered controls plus JS handlers.
+
+Render controls only when the real filtered `meta.total_pages > 1`. Empty lists and single-page lists must not show pagination, a disabled single-page bar, or substitute controls. Reuse the approved admin list markup rather than inventing another pagination style. Verify zero results, one page and multiple pages on both initial render and AJAX replacement, including filters that reduce the result to one page.
 
 Keep these pieces aligned:
 

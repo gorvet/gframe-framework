@@ -1,6 +1,16 @@
 <?php
 
 class ErrorResponder {  
+    public function serverErrorStatus(array $server): ?int
+    {
+        // Solo parámetros del servidor; nunca query strings ni cabeceras HTTP.
+        foreach (['GFRAME_SERVER_ERROR', 'REDIRECT_STATUS'] as $key) {
+            $value = (string)($server[$key] ?? '');
+            if (in_array($value, ['403', '404', '500', '503'], true)) return (int)$value;
+        }
+        return null;
+    }
+
     public function buildRouteParams($code, array $options = []): array
     {
         $resolved = $this->resolveDefinition((string)$code);
@@ -13,7 +23,8 @@ class ErrorResponder {
             'type'         => $options['type'] ?? 'web',
             'method'       => $options['method'] ?? ($_SERVER['REQUEST_METHOD'] ?? 'GET'),
             'controller'   => 'error/ErrorResponder',
-            'relativePath' => 'error',
+            'relativePath' => 'error-pages',
+            'sourceModule' => 'error-pages',
             'templateName' => 'error',
             'view'         => $resolved['view'],
             'actionName'   => $resolved['actionName'],

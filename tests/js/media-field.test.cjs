@@ -5,7 +5,7 @@ const { join } = require('node:path');
 const { runInNewContext } = require('node:vm');
 
 test('MediaField conserva IDs únicos al leer JSON, CSV y valores simples', () => {
-  const window = {};
+  const window = { jQuery: true };
   runInNewContext(readFileSync(join(__dirname, '../../resources/modules/media-library/javascript/media-field.js'), 'utf8'), {
     window, document: {}, jQuery: callback => {
       if (typeof callback === 'function') return;

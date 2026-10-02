@@ -5,9 +5,10 @@ namespace GFrame\Auth;
 use GFrame\Auth\Contracts\AccountDeactivationPolicy;
 use GFrame\Auth\Contracts\SelfAccountRepository;
 use GFrame\Auth\Contracts\UserAdministrationRepository;
+use GFrame\Auth\Contracts\UserModerationRepository;
 use RuntimeException;
 
-class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivationPolicy, UserAdministrationRepository
+class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivationPolicy, UserAdministrationRepository, UserModerationRepository
 {
     protected $table = 'users';
     protected $primaryKey = 'user_id';
@@ -28,44 +29,6 @@ class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivati
         'role_id' => 'int',
         'force_password_change' => 'bool',
     ];
-
-    public function emailExists(string $email): bool
-    {
-        return $this->reset()->where('email', '=', $email)->exists();
-    }
-
-    public function createPendingUser(
-        string $email,
-        string $passwordHash,
-        string $token,
-        string $issuedAt
-    ): int {
-        $roleID = $this->findRoleIDBySlug('registered');
-        if ($roleID === null) {
-            throw new RuntimeException('No está instalado el rol registered.');
-        }
-
-        return (int)(new static([
-            'email' => $email,
-            'password' => $passwordHash,
-            'role_id' => $roleID,
-            'status' => 'unverify',
-            'token' => $token,
-            'token_updated_at' => $issuedAt,
-            'password_changed_at' => $issuedAt,
-            'force_password_change' => false,
-        ]))->insert();
-    }
-
-    public function findByEmail(string $email): ?array
-    {
-        return $this->findIdentity('users.email', $email);
-    }
-
-    public function findByToken(string $token): ?array
-    {
-        return trim($token) === '' ? null : $this->findIdentity('users.token', $token);
-    }
 
     public function findAccountByID(int $userID): ?array
     {
@@ -218,7 +181,37 @@ class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivati
 
     public function assignRole(int $userID, int $roleID): void
     {
-        $this->reset()->where('user_id', '=', $userID)->update(['role_id' => $roleID]);
+        $result = $this->reset()->where('user_id', '=', $userID)->update(['role_id' => $roleID]);
+        if (!in_array($result['status'] ?? '', ['updated', 'no_change'], true)) {
+            throw new RuntimeException('No se pudo actualizar el rol.');
+        }
+    }
+
+    public function setAccountStatus(int $userID, string $status): void
+    {
+        if (!in_array($status, ['verify', 'suspended'], true)) {
+            throw new RuntimeException('Estado administrativo inválido.');
+        }
+        $this->updateAuthUser($userID, ['status' => $status]);
+    }
+
+    public function deleteAccount(int $userID): void
+    {
+        $connection = $this->resolveCurrentConnectionName();
+        self::beginTransaction($connection);
+        try {
+            foreach (['tenant_memberships', 'gframe_sessions', 'users'] as $table) {
+                $result = self::queryTable($table)->onConnection($connection)->reset()
+                    ->where('user_id', '=', $userID)->deleteWhere();
+                if (!in_array($result['status'] ?? '', ['deleted', 'not_found', 'no_change'], true)) {
+                    throw new RuntimeException('No se pudo eliminar la cuenta.');
+                }
+            }
+            self::commit($connection);
+        } catch (\Exception $exception) {
+            self::rollBack($connection);
+            throw $exception;
+        }
     }
 
     private function findIdentity(string $column, string $value): ?array
