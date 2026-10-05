@@ -14,6 +14,21 @@ El objetivo no es convertir este ejemplo en un generador de CRUD. Es mostrar **d
 
 Antes de continuar, lee [Desarrollar una aplicación con GFrame](guia-desarrollo.md).
 
+## Prerrequisitos
+
+Este tutorial enseña una funcionalidad administrativa protegida. Parte de un proyecto con:
+
+- base de datos;
+- Auth y permisos instalados;
+- `admin-panel` disponible;
+- el stack frontend predeterminado de GFrame, incluido jQuery y Bootstrap.
+
+Los perfiles `managed`, `intranet` y `saas` cumplen esas condiciones de base porque incluyen Auth y `admin-panel`. El perfil `static` no: si partes de él, primero debes añadir las capacidades equivalentes o adaptar el ejemplo a una página pública sin `auth`, `can:*` ni `template('admin')`.
+
+El tutorial también utiliza permisos propios del proyecto (`products.view`, `products.edit`, `products.delete`). Debes declararlos y asignarlos a un rol antes de probar las rutas con un usuario que no sea superadministrador. La sección 9 muestra esa parte.
+
+Consulta [Qué instala cada perfil](perfiles-instalacion.md) y [Roles, permisos y membresías](permisos.md) si todavía no tienes esa base preparada.
+
 ## Resultado y archivos
 
 La funcionalidad utiliza esta estructura:
@@ -286,6 +301,8 @@ Route::get('productos', 'productos/ProductController@index')
     ->middleware(['auth', 'can:products.view'])
     ->registerFinal();
 ```
+
+`template('admin')` resuelve la plantilla publicada por el módulo `admin-panel`. Por eso ese módulo figura entre los prerrequisitos de este tutorial. Si tu proyecto no usa `admin-panel`, sustituye `admin` por una plantilla que exista realmente en tu aplicación y adapta los assets/markup necesarios; no copies un nombre de template inexistente.
 
 Cuando el usuario visita `/productos`:
 
