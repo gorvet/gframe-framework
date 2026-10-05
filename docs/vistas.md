@@ -123,3 +123,81 @@ El `include __DIR__` del ejemplo inicial sirve para partes propias de la aplicac
 Una ruta web utiliza el montaje completo. Los listados y formularios AJAX actualizan fragmentos sin volver a imprimir header, template ni footer. El contrato de respuesta y la inicialización de componentes tras insertar HTML se explican en [Frontend core](frontend-core.md).
 
 Registra CSS y JavaScript en la meta global, de template, grupo o vista según su alcance. Las metas no contienen el HTML del footer ni publican archivos; consulta [Metadatos y recursos](meta.md) para prioridad y ejemplos. El recorrido interno que prepara los datos y compone la respuesta corresponde a [Render](render.md).
+
+
+## Jerarquía de composición
+
+Una pantalla completa puede recibir decisiones desde varias capas:
+
+```text
+ruta
+  -> controlador
+    -> datos
+      -> vista
+        -> template
+          -> header / footer
+            -> documento final
+```
+
+Los metadatos siguen una jerarquía paralela: global, template, grupo y vista. Cada capa debe aportar únicamente lo que pertenece a su ámbito. Un CSS global no debe existir solo para corregir una pantalla concreta, y una vista no debe volver a declarar recursos que ya pertenecen al template.
+
+## Convenciones de nombres
+
+Mantenga alineados ruta, controlador y vista. Cuando declare nombres explícitos en RouteBuilder, esos nombres son el contrato y deben coincidir con los archivos existentes. Cuando utilice inferencia, revise [Rutas](rutas.md) antes de asumir un nombre.
+
+```text
+app/controllers/catalogo/ProductController.php
+app/views/catalogo/productIndex.php
+app/views/catalogo/productIndex.meta.php
+app/views/catalogo/parts/productCard.php
+```
+
+Use nombres de partes que describan su contenido, no su posición accidental. `productCard.php` es más estable que `leftBlock.php`.
+
+## Formularios dentro de vistas
+
+La vista imprime controles y feedback; el controlador y los servicios validan y ejecutan la operación. Para formularios AJAX incluya los tokens del proyecto, use restricciones HTML5 para feedback inmediato, vuelva a validar todo en backend, devuelva un contrato de respuesta estable y muestre el resultado con [Alertas](alerts.md).
+
+No coloque consultas SQL, acceso al ORM ni reglas de autorización dentro del archivo de vista.
+
+## Recursos específicos
+
+Declare CSS y JavaScript en la meta de la pantalla:
+
+```php
+<?php
+return [
+    'css' => ['public/css/app/catalogo/product-index.css'],
+    'js' => ['public/js/app/catalogo/product-index.js'],
+];
+```
+
+No inserte etiquetas `<script>` o `<link>` repetidas en cada vista salvo una necesidad excepcional. El sistema de metas conserva el orden de recursos y permite que template, grupo y vista colaboren sin duplicar el documento base.
+
+## Accesibilidad y semántica
+
+Una vista debe conservar la semántica del documento que compone el template: mantenga una jerarquía coherente de encabezados, no añada un segundo `<main>` si el template ya lo define, asocie etiquetas y controles, conserve foco visible y navegación con teclado, utilice tablas para datos tabulares y proporcione texto alternativo útil a imágenes informativas.
+
+Los componentes externos mantienen estas mismas obligaciones después de inicializarse.
+
+## Seguridad de salida
+
+Escape siempre texto y atributos dinámicos. Para URLs, además del escape, valide que el destino y protocolo sean admisibles. HTML enriquecido requiere el sanitizador correspondiente. Evite construir rutas de `include` con parámetros de petición: las partes deben proceder de rutas conocidas por la aplicación o por `ModuleRuntime`.
+
+## Personalización de vistas de módulos
+
+Cuando un módulo ofrece una vista original y la aplicación necesita personalizarla:
+
+1. cree el archivo equivalente bajo `app/views/<módulo>/`;
+2. mantenga el contrato de variables que consume la vista;
+3. conserve los recursos de meta que siga necesitando;
+4. revise la vista original cuando actualice el módulo;
+5. pruebe también los recorridos AJAX que reutilicen parciales del mismo módulo.
+
+La sustitución es por archivo completo. No existe una mezcla automática de bloques entre la vista del módulo y la vista del proyecto.
+
+## Diagnóstico
+
+Si una pantalla no aparece correctamente, revise en este orden: ruta y canal, controlador y acción, tipo de datos devuelto, resolución de la vista, template y `$content`, recursos de meta, posibles personalizaciones de módulo y errores JavaScript posteriores al renderizado.
+
+Para seguir el recorrido interno completo consulte [Render](render.md), [Metadatos](meta.md), [Rutas](rutas.md) y [Frontend core](frontend-core.md).
