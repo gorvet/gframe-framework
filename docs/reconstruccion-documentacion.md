@@ -85,7 +85,8 @@ La auditoría del código confirma, entre otras, estas áreas:
 - SEO, sitemap, robots, JSON-LD y `llms.txt`;
 - WordPress headless;
 - utilidades PHP y frontend;
-- instalación, perfiles y actualización.
+- instalación, perfiles y actualización;
+- gestión de errores y respuestas por canal.
 
 El inventario de `resources/modules` ya enumera los módulos existentes. El problema documental principal no era contar carpetas, sino explicar **qué capacidad resuelve cada pieza y cómo se integra en una aplicación**.
 
@@ -102,7 +103,7 @@ Estados:
 | --- | --- | --- | --- | --- |
 | DOC-001 | Guía real de desarrollo | cubierto | P0 | `guia-desarrollo.md`: recorrido URL → ruta → middleware → controller → service → model/ORM → view/template → respuesta. |
 | DOC-002 | Índice y navegación | cubierto | P0 | `index.md` reorganizado por tareas y recorridos; conserva referencia técnica. |
-| DOC-003 | Primera funcionalidad completa | cubierto | P0 | `tutorial-productos.md`: CRUD vertical con web, AJAX, partial, ORM y permisos. |
+| DOC-003 | Primera funcionalidad completa | cubierto | P0 | `tutorial-productos.md`: CRUD vertical con web, AJAX, partial, ORM y permisos. Declara los prerrequisitos reales de Auth, `admin-panel` y stack frontend. |
 | DOC-004 | Services | cubierto | P0 | Introducidos en guía y tutorial como capa opcional para lógica reutilizable. |
 | DOC-005 | CRUD + AJAX | cubierto | P0 | Tutorial muestra carga web inicial, mutaciones AJAX, CSRF, permisos y recarga de fragmento. |
 | DOC-006 | Auth + permisos + sesiones | cubierto | P0 | `identidad-autorizacion.md` conecta autenticación, identidad, middleware, permisos, tenant y reglas de recurso. |
@@ -112,18 +113,21 @@ Estados:
 | DOC-010 | Cifrado | cubierto | P1 | `encryption.md`: AES-256-GCM, claves, rotación y límites reales. |
 | DOC-011 | Async | cubierto | P1 | Enlazado desde índice y comparado con Cron/colas en `procesos-segundo-plano.md`. |
 | DOC-012 | Cron | cubierto | P1 | Conserva referencia y ahora forma parte de la guía de decisión. |
-| DOC-013 | Media | parcial | P1 | Referencia técnica ya fuerte; falta revisar si merece una entrada práctica más corta además de su integración en guía/tutorial. |
-| DOC-014 | Notificaciones | parcial | P1 | Referencia técnica fuerte; ya aparece en flujos de negocio, pero falta cerrar auditoría de campañas/transportes. |
-| DOC-015 | Mail | parcial | P1 | Referencia extensa; se corrigió dependencia Async. Evaluar una entrada práctica corta sin duplicar `mail.md`. |
-| DOC-016 | SEO | cubierto | P1 | `seo.md` y `json-ld.md` verificados contra `LegacyConfigBridge`, rutas system, `Sitemap`, `Llms`, `Robots` y `SchemaComposer`. Se registró una observación de runtime sobre robots/sitemap. |
+| DOC-013 | Media | cubierto | P1 | `media-library.md` verificado contra servicio, scopes, procesador, variantes, relaciones, cuota y extensión. Se registra aparte una clave de configuración residual del runtime. |
+| DOC-014 | Notificaciones | cubierto | P1 | Inbox, cola, transportes, email y campañas contrastados con `NotificationService`, cola, `CampaignService` y `EmailQueueProcessor`. |
+| DOC-015 | Mail | corregido/cubierto | P1 | `mail.md` contrastado con `MailService`; retirado el contrato ficticio de rate limiting que el runtime no implementa. |
+| DOC-016 | SEO | cubierto | P1 | `seo.md` y `json-ld.md` verificados contra `LegacyConfigBridge`, rutas system, `Sitemap`, `Llms`, `Robots` y `SchemaComposer`. Se registra una observación de runtime sobre robots/sitemap. |
 | DOC-017 | Autoload de aplicación vs módulos | cubierto | P1 | `autoload-proyecto.md` explica Bootstrap basename map frente a ModuleRuntime namespaced overrides. |
 | DOC-018 | Instalador y perfiles | cubierto | P1 | `perfiles-instalacion.md` verificado contra `profiles.php`, `InstallationProfileCatalog`, `ProjectInstaller`, `ProjectConfigWriter` y `SchemaInstaller`. |
 | DOC-019 | `src/database/ORM_GUIDE.md` | corregido | P0 | Sustituido por nota interna actual; ya no enseña `core/database` ni `config/Config.php`. |
 | DOC-020 | README / `composer new` | corregido | P1 | README aclara que `composer new` es un script del repo y no un comando nativo de Composer. |
-| DOC-021 | Capabilities map completo | en auditoría | P0 | Seguir cerrando Media, Notifications, Mail, Heartbeat, WordPress Headless y errores/respuestas. |
-| DOC-022 | Compatibilidad legacy | parcial | P1 | Helpers globales ya clasificados; continuar revisión de fachadas/contratos históricos restantes. |
-| DOC-023 | Serialización Async | corregido | P0 | `async.md` y `mail.md` ahora reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
+| DOC-021 | Mapa principal de capacidades | cubierto | P0 | Cerrada la pasada sobre Media, Notifications, Mail, Heartbeat, WordPress Headless y errores/respuestas. Las observaciones de runtime quedan separadas del estado documental. |
+| DOC-022 | Compatibilidad legacy | parcial | P1 | Helpers globales ya clasificados; queda una pasada específica sobre fachadas, aliases y contratos históricos que no forman parte del recorrido principal. |
+| DOC-023 | Serialización Async | corregido | P0 | `async.md` y `mail.md` reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
 | DOC-024 | Autoload y namespaces | corregido/cubierto | P0 | Documentado que el proyecto generado no trae PSR-4 general `App\`; clases normales y overrides de módulos siguen contratos distintos. |
+| DOC-025 | Heartbeat | cubierto | P1 | `heartbeat.md` verificado contra `HeartbeatMaster`: intervalos, visibilidad, force, sesión, handlers y contrato por canal. |
+| DOC-026 | WordPress Headless | cubierto | P1 | `wordpress-headless.md` verificado contra contrato BridgeFrame 2.0, HTTPS, token, envelope y mapeo de errores. |
+| DOC-027 | Errores y respuestas | cubierto | P1 | `errores.md` verificado contra `ErrorResponder` y `ErrorHandler`, incluidos canales AJAX/API/webhook/SSE/system y producción/debug. |
 
 ## Trabajo realizado en esta rama
 
@@ -146,12 +150,14 @@ Estados:
 
 - `docs/index.md` reorganizado por tareas.
 - `README.md` reconstruido para separar creación de proyecto de instalación del paquete.
+- `docs/tutorial-productos.md` declara ahora que `template('admin')` depende de `admin-panel` y que el ejemplo protegido requiere Auth/permisos. Los perfiles `managed`, `intranet` y `saas` proporcionan esa base; `static` no.
 
 ### Contradicciones saneadas
 
 - `src/database/ORM_GUIDE.md`: rutas/configuración antiguas retiradas.
 - `docs/async.md`: serialización corregida a Opis Closure.
 - `docs/mail.md`: dependencia de Async corregida a `opis/closure:^3.7`.
+- `docs/mail.md`: eliminado el supuesto soporte `rate_limit`, `mail.rate_limit`, `MAIL_RATE_LIMIT_*` y `mail_rate_*`; `MailService` no implementa ese contrato.
 
 ### Instalación y perfiles verificados
 
@@ -162,28 +168,41 @@ Estados:
 - `SchemaInstaller` aplica tenancy antes de auth y después los esquemas de módulos resueltos.
 - `docs/perfiles-instalacion.md` coincide con ese comportamiento en esta revisión.
 
-### SEO verificado
+### Subsistemas contrastados en la pasada final
 
-- `LegacyConfigBridge` controla los switches derivados de SEO y su interacción con debug.
-- `routes_system.php` registra sitemap/llms solo con indexación permitida y robots según su switch propio.
-- `Sitemap` filtra rutas web GET y utiliza `context.sitemap.include=false` como exclusión explícita.
-- `Llms` respeta `llms.include=false` y también la exclusión del sitemap.
-- `SchemaComposer` aplica presets directos, normaliza bloques legacy e infiere `WebPage` cuando no hay otro tipo.
-- `docs/seo.md` y `docs/json-ld.md` reflejan correctamente esas limitaciones en esta revisión.
+- **Media:** `MediaLibraryService` y `MediaProcessor` coinciden con la referencia sobre scopes, carga, hotlink, Base64, variantes, relaciones y cuota.
+- **Notifications:** el flujo inbox/cola/transportes y campañas coincide con `NotificationService`, `CampaignService` y los procesadores de cola.
+- **Notifications Email:** los reintentos, backoff y estados documentados coinciden con `EmailQueueProcessor`.
+- **Mail:** los cuatro métodos públicos principales, opciones reales y semántica de Async se contrastaron con `MailService`.
+- **Heartbeat:** registro de canales, intervalo mínimo, visibilidad, `force`, contexto de sesión y resolución de handlers coinciden con `HeartbeatMaster`.
+- **WordPress Headless:** contrato BridgeFrame 2.0, HTTPS obligatorio, bearer token, envelope y códigos se contrastaron con `WordPressClient`.
+- **Errores:** aliases, HTTP codes, vistas web y respuesta por canal se contrastaron con `ErrorResponder` y `ErrorHandler`.
 
-**Observación de runtime:** `Robots::render()` añade siempre `Sitemap: <site_url>/sitemap.xml` cuando la indexación está permitida. Si `seo.robots=true` pero `seo.sitemap=false`, `robots.txt` puede anunciar una URL de sitemap cuya ruta no fue registrada. Esto no invalida la documentación actual, pero conviene decidir si el runtime debe condicionar esa línea a `SEO_ENABLE_SITEMAP_XML`.
+## Observaciones de runtime separadas de la documentación
+
+Estas observaciones no se corrigen cambiando la guía para esconderlas. Son comportamientos del código que conviene decidir en una revisión de runtime independiente.
+
+### Robots anuncia sitemap desactivado
+
+`Robots::render()` añade `Sitemap: <site_url>/sitemap.xml` cuando la indexación está permitida. Si `seo.robots=true` pero `seo.sitemap=false`, `robots.txt` puede anunciar una URL de sitemap cuya ruta no fue registrada.
+
+Conviene decidir si el runtime debe condicionar esa línea a `SEO_ENABLE_SITEMAP_XML`.
+
+### `media.max_upload_bytes` residual
+
+`config/defaults.php` todavía contiene `media.max_upload_bytes`, pero el límite efectivo de carga lo obtiene `MediaProcessor` desde `resources/modules/media-library/config/media.php`. La documentación actual ya enseña el contrato real y `docs/configuracion.md` no presenta esa clave como opción vigente.
+
+Conviene retirar la clave residual del default o volver a conectarla explícitamente al runtime; mientras tanto no debe enseñarse como configuración efectiva.
 
 ## Siguiente bloque de auditoría
 
-Cerrar auditoría de:
+La cobertura principal de capacidades queda cerrada para esta fase. La siguiente pasada debe concentrarse en **compatibilidad legacy y residuos históricos**, no en volver a revisar los mismos subsistemas completos:
 
-- Media;
-- Notifications / Email transport / Campaigns;
-- Mail;
-- Heartbeat;
-- WordPress Headless;
-- errores y respuestas;
-- posibles APIs legacy restantes.
+- fachadas y funciones globales antiguas todavía cargadas por Composer;
+- aliases de clases, nombres históricos y wrappers de compatibilidad;
+- READMEs o guías internas fuera de `docs/` que puedan seguir enseñando contratos viejos;
+- comentarios de código que apunten a rutas antiguas y puedan confundir mantenimiento;
+- referencias documentales huérfanas después de la reorganización.
 
 ## Convivencia con otras ramas
 
