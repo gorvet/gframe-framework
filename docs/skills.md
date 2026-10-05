@@ -56,3 +56,42 @@ composer skills:check
 ```
 
 `composer check` también valida los skills. La comprobación valida su estructura y referencias; no sustituye las pruebas de una implementación. Al modificar rutas, contratos, configuración, permisos, componentes o flujos documentados, revisa el skill correspondiente.
+
+
+## Relación entre skills y documentación
+
+La documentación explica el framework a una persona; un skill traduce esos contratos en instrucciones operativas para un asistente. No debe inventar una API paralela. Si una referencia del skill contradice `docs/` o el runtime, corrija la fuente y el skill en la misma rama.
+
+Cuando una guía cambia de forma material, revise qué skills dependen de ese contrato. Ejemplos:
+
+- cambios de rutas o middleware -> `gframe-core-architecture` y `gframe-backend`;
+- cambios de ORM -> `gframe-orm-models`;
+- autenticación o permisos -> `gframe-auth-access`;
+- metas, vistas o AJAX -> skills frontend;
+- módulos multimedia -> `gframe-media-module`.
+
+## Contenido de un skill
+
+Un skill debe concentrarse en decisiones que el asistente necesita aplicar: archivos correctos, contratos, límites, flujo recomendado, referencias y criterios de comprobación. Evite copiar capítulos completos de documentación dentro de `SKILL.md`; enlace referencias versionadas para reducir divergencia.
+
+Los ejemplos deben corresponder a APIs reales y utilizar nombres genéricos cuando no formen parte del framework. No convierta una decisión específica de una aplicación en regla global de GFrame.
+
+## Evolución y compatibilidad
+
+Los skills viajan con cada versión del paquete. Un proyecto que usa una versión anterior debe instalar los skills de esa versión si quiere que el asistente trabaje con sus contratos reales. Instalar los skills de `main` mientras la aplicación permanece en una release antigua puede sugerir APIs todavía no disponibles.
+
+Después de actualizar el framework en un proyecto, reinstale los skills desde `packages/gorvet/gframe` para alinear las instrucciones locales con el código resuelto por Composer.
+
+## Validación y revisión manual
+
+`composer skills:check` detecta problemas estructurales y referencias inválidas, pero no demuestra que cada recomendación siga siendo la mejor práctica. Durante una modificación importante:
+
+1. ejecute la validación;
+2. abra las referencias afectadas;
+3. compare ejemplos con código/tests actuales;
+4. compruebe que no se conservan comandos o rutas retirados;
+5. confirme que el skill no contradice la documentación canónica.
+
+## Skills de proyecto
+
+Las reglas específicas de una aplicación —estructura propia, tenant, identidad visual, convenciones internas o endpoints del negocio— no deben añadirse a los skills globales del framework salvo que se conviertan en un contrato reutilizable de GFrame. Manténgalas en las instrucciones del proyecto y deje que los skills oficiales describan únicamente el framework.
