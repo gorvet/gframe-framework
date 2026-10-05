@@ -72,3 +72,36 @@ El puente adapta la interfaz de TinyMCE; rich-text-editor sincroniza variables d
 ## Fragmentos AJAX
 
 Inicialice los componentes después de insertar su HTML. Antes de reemplazarlo, libere las instancias y observers que ofrezca su API. No suponga que volver a incluir un archivo JavaScript reconfigura los componentes existentes. Compruebe cada integración en ambos temas, dentro de modales cuando corresponda y con teclado; los puentes no sustituyen las reglas de accesibilidad ni la validación del backend.
+
+
+## Orden de carga y comprobaciones
+
+Como regla general, cargue primero la biblioteca original y después el puente de GFrame. Las variables y estilos comunes del proyecto deben existir antes de los puentes que las consumen, y el CSS específico de una vista debe quedar al final cuando necesite sobrescribir una decisión local.
+
+```text
+Bootstrap / biblioteca original
+-> variables.css
+-> bootstrap-buttons-compat.css / common.css
+-> puente GFrame de la biblioteca
+-> CSS del módulo
+-> CSS de la vista o aplicación
+```
+
+Evite cargar dos temas o dos copias de la misma biblioteca. Una duplicación puede producir inicialización doble, eventos repetidos o estilos difíciles de diagnosticar.
+
+El repositorio incluye un laboratorio visual aislado:
+
+```bash
+php -S 127.0.0.1:8767 -t . tests/fixtures/visual-packages-preview.php
+```
+
+La fixture permite revisar ambos temas y componentes como búsqueda/ordenación, fecha y hora, teléfono, color, editor, visor y carruseles sin depender de datos reales de una aplicación.
+
+Complementa esa revisión con:
+
+```bash
+node --test tests/js/*.test.cjs
+php packages/bin/phpunit --filter ModuleCatalogTest
+```
+
+Las pruebas automatizadas comprueban contratos y publicación; el laboratorio visual detecta problemas de foco, overlays, tamaños, contraste, tema y composición que no siempre aparecen en una aserción de DOM. Las opciones particulares y plugins adicionales de cada proyecto necesitan sus propias pruebas.
