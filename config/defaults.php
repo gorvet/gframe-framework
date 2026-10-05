@@ -49,7 +49,6 @@ return [
     ],
     'media' => [
         'scope' => 'global',
-        'max_upload_bytes' => 26214400,
         'quota_bytes' => 0,
     ],
     'seo' => [
