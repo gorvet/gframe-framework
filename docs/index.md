@@ -4,10 +4,11 @@ La documentación está organizada primero por **lo que quieres construir** y de
 
 ## Empieza aquí
 
-1. [Instalación y perfiles](instalacion.md): crea el proyecto y entiende qué instala cada perfil.
-2. [Desarrollar una aplicación con GFrame](guia-desarrollo.md): modelo mental, carpetas y recorrido de una petición.
-3. [Tutorial: Productos de extremo a extremo](tutorial-productos.md): controller, service, model/ORM, vista, AJAX y permisos en una funcionalidad completa.
-4. [Arquitectura](arquitectura.md): referencia del núcleo, módulos y recorrido interno.
+1. [Instalación y perfiles](instalacion.md): crea el proyecto.
+2. [Qué instala cada perfil](perfiles-instalacion.md): diferencia real entre `static`, `managed`, `intranet` y `saas`.
+3. [Desarrollar una aplicación con GFrame](guia-desarrollo.md): modelo mental, carpetas y recorrido de una petición.
+4. [Tutorial: Productos de extremo a extremo](tutorial-productos.md): controller, service, model/ORM, vista, AJAX y permisos en una funcionalidad completa.
+5. [Arquitectura](arquitectura.md): referencia del núcleo, módulos y recorrido interno.
 
 Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), [Configuración y entorno](configuracion.md) y [Desarrollo con una copia local](instalacion-local.md).
 
@@ -85,8 +86,8 @@ Empieza por [Identidad, autenticación, permisos y sesiones](identidad-autorizac
 
 ### SEO y publicación
 
-- [SEO](seo.md).
-- [JSON-LD](json-ld.md).
+- [SEO](seo.md): configuración real, sitemap, robots, llms e indexación.
+- [JSON-LD](json-ld.md): grafo Schema.org y límites actuales de presets.
 - [Metadatos y recursos de vistas](meta.md).
 
 ## Módulos y extensibilidad
@@ -115,6 +116,7 @@ GFrame integra estas bibliotecas, pero no es su autor. Cada guía identifica la 
 ## Instalación, actualización y mantenimiento
 
 - [Instalación y perfiles](instalacion.md).
+- [Qué instala cada perfil](perfiles-instalacion.md).
 - [Configuración y entorno](configuracion.md).
 - [Actualizaciones y despliegue](actualizaciones.md).
 - [Apache y Nginx](servidores-web.md).
