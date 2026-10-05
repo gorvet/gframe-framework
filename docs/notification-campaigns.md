@@ -294,6 +294,22 @@ En una campaña recurrente ya procesada, los cambios se aplican a sus próximos 
 
 «Reciclar campaña» abre `admin/notifications/campaigns/new?source=ID` con título, mensaje, canales, enlace, importancia y caducidad precargados. Guardar crea una campaña nueva; la original conserva su contenido, estado e historial. La nueva audiencia debe seleccionarse expresamente y la fecha anterior no se reutiliza.
 
+### Estructura del formulario estándar
+
+El formulario distribuido organiza el contenido principal en dos bloques. El primero reúne título, audiencia, selección manual cuando corresponde, mensaje, variables, enlace, importancia y caducidad. El segundo bloque, **Entrega**, separa las decisiones de programación:
+
+- fecha programada y frecuencia comparten una fila en escritorio;
+- **Canales** aparece como último campo de Entrega;
+- la zona horaria viaja en un campo oculto y el JavaScript convierte la fecha seleccionada al contrato esperado por backend;
+- «Ver destinatarios» y «Enviar prueba a mi cuenta» son acciones auxiliares con estilo `btn-outline-primary`;
+- las acciones finales se alinean a la derecha, con **Cancelar** antes del botón principal;
+- en creación, el botón principal alterna entre «Enviar ahora» y «Programar campaña» según exista fecha;
+- en edición, el texto es «Guardar cambios».
+
+La audiencia manual aparece antes del mensaje y utiliza `user_ids[]`. El listado de campañas mantiene su filtro de estado separado del formulario de creación y solo muestra «Nueva campaña» cuando el usuario puede administrar campañas.
+
+Estas decisiones pertenecen a la vista estándar actual. Una personalización en `app/views/notification-campaigns/form.php` puede cambiar la composición, pero debe conservar los nombres de campos y contratos que espera el controlador si reutiliza su lógica.
+
 ## Programación, vista previa y prueba
 
 ### Recurrencia desde PHP
