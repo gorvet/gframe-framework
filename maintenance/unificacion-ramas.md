@@ -30,6 +30,9 @@ Las dos ramas fueron desarrolladas de forma independiente por agentes distintos.
 | SEO / JSON-LD | resolver por runtime + tests combinados | Ambas ramas corrigieron aspectos distintos. Debe quedar una sola política coherente en `Meta`, `Robots`, `Sitemap`, `Llms`, `SchemaComposer`, `JsonLD` y presets. |
 | Documentación amplia de módulos/UI | traer desde auditoría | `auditoria-reconstruccion` revisó y amplió gran cantidad de módulos visuales y añadió tests documentales que no existen en la otra rama. |
 | Guías estructurales de arquitectura de uso | conservar desde reconstrucción | `guia-desarrollo.md`, `identidad-autorizacion.md`, `procesos-segundo-plano.md`, `modulos-en-aplicacion.md`, `autoload-proyecto.md` y `perfiles-instalacion.md` resuelven el problema de aprendizaje transversal. |
+| Identidad/Auth/Sesiones/Permisos | mantener dos capas | `identidad-autorizacion.md` funciona como mapa mental transversal; las guías detalladas `autenticacion.md`, `sesiones.md`, `permisos.md` y `middleware.md` conservan la referencia técnica profunda. No deben fusionarse en un único documento gigante. |
+| Segundo plano | mantener guía de decisión + referencias | `procesos-segundo-plano.md` explica cuándo usar ejecución directa, `Async`, Cron o colas. `async.md`, `cron-runner.md`, Mail y Notifications conservan contratos y APIs específicas. |
+| Módulos | mantener guía conceptual + referencia runtime | `modulos-en-aplicacion.md` aclara capacidad instalable, runtime MVC, componente frontend y funcionalidad propia del proyecto. `modulos-runtime.md`, `modulos-opcionales.md` y `extensibilidad.md` quedan como referencia técnica. |
 
 ## Estado
 
