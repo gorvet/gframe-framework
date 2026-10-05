@@ -113,6 +113,10 @@ class Meta {
     }
 
     public function renderSchema(): string {
+        if (defined('SEO_ENABLED') && !SEO_ENABLED) {
+            return '';
+        }
+
         $schemaComposer = new SchemaComposer();
         $finalSchema = $schemaComposer->compose($this->schema, $this->metaTags, $this->routeParams);
 
