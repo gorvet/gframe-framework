@@ -49,3 +49,26 @@ El contenedor conserva `id="footer"`, `footer-credits`, copyright y créditos, l
 El contenido público específico del proyecto se coloca en `content.php`. Los créditos configurados en metadatos antiguos deben trasladarse completos a las áreas del footer; el texto predeterminado del esqueleto no sustituye los créditos del proyecto.
 
 La lista final de JS mantiene el orden declarado en los metadatos y elimina duplicados. Cada archivo se imprime una sola vez. El metadato global solo incluye los JS publicados por los módulos instalados; un proyecto estático sin `heartbeat-client` no solicita sus archivos.
+
+
+## Seguridad y semántica
+
+Los parciales del footer reciben datos de la ruta y del controlador, por lo que deben aplicar las mismas reglas de escape que una vista normal. Escape texto y atributos; valide destinos antes de imprimir enlaces dinámicos. No coloque secretos, tokens ni información de sesión dentro de atributos o scripts del footer.
+
+Utilice `<footer>` para la región general y `<nav aria-label="...">` cuando el contenido sea navegación. Los créditos y copyright no deben convertirse en encabezados solo para conseguir tamaño visual; utilice CSS y estructura semántica apropiada.
+
+## Recursos y orden de scripts
+
+El footer imprime la lista final de JavaScript en el orden resultante de las metas. Si un script depende de otro, declare ambos en el orden correcto en la capa que corresponda; no dependa de que el footer «adivine» dependencias.
+
+Los scripts globales deben vivir en meta global y los de una pantalla en su meta de vista o grupo. Evite añadir un script directamente a `footer.php` solo porque varias páginas lo utilizan: eso impide que perfiles o módulos sin esa capacidad mantengan una salida mínima.
+
+## Personalizaciones y actualizaciones
+
+Una personalización de `footer.php` pertenece al proyecto y no recibe automáticamente mejoras de la plantilla original. Después de actualizar GFrame, compare responsabilidades nuevas del footer base —variables, puntos de montaje o recursos— antes de conservar una copia antigua sin cambios.
+
+Los parciales `content`, `copyright` y `credits` son una alternativa más estable cuando solo necesita cambiar contenido. Prefiera personalizar el contenedor completo únicamente cuando cambie su estructura.
+
+## Diagnóstico
+
+Si un área no aparece, compruebe el nombre exacto del grupo, vista y sufijo `.footer.<area>.php`, y recuerde que la resolución utiliza el primer archivo existente. Si un JavaScript no encuentra `site_url`, confirme que se carga al final y no en `hjs`. Si una personalización rompe toast o sesión, compare su `footer.php` con la versión actual del esqueleto y restaure los puntos de montaje y variables compartidas que todavía necesite.
