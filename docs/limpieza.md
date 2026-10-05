@@ -54,6 +54,6 @@ Si instalas [Cron runner](cron-runner.md), registra un handler del proyecto que 
 
 ## Archivos y límites de la herramienta
 
-No hay un comando general del core para purgar logs, cachés, temporales huérfanos, archivos de límites de correo o archivos multimedia sin referencias. Las funciones de caducidad anteriores no sustituyen esa herramienta.
+No hay un comando general del core para purgar logs, cachés, temporales huérfanos o archivos multimedia sin referencias. Las funciones de caducidad anteriores no sustituyen esa herramienta.
 
 Para una limpieza específica del proyecto, establece directorios permitidos, antigüedad mínima, exclusiones de procesos activos y una ejecución de comprobación sin borrado. Resuelve rutas absolutas antes de eliminar y no borres un directorio completo por su nombre. Las relaciones de archivos multimedia y la retención de datos de negocio deben comprobarse mediante sus servicios, no mediante un recorrido genérico de carpetas.
