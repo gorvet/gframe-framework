@@ -52,3 +52,31 @@ Para cada tema:
 5. el resultado debe evitar duplicación innecesaria sin perder detalle útil.
 
 `http-client.md` representa el patrón deseado: una guía profunda y autosuficiente, complementada por cualquier contrato válido que aparezca en otra fuente. La misma regla debe aplicarse progresivamente al resto de áreas.
+
+
+## Segunda auditoría de profundidad
+
+Se realizó una segunda pasada con el criterio editorial definitivo, comparando la unificada contra **ambas** ramas fuente y revisando también runtime/tests cuando una diferencia podía ser contractual.
+
+Hallazgos y correcciones principales:
+
+- se recuperaron detalles útiles que habían desaparecido de la rama extensa, como migración de GF Table, fixture visual de GFSelect y verificación aislada de Alerts;
+- se amplió la documentación nueva de auditoría que había quedado demasiado breve: comandos, respuestas, vistas, primera página, estilos comunes y numerosas dependencias frontend;
+- se restituyeron detalles de composición del formulario de Campañas solo después de comprobarlos contra la vista runtime actual;
+- se reforzaron instalación local, versionado, dependencias, acceso API, limpieza, skills y footer;
+- se corrigió `docs/json-ld.md` para documentar `LogicException` en ciclos de presets y la omisión de `aggregateRating` vacío;
+- se detectó que `docs/seo.md` había conservado semántica antigua pese a que el runtime canónico ya utilizaba `context.seo.indexable`; se reescribió esa política según `Meta`, `Sitemap`, `Llms`, `LegacyConfigBridge` y `SeoIndexabilityTest`;
+- se conservaron fuera detalles de auditoría que ya eran obsoletos, por ejemplo el rate limit antiguo de Mail o una librería de serialización que no coincide con el runtime actual;
+- los tests documentales dejaron de depender de un número exacto de bloques PHP: ahora permiten ampliar las guías y siguen validando la sintaxis de todos los ejemplos encontrados.
+
+### Métrica de profundidad documental
+
+Medida sobre los Markdown de `docs/` durante esta segunda auditoría:
+
+| Rama | Guías | Tamaño total aprox. | Promedio por guía | ≥ 5 KB | ≥ 8 KB | < 2 KB |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `reconstruccion-documentacion` | 87 | 548 KB | 6.3 KB | 45 | 31 | 25 |
+| `auditoria-reconstruccion` | 83 | 582 KB | 7.0 KB | 51 | 27 | 17 |
+| `reconstruccion-unificada` | 93 | 746 KB | 8.0 KB | 69 | 40 | 4 |
+
+La métrica no sustituye la revisión técnica, pero confirma que la cobertura adicional no se consiguió reduciendo sistemáticamente la profundidad de las áreas existentes. Los documentos todavía muy pequeños son principalmente alias o notas históricas deliberadamente breves.
