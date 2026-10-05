@@ -37,3 +37,18 @@ Las dos ramas fueron desarrolladas de forma independiente por agentes distintos.
 ## Estado
 
 La rama `codex/reconstruccion-unificada` parte actualmente de `codex/reconstruccion-documentacion`. Las dos ramas fuente permanecen intactas. La integración física de la cobertura complementaria de auditoría se realizó por grupos verificados. Se conservaron como base las guías estructurales de reconstrucción y se incorporaron las referencias cuya documentación está ejecutada por tests o aporta cobertura no duplicada. `docs/primera-funcionalidad.md` no se incorporó para evitar un segundo tutorial CRUD paralelo; `docs/tutorial-productos.md` sigue siendo el recorrido canónico.
+
+
+## Criterio editorial definitivo
+
+La rama unificada no busca únicamente cubrir más áreas. El objetivo es **máxima profundidad + máxima cobertura**.
+
+Para cada tema:
+
+1. se conserva como base la versión más extensa, clara y técnicamente correcta;
+2. se incorporan de la otra rama ejemplos, contratos, advertencias, APIs y pruebas que aporten información adicional;
+3. una guía extensa no se sustituye por otra más corta solo porque esta última toque más casos;
+4. si ambas son parciales, se amplía el documento usando runtime, tests y código como fuente de verdad;
+5. el resultado debe evitar duplicación innecesaria sin perder detalle útil.
+
+`http-client.md` representa el patrón deseado: una guía profunda y autosuficiente, complementada por cualquier contrato válido que aparezca en otra fuente. La misma regla debe aplicarse progresivamente al resto de áreas.
