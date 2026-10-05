@@ -18,7 +18,7 @@ No todos los helpers tienen el mismo nivel de abstracción: algunos son utilidad
 | `LogHelper` | log plano a archivo | Utilidad simple; no sustituye un sistema de logging estructurado. |
 | `CorsHelper` | emisión de cabeceras CORS de bajo nivel | En rutas normales usa el middleware/canal de GFrame antes de emitir CORS manualmente. |
 
-Las clases son globales históricas cargadas por Composer; no utilizan namespace `GFrame\`.
+Estas clases son globales y Composer las carga por classmap; no utilizan namespace `GFrame\`. **Ese mecanismo de carga no las convierte en legacy ni deprecated.** En esta guía, “legacy” se reserva para wrappers y contratos conservados expresamente por compatibilidad, como las funciones de `LegacyCompatibility.php` descritas más abajo.
 
 ## UrlHelper
 
