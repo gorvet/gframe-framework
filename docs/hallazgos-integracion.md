@@ -6,186 +6,149 @@ La regla para integrar es simple: **después de fusionar código, el runtime res
 
 ## 1. Mail: rate limit no implementado por `MailService`
 
-La auditoría confirmó que `GFrame\Mail\MailService` no implementa un rate limiter propio para formularios públicos. Sus opciones efectivas de envío se relacionan con SMTP, destinatario, `reply_to`, `recipient_name` y `timeout`; las variantes asíncronas delegan en `Async`.
+La auditoría confirmó que `GFrame\Mail\MailService` no implementa un rate limiter propio para formularios públicos. Sus opciones efectivas se relacionan con SMTP, destinatario, `reply_to`, `recipient_name` y `timeout`; las variantes asíncronas delegan en `Async`.
 
-`config/defaults.php` tampoco contiene un bloque `mail.rate_limit`. La configuración de reintentos relacionada con correo bajo:
+La configuración bajo `notifications.email.max_attempts` y `retry_delay_seconds` pertenece a la cola de `notifications-email`, no a `MailService`.
 
-```php
-'notifications' => [
-    'email' => [
-        'max_attempts' => 5,
-        'retry_delay_seconds' => 300,
-    ],
-],
-```
+La documentación anterior prometía `rate_limit`, `MAIL_RATE_LIMIT_*` y códigos `mail_rate_*`; esa afirmación fue retirada de `docs/mail.md`.
 
-pertenece a la cola de `notifications-email`, no a `MailService` ni a formularios públicos.
-
-La documentación anterior prometía `rate_limit`, `MAIL_RATE_LIMIT_*` y códigos `mail_rate_*`; esa afirmación ya fue retirada de `docs/mail.md`. La guía actual indica que la protección contra abuso debe aplicarse en middleware, controlador o un servicio del proyecto antes de llamar a Mail.
-
-### Decisión al integrar
-
-Si otra rama añade un rate limiter real a `MailService`, volver a auditar su API y documentarlo únicamente después de integrar ese código. No recuperar por conflicto la documentación antigua sin implementación.
-
-**Estado:** corrección documental resuelta; la capacidad de rate limit no forma parte del runtime auditado.
+**Estado:** corrección documental resuelta; esa capacidad no forma parte del runtime auditado.
 
 ## 2. Media: fuente única del límite de carga
 
-La auditoría detectó que `config/defaults.php` exponía `media.max_upload_bytes`, pero `MediaLibraryService` no consumía esa clave. El límite efectivo ya procedía de:
+`config/defaults.php` exponía `media.max_upload_bytes`, pero `MediaLibraryService` no consumía esa clave. El límite efectivo procedía de `resources/modules/media-library/config/media.php` mediante `MediaProcessor::getMaxUploadBytes()`.
 
-```text
-resources/modules/media-library/config/media.php
-```
-
-mediante `MediaProcessor::getMaxUploadBytes()`.
-
-La clave residual fue retirada de `config/defaults.php`. El bloque de aplicación conserva únicamente opciones de integración como `scope` y `quota_bytes`; el procesamiento del archivo sigue perteneciendo al procesador del módulo.
-
-Se añadió `ConfigurationDefaultsTest` para comprobar que:
-
-- el default global no vuelve a exponer `media.max_upload_bytes`;
-- el módulo sí declara `max_upload_bytes`;
-- `MediaProcessor::getMaxUploadBytes()` devuelve ese valor.
-
-`docs/media-library.md` ya enseña la fuente correcta y explica la extensión mediante un `MediaProcessor` propio.
+La clave residual fue retirada de defaults y `ConfigurationDefaultsTest` comprueba que la fuente sea única.
 
 **Estado:** hallazgo de runtime resuelto y cubierto por prueba.
 
 ## 3. SEO: `robots.txt` y sitemap desactivado
 
-La auditoría detectó que `routes_system.php` omitía correctamente `/sitemap.xml` cuando `SEO_ENABLE_SITEMAP_XML` era falso, pero `Robots::render()` seguía anunciando:
+`routes_system.php` omitía `/sitemap.xml` cuando `SEO_ENABLE_SITEMAP_XML=false`, pero `Robots::render()` seguía anunciándolo.
 
-```text
-Sitemap: <site_url>/sitemap.xml
-```
-
-El runtime fue corregido para que `Robots` utilice la misma condición que el registro de la ruta: la línea `Sitemap:` solo aparece cuando el sitemap está habilitado o cuando la constante no está definida y se conserva el comportamiento predeterminado.
-
-`MetaSeoTest` incluye ahora un caso separado que verifica que un sitemap desactivado no sea anunciado por `robots.txt`.
+`Robots` utiliza ahora la misma condición que el registro de la ruta. `MetaSeoTest` verifica que un sitemap desactivado no sea anunciado.
 
 **Estado:** hallazgo de runtime resuelto y cubierto por prueba.
 
 ## 4. Errores: origen real del `noindex`
 
-El módulo `error-pages` declara expresamente:
+`error-pages.group.meta.php` declara:
 
 ```php
 'robots' => 'noindex, nofollow',
 ```
 
-en `error-pages.group.meta.php`. Ese metadato es el mecanismo que genera la política robots de las páginas de error; el código HTTP no crea por sí solo el `<meta name="robots">`.
-
-`docs/errores.md` ya fue corregido para atribuir el comportamiento al metadato del módulo y advertir que una personalización debe conservar conscientemente esa política si se desea mantener el `noindex`.
+Ese metadato, no el status HTTP por sí solo, genera la política robots de las páginas de error. `docs/errores.md` ya fue corregido.
 
 **Estado:** corrección documental resuelta.
 
-## 5. Notifications Email: reintentos sí; recuperación de jobs `processing` abandonados no
+## 5. Notifications Email: reintentos sí; recuperación de jobs abandonados no
 
-`EmailQueueProcessor`:
+`EmailQueueProcessor` reserva trabajos, incrementa intentos, marca `sent`, reprograma `pending` con `available_at` o marca `failed`. No recupera por sí mismo filas abandonadas en `processing` tras una caída abrupta.
 
-- reserva trabajos del canal `email`;
-- incrementa intentos mediante el repositorio;
-- marca `sent` en éxito;
-- vuelve a `pending` con `available_at` cuando todavía puede reintentar;
-- marca `failed` al alcanzar el máximo.
+`docs/notifications-email.md` ya documenta esta limitación.
 
-No implementa por sí mismo recuperación temporal de filas que queden abandonadas en `processing` por una caída abrupta del worker.
-
-`docs/notifications-email.md` ya advierte esta limitación correctamente.
-
-**Estado:** documentación correcta; comportamiento conocido, no presentado como una capacidad inexistente.
+**Estado:** documentación correcta; límite conocido.
 
 ## 6. Campaigns y Cron: recuperación distinta a la cola de email
 
-`CampaignService::dispatch()` llama a:
+`CampaignService::dispatch()` utiliza `recoverRecipients($campaignID, 900)` antes de reservar destinatarios. Las campañas sí recuperan destinatarios bloqueados después del umbral; no debe extrapolarse ese comportamiento a `notification_queue`.
 
-```php
-$this->campaigns->recoverRecipients($campaignID, 900);
-```
-
-antes de reservar destinatarios, por lo que las campañas sí tienen recuperación de destinatarios bloqueados en procesamiento después del umbral configurado por ese contrato.
-
-No extrapolar esta capacidad a `notification_queue` ni a `EmailQueueProcessor`: son mecanismos distintos.
-
-**Estado:** documentación de campañas alineada.
+**Estado:** documentación alineada.
 
 ## 7. Compatibilidad legacy: clasificación final
 
-La auditoría distingue cuatro categorías que no deben mezclarse durante una fusión.
-
 ### API global vigente cargada por classmap
 
-Composer carga deliberadamente áreas como:
+Composer carga deliberadamente áreas como `src/routing`, `src/render`, `src/database`, `src/middleware`, `src/async`, `src/cron`, `src/services` y `src/utils`.
 
-```text
-src/routing/
-src/render/
-src/database/
-src/middleware/
-src/async/
-src/cron/
-src/services/
-src/utils/
-```
-
-Por tanto, clases globales como `RouteBuilder`, `ORM`, `HttpClient`, `Async` o `UrlHelper` **no son legacy por el solo hecho de carecer de namespace**.
+Por tanto, `RouteBuilder`, `ORM`, `HttpClient`, `Async` o `UrlHelper` no son legacy por carecer de namespace.
 
 ### Wrappers globales de compatibilidad
 
-`src/utils/LegacyCompatibility.php` conserva funciones como:
+`src/utils/LegacyCompatibility.php` conserva funciones como `guess_url()`, `is_ssl()`, `sanitize()`, `randomNameGen()`, `buildMenu()`, `pagination()`, `send_cors_headers()`, `markdown2html()` y `logger()`.
 
-- `guess_url()`;
-- `is_ssl()`;
-- `sanitize()`;
-- `randomNameGen()`;
-- `buildMenu()`;
-- `pagination()`;
-- `send_cors_headers()`;
-- `markdown2html()`;
-- `logger()`.
-
-La documentación nueva enseña primero las clases/helpers equivalentes y mantiene estas funciones únicamente como compatibilidad.
+Los ejemplos nuevos deben enseñar primero las clases/helpers equivalentes.
 
 ### Fallbacks de configuración todavía soportados
 
-La configuración recomendada actual es `config/app.php` + defaults del paquete. `Bootstrap`, sin embargo, todavía admite `config/bootstrap.php` y `core/Config.php` como fallbacks heredados cuando no existe la configuración estructurada.
-
-Eso significa que son compatibilidad soportada, no el patrón que debe enseñarse a proyectos nuevos.
-
-`LegacyConfigBridge` cumple la función inversa necesaria para aplicaciones actuales: deriva constantes históricas desde la configuración estructurada para código que aún las consume.
+El patrón actual es `config/app.php` + defaults del paquete. `Bootstrap` todavía admite `config/bootstrap.php` y `core/Config.php` como fallbacks heredados. `LegacyConfigBridge` deriva constantes históricas desde la configuración estructurada para consumidores existentes.
 
 ### Contratos concretos de compatibilidad
 
-También existen puntos específicos, como:
+Entre otros:
 
 - `HttpClient::requestCompat()`;
-- nombres históricos de métodos de Auth que siguen disponibles;
-- fallback a controllers globales del proyecto en ciertos overrides de módulos runtime.
+- nombres históricos de métodos de Auth;
+- fallback a controllers globales en ciertos overrides de módulos runtime.
 
-No deben promocionarse automáticamente a API recomendada solo porque continúen funcionando.
-
-No se detectó durante esta pasada una red general de `class_alias()` o clases marcadas como deprecated que obligue a una segunda capa de migración global. La compatibilidad visible está concentrada en contratos concretos.
+No se detectó una red general de `class_alias()` o clases marcadas como deprecated que constituya otra capa global de migración.
 
 **Estado:** clasificación documental cerrada.
 
 ## 8. Documentación interna fuera de `docs/`
 
-Se revisaron las notas internas más relevantes encontradas durante la auditoría:
+Se revisaron las notas internas relevantes:
 
-- `src/database/ORM_GUIDE.md` ya no enseña rutas/configuración antiguas y remite a las guías canónicas;
-- `src/heartbeat/README.md` remite a la documentación pública correspondiente;
-- `src/seo/SCHEMA_GUIDE.md` se mantiene como nota de arquitectura, no como tutorial paralelo;
-- `AGENTS.md`, `CONTRIBUTING.md` y `SECURITY.md` no introducen contratos alternativos del framework;
-- `CHANGELOG.md` conserva referencias históricas en su contexto de versión y no debe reescribirse como si fueran instrucciones actuales.
+- `src/database/ORM_GUIDE.md` remite a la referencia actual;
+- `src/heartbeat/README.md` remite a la documentación pública;
+- `src/seo/SCHEMA_GUIDE.md` queda como nota de arquitectura;
+- `AGENTS.md`, `CONTRIBUTING.md` y `SECURITY.md` no introducen APIs alternativas;
+- `CHANGELOG.md` conserva historia y no se interpreta como guía vigente;
+- `maintenance/` está declarado expresamente como archivo histórico/snapshot y no como backlog canónico.
 
-**Estado:** no se detectó otra fuente paralela que requiera saneamiento en esta fase.
+**Estado:** cerrado para esta fase.
+
+## 9. Auth: caducidad de tokens de verificación
+
+`resetPassword()` validaba `token_updated_at` mediante `TokenManager::isValidTimestamp()`, pero `validateAcount()` aceptaba un token de verificación independientemente de su antigüedad.
+
+Se corrigió `AuthModel::validateAcount()` para aplicar la misma ventana temporal. Un token vencido devuelve `invalid_token` y no activa la cuenta.
+
+`AuthVerificationTokenExpiryTest` cubre token vencido y token vigente. `docs/autenticacion.md` documenta ahora una única política temporal para verificación y recuperación.
+
+**Estado:** hallazgo de runtime resuelto y cubierto por prueba.
+
+## 10. JSON-LD: cuatro desacoples de runtime
+
+La revisión histórica señalaba varias limitaciones que seguían presentes en código.
+
+### Presets compuestos
+
+`SchemaComposer` solo resolvía el preset solicitado inicialmente. Los moldes que contenían `preset`/`presets` internos no se resolvían recursivamente y el catálogo incluía además definiciones duplicadas/autorreferenciales para algunos nombres.
+
+Ahora:
+
+- los presets anidados se resuelven recursivamente;
+- los ciclos producen `InvalidArgumentException` en lugar de recursión infinita;
+- se retiraron las definiciones duplicadas autorreferenciales;
+- `saas_landing` conserva `SoftwareApplication` como tipo principal.
+
+### SearchAction implícito
+
+`SchemaComposer` inventaba `/buscar?q={search_term_string}` aunque una aplicación no tuviera buscador. Ese fallback fue eliminado. `SearchAction` solo se genera si el proyecto proporciona un target explícito con el placeholder correspondiente.
+
+### `0` y `false`
+
+`JsonLD` utilizaba `array_filter()` sin callback al construir nodos, eliminando datos válidos como `price=0`, `directApply=false` o `isAccessibleForFree=false`.
+
+El filtrado actual elimina ausencia real (`null`, `''`, `[]`) y conserva `0`/`false`. Los agregados de software tampoco inventan ya `lowPrice=0` por planes que carecen de precio.
+
+### `seo.enabled=false`
+
+`LegacyConfigBridge` ya definía `SEO_ENABLED=false`, pero `Meta::renderSchema()` ignoraba esa constante y seguía generando JSON-LD. Ahora devuelve `''` cuando SEO está desactivado.
+
+`SchemaJsonLdRuntimeTest` cubre estos contratos.
+
+**Estado:** hallazgos de runtime resueltos y cubiertos por pruebas.
 
 ## Uso de este archivo al fusionar
 
 Antes de cerrar una integración con otras ramas:
 
-1. comparar las ramas y revisar si la otra rama vuelve a tocar alguno de estos contratos;
+1. comparar las ramas y revisar si la otra rama toca alguno de estos contratos;
 2. conservar los tests que fijan los comportamientos corregidos;
 3. no reintroducir por conflicto documentación retirada por carecer de implementación;
-4. conservar como historia los cambios del `CHANGELOG`, sin confundirlos con la API recomendada actual;
-5. después de integrar, ejecutar de nuevo la suite y tratar el código resultante como fuente de verdad.
+4. revisar especialmente `AuthModel`, `Meta`, `SchemaComposer`, `JsonLD`, `schema.presets.php`, `Robots` y `config/defaults.php`;
+5. conservar como historia los cambios del `CHANGELOG` y `maintenance/` sin convertirlos en API vigente;
+6. después de integrar, ejecutar de nuevo la suite y tratar el código resultante como fuente de verdad.
