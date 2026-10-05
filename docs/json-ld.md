@@ -171,7 +171,7 @@ Ejemplo:
 
 `saas_landing` combina FAQ con `SoftwareApplication`, dejando `SoftwareApplication` como tipo principal.
 
-Si un preset referencia directa o indirectamente a sí mismo, el compositor lanza `InvalidArgumentException` en lugar de entrar en recursión infinita.
+Si un preset referencia directa o indirectamente a sí mismo, el compositor lanza `LogicException` con la cadena de presets implicada, en lugar de entrar en recursión infinita.
 
 ## Varios presets
 
