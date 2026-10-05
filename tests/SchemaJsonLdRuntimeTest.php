@@ -39,7 +39,7 @@ final class SchemaJsonLdRuntimeTest extends TestCase
         define('GFRAME_PATH', $root . '/');
 
         try {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(\LogicException::class);
             (new \SchemaComposer())->compose(['preset' => 'a']);
         } finally {
             unlink($root . '/seo/schema.presets.php');
