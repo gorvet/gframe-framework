@@ -102,13 +102,13 @@ Estados:
 | ID | Área | Estado | Prioridad | Resultado / siguiente acción |
 | --- | --- | --- | --- | --- |
 | DOC-001 | Guía real de desarrollo | cubierto | P0 | `guia-desarrollo.md`: recorrido URL → ruta → middleware → controller → service → model/ORM → view/template → respuesta. |
-| DOC-002 | Índice y navegación | cubierto | P0 | `index.md` reorganizado por tareas y recorridos; conserva referencia técnica. |
+| DOC-002 | Índice y navegación | cubierto | P0 | `index.md` reorganizado por tareas y recorridos; conserva referencia técnica y expone referencias útiles antes huérfanas. |
 | DOC-003 | Primera funcionalidad completa | cubierto | P0 | `tutorial-productos.md`: CRUD vertical con web, AJAX, partial, ORM y permisos. Declara los prerrequisitos reales de Auth, `admin-panel` y stack frontend. |
 | DOC-004 | Services | cubierto | P0 | Introducidos en guía y tutorial como capa opcional para lógica reutilizable. |
 | DOC-005 | CRUD + AJAX | cubierto | P0 | Tutorial muestra carga web inicial, mutaciones AJAX, CSRF, permisos y recarga de fragmento. |
 | DOC-006 | Auth + permisos + sesiones | cubierto | P0 | `identidad-autorizacion.md` conecta autenticación, identidad, middleware, permisos, tenant y reglas de recurso. |
 | DOC-007 | Módulos | cubierto | P0 | `modulos-en-aplicacion.md` separa capacidad instalable, runtime MVC, componente frontend y funcionalidad propia. |
-| DOC-008 | Helpers PHP | cubierto | P1 | `helpers-php.md` clasifica helpers y wrappers globales legacy. |
+| DOC-008 | Helpers PHP | cubierto | P1 | `helpers-php.md` distingue helpers/clases globales vigentes de funciones wrapper legacy. |
 | DOC-009 | Cliente HTTP saliente | cubierto | P1 | `http-client.md`; se distingue claramente de API entrante. |
 | DOC-010 | Cifrado | cubierto | P1 | `encryption.md`: AES-256-GCM, claves, rotación y límites reales. |
 | DOC-011 | Async | cubierto | P1 | Enlazado desde índice y comparado con Cron/colas en `procesos-segundo-plano.md`. |
@@ -117,12 +117,12 @@ Estados:
 | DOC-014 | Notificaciones | cubierto | P1 | Inbox, cola, transportes, email y campañas contrastados con `NotificationService`, cola, `CampaignService` y `EmailQueueProcessor`. |
 | DOC-015 | Mail | corregido/cubierto | P1 | `mail.md` contrastado con `MailService`; retirado el contrato ficticio de rate limiting que el runtime no implementa. |
 | DOC-016 | SEO | cubierto | P1 | `seo.md` y `json-ld.md` verificados contra `LegacyConfigBridge`, rutas system, `Sitemap`, `Llms`, `Robots` y `SchemaComposer`. Se registra una observación de runtime sobre robots/sitemap. |
-| DOC-017 | Autoload de aplicación vs módulos | cubierto | P1 | `autoload-proyecto.md` explica Bootstrap basename map frente a ModuleRuntime namespaced overrides. |
+| DOC-017 | Autoload de aplicación vs módulos | cubierto | P1 | `autoload-proyecto.md` explica Bootstrap basename map frente a ModuleRuntime namespaced overrides y aclara que classmap/global no equivale a legacy. |
 | DOC-018 | Instalador y perfiles | cubierto | P1 | `perfiles-instalacion.md` verificado contra `profiles.php`, `InstallationProfileCatalog`, `ProjectInstaller`, `ProjectConfigWriter` y `SchemaInstaller`. |
 | DOC-019 | `src/database/ORM_GUIDE.md` | corregido | P0 | Sustituido por nota interna actual; ya no enseña `core/database` ni `config/Config.php`. |
 | DOC-020 | README / `composer new` | corregido | P1 | README aclara que `composer new` es un script del repo y no un comando nativo de Composer. |
 | DOC-021 | Mapa principal de capacidades | cubierto | P0 | Cerrada la pasada sobre Media, Notifications, Mail, Heartbeat, WordPress Headless y errores/respuestas. Las observaciones de runtime quedan separadas del estado documental. |
-| DOC-022 | Compatibilidad legacy | parcial | P1 | Helpers globales ya clasificados; queda una pasada específica sobre fachadas, aliases y contratos históricos que no forman parte del recorrido principal. |
+| DOC-022 | Compatibilidad legacy | cubierto | P1 | Clasificados classmap vigente, wrappers de `LegacyCompatibility.php`, fallbacks heredados de configuración y contratos de compatibilidad concretos. No se detectó una red general de aliases/deprecations oculta. |
 | DOC-023 | Serialización Async | corregido | P0 | `async.md` y `mail.md` reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
 | DOC-024 | Autoload y namespaces | corregido/cubierto | P0 | Documentado que el proyecto generado no trae PSR-4 general `App\`; clases normales y overrides de módulos siguen contratos distintos. |
 | DOC-025 | Heartbeat | cubierto | P1 | `heartbeat.md` verificado contra `HeartbeatMaster`: intervalos, visibilidad, force, sesión, handlers y contrato por canal. |
@@ -151,6 +151,7 @@ Estados:
 - `docs/index.md` reorganizado por tareas.
 - `README.md` reconstruido para separar creación de proyecto de instalación del paquete.
 - `docs/tutorial-productos.md` declara ahora que `template('admin')` depende de `admin-panel` y que el ejemplo protegido requiere Auth/permisos. Los perfiles `managed`, `intranet` y `saas` proporcionan esa base; `static` no.
+- `navegacion-publica.md`, `heartbeat-client.md`, `dependencias-frontend.md` y `limpieza.md` quedaron enlazados desde sus secciones naturales del índice en lugar de permanecer como referencias útiles pero huérfanas.
 
 ### Contradicciones saneadas
 
@@ -158,6 +159,9 @@ Estados:
 - `docs/async.md`: serialización corregida a Opis Closure.
 - `docs/mail.md`: dependencia de Async corregida a `opis/closure:^3.7`.
 - `docs/mail.md`: eliminado el supuesto soporte `rate_limit`, `mail.rate_limit`, `MAIL_RATE_LIMIT_*` y `mail_rate_*`; `MailService` no implementa ese contrato.
+- `docs/errores.md`: el `noindex` se atribuye al metadato real de `error-pages`, no al status HTTP como mecanismo generador del meta robots.
+- `docs/limpieza.md`: retirada una referencia residual a archivos de límites de correo inexistentes.
+- `docs/helpers-php.md` y `docs/autoload-proyecto.md`: corregida la ambigüedad entre clases globales classmapped vigentes y compatibilidad legacy.
 
 ### Instalación y perfiles verificados
 
@@ -178,6 +182,15 @@ Estados:
 - **WordPress Headless:** contrato BridgeFrame 2.0, HTTPS obligatorio, bearer token, envelope y códigos se contrastaron con `WordPressClient`.
 - **Errores:** aliases, HTTP codes, vistas web y respuesta por canal se contrastaron con `ErrorResponder` y `ErrorHandler`.
 
+### Compatibilidad y residuos históricos
+
+- Composer classmapea deliberadamente múltiples áreas globales del core; una clase global no se considera legacy por ese solo hecho.
+- `LegacyCompatibility.php` concentra wrappers globales que sí deben tratarse como compatibilidad y no como estilo recomendado nuevo.
+- `config/bootstrap.php` y `core/Config.php` siguen soportados como fallbacks heredados; el patrón recomendado actual continúa siendo `config/app.php` con los defaults del paquete.
+- `LegacyConfigBridge` mantiene constantes históricas para consumidores existentes a partir de la configuración estructurada.
+- no se detectó una red general de `class_alias()` o marcadores `deprecated` que constituya una capa adicional de migración.
+- se revisaron `src/heartbeat/README.md`, `src/seo/SCHEMA_GUIDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md` y el contexto histórico del `CHANGELOG.md`.
+
 ## Observaciones de runtime separadas de la documentación
 
 Estas observaciones no se corrigen cambiando la guía para esconderlas. Son comportamientos del código que conviene decidir en una revisión de runtime independiente.
@@ -194,15 +207,17 @@ Conviene decidir si el runtime debe condicionar esa línea a `SEO_ENABLE_SITEMAP
 
 Conviene retirar la clave residual del default o volver a conectarla explícitamente al runtime; mientras tanto no debe enseñarse como configuración efectiva.
 
-## Siguiente bloque de auditoría
+## Estado de esta pasada
 
-La cobertura principal de capacidades queda cerrada para esta fase. La siguiente pasada debe concentrarse en **compatibilidad legacy y residuos históricos**, no en volver a revisar los mismos subsistemas completos:
+La auditoría documental principal queda cerrada para esta fase:
 
-- fachadas y funciones globales antiguas todavía cargadas por Composer;
-- aliases de clases, nombres históricos y wrappers de compatibilidad;
-- READMEs o guías internas fuera de `docs/` que puedan seguir enseñando contratos viejos;
-- comentarios de código que apunten a rutas antiguas y puedan confundir mantenimiento;
-- referencias documentales huérfanas después de la reorganización.
+- las capacidades principales tienen recorrido práctico o referencia descubrible;
+- el bloque legacy ya está clasificado;
+- las referencias útiles que estaban fuera de navegación se incorporaron al índice;
+- las notas de integración se actualizaron para no volver a introducir contratos ya descartados;
+- la comparación contra `main` muestra que la rama de reconstrucción modifica documentación, mantenimiento y guías internas, sin introducir cambios de runtime PHP.
+
+A partir de aquí, los dos asuntos técnicos abiertos detectados por esta auditoría son decisiones de **runtime**, no huecos documentales: la relación robots/sitemap y la clave residual `media.max_upload_bytes`.
 
 ## Convivencia con otras ramas
 
