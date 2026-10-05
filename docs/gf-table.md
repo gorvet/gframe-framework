@@ -120,3 +120,10 @@ La API no expone `destroy()` ni una operación para cambiar opciones después de
 Personalice la presentación con las clases Bootstrap de la tabla y el CSS de la vista, manteniendo las variables del framework. Para acciones de fila, use los botones de acciones comunes del proyecto. La búsqueda, el filtrado y la ocultación de filas son comportamientos de interfaz; no sustituyen permisos ni restricciones de datos del backend.
 
 Consulte [Puentes visuales](paquetes-visuales.md) para las convenciones de variables y orden de carga. GF Table publica JavaScript y utiliza el CSS del proyecto; no distribuye una hoja CSS propia.
+
+
+## Migración y personalización visual
+
+GF Table dejó de cargarse desde `frontend-core`. Los proyectos que todavía referencien `public/js/core/utils/table.js` deben seleccionar el módulo `gf-table` y cargar `public/vendors/internal/gf-table/gf-table.js` desde la meta de la vista. Mantener ambas rutas durante una migración puede inicializar la misma tabla dos veces.
+
+La distribución incluye el puente visual del módulo. Consulte [Puentes visuales](paquetes-visuales.md) para revisar rutas, orden de carga, variables del tema y personalización. Los estilos propios de una pantalla deben cargarse después del puente y conservar los estados de búsqueda, ordenación, foco y tema oscuro.
