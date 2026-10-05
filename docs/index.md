@@ -8,7 +8,8 @@ La documentación está organizada primero por **lo que quieres construir** y de
 2. [Qué instala cada perfil](perfiles-instalacion.md): diferencia real entre `static`, `managed`, `intranet` y `saas`.
 3. [Desarrollar una aplicación con GFrame](guia-desarrollo.md): modelo mental, carpetas y recorrido de una petición.
 4. [Tutorial: Productos de extremo a extremo](tutorial-productos.md): controller, service, model/ORM, vista, AJAX y permisos en una funcionalidad completa.
-5. [Arquitectura](arquitectura.md): referencia del núcleo, módulos y recorrido interno.
+5. [Mapa de capacidades y módulos](inventario-modulos.md): comprueba qué ya existe antes de implementarlo desde cero.
+6. [Arquitectura](arquitectura.md): referencia del núcleo, módulos y recorrido interno.
 
 Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), [Configuración y entorno](configuracion.md) y [Desarrollo con una copia local](instalacion-local.md).
 
@@ -96,6 +97,7 @@ Empieza por [Usar módulos en una aplicación](modulos-en-aplicacion.md) para di
 
 Después consulta la referencia:
 
+- [Mapa de capacidades y módulos](inventario-modulos.md).
 - [Catálogo y dependencias](modulos-opcionales.md).
 - [Módulos, originales y personalizaciones](modulos-runtime.md).
 - [Extensión por herencia y contratos](extensibilidad.md).
