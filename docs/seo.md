@@ -1,17 +1,16 @@
 # SEO
 
-GFrame incluye infraestructura dinámica para:
+GFrame incluye infraestructura para:
 
 - `sitemap.xml`;
 - `robots.txt`;
 - `llms.txt`;
-- metadatos HTML;
-- canonical;
+- metadatos HTML y canonical;
 - datos estructurados JSON-LD.
 
-Estas piezas están relacionadas, pero **no son un único interruptor** en el runtime actual. La configuración global, las rutas del sistema, las metas de una vista y los contratos de sitemap/llms intervienen en lugares distintos.
+Estas piezas comparten configuración global, pero mantienen contratos específicos por ruta y por vista.
 
-## Configuración actual
+## Configuración
 
 `config/defaults.php` define:
 
@@ -25,9 +24,7 @@ Estas piezas están relacionadas, pero **no son un único interruptor** en el ru
 ],
 ```
 
-Los cinco valores siguen activos en la implementación actual.
-
-`LegacyConfigBridge` los convierte en constantes que utiliza el núcleo:
+`LegacyConfigBridge` deriva:
 
 ```text
 SEO_ENABLED
@@ -41,20 +38,19 @@ SEO_ENABLE_LLMS_TXT
 
 Con `app.debug=true`:
 
+- `SEO_ENABLED` queda en `false`;
 - `SEO_ALLOW_INDEXING` queda en `false`;
 - `SEO_ENABLE_SITEMAP_XML` queda en `false`;
 - `SEO_ENABLE_LLMS_TXT` queda en `false`;
-- `SEO_ENABLE_ROBOTS_TXT` conserva el valor de `seo.enabled && seo.robots`.
+- `SEO_ENABLE_ROBOTS_TXT` conserva `seo.enabled && seo.robots`.
 
-Por eso un proyecto con SEO habilitado y debug activo puede seguir publicando `robots.txt`, pero no sitemap ni llms.
+Así puede existir `robots.txt` en debug para bloquear rastreo, mientras sitemap, llms y JSON-LD quedan desactivados.
 
-## Qué rutas se registran
-
-`config/routes/routes_system.php` aplica estas reglas:
+## Rutas del sistema
 
 ### Sitemap
 
-Se registra `/sitemap.xml` únicamente cuando:
+`/sitemap.xml` se registra únicamente cuando:
 
 ```text
 SEO_ALLOW_INDEXING = true
@@ -64,7 +60,7 @@ SEO_ENABLE_SITEMAP_XML = true
 
 ### llms.txt
 
-Se registra `/llms.txt` únicamente cuando:
+`/llms.txt` se registra únicamente cuando:
 
 ```text
 SEO_ALLOW_INDEXING = true
@@ -74,69 +70,53 @@ SEO_ENABLE_LLMS_TXT = true
 
 ### robots.txt
 
-Se registra `/robots.txt` cuando:
+`/robots.txt` se registra cuando:
 
 ```text
 SEO_ENABLE_ROBOTS_TXT = true
 ```
 
-`Robots` comprueba después `SEO_ALLOW_INDEXING`: si la indexación global está bloqueada, responde:
+Si `SEO_ALLOW_INDEXING=false`, `Robots` responde:
 
 ```text
 User-agent: *
 Disallow: /
 ```
 
+Cuando la indexación está permitida, publica sus reglas normales. La línea:
+
+```text
+Sitemap: <site_url>/sitemap.xml
+```
+
+solo se añade cuando `SEO_ENABLE_SITEMAP_XML` está habilitado. De esta forma `robots.txt` no anuncia una ruta de sitemap que no existe.
+
 ### SEO completamente desactivado
 
 Con:
 
 ```php
-'seo' => [
-    'enabled' => false,
-]
+'seo' => ['enabled' => false]
 ```
 
-el código actual no registra sitemap, llms **ni robots**, porque los tres interruptores derivados quedan desactivados.
-
-No documentes `seo.enabled=false` como «robots sigue publicado con Disallow» porque esa no es la ejecución actual.
+no se registran sitemap, llms ni robots. Además `Meta::renderSchema()` no genera JSON-LD.
 
 ## Perfil intranet
 
-El instalador fuerza en `intranet`:
+El perfil `intranet` genera SEO desactivado e indexación bloqueada. Aunque `seo_robots` pueda conservarse como valor del formulario de instalación, `LegacyConfigBridge` calcula `SEO_ENABLE_ROBOTS_TXT` como `seo.enabled && seo.robots`; con `seo.enabled=false` no se registra el endpoint.
 
-```text
-seo_enabled = false
-seo_allow_indexing = false
-seo_sitemap = false
-seo_robots = true
-seo_llms = false
-```
-
-Sin embargo, `LegacyConfigBridge` calcula `SEO_ENABLE_ROBOTS_TXT` como `seo.enabled && seo.robots`. Por tanto, con la configuración generada actual de intranet, `seo.enabled=false` impide registrar también `robots.txt`.
-
-La protección de una intranet sigue dependiendo de autenticación/middleware y configuración del servidor; SEO nunca es un mecanismo de acceso.
+La privacidad de una intranet depende de autenticación, autorización y configuración del servidor. SEO nunca es un control de acceso.
 
 ## Metatag robots de las páginas HTML
 
-`Meta::initializeConfig()` crea un valor predeterminado:
+`Meta::initializeConfig()` establece:
 
 ```text
 SEO_ALLOW_INDEXING=true  → index,follow
 SEO_ALLOW_INDEXING=false → noindex,nofollow,noarchive
 ```
 
-El header del esqueleto imprime:
-
-```html
-<meta name="robots" content="...">
-```
-
-### Las metas pueden sobrescribirlo
-
-Después de inicializar ese valor, Render combina metas globales, de template/grupo y de vista. Un `metaTags.robots` posterior **sí puede sobrescribir** el valor predeterminado.
-
-Ejemplo:
+Las metas de template, grupo o vista se aplican después y pueden sobrescribir ese valor. Si una página concreta no debe indexarse, declara:
 
 ```php
 return [
@@ -146,25 +126,13 @@ return [
 ];
 ```
 
-No existe actualmente un bloqueo dentro de `Meta::setMetaTags()` que impida declarar `index,follow` cuando la indexación global está desactivada. Por tanto, evita contradicciones manuales en tus metas.
+No existe un bloqueo dentro de `Meta::setMetaTags()` que impida una configuración contradictoria. Mantén coherencia entre la política global y las metas personalizadas.
 
-## No existe actualmente `context.seo.indexable`
+## Exclusión de sitemap y llms
 
-La implementación auditada no utiliza un contrato de ruta:
+No existe un contrato genérico `context.seo.indexable`. La exclusión se declara con los contratos que el runtime consume realmente.
 
-```php
-->context(['seo' => ['indexable' => false]])
-```
-
-para excluir páginas del sitemap, llms o modificar `<meta name="robots">`.
-
-No dependas de ese contrato mientras el código no lo implemente.
-
-La exclusión actual utiliza contratos separados.
-
-## Excluir una ruta del sitemap
-
-Usa:
+### Excluir del sitemap
 
 ```php
 Route::get('confirmacion', 'home/HomeController@confirmation')
@@ -176,25 +144,9 @@ Route::get('confirmacion', 'home/HomeController@confirmation')
     ->registerFinal();
 ```
 
-`Sitemap` comprueba directamente:
+`context.sitemap.include=false` no modifica por sí solo el meta robots del HTML.
 
-```text
-context.sitemap.include === false
-```
-
-Ese valor **no cambia automáticamente el robots meta del HTML**.
-
-Si también quieres `noindex`, decláralo en la meta que Render aplica a esa página:
-
-```php
-return [
-    'metaTags' => [
-        'robots' => 'noindex,nofollow,noarchive',
-    ],
-];
-```
-
-## Excluir una ruta de llms.txt
+### Excluir de llms.txt
 
 `Llms` reconoce:
 
@@ -204,67 +156,34 @@ return [
 ])
 ```
 
-También excluye una ruta cuando:
+También excluye rutas con `context.sitemap.include=false`. Por tanto, sitemap es el bloqueo común cuando quieres excluir de ambos; `llms.include=false` sirve para excluir solo de llms.
 
-```text
-context.sitemap.include === false
-```
+## Qué rutas entran al sitemap
 
-Por tanto:
+`Sitemap` inspecciona rutas `GET` registradas cuyo `type` sea `web`.
 
-```php
-'context' => [
-    'sitemap' => ['include' => false],
-]
-```
-
-es el bloqueo común actual para sitemap + llms.
-
-Si quieres excluir **solo** llms y conservar sitemap, usa `llms.include=false`.
-
-## Qué rutas entran automáticamente al sitemap
-
-`Sitemap` inspecciona las rutas `GET` registradas y aplica filtros internos.
-
-Solo considera rutas cuyo `type` sea `web`.
-
-Excluye actualmente:
+Excluye, entre otras:
 
 - `context.sitemap.include=false`;
-- rutas con el campo `permission` no vacío;
-- middleware `auth`;
-- middleware cuyo nombre comience por `auth`;
-- el propio `sitemap.xml`;
-- paths que comiencen por `admin`, `dashboard`, `api`, `ajax`, `webhook`, `auth`, `login` o `logout`.
+- rutas con `permission` no vacío;
+- middleware `auth` y nombres que comiencen por `auth`;
+- `sitemap.xml`;
+- paths que comienzan por `admin`, `dashboard`, `api`, `ajax`, `webhook`, `auth`, `login` o `logout`.
 
-### Importante: el filtro no interpreta todo middleware
+No interpreta genéricamente todos los posibles `role:*`, `can:*` o middlewares propios. Si una ruta no debe aparecer, exclúyela expresamente.
 
-El código de Sitemap **no clasifica genéricamente cualquier middleware como privado**. Por ejemplo, no analiza por nombre todos los posibles `role:*`, `can:*`, middleware propios o políticas de negocio.
+## Rutas estáticas y `lastmod`
 
-Por eso, si una ruta no debe aparecer públicamente, declara la exclusión expresamente:
+Una ruta web GET sin parámetros que supera los filtros entra en el sitemap.
 
-```php
-->context(['sitemap' => ['include' => false]])
-```
-
-No confíes únicamente en que un middleware no relacionado con `auth` vaya a ser detectado por el generador SEO.
-
-`Llms` utiliza una heurística parecida y añade algunos prefijos internos como `core`, `app`, `storage` y `vendor`.
-
-## Rutas estáticas
-
-Una ruta web GET sin parámetros que supera los filtros se incorpora al sitemap.
-
-La URL se construye desde `site_url` y el path de la ruta.
-
-Para `lastmod`, Sitemap intenta obtener el `mtime` de:
+Para `lastmod`, Sitemap intenta usar el `mtime` de:
 
 ```text
 app/views/<grupo>/<vista>.php
 app/views/<grupo>/<vista>.meta.php
 ```
 
-Después aplica precedencia:
+y aplica esta precedencia:
 
 ```text
 automático por mtime
@@ -272,34 +191,25 @@ automático por mtime
   < context.lastmod de la ruta
 ```
 
-También admite `changefreq` y `priority` desde meta/contexto.
+También admite `changefreq` y `priority`.
 
-Ese `mtime` representa cambios de archivos, no necesariamente cambios del contenido de base de datos.
+El `mtime` de archivos no representa necesariamente la fecha de actualización del contenido de base de datos.
 
 ## Rutas dinámicas
 
-Una ruta con placeholders no se publica como plantilla literal. Necesita un contrato `sitemap.dynamic` en la meta de su vista.
-
-Ejemplo:
+Una ruta con placeholders necesita un contrato `sitemap.dynamic` en la meta de su vista.
 
 ```php
 return [
     'sitemap' => [
         'dynamic' => [
-            'params' => [
-                'slug' => 'slug',
-            ],
+            'params' => ['slug' => 'slug'],
             'dataset' => [
                 'table' => 'articles',
-                'conditions' => [
-                    'is_public' => 1,
-                ],
+                'conditions' => ['is_public' => 1],
                 'limit' => 1000,
             ],
-            'columns' => [
-                'slug',
-                'updated_at',
-            ],
+            'columns' => ['slug', 'updated_at'],
             'lastmod' => 'updated_at',
         ],
         'changefreq' => 'weekly',
@@ -308,99 +218,36 @@ return [
 ];
 ```
 
-`params` relaciona cada placeholder de URL con una columna del dataset.
+`params` relaciona placeholders con columnas del dataset.
 
 ## SitemapDataProvider
 
 El proveedor dinámico:
 
-- valida nombres de tabla/columnas con identificadores alfanuméricos + `_`;
-- limita la consulta entre 1 y 50 000 filas;
-- permite condiciones simples;
-- permite `IN` cuando el valor es array;
-- permite null / not null;
-- soporta `=`, `!=`, `<>`, `>`, `>=`, `<`, `<=` y `LIKE`;
-- normaliza ciertas columnas de imagen;
-- puede resolver IDs de media contra la tabla `medias`.
+- valida tabla y columnas como identificadores seguros;
+- limita consultas entre 1 y 50 000 filas;
+- permite condiciones simples, `IN`, null/not null y operadores soportados;
+- puede normalizar columnas de imagen y resolver IDs de media.
 
-### El aislamiento de negocio sigue siendo responsabilidad del contrato
+No ejecuta el controller, no aplica middleware y no añade automáticamente filtros de tenant o publicación. Define condiciones de negocio explícitas en cada dataset.
 
-El proveedor **no ejecuta el controller**, no aplica middleware y no añade automáticamente filtros de tenant o publicación.
+## Resolución de metas para Sitemap/Llms
 
-Por tanto, un dataset como:
-
-```php
-'dataset' => [
-    'table' => 'articles',
-]
-```
-
-puede exponer al sitemap filas que tu aplicación no considere públicas.
-
-Define siempre condiciones explícitas adecuadas al contenido.
-
-## Dónde busca las metas Sitemap/Llms
-
-La implementación actual resuelve directamente:
+Estos generadores consultan directamente:
 
 ```text
 app/views/<relative>/<view>.meta.php
 ```
 
-para los contratos especiales de Sitemap/Llms.
-
-No utiliza `ModuleRuntime::file()` en ese recorrido y no monta toda la combinación de template + group + view que hace Render.
-
-Por tanto, si una ruta dinámica de módulo necesita participar en Sitemap/Llms, comprueba expresamente dónde está disponible su meta en el proyecto actual.
+No montan necesariamente toda la misma combinación de template + grupo + vista que Render. Para una ruta dinámica de módulo, verifica dónde está disponible su meta en la aplicación.
 
 ## llms.txt
 
-`Llms` produce un mapa Markdown del sitio público.
+`Llms` produce un mapa Markdown del sitio público a partir de rutas GET y metadatos. Puede utilizar el mismo contrato `sitemap.dynamic` para expandir rutas dinámicas.
 
-Utiliza:
+Añade referencias a sitemap/robots solo cuando esos endpoints están habilitados. `llms.txt` no concede acceso ni garantiza indexación por asistentes de IA.
 
-- nombre del sitio;
-- descripción global si existe;
-- rutas GET públicas según sus filtros;
-- título y descripción de `metaTags` de la vista;
-- el mismo contrato `sitemap.dynamic` para expandir rutas dinámicas;
-- campos opcionales `dynamic.title`, `title_fallback` y `description` para obtener textos desde el dataset.
-
-Añade enlaces opcionales a sitemap/robots únicamente cuando los interruptores correspondientes están activos.
-
-`llms.txt` no concede acceso ni garantiza indexación por asistentes de IA.
-
-## robots.txt
-
-Cuando la indexación está permitida, `Robots` genera bloques para varios user-agents y bloquea paths internos como:
-
-```text
-/admin/
-/ajax/
-/api/
-/auth/
-/core/
-/app/
-/storage/
-/packages/
-/vendor/
-```
-
-Además incluye:
-
-```text
-Sitemap: <site_url>/sitemap.xml
-```
-
-cuando llega a ese modo de render.
-
-Cuando `SEO_ALLOW_INDEXING=false`, devuelve únicamente bloqueo global.
-
-Ten en cuenta que robots.txt controla rastreo, no autenticación.
-
-## JSON-LD: comportamiento actual
-
-Render combina metas y llama a `Meta::renderSchema()` desde el header del esqueleto.
+## JSON-LD
 
 El recorrido es:
 
@@ -412,47 +259,39 @@ metas
   → <script type="application/ld+json">
 ```
 
-### No está condicionado actualmente por `SEO_ENABLED`
+`Meta::renderSchema()` devuelve `''` cuando `SEO_ENABLED=false`. Con SEO activo, `SchemaComposer` puede generar el grafo base `Organization → WebSite → WebPage` y añadir tipos específicos según los presets y bloques declarados.
 
-En el código auditado, `Meta::renderSchema()`, `SchemaComposer` y `JsonLD::renderSchema()` no comprueban `SEO_ENABLED` para omitir el JSON-LD.
-
-Además, `SchemaComposer` infiere `WebPage` cuando no se declara `type`, por lo que el header puede seguir generando un grafo base incluso sin un bloque `schema` específico.
-
-Por tanto, no documentes actualmente «`seo.enabled=false` omite JSON-LD» como una garantía del runtime.
-
-Si el otro trabajo de desarrollo cambia este comportamiento, esta sección deberá reconciliarse contra el código integrado.
-
-Consulta [Datos estructurados JSON-LD](json-ld.md) para presets y entidades.
-
-## Presets y SchemaComposer
+### Presets
 
 `SchemaComposer`:
 
 - aplica `preset` o `presets`;
+- resuelve recursivamente moldes compuestos;
+- detecta ciclos de presets;
 - normaliza bloques legacy;
 - infiere tipo cuando falta;
-- completa idioma, sitio, título, descripción e imagen desde metas;
-- prepara un `SearchAction` por defecto con `/buscar?q={search_term_string}` cuando falta target;
-- utiliza `src/seo/schema.presets.php` como catálogo incorporado.
+- completa idioma, sitio, título, descripción e imagen desde metas.
 
-Los campos específicos y tipos generados se detallan en [JSON-LD](json-ld.md).
+No inventa una ruta `/buscar`. `SearchAction` solo aparece si la aplicación proporciona un `search.target` explícito con `{search_term_string}`.
+
+El renderer conserva valores válidos `0` y `false`; elimina únicamente ausencia real (`null`, cadena vacía y arrays vacíos) en los nodos generados.
+
+Consulta [Datos estructurados JSON-LD](json-ld.md) para el catálogo de tipos, moldes y ejemplos.
 
 ## Metas y canonical
 
-Render establece `canonical` y `ogurl` desde `currentURL` de la ruta antes de aplicar las metas combinadas. Una meta posterior puede sustituir esos valores.
+Render establece `canonical` y `ogurl` desde `currentURL` antes de aplicar metas combinadas. Una meta posterior puede sustituir esos valores.
 
-La jerarquía general de template, grupo y vista está documentada en [Metadatos y recursos de vistas](meta.md).
+La jerarquía de template, grupo y vista está documentada en [Metadatos y recursos de vistas](meta.md).
 
 ## Separación de responsabilidades
 
-Piensa SEO en cuatro capas distintas:
-
 ```text
 configuración global
-  → habilita/indexa y registra endpoints del sistema
+  → activa SEO, indexación y endpoints del sistema
 
 contexto de ruta
-  → exclusiones de sitemap/llms y overrides específicos soportados
+  → exclusiones de sitemap/llms y overrides soportados
 
 meta de página
   → title, description, robots, canonical, schema, sitemap.dynamic
@@ -465,15 +304,15 @@ No uses SEO como control de acceso. Una URL privada sigue necesitando middleware
 
 ## Verificación
 
-En un despliegue público comprueba realmente:
+En un despliegue público comprueba:
 
-1. si existen `/robots.txt`, `/sitemap.xml` y `/llms.txt` con tu combinación de switches;
-2. sus códigos HTTP y Content-Type;
+1. existencia y código HTTP de `/robots.txt`, `/sitemap.xml` y `/llms.txt` según los switches;
+2. que robots no anuncie un sitemap desactivado;
 3. que sitemap/llms no incluyan rutas privadas;
-4. que los datasets dinámicos filtren contenido publicado/tenant correctamente;
-5. `<meta name="robots">` del HTML;
-6. canonical;
-7. JSON-LD generado en el HTML;
+4. que datasets dinámicos filtren contenido público y tenant correctamente;
+5. `<meta name="robots">` y canonical;
+6. JSON-LD cuando SEO está activo y su ausencia cuando está desactivado;
+7. que `SearchAction` corresponda a una búsqueda real;
 8. que un header/template personalizado conserve o elimine conscientemente `renderSchema()`.
 
-La configuración SEO y la seguridad de acceso son problemas diferentes.
+La configuración SEO y la seguridad de acceso son problemas distintos.
