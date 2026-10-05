@@ -25,3 +25,26 @@ Use `swalAlert` para conservar los botones y el tema comunes; no replique el fee
 ## Documentación
 
 [Proyecto y documentación de SweetAlert2](https://sweetalert2.github.io/). El código original y su licencia pertenecen a sus autores.
+
+
+## Diálogos, confirmaciones y resultados
+
+Para los flujos normales de GFrame, prefiera `swalAlert` y las funciones de [Alerts](alerts.md). De este modo se conserva el tema, la semántica de botones y la integración con las respuestas del framework.
+
+Una confirmación solo decide si el frontend continúa con una acción. El backend debe volver a comprobar permisos, CSRF, identidad del recurso y reglas de negocio. Nunca utilice el resultado del diálogo como prueba de autorización.
+
+## Contenido seguro
+
+Para mensajes procedentes del usuario o del backend, utilice texto. Si una integración necesita HTML, asegúrese de que provenga de contenido confiable o saneado. No construya fragmentos HTML con valores sin escapar para mostrarlos dentro del diálogo.
+
+Los mensajes técnicos de excepciones, SQL o rutas internas no deben llegar al diálogo en producción.
+
+## Accesibilidad y foco
+
+SweetAlert2 gestiona un diálogo modal, pero la aplicación debe usar títulos y botones comprensibles. Evite diálogos innecesarios para información que puede mostrarse con un toast o junto al formulario. Una cadena de modales obliga al usuario a interrumpir repetidamente su tarea.
+
+Después de cerrar una confirmación, compruebe que el flujo devuelve el foco a un lugar razonable, especialmente cuando la acción elimina el elemento que lo originó.
+
+## Diagnóstico
+
+Si el diálogo aparece sin el tema de GFrame, revise el orden `sweetalert2.min.css` -> `sweetTheme.css`. Si el helper no existe, compruebe la carga del módulo `alerts`. Si una confirmación se ejecuta dos veces, revise listeners duplicados en fragmentos AJAX antes de culpar a SweetAlert2.
