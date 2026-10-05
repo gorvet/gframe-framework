@@ -2,7 +2,7 @@
 
 GFrame es un framework PHP ligero para aplicaciones web, paneles administrativos y servicios HTTP. Integra routing, middleware, render de vistas, ORM, autenticación, permisos, sesiones, módulos reutilizables y capacidades como multimedia, correo, notificaciones, procesos en segundo plano, cron, SEO e integraciones HTTP.
 
-La versión `1.0.0` estabiliza el núcleo, la instalación mediante Composer y el funcionamiento tanto en aplicaciones globales como multitenant.
+La serie `1.0` estabiliza el núcleo, la instalación mediante Composer y el funcionamiento tanto en aplicaciones globales como multitenant.
 
 ## Requisitos
 
