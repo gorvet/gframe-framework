@@ -69,7 +69,7 @@ En la presentación de módulos, usar «Módulos del framework», no «módulos 
 Explicar la tarea del desarrollador, los requisitos, las ubicaciones y un ejemplo comprobado contra el código. Indicar el resultado y los límites relevantes. Una regla se explica en su guía principal y se enlaza desde las demás. Los razonamientos de implementación, progreso y auditoría no se publican como ayuda. No añadir entradas al changelog por correcciones editoriales menores.
 
 ## Comprobación de la barra
- 
+
 ## Correcciones de lectura y cobertura
 
 - JSON-LD: crear una guía propia junto a SEO, con presets disponibles, tipos soportados, parámetros requeridos, composición y ejemplos comprobados. Mantener el tema separado de autenticación.
@@ -100,4 +100,3 @@ VERDICT: PASS
 # Revisión de JSON-LD
 
 Guía pública en `docs/json-ld.md`, situada junto a SEO. Ejemplos comprobados contra SchemaComposer y JsonLD. Pendientes funcionales detectados: presets compuestos sin resolución recursiva, SearchAction por defecto aunque no exista buscador, valoración incompleta del molde SaaS y filtros que omiten cero o false. No se modificó el core para estos puntos.
-

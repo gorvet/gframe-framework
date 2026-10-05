@@ -73,8 +73,8 @@ Los identificadores de esta tabla son los actuales del código, no una decisión
 | heartbeat-client | `docs/heartbeat-client.md` | Existente, pendiente; conexión con canales del servidor |
 | cron-runner | `docs/cron-runner.md` | Existente, pendiente |
 | media-library | `docs/media-library.md` | Revisada: ámbitos y almacenamiento público, rutas y campos HTTP, procesador, subidas, selectores externos, relaciones y validación backend de IDs. Pruebas del módulo y ejemplo de galería comprobados |
-| notifications | `docs/notificaciones.md` | Existente, pendiente |
-| notifications-email | `docs/notifications-email.md` | Existente, pendiente |
+| notifications | `docs/notificaciones.md` | Revisada: creación inmediata, campos, ámbitos, consultas, estado, modal AJAX, transportes y ampliación por herencia. Ejemplos ejecutados con SQLite; correo y campañas se revisan por separado |
+| notifications-email | `docs/notifications-email.md` | Revisada: payload, encolado, transporte síncrono dentro de workers, plantillas, cron, reintentos, estados y límites. Contratos comprobados con pruebas del transporte y ejemplos de documentación |
 | notification-campaigns | `docs/notification-campaigns.md` | Existente, pendiente |
 | markdown | `docs/markdown.md` | Existente, pendiente |
 | lexical-search | `docs/lexical-search.md` | Existente, pendiente |
