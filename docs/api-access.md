@@ -79,3 +79,60 @@ Las solicitudes `OPTIONS` resuelven la misma ruta API, validan el origen y termi
 - Los webhooks usan rutas de `routes_webhook.php` y su propia validación de firma o secreto.
 - Las llamadas salientes usan un cliente HTTP y credenciales de `.env`.
 - Ninguna credencial de una integración saliente debe registrarse como token de una ruta API.
+
+
+## Alcances y autorización
+
+Autenticar un consumidor no autoriza automáticamente todas las operaciones. `api_scopes` identifica capacidades declaradas para ese consumidor, pero la acción o servicio debe comprobar expresamente el alcance requerido.
+
+```php
+$context = $routeParams['context'] ?? [];
+if (!in_array('orders.write', $context['api_scopes'] ?? [], true)) {
+    return [
+        'status' => 'unauthorized',
+        'code' => 'scope_required',
+        'http_code' => 403,
+    ];
+}
+```
+
+Del mismo modo, `api_tenant_id` identifica el ámbito autenticado; no filtra consultas por sí mismo. Pase ese tenant al servicio o repositorio y no acepte como sustituto un `tenant_id` enviado por el cliente.
+
+## Gestión de secretos
+
+Mantenga tokens en `.env`, un almacén seguro o el proveedor de credenciales del proyecto. No los escriba en JavaScript público, logs, URLs, ejemplos reales ni repositorio.
+
+Para rotación, permita una transición controlada si su proveedor lo necesita, pero evite conservar indefinidamente credenciales antiguas. Registre eventos de autenticación con identificadores del consumidor, nunca con el token completo.
+
+## Orígenes y CORS
+
+CORS es una política del navegador, no una barrera para llamadas servidor a servidor. Un origen permitido solo determina qué frontend puede leer la respuesta desde un navegador; el Bearer sigue siendo necesario para la solicitud real.
+
+Mantenga la lista de orígenes exacta. No utilice `*` con credenciales sensibles ni convierta automáticamente cualquier host recibido en permitido.
+
+## Errores esperados
+
+| Situación | Resultado esperado |
+| --- | --- |
+| No hay token/proveedor configurado | Error de configuración del servidor |
+| Bearer ausente o inválido | `unauthorized`, normalmente 401 |
+| Token válido sin scope requerido | 403 desde la autorización de la acción |
+| Tenant no válido para la operación | 403 o código de negocio equivalente |
+| Origin de navegador no permitido | Rechazo CORS/preflight |
+
+No devuelva detalles que permitan distinguir secretos parcialmente correctos ni información interna del proveedor.
+
+## Pruebas de una integración API
+
+Cubra al menos:
+
+1. token válido e inválido;
+2. sensibilidad a mayúsculas del secreto;
+3. preflight permitido y bloqueado;
+4. llamada servidor a servidor sin `Origin`;
+5. scope permitido y faltante;
+6. aislamiento por tenant;
+7. respuesta sin exposición del token;
+8. rotación o proveedor personalizado cuando exista.
+
+Las pruebas del middleware no sustituyen las pruebas del servicio de negocio: una credencial válida puede seguir intentando acceder a un recurso que no pertenece a su tenant.
