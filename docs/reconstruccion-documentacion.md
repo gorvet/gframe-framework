@@ -113,17 +113,17 @@ Estados:
 | DOC-010 | Cifrado | cubierto | P1 | `encryption.md`: AES-256-GCM, claves, rotación y límites reales. |
 | DOC-011 | Async | cubierto | P1 | Enlazado desde índice y comparado con Cron/colas en `procesos-segundo-plano.md`. |
 | DOC-012 | Cron | cubierto | P1 | Conserva referencia y ahora forma parte de la guía de decisión. |
-| DOC-013 | Media | cubierto | P1 | `media-library.md` verificado contra servicio, scopes, procesador, variantes, relaciones, cuota y extensión. Se registra aparte una clave de configuración residual del runtime. |
+| DOC-013 | Media | corregido/cubierto | P1 | `media-library.md` verificado contra servicio y procesador; retirada de defaults la clave residual `media.max_upload_bytes` y fijada la fuente real mediante test. |
 | DOC-014 | Notificaciones | cubierto | P1 | Inbox, cola, transportes, email y campañas contrastados con `NotificationService`, cola, `CampaignService` y `EmailQueueProcessor`. |
 | DOC-015 | Mail | corregido/cubierto | P1 | `mail.md` contrastado con `MailService`; retirado el contrato ficticio de rate limiting que el runtime no implementa. |
-| DOC-016 | SEO | cubierto | P1 | `seo.md` y `json-ld.md` verificados contra `LegacyConfigBridge`, rutas system, `Sitemap`, `Llms`, `Robots` y `SchemaComposer`. Se registra una observación de runtime sobre robots/sitemap. |
+| DOC-016 | SEO | corregido/cubierto | P1 | `seo.md` y `json-ld.md` verificados; `Robots` ya no anuncia un sitemap desactivado y el comportamiento queda cubierto por test. |
 | DOC-017 | Autoload de aplicación vs módulos | cubierto | P1 | `autoload-proyecto.md` explica Bootstrap basename map frente a ModuleRuntime namespaced overrides y aclara que classmap/global no equivale a legacy. |
 | DOC-018 | Instalador y perfiles | cubierto | P1 | `perfiles-instalacion.md` verificado contra `profiles.php`, `InstallationProfileCatalog`, `ProjectInstaller`, `ProjectConfigWriter` y `SchemaInstaller`. |
 | DOC-019 | `src/database/ORM_GUIDE.md` | corregido | P0 | Sustituido por nota interna actual; ya no enseña `core/database` ni `config/Config.php`. |
 | DOC-020 | README / `composer new` | corregido | P1 | README aclara que `composer new` es un script del repo y no un comando nativo de Composer. |
-| DOC-021 | Mapa principal de capacidades | cubierto | P0 | Cerrada la pasada sobre Media, Notifications, Mail, Heartbeat, WordPress Headless y errores/respuestas. Las observaciones de runtime quedan separadas del estado documental. |
+| DOC-021 | Mapa principal de capacidades | cubierto | P0 | Cerrada la pasada sobre Media, Notifications, Mail, Heartbeat, WordPress Headless y errores/respuestas. |
 | DOC-022 | Compatibilidad legacy | cubierto | P1 | Clasificados classmap vigente, wrappers de `LegacyCompatibility.php`, fallbacks heredados de configuración y contratos de compatibilidad concretos. No se detectó una red general de aliases/deprecations oculta. |
-| DOC-023 | Serialización Async | corregido | P0 | `async.md` y `mail.md` reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
+| DOC-023 | Serialización Async | corregido | P0 | `async.md`, `mail.md` y `dependencias.md` reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
 | DOC-024 | Autoload y namespaces | corregido/cubierto | P0 | Documentado que el proyecto generado no trae PSR-4 general `App\`; clases normales y overrides de módulos siguen contratos distintos. |
 | DOC-025 | Heartbeat | cubierto | P1 | `heartbeat.md` verificado contra `HeartbeatMaster`: intervalos, visibilidad, force, sesión, handlers y contrato por canal. |
 | DOC-026 | WordPress Headless | cubierto | P1 | `wordpress-headless.md` verificado contra contrato BridgeFrame 2.0, HTTPS, token, envelope y mapeo de errores. |
@@ -158,6 +158,7 @@ Estados:
 - `src/database/ORM_GUIDE.md`: rutas/configuración antiguas retiradas.
 - `docs/async.md`: serialización corregida a Opis Closure.
 - `docs/mail.md`: dependencia de Async corregida a `opis/closure:^3.7`.
+- `docs/dependencias.md`: retirada la referencia antigua a Laravel Serializable Closure / `PHPAsync`; documentado `opis/closure` + `Async`.
 - `docs/mail.md`: eliminado el supuesto soporte `rate_limit`, `mail.rate_limit`, `MAIL_RATE_LIMIT_*` y `mail_rate_*`; `MailService` no implementa ese contrato.
 - `docs/errores.md`: el `noindex` se atribuye al metadato real de `error-pages`, no al status HTTP como mecanismo generador del meta robots.
 - `docs/limpieza.md`: retirada una referencia residual a archivos de límites de correo inexistentes.
@@ -191,33 +192,32 @@ Estados:
 - no se detectó una red general de `class_alias()` o marcadores `deprecated` que constituya una capa adicional de migración.
 - se revisaron `src/heartbeat/README.md`, `src/seo/SCHEMA_GUIDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md` y el contexto histórico del `CHANGELOG.md`.
 
-## Observaciones de runtime separadas de la documentación
+## Hallazgos de runtime corregidos
 
-Estas observaciones no se corrigen cambiando la guía para esconderlas. Son comportamientos del código que conviene decidir en una revisión de runtime independiente.
+La auditoría encontró dos desacoples de runtime además de los problemas documentales. Ambos se corrigieron con cambios mínimos y tests dedicados.
 
-### Robots anuncia sitemap desactivado
+### Robots y sitemap
 
-`Robots::render()` añade `Sitemap: <site_url>/sitemap.xml` cuando la indexación está permitida. Si `seo.robots=true` pero `seo.sitemap=false`, `robots.txt` puede anunciar una URL de sitemap cuya ruta no fue registrada.
+`Robots::render()` ahora añade `Sitemap: <site_url>/sitemap.xml` únicamente cuando `SEO_ENABLE_SITEMAP_XML` está habilitado o no está definido. De esta forma coincide con la condición que registra `/sitemap.xml` en `routes_system.php`.
 
-Conviene decidir si el runtime debe condicionar esa línea a `SEO_ENABLE_SITEMAP_XML`.
+`MetaSeoTest` comprueba expresamente que un sitemap desactivado no sea anunciado por `robots.txt`.
 
-### `media.max_upload_bytes` residual
+### Fuente del límite multimedia
 
-`config/defaults.php` todavía contiene `media.max_upload_bytes`, pero el límite efectivo de carga lo obtiene `MediaProcessor` desde `resources/modules/media-library/config/media.php`. La documentación actual ya enseña el contrato real y `docs/configuracion.md` no presenta esa clave como opción vigente.
+Se retiró `media.max_upload_bytes` de `config/defaults.php` porque el runtime no lo consumía. La fuente del límite por archivo permanece en `resources/modules/media-library/config/media.php`, leída por `MediaProcessor::getMaxUploadBytes()`.
 
-Conviene retirar la clave residual del default o volver a conectarla explícitamente al runtime; mientras tanto no debe enseñarse como configuración efectiva.
+`ConfigurationDefaultsTest` fija ese contrato y evita que vuelvan a existir dos fuentes aparentes para el mismo límite.
 
 ## Estado de esta pasada
 
-La auditoría documental principal queda cerrada para esta fase:
+La auditoría documental y los hallazgos de runtime detectados durante ella quedan cerrados en esta rama:
 
 - las capacidades principales tienen recorrido práctico o referencia descubrible;
-- el bloque legacy ya está clasificado;
+- el bloque legacy está clasificado;
 - las referencias útiles que estaban fuera de navegación se incorporaron al índice;
-- las notas de integración se actualizaron para no volver a introducir contratos ya descartados;
-- la comparación contra `main` muestra que la rama de reconstrucción modifica documentación, mantenimiento y guías internas, sin introducir cambios de runtime PHP.
-
-A partir de aquí, los dos asuntos técnicos abiertos detectados por esta auditoría son decisiones de **runtime**, no huecos documentales: la relación robots/sitemap y la clave residual `media.max_upload_bytes`.
+- los contratos documentales ficticios o antiguos encontrados fueron retirados o corregidos;
+- los dos desacoples de runtime confirmados fueron corregidos y cubiertos por pruebas;
+- `docs/hallazgos-integracion.md` conserva el historial necesario para comparar con otras ramas sin reintroducir errores por conflicto.
 
 ## Convivencia con otras ramas
 
