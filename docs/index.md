@@ -25,6 +25,7 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 
 - [ORM, modelos y dialectos](orm.md).
 - La organización recomendada de controllers, services y models se introduce en [Desarrollar una aplicación con GFrame](guia-desarrollo.md).
+- [Helpers PHP del core](helpers-php.md).
 - [Extensión por herencia y contratos](extensibilidad.md).
 
 ### Formularios, AJAX y frontend
@@ -51,6 +52,7 @@ Estas piezas forman un mismo recorrido aunque tengan referencias separadas:
 - [Administración de usuarios](user-admin.md).
 - [Utilidades de contraseñas](password-utils.md).
 - [Sanitización de HTML](html-sanitizer.md).
+- [Cifrado de datos de aplicación](encryption.md).
 
 ## Añadir capacidades
 
@@ -76,9 +78,8 @@ Estas piezas forman un mismo recorrido aunque tengan referencias separadas:
 ### Integraciones y transporte HTTP
 
 - [Acceso API](api-access.md): otros sistemas consumen endpoints de tu aplicación.
+- [Cliente HTTP saliente](http-client.md): tu aplicación consume servicios externos.
 - [WordPress headless](wordpress-headless.md).
-
-El cliente HTTP saliente del core y el cifrado de aplicación existen en el framework y tienen documentación específica pendiente dentro de la reconstrucción actual. Consulta [el plan de reconstrucción](reconstruccion-documentacion.md) para su estado.
 
 ### SEO y publicación
 
