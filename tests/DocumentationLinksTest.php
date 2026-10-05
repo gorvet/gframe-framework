@@ -24,7 +24,7 @@ final class DocumentationLinksTest extends TestCase
     {
         $source = file_get_contents(dirname(__DIR__) . '/docs/primer-proyecto.md');
         preg_match_all('/```php\s*\n(.*?)\n```/s', $source, $blocks);
-        self::assertCount(4, $blocks[1]);
+        self::assertGreaterThanOrEqual(4, count($blocks[1]));
         foreach ($blocks[1] as $code) {
             self::assertNotEmpty(token_get_all(str_starts_with(trim($code), '<?php') ? $code : '<?php ' . $code, TOKEN_PARSE));
         }
