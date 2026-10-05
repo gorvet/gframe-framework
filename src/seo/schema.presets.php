@@ -27,7 +27,7 @@ return [
     'creative_work' => ['type' => 'CreativeWork', 'creativeWork' => []],
     'faq' => ['type' => 'WebPage', 'faq' => []],
 
-    // Moldes de uso común para vistas.
+    // Moldes "de uso comun" para vistas
     'site_base' => [
         'preset' => 'webpage',
     ],
@@ -58,7 +58,8 @@ return [
         ],
     ],
     'saas_landing' => [
-        'presets' => ['faq', 'software'],
+        'presets' => ['software', 'faq'],
+        'type' => 'SoftwareApplication',
         'software' => [
             'name' => null,
             'category' => 'BusinessApplication',

@@ -4,9 +4,7 @@ El módulo `self-account` permite que un usuario autenticado consulte sus datos 
 
 ## Instalación
 
-```powershell
-php bin/modules.php publish-project self-account C:\ruta\del\proyecto
-```
+Selecciona `self-account` en la instalación o añádelo siguiendo [Instalación de módulos](modulos-opcionales.md#añadir-módulos-a-un-proyecto-instalado). El actualizador recibe la lista completa de módulos deseados, no solo el nuevo.
 
 La publicación resuelve `admin-panel`, `auth-ui`, `alerts` y `frontend-core`, publica rutas y CSS/JS y crea carpetas vacías `app/controllers/self-account` y `app/views/self-account` para personalizar. Solo se preparan las capas presentes en el módulo. El controlador y las vistas originales permanecen en el módulo. También requiere el esquema `auth`. `/account` utiliza la plantilla administrativa, sin una plantilla independiente. Conserva el middleware `auth`, sin exigir un rol administrativo, para permitir el cambio obligatorio de contraseña y la cuenta propia de cualquier usuario autenticado.
 

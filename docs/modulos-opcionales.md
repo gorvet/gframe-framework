@@ -1,8 +1,10 @@
-# Módulos y componentes de interfaz
+# Instalación de módulos
 
 GFrame conserva los módulos reutilizables en `resources/modules`. Cada módulo declara su nombre, tipo, versión cuando se conoce, dependencias, si forma parte de la instalación predeterminada y sus recursos publicables.
 
 Las dependencias se resuelven automáticamente. Por ejemplo, `alerts` incorpora Bootstrap, jQuery, SweetAlert2 y `gframe-icons` antes de publicar `alertToast`.
+
+Los módulos opcionales pueden añadirse después de instalar el proyecto. No es necesario volver a ejecutar el instalador web. Selecciona únicamente la función que necesitas; sus dependencias se incorporan automáticamente.
 
 ## Base instalada automáticamente
 
@@ -23,6 +25,7 @@ Estos componentes no se presentan como elecciones del instalador. Forman la inte
 No todos estos módulos son opcionales en todos los perfiles. `managed` e `intranet` incluyen Auth, Cuenta y seguridad, Panel administrativo, Gestión de usuarios y Multimedia; `saas` añade Notificaciones y tareas programadas. El instalador muestra únicamente opciones compatibles que no estén ya incluidas. Consulte [los perfiles](instalacion.md).
 
 - [`markdown`](markdown.md): conversión de Markdown y HTML en PHP y JavaScript, sin dependencia de bots.
+- [`lexical-search`](lexical-search.md): búsqueda por relevancia y tolerancia a errores, sin base de datos propia.
 
 - `admin-panel`: estructura visual compartida del panel, con navbar, sidebar, tema y puntos de inserción. Los perfiles administrados lo incluyen automáticamente. Consulte [Panel administrativo](panel-administrativo.md).
 
@@ -62,6 +65,8 @@ Owl Carousel y Swiper son opciones independientes. Instalar una no obliga a publ
 
 ## Consulta y publicación
 
+### Consultar desde el repositorio del framework
+
 ```bash
 php bin/modules.php list
 php bin/modules.php publish /ruta/del/proyecto/public
@@ -69,6 +74,21 @@ php bin/modules.php publish /ruta/del/proyecto/public alerts gfselect
 ```
 
 Cuando no se indica ningún módulo, se publica automáticamente la base visual completa. La publicación conserva los archivos existentes por defecto. Para añadir módulos funcionales a un proyecto instalado, use [el actualizador](actualizaciones.md#añadir-módulos-después-de-instalar); publicar recursos por sí solo no instala tablas ni registra el módulo.
+
+### Añadir módulos a un proyecto instalado
+
+Desde la raíz del proyecto, consulta `storage/gframe-installed.json` y conserva su lista actual. Añade los identificadores nuevos separados por comas:
+
+```bash
+composer gframe:update -- --modules=LISTA_COMPLETA --dry-run
+composer gframe:update -- --modules=LISTA_COMPLETA
+```
+
+`LISTA_COMPLETA` representa todos los módulos que deseas registrar, incluidos los ya instalados, no solo los nuevos. Revisa la simulación antes de ejecutar el segundo comando. El actualizador resuelve dependencias, publica recursos y rutas, crea las carpetas de personalización necesarias y ejecuta las migraciones declaradas para el motor de base de datos del proyecto.
+
+Después, carga los recursos del módulo en la meta de la plantilla, grupo o vista que los utiliza y sigue su guía de inicialización. Instalar una biblioteca como Swiper no crea un carrusel; instalar un módulo MVC aporta sus archivos y rutas según el manifiesto.
+
+`--no-database` omite las operaciones de base de datos: no sirve para completar la instalación de un módulo que necesita tablas. Quitar un nombre de la lista tampoco elimina automáticamente sus archivos ni sus datos. Consulta [Actualizaciones](actualizaciones.md) para opciones y política de archivos administrados.
 
 ## Multimedia
 

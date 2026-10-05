@@ -54,9 +54,9 @@ final class LegacyConfigBridge
         self::define('METRICOOL_HASH', (string)ConfigRepository::get('analytics.metricool.hash', ''));
         self::define('SEO_ENABLED', $seoEnabled && !$debug);
         self::define('SEO_ALLOW_INDEXING', $allowIndexing);
-        self::define('SEO_ENABLE_SITEMAP_XML', $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.sitemap', true));
+        self::define('SEO_ENABLE_SITEMAP_XML', $allowIndexing && (bool)ConfigRepository::get('seo.sitemap', true));
         self::define('SEO_ENABLE_ROBOTS_TXT', $seoEnabled && (bool)ConfigRepository::get('seo.robots', true));
-        self::define('SEO_ENABLE_LLMS_TXT', $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.llms', true));
+        self::define('SEO_ENABLE_LLMS_TXT', $allowIndexing && (bool)ConfigRepository::get('seo.llms', true));
 
         date_default_timezone_set((string)APP_TIMEZONE);
     }

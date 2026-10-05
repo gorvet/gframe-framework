@@ -128,6 +128,10 @@ class Llms
 
     private function isPublicRoute(string $uri, array $route): bool
     {
+        if (($route['context']['seo']['indexable'] ?? true) === false) {
+            return false;
+        }
+
         if (array_key_exists('include', (array)($route['context']['llms'] ?? [])) && $route['context']['llms']['include'] === false) {
             return false;
         }
@@ -136,19 +140,8 @@ class Llms
             return false;
         }
 
-        if (!empty($route['permission'])) {
+        if ($this->isProtectedRoute($route)) {
             return false;
-        }
-
-        $middleware = $route['middleware'] ?? [];
-        if (in_array('auth', $middleware, true)) {
-            return false;
-        }
-
-        foreach ($middleware as $item) {
-            if (strpos((string)$item, 'auth') === 0) {
-                return false;
-            }
         }
 
         $path = trim($uri, '/');
@@ -158,6 +151,28 @@ class Llms
 
         return $path === ''
             || !preg_match('#^(admin|dashboard|api|ajax|webhook|auth|login|logout|core|app|storage|vendor)(/|$)#i', $path);
+    }
+
+    private function isProtectedRoute(array $route): bool
+    {
+        if (!empty($route['permission'])) {
+            return true;
+        }
+
+        foreach (($route['middleware'] ?? []) as $middleware) {
+            $name = (string)$middleware;
+            if (
+                $name === 'auth'
+                || $name === 'admin'
+                || strpos($name, 'auth') === 0
+                || strpos($name, 'role:') === 0
+                || strpos($name, 'can:') === 0
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function expandDynamicRoute(string $uriTemplate, array $route): array

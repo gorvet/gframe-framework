@@ -40,7 +40,7 @@ class JsonLD {
             $sameAsArr = array_values(array_filter($sameAsArr, fn($u) => is_string($u) && str_starts_with($u, 'http')));
         }
 
-        $org = $this->compact([
+        $org = self::compactNode([
             '@type' => 'Organization',
             '@id' => $siteUrl . '#organization',
             'name' => $orgName,
@@ -50,7 +50,7 @@ class JsonLD {
         ]);
         $graph[$org['@id']] = $org;
 
-        $ws = $this->compact([
+        $ws = self::compactNode([
             '@type' => 'WebSite',
             '@id' => $siteUrl . '#website',
             'url' => $siteUrl,
@@ -58,13 +58,14 @@ class JsonLD {
             'inLanguage' => $lang,
             'publisher' => ['@id' => $siteUrl . '#organization'],
             'potentialAction' =>
-                (!empty($sch['search']['target']) && strpos($sch['search']['target'], '{search_term_string}') !== false)
-                    ? [
-                        '@type' => 'SearchAction',
-                        'target' => $sch['search']['target'],
-                        'query-input' => 'required name=search_term_string',
-                    ]
-                    : null,
+                (!empty($sch['search']['target']) &&
+                 strpos($sch['search']['target'], '{search_term_string}') !== false)
+                ? [
+                    '@type' => 'SearchAction',
+                    'target' => $sch['search']['target'],
+                    'query-input' => 'required name=search_term_string',
+                ]
+                : null,
         ]);
         $graph[$ws['@id']] = $ws;
 
@@ -72,7 +73,7 @@ class JsonLD {
         if ($type === 'CollectionPage') $types[] = 'CollectionPage';
         if ($type === 'ContactPage') $types[] = 'ContactPage';
 
-        $wp = $this->compact([
+        $wp = self::compactNode([
             '@type' => $types,
             '@id' => $id('webpage'),
             'url' => $pageUrl,
@@ -97,7 +98,7 @@ class JsonLD {
         }
 
         if (in_array($type, ['Article', 'BlogPosting', 'NewsArticle', 'TechArticle'], true)) {
-            $article = $this->compact([
+            $article = self::compactNode([
                 '@type' => $type,
                 '@id' => $id('article'),
                 'headline' => $title,
@@ -105,7 +106,9 @@ class JsonLD {
                 'image' => $image ? ['@id' => $id('primaryimage')] : null,
                 'datePublished' => $sch['datePublished'] ?? null,
                 'dateModified' => $sch['dateModified'] ?? null,
-                'author' => !empty($sch['author']) ? [['@type' => 'Person', 'name' => $sch['author']]] : (!empty($mt['author']) ? [['@type' => 'Person', 'name' => $mt['author']]] : null),
+                'author' => !empty($sch['author'])
+                    ? [['@type' => 'Person', 'name' => $sch['author']]]
+                    : (!empty($mt['author']) ? [['@type' => 'Person', 'name' => $mt['author']]] : null),
                 'publisher' => ['@id' => $siteUrl . '#organization'],
             ]);
             $graph[$article['@id']] = $article;
@@ -113,7 +116,7 @@ class JsonLD {
 
         if ($type === 'Event' || !empty($sch['event'])) {
             $e = !empty($sch['event']) && is_array($sch['event']) ? $sch['event'] : $sch;
-            $event = $this->compact([
+            $event = self::compactNode([
                 '@type' => 'Event',
                 '@id' => $id('event'),
                 'name' => $e['name'] ?? $title,
@@ -132,7 +135,7 @@ class JsonLD {
 
         if ($type === 'Service' || !empty($sch['service'])) {
             $serviceData = !empty($sch['service']) && is_array($sch['service']) ? $sch['service'] : $sch;
-            $service = $this->compact([
+            $service = self::compactNode([
                 '@type' => 'Service',
                 '@id' => $id('service'),
                 'name' => $serviceData['name'] ?? $title,
@@ -147,7 +150,7 @@ class JsonLD {
 
         if ($type === 'LocalBusiness' || !empty($sch['business'])) {
             $businessData = !empty($sch['business']) && is_array($sch['business']) ? $sch['business'] : $sch;
-            $business = $this->compact([
+            $business = self::compactNode([
                 '@type' => $businessData['type'] ?? 'LocalBusiness',
                 '@id' => $id('localbusiness'),
                 'name' => $businessData['name'] ?? $siteName,
@@ -165,7 +168,7 @@ class JsonLD {
 
         if ($type === 'Course' || !empty($sch['course'])) {
             $courseData = !empty($sch['course']) && is_array($sch['course']) ? $sch['course'] : $sch;
-            $course = $this->compact([
+            $course = self::compactNode([
                 '@type' => 'Course',
                 '@id' => $id('course'),
                 'name' => $courseData['name'] ?? $title,
@@ -178,7 +181,7 @@ class JsonLD {
 
         if ($type === 'JobPosting' || !empty($sch['job'])) {
             $jobData = !empty($sch['job']) && is_array($sch['job']) ? $sch['job'] : $sch;
-            $job = $this->compact([
+            $job = self::compactNode([
                 '@type' => 'JobPosting',
                 '@id' => $id('job'),
                 'title' => $jobData['title'] ?? $title,
@@ -197,7 +200,7 @@ class JsonLD {
 
         if ($type === 'VideoObject' || !empty($sch['video'])) {
             $videoData = !empty($sch['video']) && is_array($sch['video']) ? $sch['video'] : $sch;
-            $video = $this->compact([
+            $video = self::compactNode([
                 '@type' => 'VideoObject',
                 '@id' => $id('video'),
                 'name' => $videoData['name'] ?? $title,
@@ -214,7 +217,7 @@ class JsonLD {
 
         if ($type === 'Recipe' || !empty($sch['recipe'])) {
             $recipeData = !empty($sch['recipe']) && is_array($sch['recipe']) ? $sch['recipe'] : $sch;
-            $recipe = $this->compact([
+            $recipe = self::compactNode([
                 '@type' => 'Recipe',
                 '@id' => $id('recipe'),
                 'name' => $recipeData['name'] ?? $title,
@@ -237,7 +240,7 @@ class JsonLD {
 
         if ($type === 'CreativeWork' || !empty($sch['creativeWork'])) {
             $creativeData = !empty($sch['creativeWork']) && is_array($sch['creativeWork']) ? $sch['creativeWork'] : $sch;
-            $creativeWork = $this->compact([
+            $creativeWork = self::compactNode([
                 '@type' => 'CreativeWork',
                 '@id' => $id('creativework'),
                 'name' => $creativeData['name'] ?? $title,
@@ -248,7 +251,9 @@ class JsonLD {
                 'datePublished' => $creativeData['datePublished'] ?? null,
                 'dateModified' => $creativeData['dateModified'] ?? null,
                 'isAccessibleForFree' => $creativeData['isAccessibleForFree'] ?? null,
-                'author' => $creativeData['author'] ?? (!empty($sch['author']) ? [['@type' => 'Person', 'name' => $sch['author']]] : (!empty($mt['author']) ? [['@type' => 'Person', 'name' => $mt['author']]] : null)),
+                'author' => $creativeData['author'] ?? (!empty($sch['author'])
+                    ? [['@type' => 'Person', 'name' => $sch['author']]]
+                    : (!empty($mt['author']) ? [['@type' => 'Person', 'name' => $mt['author']]] : null)),
                 'publisher' => $creativeData['publisher'] ?? ['@id' => $siteUrl . '#organization'],
                 'image' => $creativeData['image'] ?? ($image ? ['@id' => $id('primaryimage')] : null),
                 'text' => $creativeData['text'] ?? null,
@@ -259,8 +264,8 @@ class JsonLD {
 
         if ($type === 'Product' && (!empty($sch['product']) || !empty($sch['name']) || !empty($title))) {
             $p = !empty($sch['product']) && is_array($sch['product']) ? $sch['product'] : $sch;
-            $hasPrice = array_key_exists('price', $p) && $this->hasValue($p['price']);
-            $prod = $this->compact([
+            $hasPrice = self::hasValue($p, 'price');
+            $prod = self::compactNode([
                 '@type' => 'Product',
                 '@id' => $id('product'),
                 'name' => $p['name'] ?? $title,
@@ -283,35 +288,40 @@ class JsonLD {
 
         if ($type === 'SoftwareApplication' && (!empty($sch['software']) || !empty($sch['name']) || !empty($title))) {
             $s = !empty($sch['software']) && is_array($sch['software']) ? $sch['software'] : $sch;
+
             $offersNode = null;
-
             if (!empty($s['offers']) && is_array($s['offers'])) {
-                $offersList = array_values(array_map(function($o) use ($pageUrl) {
-                    return $this->compact([
+                $offersList = [];
+                $prices = [];
+                foreach ($s['offers'] as $offer) {
+                    if (!is_array($offer)) {
+                        continue;
+                    }
+                    $offersList[] = self::compactNode([
                         '@type' => 'Offer',
-                        'name' => $o['name'] ?? null,
-                        'price' => $o['price'] ?? null,
-                        'priceCurrency' => $o['currency'] ?? 'USD',
-                        'availability' => $o['availability'] ?? null,
-                        'url' => $o['url'] ?? $pageUrl,
+                        'name' => $offer['name'] ?? null,
+                        'price' => $offer['price'] ?? null,
+                        'priceCurrency' => $offer['currency'] ?? 'USD',
+                        'availability' => $offer['availability'] ?? null,
+                        'url' => $offer['url'] ?? $pageUrl,
                     ]);
-                }, $s['offers']));
+                    if (self::hasValue($offer, 'price') && is_numeric($offer['price'])) {
+                        $prices[] = (float)$offer['price'];
+                    }
+                }
 
-                $pricedOffers = array_values(array_filter($s['offers'], fn($o) => is_array($o) && array_key_exists('price', $o) && $this->hasValue($o['price'])));
-                $prices = array_map(fn($o) => (float)$o['price'], $pricedOffers);
-                $low = $prices ? min($prices) : null;
-                $high = $prices ? max($prices) : null;
-                $currency = $pricedOffers[0]['currency'] ?? ($s['offers'][0]['currency'] ?? 'USD');
-
-                $offersNode = $this->compact([
-                    '@type' => 'AggregateOffer',
-                    'lowPrice' => $low !== null ? (string)$low : null,
-                    'highPrice' => $high !== null ? (string)$high : null,
-                    'priceCurrency' => $currency,
-                    'offerCount' => $offersList ? (string)count($offersList) : null,
-                    'offers' => $offersList,
-                ]);
-            } elseif (array_key_exists('price', $s) && $this->hasValue($s['price'])) {
+                if ($offersList !== []) {
+                    $currency = is_array($s['offers'][0] ?? null) ? ($s['offers'][0]['currency'] ?? 'USD') : 'USD';
+                    $offersNode = self::compactNode([
+                        '@type' => 'AggregateOffer',
+                        'lowPrice' => $prices !== [] ? (string)min($prices) : null,
+                        'highPrice' => $prices !== [] ? (string)max($prices) : null,
+                        'priceCurrency' => $currency,
+                        'offerCount' => (string)count($offersList),
+                        'offers' => $offersList,
+                    ]);
+                }
+            } elseif (self::hasValue($s, 'price')) {
                 $offersNode = [
                     '@type' => 'Offer',
                     'price' => $s['price'],
@@ -320,7 +330,19 @@ class JsonLD {
                 ];
             }
 
-            $app = $this->compact([
+            $ratingNode = null;
+            $rating = $s['aggregateRating'] ?? null;
+            if (is_array($rating)) {
+                $ratingValues = self::compactNode([
+                    'ratingValue' => $rating['ratingValue'] ?? null,
+                    'reviewCount' => $rating['reviewCount'] ?? null,
+                ]);
+                if ($ratingValues !== []) {
+                    $ratingNode = ['@type' => 'AggregateRating'] + $ratingValues;
+                }
+            }
+
+            $app = self::compactNode([
                 '@type' => 'SoftwareApplication',
                 '@id' => $id('app'),
                 'name' => $s['name'] ?? $title,
@@ -329,11 +351,7 @@ class JsonLD {
                 'url' => $pageUrl,
                 'publisher' => ['@id' => $siteUrl . '#organization'],
                 'offers' => $offersNode,
-                'aggregateRating' => !empty($s['aggregateRating']) ? $this->compact([
-                    '@type' => 'AggregateRating',
-                    'ratingValue' => $s['aggregateRating']['ratingValue'] ?? null,
-                    'reviewCount' => $s['aggregateRating']['reviewCount'] ?? null,
-                ]) : null,
+                'aggregateRating' => $ratingNode,
             ]);
             $graph[$app['@id']] = $app;
         }
@@ -389,11 +407,16 @@ class JsonLD {
         return is_string($json) ? $json : '';
     }
 
-    private function compact(array $values): array {
-        return array_filter($values, static fn($value) => $value !== null && $value !== '' && $value !== []);
+    private static function compactNode(array $node): array {
+        return array_filter(
+            $node,
+            static fn($value) => $value !== null && $value !== '' && $value !== []
+        );
     }
 
-    private function hasValue(mixed $value): bool {
-        return $value !== null && $value !== '';
+    private static function hasValue(array $data, string $key): bool {
+        return array_key_exists($key, $data)
+            && $data[$key] !== null
+            && $data[$key] !== '';
     }
 }

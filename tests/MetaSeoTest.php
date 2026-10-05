@@ -94,7 +94,6 @@ final class MetaSeoTest extends TestCase
     public function testRobotsReferencesTheGeneratedSitemap(): void
     {
         if (!defined('site_url')) define('site_url', 'https://example.test/');
-        define('SEO_ALLOW_INDEXING', true);
         define('SEO_ENABLE_SITEMAP_XML', true);
         $method = (new ReflectionClass(\Robots::class))->getMethod('render');
         $method->setAccessible(true);
@@ -105,10 +104,9 @@ final class MetaSeoTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testRobotsDoesNotReferenceSitemapWhenSitemapIsDisabled(): void
+    public function testRobotsDoesNotAdvertiseDisabledSitemap(): void
     {
-        define('site_url', 'https://example.test/');
-        define('SEO_ALLOW_INDEXING', true);
+        if (!defined('site_url')) define('site_url', 'https://example.test/');
         define('SEO_ENABLE_SITEMAP_XML', false);
         $method = (new ReflectionClass(\Robots::class))->getMethod('render');
         $method->setAccessible(true);

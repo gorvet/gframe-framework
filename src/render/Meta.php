@@ -97,6 +97,12 @@ class Meta {
     }
 
     public function getMetaTag($tagName) {
+        if ($tagName === 'robots') {
+            return $this->isIndexingBlocked()
+                ? 'noindex,nofollow,noarchive'
+                : 'index,follow';
+        }
+
         return htmlspecialchars(isset($this->metaTags[$tagName]) ? $this->metaTags[$tagName] : '', ENT_QUOTES, 'UTF-8');
     }
 
@@ -122,6 +128,17 @@ class Meta {
 
         $jsonLD = new JsonLD();
         $json = $jsonLD->renderSchema($finalSchema, $this->metaTags, $this->routeParams);
+        if ($json === '') {
+            return '';
+        }
         return '<script type="application/ld+json">' . $json . '</script>';
+    }
+
+    private function isIndexingBlocked(): bool {
+        if (defined('SEO_ALLOW_INDEXING') && !SEO_ALLOW_INDEXING) {
+            return true;
+        }
+
+        return ($this->routeParams['context']['seo']['indexable'] ?? true) === false;
     }
 }
