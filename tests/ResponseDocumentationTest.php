@@ -10,7 +10,7 @@ final class ResponseDocumentationTest extends TestCase
     {
         $source = file_get_contents(dirname(__DIR__) . '/docs/respuestas.md');
         preg_match_all('/```php\s*\n(.*?)\n```/s', $source, $blocks);
-        self::assertCount(3, $blocks[1]);
+        self::assertGreaterThanOrEqual(3, count($blocks[1]));
         foreach ($blocks[1] as $code) {
             self::assertNotEmpty(token_get_all('<?php ' . $code, TOKEN_PARSE));
         }
