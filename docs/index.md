@@ -20,6 +20,7 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 - [Router y declaración de rutas](rutas.md).
 - [Render, vistas y templates](render.md).
 - [Metadatos y recursos de vistas](meta.md).
+- [Navegación pública](navegacion-publica.md): comportamiento del menú y navegación del home inicial distribuido con el esqueleto.
 - [Footer](footer.md).
 - [Multilenguaje: rutas, textos y vistas](multilenguaje.md).
 
@@ -78,6 +79,7 @@ Empieza por [Identidad, autenticación, permisos y sesiones](identidad-autorizac
 - [Tareas en segundo plano con Async](async.md): lanza una operación en otro proceso, sin cola persistente ni reintentos automáticos.
 - [Cron runner](cron-runner.md): tareas persistentes, futuras o recurrentes.
 - [Heartbeat](heartbeat.md): actualización periódica del cliente y estado de sesión.
+- [Cliente Heartbeat](heartbeat-client.md): módulo frontend, coordinación entre pestañas y personalización del controlador.
 
 ### Integraciones y transporte HTTP
 
@@ -109,6 +111,7 @@ Los módulos funcionales con guía propia se enlazan también desde las seccione
 
 GFrame integra estas bibliotecas, pero no es su autor. Cada guía identifica la fuente oficial y explica su publicación o uso dentro del framework.
 
+- [Inventario de dependencias frontend distribuidas](dependencias-frontend.md): versiones, licencias y procedencia de los archivos incluidos.
 - [Bootstrap](bootstrap.md), [jQuery](jquery.md) y [SweetAlert2](sweetalert2.md).
 - [AOS](aos.md), [Chart.js](chartjs.md), [Coloris](coloris.md) y [Flatpickr](flatpickr.md).
 - [html2canvas](html2canvas.md), [intl-tel-input](intl-tel-input.md), [jQuery UI](jquery-ui.md) y [Luxon](luxon.md).
@@ -123,6 +126,7 @@ GFrame integra estas bibliotecas, pero no es su autor. Cada guía identifica la 
 - [Actualizaciones y despliegue](actualizaciones.md).
 - [Apache y Nginx](servidores-web.md).
 - [Desarrollo con una copia local](instalacion-local.md).
+- [Limpieza y mantenimiento de datos](limpieza.md).
 - [Errores](errores.md).
 
 ## Herramientas, dependencias y versiones
