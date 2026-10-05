@@ -6,11 +6,9 @@ El módulo `auth-ui` instala el acceso web estándar de GFrame: inicio y cierre 
 
 El módulo necesita el esquema `auth`. Al publicarlo, GFrame resuelve también `alerts`, `frontend-core`, `heartbeat-client` y `password-utils`.
 
-```powershell
-php bin/modules.php publish-project auth-ui C:\ruta\del\proyecto
-```
+Selecciona `auth-ui` en la instalación o añádelo a un proyecto existente siguiendo [Instalación de módulos](modulos-opcionales.md#añadir-módulos-a-un-proyecto-instalado).
 
-La publicación agrega las rutas web y AJAX y los activos de autenticación. El controlador, las vistas y la plantilla originales permanecen en el módulo; el proyecto utiliza las carpetas de personalización descritas en [módulos runtime](modulos-runtime.md). Los archivos existentes del proyecto no se sobrescriben salvo que se solicite expresamente.
+La instalación agrega las rutas web y AJAX y los activos de autenticación. El controlador, las vistas y la plantilla originales permanecen en el módulo; el proyecto utiliza las carpetas de personalización descritas en [módulos runtime](modulos-runtime.md). El actualizador puede reemplazar los archivos administrados; revisa su vista previa y la política de [Actualizaciones](actualizaciones.md).
 
 ## Rutas incluidas
 

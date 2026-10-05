@@ -1,9 +1,10 @@
 # Actualización de proyectos GFrame
 
-Los proyectos actualizan primero el paquete PHP y después sincronizan los módulos y la base de datos:
+La actualización tiene dos pasos: descargar la versión compatible del paquete y sincronizar los archivos administrados y las migraciones del proyecto. Haz una copia de seguridad de los datos y revisa primero la vista previa:
 
 ```bash
 composer update gorvet/gframe
+composer gframe:update -- --dry-run
 composer gframe:update
 ```
 
@@ -19,7 +20,15 @@ También sincroniza los archivos base gestionados de `ProjectScaffolder::UPDATE_
 
 No reemplaza los archivos propios del proyecto: `.env`, configuración generada, rutas base del proyecto, permisos propios, `composer.json`, README, `.gitignore`, controlador del home, fragmentos de copyright/créditos ni imágenes de marca. Son decisiones explícitas, no omisiones. Los controladores, modelos y vistas runtime de módulos se actualizan con el paquete Composer; no se copian encima de las personalizaciones de `app`.
 
-Las pruebas de `ProjectUpdateServiceTest` comparan todos los archivos publicados por todos los módulos con la actualización y exigen que cada archivo del esqueleto esté cubierto o tenga una excepción explícita. Añadir un archivo base sin decidir su política hace fallar esa comprobación.
+## Qué hace cada comando
+
+| Comando | Resultado |
+| --- | --- |
+| `composer install` | Con un lock existente, instala sus versiones exactas. No selecciona automáticamente la última publicación. |
+| `composer update gorvet/gframe` | Resuelve una versión permitida por `composer.json`, actualiza `composer.lock` y descarga el paquete. |
+| `composer gframe:update` | Aplica al proyecto los archivos administrados y migraciones de la versión ya descargada. No busca versiones en Packagist. |
+
+Ninguno de estos comandos reinstala el sitio ni vuelve a crear su cuenta inicial. No edites manualmente `composer.lock` para elegir una versión: cambia la restricción en `composer.json` cuando corresponda y deja que Composer resuelva el lock. Consulta [el funcionamiento de install y update en Composer](https://getcomposer.org/doc/01-basic-usage.md).
 
 ## Vista previa
 
@@ -59,20 +68,17 @@ Si el proyecto aún no utiliza Composer, primero debe incorporar `gorvet/gframe`
 
 `composer.lock` debe versionarse después de comprobar la actualización. En producción se despliega el lock validado y se usa `composer install`; no se ejecutan actualizaciones abiertas directamente en el servidor.
 
+`--no-database` no completa una actualización que requiera migraciones. Ejecuta después el actualizador con acceso a la base de datos antes de utilizar las capacidades que dependan del nuevo esquema. `--preserve-custom` tampoco combina cambios: revisa cada conflicto y traslada tus personalizaciones a las capas del proyecto cuando proceda.
+
+Si el proyecto aún no está instalado, el actualizador renueva el instalador y los archivos de arranque sin crear la configuración, las tablas ni el registro de instalación.
+
 ## Regla de personalización
 
 El core y los archivos publicados por los módulos se consideran administrados por GFrame. No deben modificarse directamente porque una actualización puede reemplazarlos. Las aplicaciones personalizan controladores, modelos y servicios por herencia y sustituyen vistas desde `app`, con respaldo en los originales del módulo. Los contratos de transporte, persistencia y otras integraciones conectan capacidades externas. Consulte [módulos runtime](modulos-runtime.md).
 
 ## Añadir módulos después de instalar
 
-Los opcionales pueden instalarse más adelante sin volver a ejecutar `install.php`. `--modules` recibe la lista completa que se desea registrar, no solamente los módulos nuevos. Conserve los nombres de `storage/gframe-installed.json` y añada los nuevos a esa lista:
-
-```bash
-composer gframe:update -- --modules=LISTA_COMPLETA --dry-run
-composer gframe:update -- --modules=LISTA_COMPLETA
-```
-
-Sustituya `LISTA_COMPLETA` por los identificadores separados por comas. Se resuelven dependencias, se publican archivos, se crean carpetas de personalización y se ejecutan las migraciones declaradas. `--no-database` no instala las tablas necesarias de un módulo funcional. Quitar un nombre de esa lista no constituye una desinstalación completa: no elimina automáticamente archivos ni datos.
+Sigue el procedimiento de [Instalación de módulos](modulos-opcionales.md#añadir-módulos-a-un-proyecto-instalado). Utiliza el mismo actualizador, pero `--modules` recibe la lista completa deseada, no solo los módulos nuevos. No vuelvas a ejecutar `install.php` para añadirlos.
 
 ## Despliegue en producción
 
@@ -84,7 +90,7 @@ composer install --no-dev --prefer-dist --optimize-autoloader
 
 Composer genera `packages/autoload.php`; si falta, el arranque no puede cargar GFrame. No despliegue únicamente los archivos de `app` ni copie dependencias sueltas. Cuando la versión incluya cambios en archivos publicados o migraciones, revise y ejecute también `composer gframe:update` conforme a la política de personalización del proyecto.
 
-Suba `.env` por un canal privado, sin versionarlo. Configure `APP_URL` con la URL HTTPS real y desactive debug. El usuario del proceso PHP necesita permisos de escritura en los directorios utilizados por sesiones, procesos asíncronos, registros y cargas. Los envíos asíncronos requieren PHP CLI disponible; las colas y campañas programadas requieren el trabajador o cron descrito en sus guías.
+Sube `.env` por un canal privado, sin versionarlo. Desactiva debug y revisa [la URL del entorno](configuracion.md#url-automática-y-url-explícita), especialmente para tareas ejecutadas fuera de una petición web. El usuario del proceso PHP necesita permisos de escritura en los directorios utilizados por sesiones, procesos asíncronos, registros y cargas. Los envíos asíncronos requieren PHP CLI disponible; las campañas programadas necesitan la ejecución periódica descrita en [Tareas programadas](cron-runner.md).
 
 Integre las reglas del servidor según [Apache y Nginx](servidores-web.md). Compruebe portada, contacto si existe, `robots.txt`, `sitemap.xml` y una URL inexistente. No declare el despliegue correcto solo porque la portada abre.
 

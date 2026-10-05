@@ -6,7 +6,7 @@ Para situar el enrutamiento en el arranque del proyecto, consulta [Arquitectura]
 
 ## Dónde declarar las rutas
 
-Bootstrap carga los archivos `config/routes/routes_*.php`, ordenados por nombre. Puedes dividir un canal en varios archivos, como `routes_ajax_account.php`.
+El arranque carga los archivos `config/routes/routes_*.php`, ordenados por nombre, directamente desde esa carpeta. Puedes dividir un canal en varios archivos, como `routes_ajax_account.php` y `routes_ajax_media.php`; no se recorren subcarpetas.
 
 | Archivo | Tipo registrado | URL habitual |
 | --- | --- | --- |
@@ -20,6 +20,10 @@ Bootstrap carga los archivos `config/routes/routes_*.php`, ordenados por nombre.
 Hay dos mecanismos distintos: RouteBuilder infiere el tipo por el nombre del archivo que llama a `get()`, `post()`, `put()` o `delete()`; Router decide el canal de ejecución por el primer segmento de la URL, después de reconocer el idioma.
 
 El nombre del archivo no añade el prefijo a la URL. Debes declarar `ajax/...`, `api/...`, `webhook/...` o `sse/...` cuando corresponda. `system` es una clasificación de declaraciones internas, no un prefijo de transporte reconocido por Router. Una ruta interna puede ejecutarse como AJAX si su URL comienza por `ajax`.
+
+Por ejemplo, declarar `productos` en `routes_ajax.php` registra ese patrón, pero una petición a `/productos` sigue entrando por el canal web. Para ejecutarla como AJAX, declara `ajax/productos` y solicita `/ajax/productos`. Una cabecera `X-Requested-With` tampoco selecciona el canal: sus controles se aplican después de reconocer el prefijo.
+
+El tipo registrado sirve también a componentes que consultan el catálogo de rutas. Para las peticiones normales, Router selecciona el transporte por la URL y busca el método y patrón; en preflight `OPTIONS`, además exige una declaración de tipo API. Mantén coherentes el nombre del archivo y el prefijo, aunque alguno de esos mecanismos permita registrar combinaciones distintas.
 
 Declara las rutas directamente en sus archivos de canal. Si las construyes desde otro archivo mediante un helper, la inferencia usa el archivo que llama al método de RouteBuilder, no necesariamente el archivo que carga el helper.
 
@@ -144,6 +148,8 @@ Si no declaras `module()`, Router puede inferirlo de la última carpeta del cont
 `sourceModule` no es lo mismo que el valor histórico `module` usado en la resolución de permisos. Consulta [Módulos runtime](modulos-runtime.md) para namespaces y ampliación; no dupliques rutas solo para sustituir una vista.
 
 ## AJAX
+
+Los campos y su adaptación por canal se describen en [Contratos de respuesta](respuestas.md).
 
 En `config/routes/routes_ajax.php`:
 
@@ -337,5 +343,3 @@ Si una ruta no responde, comprueba en este orden:
 4. Se llamó a `registerFinal()` y no hay otra declaración que la reemplace o capture antes.
 5. Los middleware reciben la sesión, token o credenciales necesarios.
 6. Existen controlador y acción pública; para web, también la vista y el template resueltos.
-
-No modifiques Router para resolver estas diferencias de configuración. Ajusta la declaración o la integración del proyecto.

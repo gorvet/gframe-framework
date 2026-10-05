@@ -1,14 +1,9 @@
-# Archivos exclusivos de auditoría pendientes de incorporar
+# Integración de cobertura exclusiva de auditoría
 
-Estos archivos aportan cobertura que no compite conceptualmente con las guías estructurales de `codex/reconstruccion-documentacion` y se incorporarán a `codex/reconstruccion-unificada` tras comprobar su contrato contra código/tests.
+Estado: integrada en `codex/reconstruccion-unificada`.
 
-Grupos principales:
+Se incorporaron las referencias complementarias de comandos, respuestas, vistas, primer proyecto, frontend/UI, librerías externas, campañas, Cron y WordPress Headless junto con sus tests documentales PHP/JavaScript.
 
-- referencia de comandos y respuestas;
-- guía de vistas y primer proyecto;
-- documentación ampliada de módulos UI y librerías externas;
-- documentación de frontend-core, campañas, cron y WordPress Headless;
-- tests documentales PHP y JavaScript;
-- estado/matriz de cobertura de auditoría.
+Se conservaron como canónicas las guías estructurales de reconstrucción para aprendizaje transversal, helpers PHP, HTTP, cifrado, identidad/autorización, módulos, segundo plano y el tutorial CRUD `docs/tutorial-productos.md`.
 
-Los archivos solapados (index, Auth, SEO, JSON-LD, HTTP, Encryption, tutorial CRUD, helpers, etc.) no se copian automáticamente: se resuelven por síntesis.
+No se incorporó `docs/primera-funcionalidad.md` porque duplicaría el tutorial CRUD canónico. Los solapamientos de Auth y SEO/JSON-LD permanecen gobernados por runtime + tests combinados.

@@ -10,6 +10,28 @@ function prototype() {
   return context.window.GFSelect.prototype;
 }
 
+test('GF Select distingue valores simples, múltiples y límites del atributo', () => {
+  const api = prototype();
+  const select = {value: 'es', dataset: {maxSelections: '3'},
+    selectedOptions: [{value: 'education'}, {value: 'health'}]};
+  assert.equal(api.getValue.call({select, settings: {multiple: false}}), 'es');
+  assert.deepEqual(Array.from(api.getValue.call({select, settings: {multiple: true}})),
+    ['education', 'health']);
+  assert.equal(api.resolveMaximum.call({select}, null), 3);
+  assert.equal(api.resolveMaximum.call({select}, 0), 0);
+  assert.equal(api.resolveMaximum.call({select}, 2), 2);
+});
+
+test('El cambio externo sincroniza sin invocar el callback de elección', () => {
+  let refreshed = 0, notified = 0;
+  const instance = {invalid: true, refresh() {refreshed++;},
+    settings: {onChange() {notified++;}}};
+  prototype().handleNativeChange.call(instance);
+  assert.equal(instance.invalid, false);
+  assert.equal(refreshed, 1);
+  assert.equal(notified, 0);
+});
+
 test('GFSelect sincroniza la validación explícita, nativa y aria-invalid', () => {
   const attrs = {}, classes = {};
   const instance = {

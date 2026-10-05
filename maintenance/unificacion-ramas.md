@@ -36,4 +36,4 @@ Las dos ramas fueron desarrolladas de forma independiente por agentes distintos.
 
 ## Estado
 
-La rama `codex/reconstruccion-unificada` parte actualmente de `codex/reconstruccion-documentacion`. Las dos ramas fuente permanecen intactas. La integración física de archivos se hará después de revisar cada grupo solapado contra código y tests.
+La rama `codex/reconstruccion-unificada` parte actualmente de `codex/reconstruccion-documentacion`. Las dos ramas fuente permanecen intactas. La integración física de la cobertura complementaria de auditoría se realizó por grupos verificados. Se conservaron como base las guías estructurales de reconstrucción y se incorporaron las referencias cuya documentación está ejecutada por tests o aporta cobertura no duplicada. `docs/primera-funcionalidad.md` no se incorporó para evitar un segundo tutorial CRUD paralelo; `docs/tutorial-productos.md` sigue siendo el recorrido canónico.

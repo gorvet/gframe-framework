@@ -6,11 +6,24 @@ Para generar el proyecto, empieza por [Instalación](instalacion.md).
 
 ## Las tres capas
 
-1. **Núcleo PHP**: bootstrap, configuración, Router y RouteBuilder, middleware, Render y Meta, ORM y dialectos, errores, SEO y servicios internos.
+1. **Núcleo PHP**: arranque, configuración, Router y RouteBuilder, middleware, Render y Meta, ORM y dialectos, errores, SEO y servicios internos.
 2. **Módulos de ampliación**: funcionalidades PHP o híbridas PHP/JavaScript, como usuarios, multimedia, notificaciones y campañas. Los requisitos dependen del perfil: no todos son opcionales en todos los proyectos.
 3. **Módulos de vista y frontend**: componentes y utilidades de interfaz, como GF Select, GF Table y alertas visuales. Las bibliotecas externas, como Bootstrap y SweetAlert2, se presentan por separado dentro de esta capa.
 
-La interfaz no sustituye la autorización del servidor. Los módulos tampoco contienen automáticamente las reglas específicas de tu negocio.
+## MVC y lógica de la aplicación
+
+GFrame organiza la aplicación mediante controladores, modelos y vistas. Los servicios agrupan los procesos que necesitan varias operaciones o que se reutilizan entre acciones.
+
+| Pieza | Responsabilidad | Ejemplo |
+| --- | --- | --- |
+| Ruta | Asocia una URL y un método HTTP con una acción, middleware y presentación. | `GET /products` llama a `ProductController@index`. |
+| Controlador | Recibe los parámetros de la petición y devuelve el resultado de la acción. | Solicita el listado de productos. |
+| Servicio | Ejecuta las reglas y procesos del negocio. | Comprueba disponibilidad y registra una compra. |
+| Modelo | Accede a los datos mediante el ORM y la conexión elegida. | Consulta los productos de un tenant. |
+| Vista | Presenta los datos devueltos por la acción. | Genera las filas del listado. |
+| Template | Proporciona la estructura compartida de las páginas. | Envuelve la vista con el panel administrativo. |
+
+Una acción sencilla puede consultar directamente un modelo o devolver datos sin persistencia. Añade un servicio cuando el proceso lo requiera. Mantén las comprobaciones de permisos sobre registros en el servidor; ocultar un botón en la vista no autoriza una operación.
 
 ## Carpetas del proyecto instalado
 
@@ -20,10 +33,10 @@ Estas ubicaciones pertenecen al proyecto. Algunas carpetas aparecen solo cuando 
 | --- | --- |
 | `index.php` | Punto de entrada HTTP |
 | `install.php` | Instalador, protegido por el estado de instalación |
-| `core/Load.php` | Puente hacia Composer y Bootstrap; no es una copia del núcleo |
+| `core/Load.php` | Carga Composer y llama al arranque del framework |
 | `config/app.php` | Configuración estructural del proyecto |
 | `.env` | Valores del entorno y secretos; no se publica en Git |
-| `config/routes/routes_*.php` | Rutas organizadas por canal |
+| `config/routes/routes_*.php` | Declaraciones de rutas; las convenciones de nombres se explican en la guía de rutas |
 | `app/controllers/` | Acciones que atienden peticiones |
 | `app/services/` | Procesos y reglas reutilizables del negocio |
 | `app/models/` | Modelos y acceso a datos del proyecto |
@@ -41,6 +54,8 @@ Estas ubicaciones pertenecen al proyecto. Algunas carpetas aparecen solo cuando 
 No edites `packages/gorvet/gframe/` para personalizar la aplicación: Composer puede reemplazarlo. Algunos archivos publicados también están administrados por el actualizador. Consulta [Actualizaciones](actualizaciones.md) antes de modificar assets compartidos.
 
 Los originales de los módulos permanecen en el paquete. Para rutas asociadas a módulos, las convenciones runtime permiten buscar primero en la aplicación y después en el módulo. Consulta [Módulos runtime](modulos-runtime.md) para las rutas relativas, namespaces y ampliación de clases.
+
+Por ejemplo, una vista de `self-account` conserva su original en `packages/gorvet/gframe/resources/modules/self-account/application/app/views/self-account/`. Su sustitución se coloca en `app/views/self-account/`, con el mismo nombre relativo. Los controladores, modelos y servicios del proyecto amplían las clases del módulo mediante sus contratos; no se copian automáticamente al instalar.
 
 ## Carpetas del repositorio del framework
 
@@ -63,13 +78,13 @@ Estas ubicaciones pertenecen al paquete, no al negocio de una aplicación.
 | `skills/` | Instrucciones versionadas para asistentes |
 | `tests/` | Pruebas del framework |
 
-GFrame 1.x combina componentes con namespace `GFrame\` y clases globales históricas, como `Router`, `Render` y `RouteBuilder`. Composer carga ambas mediante PSR-4 y su mapa de clases. No necesitas incluir los archivos del núcleo en cada controlador.
+GFrame combina componentes con namespace `GFrame\` y clases globales, como `Router`, `Render` y `RouteBuilder`. Composer carga ambas mediante PSR-4 y su mapa de clases. No necesitas incluir los archivos del núcleo en cada controlador.
 
 ## Recorrido de una petición
 
 ```text
 Petición HTTP
-  → servidor web → index.php → core/Load.php → Bootstrap
+  → servidor web → index.php → core/Load.php → arranque
   → Router: canal, idioma y ruta → middleware
   ├─ web → Render → acción del controlador → vista y template → HTML
   └─ AJAX / API / webhook / SSE → acción del controlador → respuesta del canal
@@ -79,6 +94,8 @@ Dentro de una acción, cuando el caso lo necesita:
 ```
 
 Servicios y modelos no son pasos obligatorios. Una acción puede devolver datos sin consultar una base de datos.
+
+En un listado administrado, la primera petición web construye la página. Los filtros, la búsqueda y la paginación utilizan peticiones AJAX que devuelven datos o fragmentos HTML; el JavaScript actualiza el contenedor correspondiente, sin reconstruir el template completo. Esas peticiones siguen pasando por Router, middleware y controlador. Consulta [Frontend core](frontend-core.md) para el contrato de actualización de fragmentos.
 
 ### Entrada y preparación
 
@@ -151,5 +168,3 @@ Este ejemplo no necesita un modelo ni un servicio. Cuando necesites persistencia
 - [Módulos runtime](modulos-runtime.md): resolución entre aplicación y módulo.
 - [Permisos](permisos.md): autorización global y por tenant.
 - [SEO](seo.md): metadatos y respuestas automáticas.
-
-Cada guía especializada desarrolla su contrato; aquí se explica la relación entre las piezas.

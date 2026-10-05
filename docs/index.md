@@ -141,3 +141,11 @@ GFrame integra estas bibliotecas, pero no es su autor. Cada guía identifica la 
 ## Estado de la reconstrucción documental
 
 La auditoría y el backlog vivo están en [Reconstrucción de la documentación de GFrame](reconstruccion-documentacion.md). Ese documento clasifica qué está cubierto, qué está oculto, qué está incompleto y qué contradice el código actual.
+
+
+## Herramientas y referencias adicionales
+
+- [Referencia de comandos](comandos.md).
+- [Contratos de respuesta](respuestas.md).
+- [Organización de vistas y templates](vistas.md).
+- [Variables y estilos comunes](estilos-comunes.md).

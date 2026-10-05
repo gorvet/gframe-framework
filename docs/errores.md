@@ -37,7 +37,7 @@ return [
     'code' => 'permission',
     'message' => 'No puedes modificar este registro.',
     'helpMsg' => 'Solicita acceso al administrador.',
-    'helpUrl' => site_url . '/ayuda/permisos',
+    'helpUrl' => site_url . 'ayuda/permisos',
     'helpLabel' => 'Consultar ayuda',
 ];
 ```
@@ -60,7 +60,7 @@ Cuando una integración necesita construir la respuesta web sin ejecutar una acc
 
 ```php
 $routeParams = (new ErrorResponder())->buildRouteParams('not_found', [
-    'tolink' => site_url . '/admin',
+    'tolink' => site_url . 'admin',
     'infoMsg' => 'El registro solicitado no existe.',
     'helpMsg' => 'Comprueba que el enlace sea correcto.',
 ]);
@@ -87,9 +87,70 @@ Las vistas personalizadas pertenecen a la aplicación y se resuelven antes que l
 - crea una vista concreta en `app/views/error-pages/` para cambiar textos o acciones por código;
 - crea `app/views/templates/errorTemplate.php` para cambiar la envoltura visual;
 - crea `app/views/error-pages/error-pages.group.meta.php` para personalizar metadatos y recursos;
-- edita `public/css/404/404.css` para adaptar el diseño.
+- añade un CSS de la aplicación y decláralo en la meta personalizada para adaptar el diseño.
 
 Las vistas runtime originales no se copian durante la instalación; las personalizaciones en `app/views/` se conservan. El CSS publicado es un archivo gestionado: revisa `composer gframe:update -- --dry-run` y utiliza `--preserve-custom` si debes conservar modificaciones directas. Preferiblemente añade tus ajustes en un CSS del proyecto referenciado por la meta personalizada.
+
+### Personalizar una sola vista
+
+Para cambiar únicamente la página 404, crea `app/views/error-pages/error404.php`. No hace falta añadir una ruta: el resolver de errores conserva la selección del módulo y encuentra primero ese archivo de la aplicación.
+
+```php
+<?php
+
+$params = (array)($routeParams['params'] ?? []);
+$help = trim((string)($params['helpMsg'] ?? ''));
+?>
+<article class="error-card" aria-labelledby="errorTitle">
+  <p class="error-code" aria-hidden="true">404</p>
+  <h1 id="errorTitle" class="error-title">Página no encontrada</h1>
+  <p class="error-message">Comprueba la dirección o vuelve al inicio.</p>
+  <?php if (($params['helpEnabled'] ?? true) !== false && $help !== ''): ?>
+    <p class="error-help"><?= htmlspecialchars($help, ENT_QUOTES, 'UTF-8') ?></p>
+  <?php endif; ?>
+  <a class="btn btn-primary" href="<?= htmlspecialchars(site_url, ENT_QUOTES, 'UTF-8') ?>">
+    Volver al inicio
+  </a>
+</article>
+```
+
+La plantilla `error` sigue envolviendo el contenido de esta vista. El estado HTTP lo fija el flujo de errores; escribir «404» en una vista normal no cambia su respuesta HTTP. El ejemplo conserva la ayuda opcional y escapa los datos dinámicos.
+
+### Personalizar todas las tarjetas
+
+Las cinco vistas originales resuelven `_errorCard.php` mediante `ModuleRuntime`. Una personalización en `app/views/error-pages/_errorCard.php` cambia su estructura compartida. Recibe estas variables preparadas por cada vista:
+
+| Variable | Contenido |
+| --- | --- |
+| `$errorCode`, `$errorTitle` | Código y título público |
+| `$errorMessage` | Descripción de la página |
+| `$errorHelpMessage` | Texto de ayuda opcional |
+| `$errorHelpURL`, `$errorHelpLabel` | Enlace y etiqueta de ayuda |
+| `$errorHelpEnabled` | Mostrar u ocultar la ayuda |
+| `$errorActionURL`, `$errorActionLabel` | Destino y etiqueta de retorno |
+
+Si necesitas partir del diseño original, copia el archivo desde el módulo a la carpeta de la aplicación y después modifica solo lo necesario. Escapa textos y atributos; no conviertas mensajes de excepción en HTML. Los enlaces aportados por el proyecto deben ser destinos confiables: escapar un atributo no valida su protocolo ni autoriza el destino.
+
+### CSS y metas
+
+En `app/views/error-pages/error-pages.group.meta.php`, carga los estilos del módulo y tus ajustes posteriores:
+
+```php
+<?php
+
+return [
+    'metaTags' => [
+        'title' => 'Error ' . (string)($routeParams['actionName'] ?? '') . ' - ' . site_name,
+        'description' => 'No fue posible mostrar la página solicitada.',
+    ],
+    'css' => [
+        'public/css/404/404.css',
+        'public/css/app/errors.css',
+    ],
+];
+```
+
+El archivo de meta personalizado sustituye al archivo del módulo en esa ubicación; declara los recursos originales que quieras conservar. Las capas globales y de plantilla mantienen su funcionamiento habitual. Si personalizas `errorTemplate.php`, conserva `<?= $content ?>` donde debe aparecer la vista. No añadas otro documento HTML completo dentro del contenido.
 
 ## Extender el módulo
 
@@ -105,11 +166,12 @@ Si se necesita una categoría de error nueva con su propio código HTTP y vista,
 
 No es necesario crear un `ErrorController` vacío. `ErrorResponder` genera una ruta interna con `skipAction`, y `Render` carga directamente la vista correspondiente.
 
+
 ## Depuración y producción
 
 Con el modo de depuración activo, las excepciones web muestran una página técnica con tipo, mensaje, archivo, línea y traza. En producción se muestra la página 500 y se ocultan los detalles internos.
 
-El módulo `error-pages` declara por defecto `robots => noindex, nofollow` en `error-pages.group.meta.php`, y esa meta se aplica a sus vistas de error. El código HTTP sigue siendo importante para el navegador y los clientes HTTP, pero no es por sí solo el mecanismo que genera el `<meta name="robots">`. Si personalizas la meta de grupo, conserva conscientemente esa política cuando no quieras que las páginas de error sean indexables.
+La política SEO del núcleo bloquea la indexación de las páginas de error por su código HTTP; no necesitas repetir un interruptor de indexación en cada meta.
 
 ## Errores de negocio y feedback
 
@@ -117,7 +179,7 @@ Para una validación o una operación rechazada devuelve un código estable y un
 
 No uses un error 500 para representar todo rechazo funcional. En API declara un `http_code` apropiado cuando el código de negocio no tenga equivalencia en ErrorResponder. Un código desconocido no crea automáticamente una nueva vista: el resolver utiliza su categoría de error predeterminada.
 
-`ErrorHandler` registra el tratamiento global de excepciones y fallos fatales durante el arranque. No convierte todos los warnings y notices en excepciones; en producción configura PHP para registrar errores sin imprimirlos en respuestas HTML o JSON. Un fallo antes del bootstrap o una respuesta servida directamente por Nginx/Apache requiere la configuración del servidor, no una ruta del controlador.
+`ErrorHandler` registra el tratamiento global de excepciones y fallos fatales durante el arranque. No convierte todos los warnings y notices en excepciones; en producción configura PHP para registrar errores sin imprimirlos en respuestas HTML o JSON. Un fallo antes de la carga inicial o una respuesta servida directamente por Nginx/Apache requiere la configuración del servidor.
 
 ## Verificación
 

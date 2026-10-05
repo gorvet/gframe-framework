@@ -42,11 +42,11 @@ El perfil determina los requisitos iniciales; no crea el contenido ni las reglas
 3. **Módulos opcionales:** selecciona las herramientas que necesites. Los obligatorios y las dependencias se incluyen automáticamente y no aparecen como opciones.
 4. **Confirmación:** revisa e instala.
 
-Puedes dejar todos los opcionales sin seleccionar e [instalarlos más adelante](actualizaciones.md#añadir-módulos-después-de-instalar). El catálogo distingue [módulos propios y bibliotecas de terceros](modulos-opcionales.md).
+Puedes dejar todos los opcionales sin seleccionar e [instalarlos más adelante](modulos-opcionales.md). El catálogo distingue [módulos propios y bibliotecas de terceros](inventario-modulos.md).
 
 ### Conexión a la base de datos
 
-En MySQL, servidor, usuario y contraseña deben permitir conectarse al servidor. El nombre de una base que todavía no existe no es un error de credenciales:
+Introduce el servidor MySQL, las credenciales y el nombre de la base de datos que utilizará el proyecto. El asistente comprueba la conexión y el estado del destino:
 
 - Si no existe, la instalación final intenta crearla; el usuario necesita permiso `CREATE DATABASE`.
 - Si existe y está vacía, crea las tablas del perfil y los módulos.
@@ -79,6 +79,6 @@ Los módulos MVC conservan sus originales dentro del paquete. En `app` se crean 
 
 En un perfil administrado, abre `/login` y accede con la cuenta inicial. Comprueba también una URL inexistente: debe responder con estado HTTP 404 y mostrar la página del framework.
 
-Antes de publicar, configura la URL pública, el correo y el modo de producción en [la configuración del entorno](configuracion.md). Las campañas y colas requieren además los trabajadores descritos en sus guías.
+Antes de publicar, desactiva la depuración y comprueba [la configuración del entorno](configuracion.md). Si el proyecto envía correos, configura SMTP y verifica un envío. Si utiliza campañas programadas, configura la ejecución periódica de [tareas programadas](cron-runner.md); es el proceso que revisa y ejecuta los envíos pendientes aunque no haya usuarios navegando.
 
-Para una versión nueva, utiliza [el actualizador](actualizaciones.md), no vuelvas a ejecutar el instalador.
+Para actualizar a una versión más reciente del framework, sigue [Actualización de proyectos](actualizaciones.md). El asistente web se utiliza para la instalación inicial.
