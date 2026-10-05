@@ -30,7 +30,7 @@ Valida datos, permisos y pertenencia al tenant antes de crear la tarea. El worke
 
 Captura mediante `use` únicamente los datos necesarios, preferiblemente IDs, cadenas y arrays pequeños. Crea dentro de la función los servicios y modelos del proyecto. Evita capturar conexiones PDO, recursos abiertos, archivos abiertos o el controlador completo mediante `$this`.
 
-La función se serializa con Laravel Serializable Closure. El worker carga el bootstrap del proyecto y ejecuta la función en PHP CLI. El autoload y la configuración del proyecto vuelven a estar disponibles; el contexto de la petición original no se transmite automáticamente.
+La función se serializa con `Opis\Closure\SerializableClosure`, a través de `ClosureWrapper`. El worker carga el bootstrap del proyecto y ejecuta la función en PHP CLI. El autoload y la configuración del proyecto vuelven a estar disponibles; el contexto de la petición original no se transmite automáticamente.
 
 No dependas de `$_POST`, de las cabeceras del navegador ni de su sesión para identificar al actor. Captura expresamente los IDs ya verificados que necesite el servicio. Las variables capturadas son una copia del momento de creación: consulta de nuevo la base de datos si necesitas el estado actual.
 
@@ -70,4 +70,4 @@ Diseña las operaciones de forma idempotente si pueden solicitarse varias veces.
 
 Los payloads grandes utilizan archivos temporales que el worker elimina al leerlos. No captures secretos innecesarios y limita el acceso al almacenamiento temporal y a los procesos del sistema. Un lanzamiento aparentemente aceptado cuyo worker no llega a iniciar puede dejar un archivo pendiente.
 
-Antes de actualizar las dependencias de serialización o el código que usan tareas activas, deja que terminen. Async no mantiene copias versionadas del código de aplicación para cada ejecución.
+Antes de actualizar `opis/closure` o el código que usan tareas activas, deja que terminen. Async no mantiene copias versionadas del código de aplicación para cada ejecución.
