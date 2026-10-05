@@ -127,3 +127,75 @@ Las demás capas siguen combinándose. Consulta [Render](render.md) y [Módulos 
 ## Valores de la ruta
 
 El renderizador añade automáticamente el idioma, la URL canónica, la URL de Open Graph y el contexto necesario para los datos estructurados. La indexación se decide globalmente y en la ruta mediante `context.seo.indexable`; `metaTags.robots` se ignora. El framework genera `index,follow` o `noindex,nofollow,noarchive` según esa política. Consulta [SEO](seo.md).
+
+
+## API de Meta
+
+`Meta` mantiene el estado de metadatos y recursos durante el render de una petición. La instancia puede obtenerse con `Meta::getInstance()`, pero el ciclo normal lo gestiona Render.
+
+| Método | Contrato |
+| --- | --- |
+| `reset()` | Limpia ruta, etiquetas, CSS, JS, scripts de cabecera y schema; después vuelve a cargar la meta global |
+| `applyMetaConfig($config)` | Aplica `metaTags`, `css`, `js`, `hjs` y `schema` si existen |
+| `setMetaTags($tags)` | Sustituye claves repetidas mediante `array_merge` |
+| `setCssLinks($links)` | Acumula rutas y elimina duplicados exactos |
+| `setJsScripts($scripts)` | Acumula scripts de pie y elimina duplicados exactos |
+| `setHeaderJsScripts($scripts)` | Acumula scripts de cabecera y elimina duplicados exactos |
+| `setSchema($schema)` | Combina el schema recursivamente |
+| `setRouteParams($routeParams)` | Entrega contexto de ruta a robots y JSON-LD |
+| `getMetaTag($name)` | Devuelve el valor escapado; `robots` se calcula por política de indexación |
+| `renderSchema()` | Compone y renderiza JSON-LD si SEO está habilitado |
+
+`reset()` no deja la instancia completamente vacía: vuelve a ejecutar `initializeConfig()` y carga `config/meta/global.meta.php`. Esto evita que una petición reutilice recursos de otra y conserva al mismo tiempo la base global.
+
+## Deduplicación de recursos
+
+La deduplicación de CSS y JavaScript es por cadena exacta. Estas dos rutas se consideran distintas aunque apunten al mismo archivo físico:
+
+```text
+public/js/app/list.js
+/public/js/app/list.js
+```
+
+Normalice las rutas y no registre variantes equivalentes en capas diferentes. `hjs` y `js` tienen colecciones separadas: un mismo archivo declarado una vez en cada una puede ejecutarse dos veces.
+
+El orden conserva la primera aparición. Una capa posterior no mueve un recurso ya registrado hacia el final; simplemente se descarta el duplicado exacto.
+
+## Robots y autoridad de la ruta
+
+El valor final de `robots` no se toma de `metaTags.robots`. `Meta::getMetaTag('robots')` calcula el resultado con dos autoridades:
+
+1. `SEO_ALLOW_INDEXING`; si es falso, devuelve `noindex,nofollow,noarchive`;
+2. `routeParams.context.seo.indexable`; si es `false`, también bloquea la indexación.
+
+En cualquier otro caso devuelve `index,follow`.
+
+Esto impide que una meta de vista vuelva indexable una ruta bloqueada globalmente o por su contrato de ruta. La meta puede describir título, descripción y canonical, pero no sobreescribe esa política.
+
+## JSON-LD y schema
+
+`setSchema()` usa combinación recursiva. Las capas pueden ampliar objetos ya definidos en lugar de sustituir siempre el bloque completo. Revise especialmente arrays numéricos, porque la combinación recursiva trabaja por índices.
+
+`renderSchema()` devuelve una cadena vacía cuando `SEO_ENABLED` está definido como falso. En caso contrario:
+
+```text
+schema acumulado
+-> SchemaComposer::compose()
+-> JsonLD::renderSchema()
+-> <script type="application/ld+json">...</script>
+```
+
+Si el compositor o el renderizador no producen un grafo válido, no se imprime una etiqueta vacía. Los presets, ciclos, entidades y restricciones se documentan en [JSON-LD](json-ld.md).
+
+## Meta dinámica y ejecución fuera de una vista normal
+
+Las metas de vista pueden usar `$data` y `$routeParams` durante un render web normal. Sin embargo, SEO, sitemap u otras herramientas pueden inspeccionar rutas sin ejecutar exactamente el mismo recorrido de una petición interactiva.
+
+Por eso una meta dinámica debe:
+
+- utilizar valores predeterminados para datos opcionales;
+- no asumir sesión, `$_POST` ni efectos secundarios de un controlador;
+- no ejecutar escrituras ni consultas costosas solo para calcular una etiqueta;
+- producir valores válidos aunque falte un registro opcional.
+
+El objetivo es que describir una página siga siendo una operación segura y reproducible.
