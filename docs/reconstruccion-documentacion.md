@@ -117,10 +117,10 @@ Estados:
 | DOC-015 | Mail | parcial | P1 | Referencia extensa; se corrigió dependencia Async. Evaluar una entrada práctica corta sin duplicar `mail.md`. |
 | DOC-016 | SEO | parcial | P1 | Auditar Sitemap/Robots/Llms/JsonLD/SchemaComposer y construir mapa práctico si aporta valor. |
 | DOC-017 | Autoload de aplicación vs módulos | cubierto | P1 | `autoload-proyecto.md` explica Bootstrap basename map frente a ModuleRuntime namespaced overrides. |
-| DOC-018 | Instalador y perfiles | en auditoría | P1 | Verificar `InstallationProfileCatalog`, `ProjectInstaller` y módulos exactos por perfil. |
+| DOC-018 | Instalador y perfiles | cubierto | P1 | `perfiles-instalacion.md` verificado contra `profiles.php`, `InstallationProfileCatalog`, `ProjectInstaller`, `ProjectConfigWriter` y `SchemaInstaller`. |
 | DOC-019 | `src/database/ORM_GUIDE.md` | corregido | P0 | Sustituido por nota interna actual; ya no enseña `core/database` ni `config/Config.php`. |
 | DOC-020 | README / `composer new` | corregido | P1 | README aclara que `composer new` es un script del repo y no un comando nativo de Composer. |
-| DOC-021 | Capabilities map completo | en auditoría | P0 | Seguir cerrando SEO, instalador/perfiles y áreas avanzadas antes de declararlo completo. |
+| DOC-021 | Capabilities map completo | en auditoría | P0 | Seguir cerrando SEO y áreas avanzadas antes de declararlo completo. |
 | DOC-022 | Compatibilidad legacy | parcial | P1 | Helpers globales ya clasificados; continuar revisión de fachadas/contratos históricos restantes. |
 | DOC-023 | Serialización Async | corregido | P0 | `async.md` y `mail.md` ahora reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
 | DOC-024 | Autoload y namespaces | corregido/cubierto | P0 | Documentado que el proyecto generado no trae PSR-4 general `App\`; clases normales y overrides de módulos siguen contratos distintos. |
@@ -153,18 +153,16 @@ Estados:
 - `docs/async.md`: serialización corregida a Opis Closure.
 - `docs/mail.md`: dependencia de Async corregida a `opis/closure:^3.7`.
 
+### Instalación y perfiles verificados
+
+- `resources/install/profiles.php` define de forma explícita `static`, `managed`, `intranet` y `saas`.
+- `InstallationProfileCatalog` normaliza perfiles y filtra módulos opcionales incompatibles.
+- `ProjectInstaller` resuelve defaults + módulos del perfil + opcionales + dependencias, instala esquemas y escribe el lock.
+- `ProjectConfigWriter` genera `config/app.php` y `.env`, incluido `SESSION_DRIVER` según exista o no base de datos.
+- `SchemaInstaller` aplica tenancy antes de auth y después los esquemas de módulos resueltos.
+- `docs/perfiles-instalacion.md` coincide con ese comportamiento en esta revisión.
+
 ## Siguiente bloque de auditoría
-
-### Instalación y perfiles
-
-Cerrar exactamente:
-
-- qué módulos instala `static`;
-- qué añade `managed`;
-- qué diferencia `intranet`;
-- qué añade `saas`;
-- qué tablas/capacidades quedan disponibles;
-- qué decisiones siguen perteneciendo al proyecto después de instalar.
 
 ### SEO
 
