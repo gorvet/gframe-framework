@@ -1,6 +1,8 @@
 <?php
 
 class SchemaComposer {
+    private ?array $builtInPresets = null;
+
     public function compose(array $schema, array $metaTags = [], array $routeParams = []): array {
         $composed = $schema;
 
@@ -30,11 +32,6 @@ class SchemaComposer {
 
         if (empty($composed['image']) && !empty($metaTags['ogimage'])) {
             $composed['image'] = $metaTags['ogimage'];
-        }
-
-        if (empty($composed['search']['target'])) {
-            $composed['search'] = $composed['search'] ?? [];
-            $composed['search']['target'] = rtrim(site_url, '/') . '/buscar?q={search_term_string}';
         }
 
         if (($composed['type'] ?? '') === 'Article' && empty($composed['author']) && !empty($metaTags['author'])) {
@@ -68,7 +65,7 @@ class SchemaComposer {
 
     private function presetDefaults(string $preset): array {
         $presets = $this->getBuiltInPresets();
-        return $presets[$preset] ?? ['type' => 'WebPage'];
+        return is_array($presets[$preset] ?? null) ? $presets[$preset] : ['type' => 'WebPage'];
     }
 
     private function applyPresetChain(array $schema): array {
@@ -87,21 +84,54 @@ class SchemaComposer {
             if ($name === '') {
                 continue;
             }
-            $resolved = $this->mergeRecursiveDistinct($resolved, $this->presetDefaults($name));
+            $resolved = $this->mergeRecursiveDistinct($resolved, $this->resolvePreset($name));
         }
 
         return $this->mergeRecursiveDistinct($resolved, $schema);
     }
 
+    private function resolvePreset(string $name, array $stack = []): array {
+        if (isset($stack[$name])) {
+            $chain = implode(' -> ', array_keys($stack));
+            throw new \InvalidArgumentException('Ciclo de presets Schema detectado: ' . ($chain !== '' ? $chain . ' -> ' : '') . $name);
+        }
+
+        $preset = $this->presetDefaults($name);
+        $nestedConfig = $preset['preset'] ?? ($preset['presets'] ?? null);
+        unset($preset['preset'], $preset['presets']);
+
+        if ($nestedConfig === null) {
+            return $preset;
+        }
+
+        $stack[$name] = true;
+        $nestedList = is_array($nestedConfig) ? $nestedConfig : [$nestedConfig];
+        $resolved = [];
+
+        foreach ($nestedList as $nestedPreset) {
+            $nestedName = strtolower(trim((string)$nestedPreset));
+            if ($nestedName === '') {
+                continue;
+            }
+            $resolved = $this->mergeRecursiveDistinct($resolved, $this->resolvePreset($nestedName, $stack));
+        }
+
+        return $this->mergeRecursiveDistinct($resolved, $preset);
+    }
+
     private function getBuiltInPresets(): array {
+        if ($this->builtInPresets !== null) {
+            return $this->builtInPresets;
+        }
+
         $frameworkRoot = defined('GFRAME_PATH') ? GFRAME_PATH : ABSPATH . 'core/';
         $path = realpath($frameworkRoot . 'seo/schema.presets.php');
         if ($path === false || !file_exists($path)) {
-            return ['webpage' => ['type' => 'WebPage']];
+            return $this->builtInPresets = ['webpage' => ['type' => 'WebPage']];
         }
 
         $presets = require $path;
-        return is_array($presets) ? $presets : ['webpage' => ['type' => 'WebPage']];
+        return $this->builtInPresets = is_array($presets) ? $presets : ['webpage' => ['type' => 'WebPage']];
     }
 
     private function normalizeLegacyBlocks(array $schema): array {
@@ -159,6 +189,9 @@ class SchemaComposer {
     }
 
     private function isAssoc(array $array): bool {
+        if ($array === []) {
+            return true;
+        }
         return array_keys($array) !== range(0, count($array) - 1);
     }
 
