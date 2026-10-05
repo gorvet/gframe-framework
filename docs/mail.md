@@ -83,41 +83,11 @@ Los fallos posteriores se registran en el log PHP con el prefijo `[GFrame Mail A
 
 ### Opciones de envío
 
-`recipient_name` identifica al destinatario; `reply_to` y `reply_name` definen a quién responder; `timeout` limita la espera SMTP en segundos, con 60 por defecto y mínimo 1. `rate_limit` solicita la protección del formulario público descrita abajo. La API actual recibe un destinatario por llamada y no ofrece parámetros de adjuntos, CC o BCC.
+`recipient_name` identifica al destinatario; `reply_to` y `reply_name` definen a quién responder; `timeout` limita la espera SMTP en segundos, con 60 por defecto y mínimo 1. La API actual recibe un destinatario por llamada y no ofrece parámetros de adjuntos, CC o BCC.
+
+`MailService` no implementa por sí mismo rate limiting para formularios públicos. Si un formulario de contacto necesita limitar frecuencia o abuso, aplica esa protección en middleware, controlador o un servicio del proyecto antes de llamar a Mail. No existen actualmente opciones `rate_limit`, claves `mail.rate_limit`, variables `MAIL_RATE_LIMIT_*` ni códigos `mail_rate_*` como parte del contrato de `MailService`.
 
 Async requiere `opis/closure:^3.7`, dependencia declarada por el paquete actual. Si se cambia en el futuro la librería o el formato de serialización, deja finalizar los workers activos antes de desplegar el cambio: los payloads serializados deben ser compatibles con el código que los deserializa. Una respuesta de cola confirma el inicio de la tarea, no la entrega del correo.
-
-## Límite para formularios públicos de correo
-
-`mail.rate_limit` es una protección antispam para formularios públicos que envían correo, como contacto o consultas. No es un límite global del servicio Mail ni debe utilizarse para los envíos internos de la aplicación: notificaciones, campañas, correos transaccionales, verificación de cuentas o recuperación de contraseñas.
-
-El formulario público solicita esta protección incluyendo `rate_limit` en las opciones de su llamada a Mail. Los usos internos deben omitir esa opción. `MAIL_RATE_LIMIT_ENABLED=true` solo habilita la protección para las llamadas que la solicitan; no limita automáticamente los demás correos de la aplicación. La protección complementa el honeypot y la validación del formulario.
-
-```dotenv
-MAIL_RATE_LIMIT_ENABLED=true
-MAIL_RATE_LIMIT_MAX_ATTEMPTS=5
-MAIL_RATE_LIMIT_WINDOW_SECONDS=3600
-```
-
-Las variables sobrescriben los valores de `mail.rate_limit` en la configuración del proyecto. La cantidad y la ventana deben ser enteros positivos. Para desactivar el límite durante las pruebas, usa `MAIL_RATE_LIMIT_ENABLED=false`. Sin estas variables, el valor predeterminado es de cinco envíos por hora para las llamadas que lo soliciten.
-
-```php
-$result = (new \GFrame\Mail\MailService())->sendTemplateAsync(
-    'equipo@example.com',
-    'Contacto',
-    'contactTemplate',
-    ['title' => 'Contacto', 'name' => $name, 'subject' => $subject, 'message' => $message],
-    ['reply_to' => $email, 'rate_limit' => ['scope' => 'contact', 'identity' => $clientAddress]]
-);
-```
-
-El controlador del formulario público obtiene `$clientAddress` de la dirección del cliente conocida por el servidor, por ejemplo `$_SERVER['REMOTE_ADDR']`. No acepta una identidad enviada por el formulario ni confía directamente en `X-Forwarded-For`; detrás de un proxy debe configurarse la resolución de la IP real mediante proxies de confianza. Cada combinación de ámbito e identidad tiene su propio cupo.
-
-El límite usa una ventana móvil, con archivos protegidos por bloqueo exclusivo en `storage/mail-rate/`. Las identidades se incluyen en una clave HMAC con `APP_KEY`, sin guardarse en texto claro. Las solicitudes concurrentes comparten el cupo. Con varios servidores, este directorio debe compartirse y admitir `flock`; el almacenamiento independiente limita cada servidor por separado.
-
-La respuesta de bloqueo usa `mail_rate_limited`, con `data.retry_after` expresado en segundos hasta que vuelva a haber cupo, incluso si se reduce la cantidad configurada durante la ventana. Los fallos de envío o de creación de la tarea liberan el cupo. En modo asíncrono se cuenta la aceptación de la tarea; un fallo SMTP posterior del worker no devuelve ese cupo. El worker no consume un segundo cupo. La misma opción funciona con `sendTemplate()`, `sendHtml()` y `sendHtmlAsync()`.
-
-Una identidad vacía o parámetros no positivos devuelven `mail_rate_limit_invalid`; si el almacenamiento no está disponible o está dañado, se devuelve `mail_rate_limit_unavailable` sin enviar. Conserva el honeypot y las validaciones del formulario en el controlador, antes de llamar a Mail: son protecciones complementarias y no consumen cupo.
 
 Async selecciona y comprueba un ejecutable PHP CLI, nunca el binario de Apache o PHP-FPM. Busca en el runtime, junto al `php.ini` cargado y en `PATH`; `GFRAME_PHP_BINARY` permite indicar explícitamente su ruta absoluta. Si no encuentra CLI o no puede lanzar el proceso, devuelve un fallo de encolado. El SMTP continúa ejecutándose en el worker, no en la petición. Campañas mantiene su cola y cron de correo independientes.
 
