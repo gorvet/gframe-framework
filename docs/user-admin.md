@@ -110,3 +110,102 @@ Los adaptadores propios deben conservar estas garantías:
 - La eliminación no borra archivos, artículos ni entidades del negocio. Su limpieza debe integrarse en el repositorio propio.
 
 Las personalizaciones de `app` no se sobrescriben al actualizar. No modifiques directamente los controladores o vistas del paquete.
+
+
+## Contrato del servicio
+
+`UserAdministrationService` concentra autorización, filtros, cambios de rol y moderación. El controlador del módulo no debe saltarse este servicio para ejecutar escrituras directamente sobre el modelo.
+
+Sus operaciones públicas principales son:
+
+| Método | Uso |
+| --- | --- |
+| `paginate($actorID, $page, $perPage, $search, $role, $status)` | Lista usuarios visibles para el actor |
+| `assignableRoles($actorID)` | Devuelve los roles que pueden ofrecerse en la interfaz |
+| `capabilities($actorID)` | Informa si el actor puede ver y administrar |
+| `assignRole($actorID, $userID, $roleID)` | Cambia el rol y revoca las sesiones del usuario |
+| `moderate($actorID, $userID, $operation)` | Verifica, suspende, restaura o elimina |
+| `setActive($actorID, $userID, $active)` | Activa o desactiva desde integraciones que usen este contrato |
+
+`users.manage` permite las escrituras. Para lectura basta `users.view` o `users.manage`. El superadministrador supera ambas comprobaciones mediante su rol del sistema.
+
+### Filtros y paginación
+
+El servicio normaliza los filtros antes de consultar el repositorio:
+
+- `page` nunca baja de 1;
+- `perPage` queda entre 1 y 100;
+- la búsqueda se recorta a 120 caracteres;
+- el filtro de rol acepta slugs normalizados;
+- el estado solo admite `verify`, `unverify`, `disabled` o `suspended`.
+
+El controlador estándar utiliza 20 elementos por página. Un valor de filtro inválido se normaliza a vacío y no se transmite como un estado o rol arbitrario al repositorio.
+
+### Transiciones protegidas
+
+La moderación no es un cambio libre de estado:
+
+| Operación | Estado requerido | Resultado |
+| --- | --- | --- |
+| `verify` | `unverify` | `verify` |
+| `suspend` | `verify` | `suspended` |
+| `restore` | `suspended` | `verify` |
+| `delete` | cuenta administrable | eliminación |
+
+Una transición incompatible devuelve `invalid_status_transition`. El servicio también bloquea la propia cuenta del actor y la cuenta del superadministrador. Un actor que no sea superadministrador tampoco puede administrar una cuenta cuyo rol tenga `admin.access`, ni asignar un rol administrativo.
+
+La operación de moderación requiere que el repositorio implemente `UserModerationRepository`; de lo contrario devuelve `moderation_not_supported`.
+
+### Sesiones y revocación
+
+Los cambios administrativos afectan las sesiones activas:
+
+- suspender o desactivar revoca sesiones y bloquea al usuario en el registro de sesiones;
+- restaurar o activar vuelve a permitir la cuenta, pero no recupera sesiones antiguas;
+- cambiar el rol revoca sesiones para que la próxima autenticación cargue la nueva autorización;
+- eliminar revoca y bloquea las sesiones después de borrar la cuenta.
+
+Un adaptador propio que ignore estas garantías puede dejar sesiones con permisos anteriores aunque el registro de usuario ya haya cambiado.
+
+## Códigos de respuesta
+
+Los códigos funcionales más importantes son:
+
+| Código | Significado |
+| --- | --- |
+| `users_loaded` | Listado cargado |
+| `roles_loaded` | Roles cargados |
+| `role_assigned` | Rol actualizado |
+| `user_verified` | Cuenta verificada |
+| `user_suspended` | Cuenta suspendida |
+| `user_restored` | Cuenta restaurada |
+| `user_deleted` | Cuenta eliminada |
+| `forbidden` | El actor no tiene autorización |
+| `self_protection` | Intento de modificar la propia cuenta |
+| `protected_user` | Cuenta protegida por jerarquía |
+| `invalid_role_assignment` | Rol inexistente o no asignable |
+| `invalid_status_transition` | Operación incompatible con el estado actual |
+| `moderation_not_supported` | El repositorio no implementa moderación |
+
+Los mensajes públicos se añaden en el controlador. Las integraciones deben reaccionar al código estable, no comparar el texto del mensaje.
+
+## Recorrido del listado AJAX
+
+La pantalla inicial llama al mismo servicio que el endpoint AJAX. El recorrido es:
+
+```text
+/admin/users
+  -> UserAdminController::index()
+  -> UserAdministrationService::paginate()
+  -> repositorio
+  -> vista completa
+
+filtros / búsqueda / página
+  -> /ajax/admin/users/list
+  -> UserAdminController::list()
+  -> mismo servicio
+  -> _userList.php
+  -> JSON + html + meta
+```
+
+Esto evita mantener dos consultas diferentes para la carga inicial y las actualizaciones del listado. Una personalización de repositorio debe conservar el mismo contrato de paginación para que ambos recorridos sigan funcionando.
