@@ -258,7 +258,7 @@ Con varios planes se genera `AggregateOffer`. `lowPrice` y `highPrice` se calcul
 
 El renderer no valida que todos los planes utilicen la misma moneda; esa consistencia pertenece a la aplicación.
 
-`aggregateRating` admite `ratingValue` y `reviewCount`. Los valores numéricos `0` no se eliminan automáticamente, aunque debes declarar valores válidos según Schema.org y el proveedor que vaya a consumirlos.
+`aggregateRating` admite `ratingValue` y `reviewCount`. Si el bloque no contiene valores reales, el renderer lo omite; no publica una valoración vacía. Los valores numéricos `0` no se eliminan automáticamente, aunque debes declarar valores válidos según Schema.org y el proveedor que vaya a consumirlos.
 
 ## Otros tipos soportados
 
