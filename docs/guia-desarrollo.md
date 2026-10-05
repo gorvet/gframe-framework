@@ -384,9 +384,9 @@ GFrame ya incorpora capacidades que no hace falta reconstruir dentro de cada apl
 | avisar dentro de la aplicación | [Notificaciones](notificaciones.md) |
 | ejecutar algo fuera de la petición | [Async](async.md) |
 | ejecutar algo después o recurrentemente | [Cron](cron-runner.md) |
-| consumir una API externa | cliente HTTP del core; guía específica en reconstrucción |
+| consumir una API externa | [Cliente HTTP saliente](http-client.md) |
 | sanear HTML permitido | [HtmlSanitizer](html-sanitizer.md) |
-| cifrar datos de aplicación | `GFrame\Security\Encryption`; guía específica en reconstrucción |
+| cifrar datos de aplicación | [Cifrado de datos de aplicación](encryption.md) |
 | SEO técnico | [SEO](seo.md) y [JSON-LD](json-ld.md) |
 | integrar WordPress como backend | [WordPress headless](wordpress-headless.md) |
 
@@ -441,7 +441,7 @@ es una **petición HTTP saliente** y utiliza el cliente HTTP del core.
 
 Son contratos distintos aunque ambos hablen HTTP.
 
-Consulta [Acceso API](api-access.md) para la primera. La referencia específica del cliente HTTP se está incorporando como parte de la reconstrucción documental.
+Consulta [Acceso API](api-access.md) para la primera y [Cliente HTTP saliente](http-client.md) para la segunda.
 
 ## Siguiente paso
 
