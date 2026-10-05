@@ -21,10 +21,11 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 - [Footer](footer.md).
 - [Multilenguaje: rutas, textos y vistas](multilenguaje.md).
 
-### Datos y lógica de negocio
+### Datos, clases y lógica de negocio
 
 - [ORM, modelos y dialectos](orm.md).
 - La organización recomendada de controllers, services y models se introduce en [Desarrollar una aplicación con GFrame](guia-desarrollo.md).
+- [Autoload del proyecto y de módulos](autoload-proyecto.md): diferencia entre clases ordinarias de `app/`, clases del core y personalizaciones namespaced de módulos runtime.
 - [Helpers PHP del core](helpers-php.md).
 - [Extensión por herencia y contratos](extensibilidad.md).
 
