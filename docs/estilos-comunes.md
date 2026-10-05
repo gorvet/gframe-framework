@@ -86,3 +86,62 @@ Cambiar un color de marca no actualiza automáticamente todas las variables RGB 
 Las hojas comunes del esqueleto son archivos administrados por el actualizador. Para ajustes propios, crea una hoja del proyecto y cárgala después de la base mediante la meta adecuada. Puedes sobrescribir valores existentes o reglas de un componente sin modificar los archivos de dependencias.
 
 Si modificas directamente una hoja administrada, revisa `composer gframe:update -- --dry-run` y la opción `--preserve-custom` antes de actualizar. Consulta [Actualizaciones](actualizaciones.md) para la política de reemplazo. No copies todas las reglas de `common.css` a cada vista: limita los ajustes al ámbito que los necesita.
+
+
+## Diseñar un componente nuevo
+
+Antes de añadir reglas, compruebe si Bootstrap o `common.css` ya resuelven la necesidad. Un componente propio debe introducir la menor cantidad posible de decisiones nuevas.
+
+```css
+.project-summary {
+  padding: 1rem;
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+}
+
+.project-summary:focus-within {
+  border-color: var(--bs-primary);
+}
+```
+
+Evite copiar valores hexadecimales desde `variables.css` dentro del componente. Referencie el token semántico para que el modo oscuro y los cambios de marca sigan funcionando.
+
+## Estados interactivos
+
+Todo control interactivo debe considerar, cuando correspondan, estado normal, hover, foco visible, activo o seleccionado, deshabilitado, validación y carga. No elimine `outline` sin proporcionar un foco equivalente. Mantenga dimensiones estables entre estados para evitar saltos de layout.
+
+## Formularios
+
+Use las clases Bootstrap como base y las variables del framework para ajustes del proyecto. Los estados de validación deben conservar contraste y texto asociado; no comunique un error únicamente cambiando el borde a rojo. Cuando un módulo visual sustituye un `select`, fecha o editor, el control resultante debe seguir integrándose con la validación, el tema y el foco de la página.
+
+## Tablas y listados
+
+Las tablas deben conservar legibilidad en claro y oscuro, encabezados distinguibles, foco de controles y estados de selección. Para búsqueda y ordenación local utilice [GF Table](gf-table.md) en lugar de duplicar comportamiento dentro de cada pantalla.
+
+## Variables propias del proyecto
+
+Puede sobrescribir variables en una hoja cargada después de la base. Al cambiar una variable principal, revise componentes que dependan de valores derivados o reglas compiladas; Bootstrap puede utilizar variables RGB o valores específicos de variante que no se recalculan automáticamente desde un único color.
+
+Para una decisión nueva del producto, prefiera un nombre semántico, por ejemplo `--project-status-pending-bg`, en lugar de nombres ligados al color o a una posición visual accidental.
+
+## Bibliotecas externas
+
+No edite directamente el CSS distribuido por una dependencia. El orden recomendado es:
+
+```text
+biblioteca original
+-> variables comunes
+-> puente GFrame
+-> CSS del módulo
+-> CSS específico de la aplicación o vista
+```
+
+Así una actualización de la biblioteca puede sustituir sus archivos sin destruir las adaptaciones del proyecto.
+
+## Revisión visual mínima
+
+Antes de cerrar un componente compruebe tema claro y oscuro, móvil y escritorio, foco con teclado, hover y activo, campos deshabilitados y errores, texto largo y contenido vacío, contraste e integración dentro de modal, tabla o formulario cuando aplique.
+
+Cuando exista una fixture visual del componente, utilícela además de las pruebas automatizadas. Los tests verifican contratos; la fixture ayuda a detectar regresiones de composición, espaciado y superposición.
