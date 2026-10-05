@@ -150,3 +150,16 @@ El puente visual utiliza las variables de GFrame/Bootstrap para tipografía, fon
 El módulo incluye controles redondeados, flecha giratoria, menú con espacios interiores y selección múltiple resaltada. Los estilos de los selects nativos se distribuyen en `public/css/common.css`, sin depender de una vista concreta. No hace falta añadir `wrapperClass: 'gf-select--app'` ni cargar otra hoja para aplicar el estilo predeterminado.
 
 La API JavaScript conserva el nombre `GFSelect`. Para reutilizar una configuración del proyecto, cree una función que construya instancias con opciones comunes; no es necesario modificar el archivo publicado del módulo.
+
+
+## Prueba visual aislada
+
+El repositorio incluye `tests/fixtures/gfselect-preview.php` para comprobar el componente fuera de una pantalla de negocio. La fixture cubre selección simple y múltiple, validación, reemplazo de opciones y uso dentro de un modal.
+
+Desde la raíz del repositorio puede abrirla con:
+
+```bash
+php -S 127.0.0.1:8767 -t . tests/fixtures/gfselect-preview.php
+```
+
+Utilice esta prueba al modificar CSS, eventos, inicialización o integración con modales. No sustituye las pruebas automatizadas: sirve para detectar regresiones visuales, foco, dimensiones, superposición y comportamiento interactivo que una aserción de DOM puede no mostrar.
