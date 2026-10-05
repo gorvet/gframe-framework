@@ -71,3 +71,77 @@ Diseña las operaciones de forma idempotente si pueden solicitarse varias veces.
 Los payloads grandes utilizan archivos temporales que el worker elimina al leerlos. No captures secretos innecesarios y limita el acceso al almacenamiento temporal y a los procesos del sistema. Un lanzamiento aparentemente aceptado cuyo worker no llega a iniciar puede dejar un archivo pendiente.
 
 Antes de actualizar `opis/closure` o el código que usan tareas activas, deja que terminen. Async no mantiene copias versionadas del código de aplicación para cada ejecución.
+
+
+## Flujo interno de lanzamiento
+
+El mecanismo real de Async es:
+
+```text
+Async::create()
+  -> ClosureWrapper::serialize()
+  -> Async::run()
+  -> localizar PHP CLI
+  -> preparar payload con ABSPATH + closure
+  -> bin/async-worker.php
+  -> bootstrap del proyecto
+  -> ejecutar closure
+```
+
+El proceso hijo vuelve a cargar el proyecto. No comparte memoria, conexión PDO, sesión PHP abierta ni transacción con la petición que lo lanzó.
+
+`create()` exige que `ABSPATH` ya exista. Si se llama fuera del arranque de GFrame, falla antes de serializar la tarea.
+
+### Transporte del payload
+
+El payload contiene dos datos: la raíz del proyecto y la closure serializada codificada en base64. Después se codifica el conjunto completo para pasarlo al worker.
+
+Cuando el argumento codificado supera aproximadamente 6000 caracteres, Async escribe el contenido en un archivo temporal y pasa al worker una referencia `file:...`. El worker consume ese archivo. Este mecanismo evita límites prácticos de longitud de línea de comandos, pero no convierte Async en una cola persistente.
+
+Por esa razón sigue siendo preferible capturar identificadores pequeños y reconstruir el estado dentro del worker. Capturar estructuras grandes aumenta serialización, uso de disco temporal y riesgo de transportar información que ya quedó obsoleta.
+
+## Selección de PHP CLI
+
+Si existe `GFRAME_PHP_BINARY`, se utiliza únicamente esa ruta y se valida que realmente ejecute con `PHP_SAPI=cli`.
+
+Sin configuración explícita, Async prueba candidatos derivados del proceso actual, `PHP_BINDIR`, el directorio del `php.ini` y las entradas del `PATH`. Una ruta encontrada no se acepta solo porque el archivo exista: debe ser ejecutable y responder como CLI.
+
+Esto es importante en servidores que tienen varias versiones de PHP. El PHP de Apache o PHP-FPM puede no coincidir con el binario que encontrará una tarea en segundo plano. Fije `GFRAME_PHP_BINARY` cuando el entorno necesite una versión concreta.
+
+## Lanzamiento según plataforma
+
+En Windows se utiliza PowerShell con `Start-Process` y ventana oculta. En otros sistemas se ejecuta el worker en segundo plano redirigiendo stdout y stderr.
+
+Un código de lanzamiento distinto de cero provoca una excepción inmediata. Si se había creado un archivo temporal para el payload, Async intenta retirarlo antes de devolver el fallo.
+
+Una vez que el proceso fue lanzado, el padre ya no conoce su resultado. Un error posterior pertenece al worker y debe registrarse o persistirse desde la propia tarea.
+
+## Patrón para tareas con estado
+
+Cuando el usuario necesita consultar progreso, no intente obtenerlo de `Async::create()`. Persista un registro de trabajo en la aplicación:
+
+```text
+petición
+  -> valida permiso
+  -> crea job "pending"
+  -> confirma transacción
+  -> Async::create(job_id)
+      -> worker consulta job
+      -> cambia a "processing"
+      -> ejecuta trabajo
+      -> guarda "completed" o "failed"
+```
+
+El endpoint de la interfaz consulta ese registro mediante una ruta normal. Este patrón añade seguimiento de negocio, pero sigue sin proporcionar reintentos automáticos ni scheduling; si esas garantías son necesarias, utilice Cron o una cola persistente.
+
+## Cuándo no usar Async
+
+No lo utilice como sustituto de:
+
+- Cron para tareas que deben ejecutarse a una fecha futura;
+- una cola persistente para trabajos que no pueden perderse;
+- procesamiento masivo que lanzaría cientos o miles de procesos;
+- una respuesta HTTP que necesita conocer el resultado antes de terminar;
+- coordinación transaccional entre varias tareas.
+
+La guía [Procesos en segundo plano](procesos-segundo-plano.md) compara ejecución directa, Async, Cron y colas y ayuda a elegir el mecanismo adecuado.
