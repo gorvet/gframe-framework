@@ -71,6 +71,7 @@ Estas piezas forman un mismo recorrido aunque tengan referencias separadas:
 
 ### Procesos fuera de la petición
 
+- [Elegir entre ejecución directa, Async, Cron y colas](procesos-segundo-plano.md): guía de decisión práctica.
 - [Tareas en segundo plano con Async](async.md): lanza una operación en otro proceso, sin cola persistente ni reintentos automáticos.
 - [Cron runner](cron-runner.md): tareas persistentes, futuras o recurrentes.
 - [Heartbeat](heartbeat.md): actualización periódica del cliente y estado de sesión.
