@@ -27,7 +27,7 @@ return [
     'creative_work' => ['type' => 'CreativeWork', 'creativeWork' => []],
     'faq' => ['type' => 'WebPage', 'faq' => []],
 
-    // Moldes "de uso comun" para vistas
+    // Moldes de uso común para vistas.
     'site_base' => [
         'preset' => 'webpage',
     ],
@@ -44,12 +44,6 @@ return [
     'blog_article' => [
         'preset' => 'blog',
     ],
-    'news_article' => [
-        'preset' => 'news_article',
-    ],
-    'tech_article' => [
-        'preset' => 'tech_article',
-    ],
     'product_page' => [
         'preset' => 'product',
         'product' => [
@@ -64,7 +58,7 @@ return [
         ],
     ],
     'saas_landing' => [
-        'presets' => ['software', 'faq'],
+        'presets' => ['faq', 'software'],
         'software' => [
             'name' => null,
             'category' => 'BusinessApplication',
