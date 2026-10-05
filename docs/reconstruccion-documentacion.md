@@ -1,10 +1,10 @@
 # Reconstrucción de la documentación de GFrame
 
-Esta rama reconstruye la documentación de GFrame tomando **el código como fuente de verdad**. La documentación existente se conserva como evidencia secundaria: se reutiliza cuando coincide con el runtime actual, se corrige cuando quedó obsoleta y se reorganiza cuando el problema es de aprendizaje o descubribilidad.
+Esta rama reconstruye la documentación de GFrame tomando **el código como fuente de verdad**. La documentación existente se reutiliza cuando coincide con el runtime, se corrige cuando quedó obsoleta y se reorganiza cuando el problema es de aprendizaje o descubribilidad.
 
 ## Objetivo
 
-La documentación debe permitir que un desarrollador pueda construir una aplicación real sin tener que conocer de antemano la arquitectura interna del framework.
+La documentación debe permitir que un desarrollador construya una aplicación real sin tener que conocer de antemano la implementación interna del framework.
 
 La pregunta principal deja de ser «¿qué clases existen?» y pasa a ser «¿cómo hago esta tarea con GFrame?».
 
@@ -19,35 +19,33 @@ Ejemplos:
 - sacar trabajo fuera de la petición web;
 - programar una tarea;
 - consumir una API externa;
-- empaquetar o personalizar una capacidad mediante módulos.
+- instalar, extender o personalizar un módulo.
 
-La referencia técnica continúa existiendo, pero queda detrás de una guía práctica de desarrollo.
+## Principios
 
-## Principios de esta reconstrucción
-
-1. **El código manda.** Una afirmación documental debe poder justificarse con el runtime, el instalador, los módulos o las pruebas actuales.
-2. **No confundir convención con obligación.** Por ejemplo, `app/controllers`, `app/services`, `app/models` y `app/views` forman la estructura recomendada del proyecto, pero el autoload ordinario de la aplicación y el runtime de módulos tienen mecanismos distintos que deben explicarse por separado.
-3. **Separar aprendizaje y referencia.** La guía práctica enseña recorridos completos. Las páginas especializadas documentan contratos, opciones y casos límite.
-4. **No documentar cada clase interna como si fuera API pública.** Primero se clasifica cada pieza como API de proyecto, punto de extensión, compatibilidad legacy o infraestructura interna.
-5. **Conservar lo que ya está bien.** Varias guías actuales —rutas, render, middleware, ORM, sesiones, notificaciones, correo, multimedia, cron— contienen información útil y no deben reescribirse por deporte.
-6. **Hacer visibles las capacidades.** Una capacidad documentada pero fuera del índice sigue siendo, en la práctica, difícil de descubrir.
-7. **Usar recorridos verticales.** Los conceptos se introducen dentro de funcionalidades completas, no como una sucesión de subsistemas aislados.
-8. **No romper compatibilidad documental sin señalarla.** Las funciones, clases o rutas históricas que permanezcan por compatibilidad deben marcarse como legacy cuando exista una API preferida.
+1. **El código manda.** Toda afirmación debe poder justificarse con el runtime, instalador, módulos o pruebas actuales.
+2. **No confundir convención con obligación.** La estructura recomendada del proyecto y el comportamiento impuesto por el runtime se documentan por separado.
+3. **Separar aprendizaje y referencia.** Las guías prácticas enseñan recorridos completos; las páginas especializadas documentan contratos y casos límite.
+4. **No documentar cada clase interna como API pública.** Primero se clasifica como API de proyecto, punto de extensión, compatibilidad legacy o infraestructura interna.
+5. **Conservar lo que ya está bien.** Rutas, Render, Middleware, ORM, Sesiones, Media, Notificaciones, Mail y Cron ya contienen bastante referencia útil.
+6. **Hacer visibles las capacidades.** Una capacidad técnicamente documentada pero ausente del recorrido principal sigue siendo difícil de descubrir.
+7. **Usar recorridos verticales.** Los conceptos se introducen dentro de funcionalidades completas.
+8. **Señalar compatibilidad legacy.** Los wrappers y contratos históricos no deben enseñarse como primera opción cuando existe una API preferida.
 
 ## Capas de la nueva documentación
 
-### 1. Aprender GFrame
+### Aprender GFrame
 
-Debe responder, en orden:
+Debe explicar en orden:
 
 - qué es GFrame;
 - cómo queda un proyecto instalado;
-- qué ocurre desde la URL hasta la respuesta;
+- cómo viaja una petición;
 - qué responsabilidad tiene cada carpeta;
 - cómo crear una funcionalidad completa;
 - cómo evolucionarla con AJAX, permisos, multimedia, correo, notificaciones y procesos en segundo plano.
 
-### 2. Guías por tarea
+### Guías por tarea
 
 Ejemplos:
 
@@ -58,14 +56,14 @@ Ejemplos:
 - consumir una API externa;
 - trabajar con archivos;
 - enviar correo;
-- usar Async o Cron;
-- crear o personalizar un módulo.
+- elegir Async o Cron;
+- instalar o personalizar un módulo.
 
-### 3. Referencia técnica
+### Referencia técnica
 
-Aquí permanecen los contratos detallados de Router, Render, Middleware, ORM, SessionRuntime, módulos, Mail, Media, Notifications, etc.
+Aquí permanecen Router, Render, Middleware, ORM, SessionRuntime, módulos, Mail, Media, Notifications y demás contratos detallados.
 
-## Mapa real de capacidades detectadas
+## Mapa de capacidades detectadas
 
 La auditoría del código confirma, entre otras, estas áreas:
 
@@ -89,74 +87,113 @@ La auditoría del código confirma, entre otras, estas áreas:
 - utilidades PHP y frontend;
 - instalación, perfiles y actualización.
 
-El inventario de `resources/modules` contiene también las bibliotecas visuales e integraciones publicables. Su existencia no implica que cada una necesite una guía extensa: primero se distingue módulo funcional, runtime MVC, componente frontend e integración de terceros.
+El inventario de `resources/modules` ya enumera los módulos existentes. El problema documental principal no era contar carpetas, sino explicar **qué capacidad resuelve cada pieza y cómo se integra en una aplicación**.
 
 ## Backlog vivo
 
 Estados:
 
-- **cubierto**: la información existe y coincide razonablemente con el código;
-- **parcial**: existe, pero falta recorrido, integración, precisión o descubribilidad;
-- **ausente**: no existe una guía adecuada;
-- **obsoleto**: contradice el estado actual del código;
-- **en auditoría**: aún no se ha cerrado la comparación código/documentación.
+- **cubierto**: existe una guía o referencia suficientemente útil para esta fase;
+- **parcial**: existe, pero falta integración, precisión o descubribilidad;
+- **corregido**: existía una contradicción concreta y ya se saneó en esta rama;
+- **en auditoría**: falta cerrar la comparación código/documentación.
 
-| ID | Área | Estado | Prioridad | Trabajo |
+| ID | Área | Estado | Prioridad | Resultado / siguiente acción |
 | --- | --- | --- | --- | --- |
-| DOC-001 | Guía real de desarrollo | ausente | P0 | Crear recorrido URL → ruta → middleware → controller → service → model/ORM → view/template → respuesta. |
-| DOC-002 | Índice y navegación | parcial | P0 | Reorganizar por tareas y recorridos, conservando referencia por subsistema. |
-| DOC-003 | Primera funcionalidad completa | ausente | P0 | Tutorial vertical con una funcionalidad tipo Productos. |
-| DOC-004 | Services | parcial | P0 | Explicar responsabilidad, cuándo introducirlos y relación con controller/model. |
-| DOC-005 | CRUD + AJAX | parcial | P0 | Mostrar patrón web inicial + recargas parciales por AJAX + CSRF + feedback. |
-| DOC-006 | Auth + permisos + sesiones | parcial | P0 | Unificar el modelo mental sin eliminar las guías técnicas actuales. |
-| DOC-007 | Módulos | parcial | P0 | Separar «instalar capacidad», «módulo runtime», «personalizar» y «crear módulo». |
-| DOC-008 | Helpers PHP | parcial | P1 | Clasificar API moderna, utilidades internas y wrappers legacy. |
-| DOC-009 | Cliente HTTP saliente | ausente/no descubrible | P1 | Documentar `HttpClient::request()` y diferenciarlo del canal API entrante. |
-| DOC-010 | Cifrado | ausente/no descubrible | P1 | Documentar `GFrame\Security\Encryption` y gestión de claves. |
-| DOC-011 | Async | cubierto pero oculto | P1 | Enlazar directamente y compararlo con Cron. |
-| DOC-012 | Cron | cubierto | P1 | Integrarlo en una guía de decisión Async vs Cron. |
-| DOC-013 | Media | cubierto técnicamente | P1 | Integrarlo en recorridos de aplicación. |
-| DOC-014 | Notificaciones | cubierto técnicamente | P1 | Integrarlo con eventos de negocio, correo, cola y cron. |
-| DOC-015 | Mail | cubierto técnicamente | P1 | Crear entrada práctica más corta y dejar `mail.md` como referencia extensa. |
-| DOC-016 | SEO | parcial | P1 | Crear mapa de capacidades y recorrido de uso. |
-| DOC-017 | Autoload de aplicación vs módulos | parcial | P1 | Explicar Bootstrap vs ModuleRuntime sin mezclarlos. |
-| DOC-018 | Instalador y perfiles | parcial | P1 | Explicar qué genera cada perfil y qué capacidades quedan instaladas. |
-| DOC-019 | `src/database/ORM_GUIDE.md` | obsoleto | P0 | Corregir o retirar referencias a rutas/configuración antiguas. |
-| DOC-020 | README / `composer new` | parcial | P1 | Evitar confusión entre script del repositorio y comando nativo de Composer. |
-| DOC-021 | Capabilities map completo | en auditoría | P0 | Mantener matriz código → API útil → documentación → acción. |
-| DOC-022 | Compatibilidad legacy | en auditoría | P1 | Identificar funciones/clases históricas y señalar API preferida. |
+| DOC-001 | Guía real de desarrollo | cubierto | P0 | `guia-desarrollo.md`: recorrido URL → ruta → middleware → controller → service → model/ORM → view/template → respuesta. |
+| DOC-002 | Índice y navegación | cubierto | P0 | `index.md` reorganizado por tareas y recorridos; conserva referencia técnica. |
+| DOC-003 | Primera funcionalidad completa | cubierto | P0 | `tutorial-productos.md`: CRUD vertical con web, AJAX, partial, ORM y permisos. |
+| DOC-004 | Services | cubierto | P0 | Introducidos en guía y tutorial como capa opcional para lógica reutilizable. |
+| DOC-005 | CRUD + AJAX | cubierto | P0 | Tutorial muestra carga web inicial, mutaciones AJAX, CSRF, permisos y recarga de fragmento. |
+| DOC-006 | Auth + permisos + sesiones | cubierto | P0 | `identidad-autorizacion.md` conecta autenticación, identidad, middleware, permisos, tenant y reglas de recurso. |
+| DOC-007 | Módulos | cubierto | P0 | `modulos-en-aplicacion.md` separa capacidad instalable, runtime MVC, componente frontend y funcionalidad propia. |
+| DOC-008 | Helpers PHP | cubierto | P1 | `helpers-php.md` clasifica helpers y wrappers globales legacy. |
+| DOC-009 | Cliente HTTP saliente | cubierto | P1 | `http-client.md`; se distingue claramente de API entrante. |
+| DOC-010 | Cifrado | cubierto | P1 | `encryption.md`: AES-256-GCM, claves, rotación y límites reales. |
+| DOC-011 | Async | cubierto | P1 | Enlazado desde índice y comparado con Cron/colas en `procesos-segundo-plano.md`. |
+| DOC-012 | Cron | cubierto | P1 | Conserva referencia y ahora forma parte de la guía de decisión. |
+| DOC-013 | Media | parcial | P1 | Referencia técnica ya fuerte; falta revisar si merece una entrada práctica más corta además de su integración en guía/tutorial. |
+| DOC-014 | Notificaciones | parcial | P1 | Referencia técnica fuerte; ya aparece en flujos de negocio, pero falta cerrar auditoría de campañas/transportes. |
+| DOC-015 | Mail | parcial | P1 | Referencia extensa; se corrigió dependencia Async. Evaluar una entrada práctica corta sin duplicar `mail.md`. |
+| DOC-016 | SEO | parcial | P1 | Auditar Sitemap/Robots/Llms/JsonLD/SchemaComposer y construir mapa práctico si aporta valor. |
+| DOC-017 | Autoload de aplicación vs módulos | cubierto | P1 | `autoload-proyecto.md` explica Bootstrap basename map frente a ModuleRuntime namespaced overrides. |
+| DOC-018 | Instalador y perfiles | en auditoría | P1 | Verificar `InstallationProfileCatalog`, `ProjectInstaller` y módulos exactos por perfil. |
+| DOC-019 | `src/database/ORM_GUIDE.md` | corregido | P0 | Sustituido por nota interna actual; ya no enseña `core/database` ni `config/Config.php`. |
+| DOC-020 | README / `composer new` | corregido | P1 | README aclara que `composer new` es un script del repo y no un comando nativo de Composer. |
+| DOC-021 | Capabilities map completo | en auditoría | P0 | Seguir cerrando SEO, instalador/perfiles y áreas avanzadas antes de declararlo completo. |
+| DOC-022 | Compatibilidad legacy | parcial | P1 | Helpers globales ya clasificados; continuar revisión de fachadas/contratos históricos restantes. |
+| DOC-023 | Serialización Async | corregido | P0 | `async.md` y `mail.md` ahora reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
+| DOC-024 | Autoload y namespaces | corregido/cubierto | P0 | Documentado que el proyecto generado no trae PSR-4 general `App\`; clases normales y overrides de módulos siguen contratos distintos. |
 
-## Orden de trabajo
+## Trabajo realizado en esta rama
 
-### Fase A — columna vertebral
+### Columna vertebral nueva
 
-1. rehacer `docs/index.md`;
-2. crear una guía de desarrollo práctica;
-3. crear el primer recorrido vertical completo;
-4. enlazar las referencias técnicas existentes desde esos recorridos.
+- `docs/guia-desarrollo.md`
+- `docs/tutorial-productos.md`
+- `docs/identidad-autorizacion.md`
+- `docs/modulos-en-aplicacion.md`
+- `docs/procesos-segundo-plano.md`
+- `docs/autoload-proyecto.md`
 
-### Fase B — huecos reales
+### Capacidades antes poco descubribles
 
-1. cliente HTTP saliente;
-2. cifrado;
-3. helpers PHP;
-4. decisión Async vs Cron;
-5. mapa de Auth/permisos/sesiones;
-6. módulos desde el punto de vista de una aplicación.
+- `docs/http-client.md`
+- `docs/encryption.md`
+- `docs/helpers-php.md`
 
-### Fase C — saneamiento
+### Navegación y onboarding
 
-1. retirar o corregir documentos legacy;
-2. revisar ejemplos contra código actual;
-3. eliminar duplicaciones contradictorias;
-4. unificar terminología;
-5. comprobar enlaces y navegación.
+- `docs/index.md` reorganizado por tareas.
+- `README.md` reconstruido para separar creación de proyecto de instalación del paquete.
+
+### Contradicciones saneadas
+
+- `src/database/ORM_GUIDE.md`: rutas/configuración antiguas retiradas.
+- `docs/async.md`: serialización corregida a Opis Closure.
+- `docs/mail.md`: dependencia de Async corregida a `opis/closure:^3.7`.
+
+## Siguiente bloque de auditoría
+
+### Instalación y perfiles
+
+Cerrar exactamente:
+
+- qué módulos instala `static`;
+- qué añade `managed`;
+- qué diferencia `intranet`;
+- qué añade `saas`;
+- qué tablas/capacidades quedan disponibles;
+- qué decisiones siguen perteneciendo al proyecto después de instalar.
+
+### SEO
+
+Comparar documentación con:
+
+- `Sitemap`;
+- `SitemapDataProvider`;
+- `Robots`;
+- `Llms`;
+- `JsonLD`;
+- `SchemaComposer`;
+- presets de schema.
+
+### Capacidades avanzadas
+
+Cerrar auditoría de:
+
+- Media;
+- Notifications / Email transport / Campaigns;
+- Heartbeat;
+- WordPress Headless;
+- errores y respuestas;
+- posibles APIs legacy restantes.
 
 ## Convivencia con otras ramas
 
 Esta reconstrucción se desarrolla en `codex/reconstruccion-documentacion` para no interferir con cambios simultáneos de código o documentación.
 
-Cuando otra rama cambie APIs, rutas, módulos o comportamiento documentado, la fusión debe hacerse comparando primero el código resultante. No se debe resolver un conflicto documental escogiendo automáticamente «la versión más nueva»: después de la integración, el código vuelve a ser la fuente de verdad.
+Cuando otra rama cambie APIs, rutas, módulos o comportamiento documentado, la fusión debe hacerse comparando primero el código resultante. No se resolverá un conflicto documental escogiendo automáticamente «la versión más nueva»: después de integrar, **el código vuelve a ser la fuente de verdad**.
 
 ## Criterio de finalización
 
@@ -167,4 +204,5 @@ La reconstrucción estará suficientemente cerrada cuando un desarrollador nuevo
 3. crear una funcionalidad completa sin leer primero la implementación del framework;
 4. encontrar la capacidad adecuada para autenticación, permisos, AJAX, archivos, correo, notificaciones, tareas, integraciones y SEO;
 5. pasar de una guía práctica a la referencia técnica cuando necesite detalles;
-6. distinguir con claridad API recomendada, compatibilidad legacy e infraestructura interna.
+6. distinguir API recomendada, compatibilidad legacy e infraestructura interna;
+7. saber qué instala cada perfil y qué sigue siendo responsabilidad del proyecto.
