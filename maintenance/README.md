@@ -2,6 +2,15 @@
 
 Estos documentos conservan planes, decisiones de trabajo, tareas pendientes y evidencias históricas. No describen necesariamente el estado actual ni forman parte de la ayuda de uso. La documentación vigente está en [docs](../docs/index.md).
 
+El estado canónico de la reconstrucción documental y su backlog cerrado/abierto está en [Reconstrucción de la documentación](../docs/reconstruccion-documentacion.md). **No uses las casillas pendientes de los planes históricos de esta carpeta como backlog actual sin volver a comprobar el código y ese documento canónico.**
+
+## Planes y registros de la reconstrucción
+
+- [Plan de documentación](plan-documentacion.md): snapshot de una fase anterior de la auditoría; varias filas marcadas como pendientes ya fueron resueltas posteriormente.
+- [Revisión de documentación](revision-documentacion.md): registro de trabajo y decisiones de rondas anteriores; se conserva como evidencia, no como estado vigente.
+
+## Otros documentos internos e históricos
+
 - [Mejoras pendientes no urgentes](mejoras-pendientes.md).
 - [Hoja de ruta](roadmap.md).
 - [Plan de extracción](plan-extraccion.md).
