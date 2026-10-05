@@ -1,22 +1,14 @@
 # Hallazgos para la integración de ramas
 
-Este archivo registra diferencias detectadas durante la auditoría documental que no deben resolverse a ciegas durante una fusión. Algunas son contradicciones entre código y documentación; otras son comportamientos del runtime que conviene decidir si se conservan o se corrigen.
+Este archivo registra diferencias detectadas durante la auditoría documental que no deben resolverse a ciegas durante una fusión. Algunas ya se corrigieron en la documentación de esta rama; otras son comportamientos del runtime que conviene decidir si se conservan o se corrigen.
 
 La regla para integrar es simple: **después de fusionar código, el runtime resultante vuelve a ser la fuente de verdad**.
 
-## 1. Mail: rate limit documentado, pero no implementado en el código auditado
+## 1. Mail: rate limit no implementado por `MailService`
 
-`docs/mail.md` describe una protección para formularios públicos basada en:
+La auditoría confirmó que `GFrame\Mail\MailService` no implementa un rate limiter propio para formularios públicos. Sus opciones efectivas de envío se relacionan con SMTP, destinatario, `reply_to`, `recipient_name` y `timeout`; las variantes asíncronas delegan en `Async`.
 
-- `mail.rate_limit`;
-- `MAIL_RATE_LIMIT_ENABLED`;
-- `MAIL_RATE_LIMIT_MAX_ATTEMPTS`;
-- `MAIL_RATE_LIMIT_WINDOW_SECONDS`;
-- la opción `rate_limit` de `MailService`.
-
-En la rama auditada, `GFrame\Mail\MailService` no contiene esa lógica. Sus opciones efectivas de envío son las relacionadas con SMTP, destinatario, `reply_to`, `recipient_name` y `timeout`; las variantes asíncronas delegan en `Async`.
-
-`config/defaults.php` tampoco contiene un bloque `mail.rate_limit`. La única configuración de rate/retry relacionada con correo está bajo:
+`config/defaults.php` tampoco contiene un bloque `mail.rate_limit`. La configuración de reintentos relacionada con correo bajo:
 
 ```php
 'notifications' => [
@@ -27,14 +19,15 @@ En la rama auditada, `GFrame\Mail\MailService` no contiene esa lógica. Sus opci
 ],
 ```
 
-Eso pertenece a la cola de `notifications-email`, no a `MailService` ni a formularios públicos.
+pertenece a la cola de `notifications-email`, no a `MailService` ni a formularios públicos.
+
+La documentación anterior prometía `rate_limit`, `MAIL_RATE_LIMIT_*` y códigos `mail_rate_*`; esa afirmación ya fue retirada de `docs/mail.md`. La guía actual indica que la protección contra abuso debe aplicarse en middleware, controlador o un servicio del proyecto antes de llamar a Mail.
 
 ### Decisión al integrar
 
-- Si otra rama implementa realmente el rate limit, conservar y volver a verificar la sección de `mail.md` contra ese código.
-- Si no existe implementación después de la fusión, retirar esa sección de la documentación y no exponer las variables `MAIL_RATE_LIMIT_*` como API disponible.
+Si otra rama añade un rate limiter real a `MailService`, volver a auditar su API y documentarlo únicamente después de integrar ese código. No recuperar por conflicto la documentación antigua sin implementación.
 
-**Estado:** pendiente de reconciliar con código integrado.
+**Estado:** corrección documental resuelta en esta rama; capacidad de rate limit no presente en el runtime auditado.
 
 ## 2. Media: `media.max_upload_bytes` permanece en defaults pero no gobierna el límite actual
 
@@ -60,7 +53,7 @@ El procesador toma su configuración del módulo. `MediaLibraryService` sí cons
 
 ### Decisión al integrar
 
-Si ningún consumidor real sigue usando `media.max_upload_bytes`, conviene marcarla formalmente como legacy o retirarla de defaults para evitar una configuración engañosa.
+Si ningún consumidor real sigue usando `media.max_upload_bytes`, conviene retirarla de defaults o volver a conectarla explícitamente al runtime para evitar una configuración engañosa.
 
 **Estado:** documentación correcta; posible limpieza de código/configuración.
 
@@ -84,23 +77,19 @@ Valorar que `Robots` añada la línea `Sitemap:` únicamente cuando el sitemap e
 
 **Estado:** observación de runtime; `seo.md` ya documenta que los switches siguen caminos separados.
 
-## 4. Errores: el `noindex` procede de las metas del módulo, no del código HTTP por sí solo
+## 4. Errores: origen real del `noindex`
 
-`docs/errores.md` afirma que la política SEO del núcleo bloquea la indexación de las páginas de error por su código HTTP.
-
-En el módulo auditado, `resources/modules/error-pages/application/app/views/error-pages/error-pages.group.meta.php` declara expresamente:
+El módulo `error-pages` declara expresamente:
 
 ```php
 'robots' => 'noindex, nofollow',
 ```
 
-Ese es el mecanismo documentalmente demostrable que termina generando el meta robots de las páginas de error.
+en `error-pages.group.meta.php`. Ese metadato es el mecanismo que genera la política robots de las páginas de error; el código HTTP no crea por sí solo el `<meta name="robots">`.
 
-### Decisión al integrar
+`docs/errores.md` ya fue corregido para atribuir el comportamiento al metadato del módulo y advertir que una personalización debe conservar conscientemente esa política si se desea mantener el `noindex`.
 
-Reformular la explicación de `docs/errores.md` para atribuir el `noindex` al metadato del módulo, salvo que otra rama añada una política central basada realmente en el status HTTP.
-
-**Estado:** corrección documental pendiente.
+**Estado:** corrección documental resuelta en esta rama.
 
 ## 5. Notifications Email: reintentos sí; recuperación de jobs `processing` abandonados no
 
@@ -132,24 +121,83 @@ No extrapolar esta capacidad a `notification_queue` ni a `EmailQueueProcessor`: 
 
 **Estado:** documentación de campañas alineada.
 
-## 7. Compatibilidad legacy
+## 7. Compatibilidad legacy: clasificación final
 
-La auditoría ya confirmó varias capas conservadas por compatibilidad:
+La auditoría distingue cuatro categorías que no deben mezclarse durante una fusión.
 
-- funciones globales en `src/utils/LegacyCompatibility.php`;
-- constantes derivadas por `LegacyConfigBridge`;
+### API global vigente cargada por classmap
+
+Composer carga deliberadamente áreas como:
+
+```text
+src/routing/
+src/render/
+src/database/
+src/middleware/
+src/async/
+src/cron/
+src/services/
+src/utils/
+```
+
+Por tanto, clases globales como `RouteBuilder`, `ORM`, `HttpClient`, `Async` o `UrlHelper` **no son legacy por el solo hecho de carecer de namespace**.
+
+### Wrappers globales de compatibilidad
+
+`src/utils/LegacyCompatibility.php` conserva funciones como:
+
+- `guess_url()`;
+- `is_ssl()`;
+- `sanitize()`;
+- `randomNameGen()`;
+- `buildMenu()`;
+- `pagination()`;
+- `send_cors_headers()`;
+- `markdown2html()`;
+- `logger()`.
+
+La documentación nueva enseña primero las clases/helpers equivalentes y mantiene estas funciones únicamente como compatibilidad.
+
+### Fallbacks de configuración todavía soportados
+
+La configuración recomendada actual es `config/app.php` + defaults del paquete. `Bootstrap`, sin embargo, todavía admite `config/bootstrap.php` y `core/Config.php` como fallbacks heredados cuando no existe la configuración estructurada.
+
+Eso significa que son compatibilidad soportada, no el patrón que debe enseñarse a proyectos nuevos.
+
+`LegacyConfigBridge` cumple la función inversa necesaria para aplicaciones actuales: deriva constantes históricas desde la configuración estructurada para código que aún las consume.
+
+### Contratos concretos de compatibilidad
+
+También existen puntos específicos, como:
+
 - `HttpClient::requestCompat()`;
-- nombres históricos de algunos métodos de Auth, como `registerAcount()`;
-- contratos/rutas antiguas mantenidos expresamente por ciertos módulos.
+- nombres históricos de métodos de Auth que siguen disponibles;
+- fallback a controllers globales del proyecto en ciertos overrides de módulos runtime.
 
-Durante la fusión no deben promocionarse automáticamente a API recomendada por el hecho de seguir existiendo. La documentación nueva debe enseñar primero las APIs actuales y etiquetar lo legacy como compatibilidad.
+No deben promocionarse automáticamente a API recomendada solo porque continúen funcionando.
+
+No se detectó durante esta pasada una red general de `class_alias()` o clases marcadas como deprecated que obligue a una segunda capa de migración global. La compatibilidad visible está concentrada en contratos concretos.
+
+**Estado:** clasificación documental cerrada en esta rama.
+
+## 8. Documentación interna fuera de `docs/`
+
+Se revisaron las notas internas más relevantes encontradas durante la auditoría:
+
+- `src/database/ORM_GUIDE.md` ya no enseña rutas/configuración antiguas y remite a las guías canónicas;
+- `src/heartbeat/README.md` remite a la documentación pública correspondiente;
+- `src/seo/SCHEMA_GUIDE.md` se mantiene como nota de arquitectura, no como tutorial paralelo;
+- `AGENTS.md`, `CONTRIBUTING.md` y `SECURITY.md` no introducen contratos alternativos del framework;
+- `CHANGELOG.md` conserva referencias históricas en su contexto de versión y no debe reescribirse como si fueran instrucciones actuales.
+
+**Estado:** no se detectó otra fuente paralela que requiera saneamiento en esta fase.
 
 ## Uso de este archivo al fusionar
 
-Antes de cerrar la reconstrucción documental:
+Antes de cerrar una integración con otras ramas:
 
 1. fusionar o comparar las ramas de código;
-2. volver a comprobar cada hallazgo contra el runtime final;
-3. eliminar del listado lo que haya sido resuelto;
-4. corregir la documentación de los hallazgos que sigan vigentes;
-5. no conservar una afirmación documental solo porque sea la versión más reciente del Markdown.
+2. volver a comprobar los hallazgos de runtime que sigan abiertos;
+3. no reintroducir por conflicto documentación ya retirada por carecer de implementación;
+4. conservar como historia los cambios del `CHANGELOG`, sin confundirlos con la API recomendada actual;
+5. después de integrar, tratar de nuevo el código resultante como fuente de verdad.
