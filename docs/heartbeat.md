@@ -46,7 +46,33 @@ El tiempo predeterminado de inactividad es de 1800 segundos:
 
 ## Registrar un canal
 
-La ampliación habitual consiste en registrar canales, no en sustituir el dispatcher. Cree `app/controllers/heartbeat-client/HeartbeatController.php` con namespace `App\Controllers\HeartbeatClient`, extienda `GFrame\Modules\HeartbeatClient\Controllers\HeartbeatController` y llame a `parent::__construct()` antes de registrar sus canales. Así conserva sesión y notificaciones. El instalador crea la carpeta, pero no copia el controlador original. Ejemplo de registro dentro de ese constructor:
+La ampliación habitual consiste en registrar canales, no en sustituir el dispatcher. Crea `app/controllers/heartbeat-client/HeartbeatController.php` con namespace `App\Controllers\HeartbeatClient`, hereda el controlador original y llama a `parent::__construct()` antes de registrar tus canales. Así conservas sesión y notificaciones. El instalador crea la carpeta, pero no copia el controlador original:
+
+```php
+<?php
+namespace App\Controllers\HeartbeatClient;
+
+class HeartbeatController extends \GFrame\Modules\HeartbeatClient\Controllers\HeartbeatController
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->registerChannel('project.summary', [
+            'interval_ms' => 120000,
+            'run_when_hidden' => false,
+        ], static function (array $payload, array $context): array {
+            $userID = (int)($context['session']['auth']['id'] ?? 0);
+            if ($userID <= 0) {
+                return ['status' => 'unauthorized', 'code' => 'login_required'];
+            }
+            // Consulta aquí un servicio de lectura del proyecto.
+            return ['status' => 'success', 'code' => 'summary_updated', 'data' => []];
+        });
+    }
+}
+```
+
+Para delegar en otro controlador, registra una referencia `carpeta/Controlador@método` dentro del constructor:
 
 ```php
 $this->registerChannel('orders.pending', [
@@ -57,6 +83,16 @@ $this->registerChannel('orders.pending', [
 ```
 
 El nombre admite letras minúsculas, números, punto, guion y guion bajo. El intervalo mínimo efectivo es de 60 segundos.
+
+| Opción | Función |
+| --- | --- |
+| `interval_ms` | Intervalo mínimo entre ejecuciones normales del canal |
+| `run_when_hidden` | Permite ejecución cuando el cliente declara que la pestaña está oculta |
+| `payload` | Datos fijos declarados por el backend, no un payload arbitrario del navegador |
+
+El nombre admite hasta 80 caracteres y debe empezar por letra minúscula o número. Registrar otra definición con el mismo nombre sustituye la anterior. Un handler puede ser callable o una referencia a un método público de controlador; el dispatcher crea ese controlador sin argumentos.
+
+El contexto contiene `visible`, `force` y una copia de la sesión. Ambos indicadores de visibilidad y ejecución forzada proceden del cliente: no son garantías de seguridad. `force` omite la espera del intervalo, pero no habilita un canal oculto que tenga `run_when_hidden => false`. Los tiempos se guardan por sesión; Heartbeat no es un planificador global ni ejecuta canales cuando no hay navegador haciendo peticiones.
 
 El handler recibe el payload declarado y el contexto del cliente:
 
@@ -93,6 +129,8 @@ return [
 El modelo devuelve el contrato y el controlador decide si lo conserva o añade datos. Router y JavaScript determinan después si el mensaje se presenta mediante una vista de error, `swalAlert` o `alertToast`.
 
 No se debe usar `Throwable` como sustituto de este contrato en módulos, controladores o modelos. Las operaciones que puedan fallar deben capturar `Exception` en la capa correspondiente y devolver `status`, `code` y `message`.
+
+El dispatcher aísla las excepciones de cada handler y continúa con los demás, pero incluye su mensaje en el resultado del canal. Devuelve errores públicos controlados y registra los detalles técnicos dentro del handler para no exponerlos. Un `status => success` de la respuesta general no significa que todos sus canales hayan tenido éxito: comprueba cada payload.
 
 ## Consumir resultados en JavaScript
 
@@ -150,7 +188,7 @@ El identificador se deriva de `site_url`, por lo que dos aplicaciones abiertas e
 
 ## Personalización
 
-La aplicación puede heredar del controlador original para registrar canales. La lógica de cada canal debe permanecer en el controlador, servicio o modelo propietario del módulo correspondiente. No edite el original dentro de Composer ni modifique el dispatcher para añadir un canal.
+La aplicación puede heredar del controlador original para registrar canales. La lógica de cada canal debe permanecer en el controlador, servicio o modelo propietario del módulo correspondiente. No edites el original dentro de Composer ni modifiques el dispatcher para añadir un canal.
 
 No se deben añadir canales específicos de notificaciones, multimedia u otro negocio al núcleo de GFrame. Cada módulo registra su integración desde la aplicación que lo instala.
 

@@ -10,7 +10,7 @@ El módulo necesita el esquema `auth`. Al publicarlo, GFrame resuelve también `
 php bin/modules.php publish-project auth-ui C:\ruta\del\proyecto
 ```
 
-La publicación agrega el controlador, las rutas web y AJAX, las vistas, la plantilla y los activos de autenticación. Los archivos existentes del proyecto no se sobrescriben salvo que se solicite expresamente.
+La publicación agrega las rutas web y AJAX y los activos de autenticación. El controlador, las vistas y la plantilla originales permanecen en el módulo; el proyecto utiliza las carpetas de personalización descritas en [módulos runtime](modulos-runtime.md). Los archivos existentes del proyecto no se sobrescriben salvo que se solicite expresamente.
 
 ## Rutas incluidas
 
@@ -35,6 +35,22 @@ La publicación agrega el controlador, las rutas web y AJAX, las vistas, la plan
 Las rutas `verifyacount`, `validateacount`, `lostpassword` y `resetpassword` son parte del contrato del módulo. Las rutas con nombres nuevos quedan como alias de compatibilidad. Si se cambia el nombre de una ruta o de un parámetro, hay que documentar la equivalencia, actualizar todas las llamadas del JavaScript y las vistas, y comprobar el flujo completo antes de publicar el módulo. No basta con renombrar la ruta del servidor.
 
 Las operaciones públicas usan `guest`, protección de mismo origen para AJAX y `honeypot`. Se excluye CSRF porque el token se genera al iniciar sesión. El cierre de sesión exige autenticación y conserva el CSRF automático.
+
+### Campos de los formularios
+
+| Operación | Campos que lee el controlador |
+| --- | --- |
+| Login | `login_email`, `login_password`, `rd` opcional |
+| Registro | `register_email`, `register_password` |
+| Reenvío de verificación | `login_email` |
+| Validación por AJAX | `vtoken` |
+| Recuperación | `recovery_email` |
+| Restablecimiento | `rpuser_token` (alias `reset_token`), `reset_password` |
+| Logout | Tokens CSRF del contrato de sesión |
+
+Conserva también el campo honeypot `middle_name` y los IDs que usan los scripts si sustituyes una vista. Cambiar únicamente el atributo `name` puede dejar un formulario visualmente correcto cuyo controlador recibe campos vacíos.
+
+La página de restablecimiento obtiene el token de `rp` en la URL; la verificación web utiliza `v`. El registro no inicia sesión automáticamente: crea una cuenta pendiente y solicita el envío del enlace. Consulta [Autenticación](autenticacion.md) para estados de cuenta y contratos del modelo.
 
 ## Configuración
 
@@ -78,7 +94,7 @@ Los servicios registran internamente las excepciones y devuelven `status` y `cod
 
 ## Personalización y extensión
 
-Declare una subclase en `app/controllers/auth-ui/AuthController.php`, con namespace `App\Controllers\AuthUi`, que extienda `GFrame\Modules\AuthUi\Controllers\AuthController`. Inyecte su modelo propio en el constructor mediante `parent::__construct(...)`. Consulte [herencia y migración](modulos-runtime.md) y [extensión desde proyectos](extensibilidad.md#herencia-de-auth-mi-cuenta-y-gestión-de-usuarios). Las URLs y el contrato MVC no cambian.
+Declare una subclase en `app/controllers/auth-ui/AuthController.php`, con namespace `App\Controllers\AuthUi`, que extienda `GFrame\Modules\AuthUi\Controllers\AuthController`. Inyecte su modelo propio en el constructor mediante `parent::__construct(...)`. Consulte [herencia y migración](modulos-runtime.md) y [extensión desde proyectos](extensibilidad.md#herencia-de-controladores-de-módulos). Las URLs y el contrato MVC no cambian.
 
 Los originales permanecen en el módulo. Cree solo las personalizaciones que necesite:
 
@@ -89,6 +105,26 @@ Los originales permanecen en el módulo. Cree solo las personalizaciones que nec
 - `public/js/modules/auth/AuthLogin.js`, `AuthRegister.js`, `AuthLostpassword.js` y `AuthResetpassword.js`: interacción y presentación de respuestas.
 
 El constructor de `AuthController` admite un modelo `AuthModel` y un `SessionManager` alternativos. Esto permite probar el controlador o sustituir el acceso a usuarios sin cambiar las rutas.
+
+Ejemplo mínimo para aportar un nombre de destinatario desde el perfil del proyecto:
+
+```php
+<?php
+namespace App\Controllers\AuthUi;
+
+class AuthController extends \GFrame\Modules\AuthUi\Controllers\AuthController
+{
+    protected function mailRecipientName(string $email): string
+    {
+        // Consulta aquí el perfil propio por correo, sin alterar la tabla users.
+        return parent::mailRecipientName($email);
+    }
+}
+```
+
+Para un modelo propio, construye su instancia en el constructor y llama a `parent::__construct(auth: $model)`. El modelo debe conservar el contrato de AuthModel; heredar una clase por sí solo no sustituye las instancias que utiliza el controlador original.
+
+Las metas de las vistas originales están junto a cada vista en el módulo. Una meta personalizada en `app/views/auth-ui/` permite añadir CSS o JavaScript del proyecto. Los assets publicados son gestionados por el actualizador: utiliza archivos adicionales del proyecto en lugar de editar sus originales cuando quieras conservar ajustes entre versiones.
 
 Los consentimientos legales, perfiles, planes, áreas, datos personales y acciones posteriores al registro pertenecen a la aplicación. Pueden añadirse al controlador personalizado sin incorporar esas reglas al framework.
 

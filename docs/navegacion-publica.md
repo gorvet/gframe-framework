@@ -59,4 +59,4 @@ El recurso del esqueleto pertenece a la aplicación creada: puedes ampliarlo all
 
 ## Verificación
 
-Las pruebas automatizadas cubren carga sin elementos opcionales, menú y Escape, restauración de overflow, anclas con otra consulta, movimiento reducido, ausencia de IntersectionObserver y registro en meta. Queda pendiente la comprobación visual en una instalación con un header público real.
+Las pruebas automatizadas cubren carga sin elementos opcionales, menú y Escape, restauración de overflow, anclas con otra consulta, movimiento reducido, ausencia de IntersectionObserver y registro en meta. Cada proyecto debe comprobar además su navegación con su header y contenido reales.

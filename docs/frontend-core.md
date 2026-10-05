@@ -46,7 +46,56 @@ La vista debe usar `needs-validation`, `novalidate`, atributos HTML5 y un destin
 
 Para actualizar solo una lista o un fragmento, devuelve JSON con `html` y reemplaza explícitamente su contenedor desde el JS de la vista. No devuelvas ese fragmento como una respuesta HTML directa al manejador global.
 
-## Paginación
+## Listados por AJAX
+
+La primera visita carga la página mediante una ruta web. Los filtros, la búsqueda, la paginación y las acciones posteriores se solicitan por AJAX y actualizan solo el fragmento afectado. El navegador no consulta el ORM directamente: envía parámetros al controlador, que valida la petición y solicita los datos al modelo.
+
+El recorrido habitual es:
+
+```text
+evento de la vista → AJAX → middleware → controlador → modelo/ORM
+                                           ↓
+                                     parcial PHP
+                                           ↓
+JSON con html y meta → reemplazo del contenedor del listado
+```
+
+El controlador devuelve `status`, `html` y `meta`, además de `message`, `code` o `data` cuando corresponda. El HTML se genera en un parcial PHP mediante buffer de salida; JavaScript lo inserta, sin reconstruir filas ni tarjetas con plantillas propias.
+
+En la vista, reserva el contenedor para el listado inicial y sus recargas:
+
+```html
+<div id="all_items"><!-- HTML del parcial renderizado por PHP --></div>
+```
+
+Por ejemplo, el módulo de campañas publica `ajax/admin/notifications/campaigns/list`. Con el módulo instalado y sus permisos configurados:
+
+```js
+function cargarCampanas(page) {
+  return $.ajax({
+    url: site_url + 'ajax/admin/notifications/campaigns/list',
+    type: 'POST',
+    dataType: 'json',
+    data: $('#tokens').serialize() + '&page=' + encodeURIComponent(page)
+  }).done(function (response) {
+    if (response.status === 'success') {
+      $('#all_items').html(response.html);
+      return;
+    }
+    alertToast(successError(response.message || '', response.code));
+  }).fail(function (xhr, status, error) {
+    alertToast(ajaxError(status, error));
+  });
+}
+```
+
+Carga jQuery, las utilidades y Alertas mediante meta antes de ejecutar este código. `#tokens` procede del header compartido. La ruta AJAX mantiene las mismas comprobaciones de autenticación, permisos y CSRF que el resto del módulo.
+
+Envía también los filtros activos al cambiar de página. El modelo devuelve la página válida y el total filtrado; el parcial solo muestra paginación cuando `meta.total_pages > 1`. Tras sustituir el HTML, reinicializa los componentes que lo necesiten o utiliza eventos delegados. En listados con estado en la URL, conserva búsqueda y página con `URLSearchParams`, History y `popstate`.
+
+Este patrón actualiza fragmentos dentro de una pantalla. Las visitas a páginas, descargas, API y SSE conservan sus respectivos canales; no se convierten en AJAX por defecto.
+
+### Helper de paginación
 
 `creaPaginacion(total_pages, page)` genera los controles de `#all_items_pagination`. Define `window.fetchDataForPage(page)` en tu vista para solicitar la página y actualizar el contenedor con el HTML del servidor. Los eventos de navegación se limitan a ese contenedor. Esta utilidad no consulta datos ni impone sincronización con la URL.
 

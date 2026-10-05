@@ -39,6 +39,42 @@ Al instalar y al ejecutar `composer gframe:update`, GFrame crea los roles declar
 
 ## Resolver permisos
 
+### Proteger una ruta
+
+Utiliza nombres de capacidad como `articles.view`, `articles.edit` o `admin.access`. El primer segmento identifica el recurso; el segundo, la operación. Declara la capacidad completa para que no dependa del nombre del controlador:
+
+```php
+<?php
+use RouteBuilder as Route;
+
+Route::get('articulos', 'articles/ArticlesController@index')
+    ->middleware(['auth', 'can:articles.view'])
+    ->template('admin')
+    ->view('articlesIndex')
+    ->registerFinal();
+```
+
+`auth` exige una identidad autenticada; `can:*` exige la capacidad efectiva. `admin` comprueba acceso administrativo mediante `admin.access`, con bypass para el superadministrador. Ocultar un enlace o botón en la vista no protege su endpoint: aplica la autorización también a cada acción AJAX y a sus operaciones de modificación.
+
+En modo tenant, `can:*` resuelve el tenant mediante la clave configurada y los parámetros de la petición. Comprueba su membresía activa. El controlador y el modelo deben filtrar además los registros por ese mismo tenant: tener permiso de edición en un tenant no autoriza modificar un registro de otro. Consulta [Middleware](middleware.md) para la configuración y los canales.
+
+### Comprobar una capacidad en un servicio
+
+```php
+<?php
+use GFrame\Auth\RoleModel;
+use GFrame\Auth\RolePermissionService;
+
+$access = new RolePermissionService(new RoleModel());
+$authorization = $access->authorize($userID, 'articles.edit', $tenantID);
+if (($authorization['status'] ?? '') !== 'success') {
+    return $authorization;
+}
+// Ejecuta la operación sobre registros del tenant autorizado.
+```
+
+Obtén `$userID` de la identidad autenticada y valida `$tenantID` contra el recurso que vas a operar. Usa `0` como tenant para autorización global. El servicio devuelve `status => success` y datos del rol cuando permite la operación; devuelve `status => unauthorized` y `code => forbidden` si la deniega. También puede devolver un error de consulta. No trates la mera presencia de `data` como autorización.
+
 Para una aplicación global, GFrame combina `roles.permissions_json` con `users.permission_overrides_json`. Para un tenant, combina la plantilla del rol asignado en `tenant_memberships` con `tenant_memberships.permission_overrides_json`. Una excepción `true` concede y una `false` deniega. El superadministrador conserva su bypass.
 
 La membresía debe existir y estar activa. El dueño de un registro no recibe permisos automáticamente por esa sola condición. El proyecto debe crear su membresía cuando corresponda.
@@ -105,7 +141,7 @@ El ejemplo es un flujo de aplicación, no un método automático de Auth. El pro
 
 ### Vincular un tenant existente
 
-No basta con recibir `tenant_id` y `user_id` por POST: eso permitiría apropiarse de tenants ajenos. Antes de asignar `owner`, el proyecto debe comprobar la propiedad en una fuente independiente de la membresía que va a crear. En Bebots, esa fuente es `bots.user_id`: consultar `SELECT user_id FROM bots WHERE bot_id = ?` y exigir que coincida con el usuario autenticado. La lectura y la nueva membresía deben quedar en una transacción que impida cambios de dueño concurrentes. Si se usa MySQL, puede bloquearse la fila con `FOR UPDATE`; en SQLite se utiliza la estrategia de escritura/transacción correspondiente. La tabla genérica `tenants` no tiene dueño; para tenants preexistentes sin otra fuente fiable no se puede inferir la propiedad: hace falta una migración auditada o una columna/relación de propiedad del proyecto.
+No basta con recibir `tenant_id` y `user_id` por POST: eso permitiría apropiarse de tenants ajenos. Antes de asignar `owner`, el proyecto debe comprobar la propiedad en una fuente independiente de la membresía que va a crear. Por ejemplo, en una aplicación cuya entidad tenant es un bot, esa fuente puede ser `bots.user_id`: consultar `SELECT user_id FROM bots WHERE bot_id = ?` y exigir que coincida con el usuario autenticado. La lectura y la nueva membresía deben quedar en una transacción que impida cambios de dueño concurrentes. Si se usa MySQL, puede bloquearse la fila con `FOR UPDATE`; en SQLite se utiliza la estrategia de escritura/transacción correspondiente. La tabla genérica `tenants` no tiene dueño; para tenants preexistentes sin otra fuente fiable no se puede inferir la propiedad: hace falta una migración auditada o una columna/relación de propiedad del proyecto.
 
 No se debe permitir crear `owner` desde una acción pública de asignación de roles. `UserPermissionService::assignTenantRole()` rechaza ese rol: está reservado al flujo de creación o transferencia de propiedad que implemente el proyecto.
 
@@ -121,6 +157,47 @@ $permissions->deactivateTenantMembership($actorID, $userID, $tenantID);
 ```
 
 Los servicios devuelven arreglos con `status` y `code`; el controlador decide si presenta una vista de error, `swalAlert` o `alertToast`.
+
+## Administrar roles y excepciones
+
+Los servicios reciben primero el ID del actor autenticado y verifican su autoridad en el servidor. Las siguientes operaciones globales requieren superadministrador:
+
+```php
+<?php
+use GFrame\Auth\RoleModel;
+use GFrame\Auth\RolePermissionService;
+use GFrame\Auth\UserPermissionService;
+
+$model = new RoleModel();
+$roles = new RolePermissionService($model);
+$permissions = new UserPermissionService($model);
+
+$created = $roles->createRole($actorID, 'Editor', 'editor');
+if (($created['status'] ?? '') !== 'success') {
+    return $created;
+}
+$roleID = (int)$created['role_id'];
+$granted = $roles->grantPermission($actorID, $roleID, 'articles.edit');
+if (($granted['status'] ?? '') !== 'success') {
+    return $granted;
+}
+return $roles->assignRole($actorID, $userID, $roleID);
+```
+
+Cada llamada es una operación independiente. Si una posterior falla, las anteriores no se revierten automáticamente; presenta el resultado y permite reintentar sin crear de nuevo un rol existente.
+
+| Método | Efecto |
+| --- | --- |
+| `grantPermission(actor, role, permission)` | Concede en la plantilla e incrementa su versión |
+| `revokePermission(actor, role, permission)` | Guarda una denegación e incrementa su versión |
+| `assignRole(actor, user, role)` | Asigna el rol global y revoca las sesiones del usuario |
+| `deleteRole(actor, role)` | Elimina un rol que no sea de sistema ni esté en uso |
+| `setOverride(actor, user, permission, effect, tenant)` | Añade una excepción `allow` o `deny` |
+| `removeOverride(actor, user, permission, tenant)` | Elimina la excepción; vuelve a regir la plantilla |
+
+En las excepciones, omite el tenant o usa `0` para afectar al alcance global. Un tenant positivo aplica la excepción a su membresía. Solo el superadministrador puede modificar estas excepciones mediante los servicios actuales. Una denegación individual no retira el bypass del superadministrador.
+
+La creación inicial reserva el rol `superadministrator`. Los servicios impiden reasignarlo a otra cuenta o retirar ese rol a su titular. Los roles de sistema no se eliminan; tampoco se elimina un rol asignado a usuarios o membresías. Las aplicaciones añaden capacidades y roles propios mediante `config/Permissions.php` o estos servicios, manteniendo las reglas protegidas del framework.
 
 ## Sesión y coste de consultas
 

@@ -1,6 +1,6 @@
 # Búsqueda léxica
 
-Módulo `lexical-search`, copiado de BaseConfías sin trasladar controladores, tablas ni reglas del módulo de conocimiento. Conserva el algoritmo original en PHP y JavaScript. No necesita base de datos propia.
+El módulo `lexical-search` proporciona búsqueda léxica en PHP y JavaScript. No necesita base de datos propia.
 
 Instálelo mediante el catálogo de módulos. Su servicio original queda en `resources/modules/lexical-search/application/app/services/lexical-search/LexicalSearchEngine.php`; la carpeta `app/services/lexical-search/` queda disponible para personalizaciones por herencia. El cliente se publica en `public/vendors/internal/lexical-search/lexical-search.js` y se carga desde el meta de la vista que lo utilice.
 

@@ -12,7 +12,7 @@ La publicación instala automáticamente jQuery y TinyMCE. Conserva las vistas o
 
 - `public/js/app/admin/components/rich-text-editor.js`.
 
-Personalice el campo o sus metadatos creando `app/views/rich-text-editor/richTextEditor.php` o `richTextEditor.meta.php`. Si no existen, se usan los originales. Los archivos antiguos de `app/views/admin/components/` no se borran automáticamente: adapte sus includes o traslade expresamente sus personalizaciones. La estructura del campo, el JavaScript y el puente visual no se han rediseñado.
+Personalice el campo o sus metadatos creando `app/views/rich-text-editor/richTextEditor.php` o `richTextEditor.meta.php`. Si no existen, se usan los originales. Los archivos antiguos de `app/views/admin/components/` no se borran automáticamente: adapte sus includes o traslade expresamente sus personalizaciones.
 
 La distribución incluida utiliza TinyMCE 8.6.0 bajo GPL-2.0-or-later.
 
@@ -125,7 +125,7 @@ Como mínimo:
 - aplique límites de tamaño;
 - valide las imágenes mediante el módulo multimedia cuando permita cargas o selección de archivos.
 
-El módulo no guarda contenido. El core incluye `GFrame\Security\HtmlSanitizer`, extraído de BaseConfías, para limpiar HTML enriquecido en backend. Su uso es explícito en el controlador o servicio receptor:
+El módulo no guarda contenido. El core incluye `GFrame\Security\HtmlSanitizer` para limpiar HTML enriquecido en backend. Su uso es explícito en el controlador o servicio receptor:
 
 ```php
 $content = \GFrame\Security\HtmlSanitizer::sanitize((string)($_POST['content'] ?? ''));

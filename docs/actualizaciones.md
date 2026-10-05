@@ -61,4 +61,31 @@ Si el proyecto aún no utiliza Composer, primero debe incorporar `gorvet/gframe`
 
 ## Regla de personalización
 
-El core y los archivos publicados por los módulos se consideran administrados por GFrame. No deben modificarse directamente porque una actualización puede reemplazarlos. Las aplicaciones amplían su comportamiento desde fuera mediante servicios propios, adaptadores, composición e implementaciones de los contratos públicos del framework.
+El core y los archivos publicados por los módulos se consideran administrados por GFrame. No deben modificarse directamente porque una actualización puede reemplazarlos. Las aplicaciones personalizan controladores, modelos y servicios por herencia y sustituyen vistas desde `app`, con respaldo en los originales del módulo. Los contratos de transporte, persistencia y otras integraciones conectan capacidades externas. Consulte [módulos runtime](modulos-runtime.md).
+
+## Añadir módulos después de instalar
+
+Los opcionales pueden instalarse más adelante sin volver a ejecutar `install.php`. `--modules` recibe la lista completa que se desea registrar, no solamente los módulos nuevos. Conserve los nombres de `storage/gframe-installed.json` y añada los nuevos a esa lista:
+
+```bash
+composer gframe:update -- --modules=LISTA_COMPLETA --dry-run
+composer gframe:update -- --modules=LISTA_COMPLETA
+```
+
+Sustituya `LISTA_COMPLETA` por los identificadores separados por comas. Se resuelven dependencias, se publican archivos, se crean carpetas de personalización y se ejecutan las migraciones declaradas. `--no-database` no instala las tablas necesarias de un módulo funcional. Quitar un nombre de esa lista no constituye una desinstalación completa: no elimina automáticamente archivos ni datos.
+
+## Despliegue en producción
+
+Despliegue el código y el `composer.lock` comprobados. Desde la raíz del proyecto ejecute:
+
+```bash
+composer install --no-dev --prefer-dist --optimize-autoloader
+```
+
+Composer genera `packages/autoload.php`; si falta, el arranque no puede cargar GFrame. No despliegue únicamente los archivos de `app` ni copie dependencias sueltas. Cuando la versión incluya cambios en archivos publicados o migraciones, revise y ejecute también `composer gframe:update` conforme a la política de personalización del proyecto.
+
+Suba `.env` por un canal privado, sin versionarlo. Configure `APP_URL` con la URL HTTPS real y desactive debug. El usuario del proceso PHP necesita permisos de escritura en los directorios utilizados por sesiones, procesos asíncronos, registros y cargas. Los envíos asíncronos requieren PHP CLI disponible; las colas y campañas programadas requieren el trabajador o cron descrito en sus guías.
+
+Integre las reglas del servidor según [Apache y Nginx](servidores-web.md). Compruebe portada, contacto si existe, `robots.txt`, `sitemap.xml` y una URL inexistente. No declare el despliegue correcto solo porque la portada abre.
+
+Si Git impide desplegar porque un archivo no versionado sería sobrescrito, conserve ese archivo fuera de la raíz pública antes de repetir el despliegue. Compare su personalización con el archivo versionado nuevo; no use un checkout forzado ni borre una configuración activa sin revisarla.

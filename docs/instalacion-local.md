@@ -1,6 +1,6 @@
-# Instalación local durante la extracción
+# Desarrollo con una copia local del framework
 
-Hasta que el paquete se publique en Packagist, una aplicación puede enlazarlo desde el disco:
+Para desarrollar y probar cambios del framework sin publicar una versión, una aplicación puede enlazar una copia local desde el disco:
 
 ```json
 {

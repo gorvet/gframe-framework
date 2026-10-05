@@ -10,7 +10,6 @@
 - **Base de datos**: ORM, conexiones MySQL y SQLite, dialectos, transacciones y paginación.
 - **Autenticación**: registro, verificación, acceso, recuperación, sesiones y expiración opcional de contraseñas.
 - **Roles y permisos**: superadministrador protegido, roles configurables y permisos normalizados.
-- **Mi cuenta**: consulta de los datos base del usuario conectado, cambio de contraseña y desactivación protegida. Los perfiles ampliados pertenecen a cada aplicación.
 - **Errores**: respuestas web y de API, plantillas personalizables y detalle condicionado por debug.
 - **SEO**: metadatos, JSON-LD, sitemap, robots.txt y llms.txt con activadores independientes.
 - **Metricool**: carga opcional desde el footer, desactivada automáticamente durante debug.
@@ -23,7 +22,6 @@
 - **Instalación**: perfiles, esquemas, configuración, módulos, primer superadministrador y bloqueo posterior.
 - **Esqueleto de aplicación**: portada pública inicial, estructura MVC y asistente visual.
 - **Footer**: plantillas independientes y opcionales para contenido, copyright y créditos, personalizables por grupo y vista.
-- **Panel administrativo**: plantilla compartida, navbar, sidebar, tema y persistencia para perfiles con administración.
 
 ## Base visual predeterminada
 
@@ -34,23 +32,29 @@ Se instala automáticamente en todos los proyectos:
 - `sweetalert2` 11.10.0;
 - `gframe-icons`;
 - `alerts`: `alertToast`, `swalAlert` y estados de carga;
-- `frontend-core`: formularios, errores, paginación, tablas, Markdown y utilidades comunes.
+- `frontend-core`: formularios, errores, paginación y utilidades comunes;
+- `gfselect`: selector enriquecido propio;
+- `gf-table`: búsqueda y ordenación local de tablas;
 - `error-pages`: plantilla y vistas web para errores 403, 404, 500 y 503.
 
-## Módulos funcionales opcionales
+## Módulos funcionales y requisitos por perfil
+
+`managed` e `intranet` incluyen `auth-ui`, `self-account`, `admin-panel`, `user-admin` y `media-library`, junto con sus dependencias. `saas` añade `notifications` y `cron-runner`. Los demás componentes compatibles pueden añadirse durante la instalación o posteriormente. `static` no instala módulos que requieren tablas o autenticación.
 
 - `auth-ui`: acceso, registro, verificación, recuperación, restablecimiento y cierre de sesión.
 - `self-account`: pantalla Mi cuenta, cambio de contraseña y desactivación de la cuenta propia.
+- `admin-panel`: escritorio, navbar, sidebar, tema y persistencia.
 - `media-library`: archivos globales, por tenant o por usuario y relaciones con contenidos.
 - `notifications`: inbox por usuario y tenant con transportes extensibles.
 - `notifications-email`: adaptador que conecta notificaciones, colas y campañas con el soporte Mail del núcleo.
 - `notification-campaigns`: envíos masivos inmediatos o programados sobre la cola y los transportes registrados.
-- `user-admin`: listado, búsqueda, filtros, activación, desactivación y asignación de roles mediante permisos; el superadministrador conserva acceso total.
+- `user-admin`: listado, búsqueda, filtros, verificación, suspensión/restablecimiento, eliminación y asignación de roles mediante permisos; el superadministrador conserva acceso total.
 - `wordpress-headless`: contenido y taxonomías de WordPress mediante BridgeFrame, con estilos de bloques integrados.
 - `rich-text-editor`: componente reutilizable sobre TinyMCE con limpieza de contenido pegado desde Word.
 - `heartbeat-client`: cliente web, controlador y ruta de sistema para los canales heartbeat.
 - `cron-runner`: persistencia y ejecución CLI de tareas programadas.
-- `gfselect`: selector enriquecido propio.
+- `markdown`: conversión de Markdown y HTML en PHP y JavaScript.
+- `lexical-search`: búsqueda léxica sin base de datos propia.
 - `password-utils`: política PHP de aceptación, generador seguro e indicador visual de contraseñas.
 
 ## Componentes visuales opcionales

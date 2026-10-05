@@ -72,7 +72,7 @@ Cada addon implementa `NotificationTransport` y registra su propio canal. `notif
 
 ## Extensión
 
-Notificaciones conserva sus originales en `resources/modules/notifications/application/app`. El instalador crea vacías `app/{controllers,models,services,views}/notifications`; no copia las clases ni las vistas originales. Declare `module('notifications')` en las rutas; sus URLs y nombres de vistas permanecen iguales.
+Notificaciones conserva sus originales en `resources/modules/notifications/application/app`. El instalador crea vacías `app/controllers/notifications` y `app/views/notifications`, las capas presentes en el módulo; no copia las clases ni las vistas originales. Declare `module('notifications')` en las rutas; sus URLs y nombres de vistas permanecen iguales.
 
 El controlador propio se guarda en `app/controllers/notifications/NotificationController.php`, con namespace `App\Controllers\Notifications`, y extiende `GFrame\Modules\Notifications\Controllers\NotificationController`. Los modelos y servicios propios usan `App\Models\Notifications` y `App\Services\Notifications`; pueden extender `GFrame\Notifications\NotificationModel` y `NotificationService`. Construya e inyecte su servicio mediante `parent::__construct(...)`. La existencia de una subclase no sustituye automáticamente una instancia del original.
 

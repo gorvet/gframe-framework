@@ -4,20 +4,21 @@ Los skills de `skills/` se versionan junto con el framework y son la fuente ofic
 
 ## Skills incluidos
 
-- `gframe-core-architecture`
-- `gframe-backend`
-- `gframe-orm-models`
-- `gframe-auth-access`
-- `gframe-frontend-admin`
-- `gframe-frontend-public`
-- `gframe-ui-design-clean`
-- `gframe-framework-maintenance`
+- `gframe-core-architecture`: arranque, configuración, rutas, middleware y conexión entre framework y aplicación.
+- `gframe-backend`: controladores, servicios, respuestas HTTP y permisos.
+- `gframe-orm-models`: modelos, consultas, conexiones, dialectos y transacciones.
+- `gframe-auth-access`: autenticación, sesiones, roles, permisos y cuenta propia.
+- `gframe-frontend-admin`: vistas administrativas, meta, formularios, validación HTML5, AJAX y feedback.
+- `gframe-frontend-public`: vistas públicas, recursos, metadatos, SEO y contenido.
+- `gframe-ui-design-clean`: organización de pantallas y patrones Bootstrap adaptados al proyecto.
+- `gframe-framework-maintenance`: mantenimiento del paquete, pruebas, documentación y publicación.
+- `gframe-media-module`: biblioteca multimedia, ámbitos, cargas, selectores y relaciones.
 
-El skill `gframe-media-module` acompaña al módulo multimedia extraído y documenta sus contratos, ámbitos y flujos reutilizables.
+Los skills guían al asistente de desarrollo; no son módulos PHP ni recursos que se carguen al ejecutar la aplicación.
 
 ## Instalación
 
-Desde PowerShell:
+Desde PowerShell, situado en la raíz del repositorio del framework o en `packages/gorvet/gframe` de un proyecto instalado:
 
 ```powershell
 .\bin\install-skills.ps1 -Target Codex

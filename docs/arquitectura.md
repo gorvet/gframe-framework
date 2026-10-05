@@ -1,56 +1,155 @@
 # Arquitectura de GFrame
 
-## Objetivo
+GFrame separa el núcleo del framework del código de tu aplicación. El núcleo coordina las peticiones, rutas, middleware, renderizado y acceso a datos. Tu proyecto desarrolla sus reglas de negocio sin modificar el paquete instalado por Composer.
 
-GFrame debe funcionar como un framework instalable y versionado. El núcleo no puede depender de las reglas de negocio de una aplicación concreta.
+Para generar el proyecto, empieza por [Instalación](instalacion.md).
 
-## Capas
+## Las tres capas
 
-### Framework
+1. **Núcleo PHP**: bootstrap, configuración, Router y RouteBuilder, middleware, Render y Meta, ORM y dialectos, errores, SEO y servicios internos.
+2. **Módulos de ampliación**: funcionalidades PHP o híbridas PHP/JavaScript, como usuarios, multimedia, notificaciones y campañas. Los requisitos dependen del perfil: no todos son opcionales en todos los proyectos.
+3. **Módulos de vista y frontend**: componentes y utilidades de interfaz, como GF Select, GF Table y alertas visuales. Las bibliotecas externas, como Bootstrap y SweetAlert2, se presentan por separado dentro de esta capa.
 
-- Enrutamiento y resolución de controladores.
-- Middleware y permisos genéricos.
-- ORM, conexiones y dialectos de base de datos.
-- Renderizado, vistas y metadatos.
-- Errores, SEO, tareas asíncronas, cron y heartbeat.
-- Servicios HTTP y de correo.
-- Utilidades sin conocimiento del dominio.
+La interfaz no sustituye la autorización del servidor. Los módulos tampoco contienen automáticamente las reglas específicas de tu negocio.
 
-### Aplicación
+## Carpetas del proyecto instalado
 
-- Controladores, modelos y servicios del negocio.
-- Rutas y permisos concretos.
-- Vistas, plantillas, identidad visual y textos.
-- Configuración, migraciones y datos propios del negocio.
-- Integraciones exclusivas del proyecto.
+Estas ubicaciones pertenecen al proyecto. Algunas carpetas aparecen solo cuando el perfil, los módulos o tu desarrollo las necesitan.
 
-### Módulos opcionales
+| Ubicación | Responsabilidad |
+| --- | --- |
+| `index.php` | Punto de entrada HTTP |
+| `install.php` | Instalador, protegido por el estado de instalación |
+| `core/Load.php` | Puente hacia Composer y Bootstrap; no es una copia del núcleo |
+| `config/app.php` | Configuración estructural del proyecto |
+| `.env` | Valores del entorno y secretos; no se publica en Git |
+| `config/routes/routes_*.php` | Rutas organizadas por canal |
+| `app/controllers/` | Acciones que atienden peticiones |
+| `app/services/` | Procesos y reglas reutilizables del negocio |
+| `app/models/` | Modelos y acceso a datos del proyecto |
+| `app/views/` | Vistas, metas y sustituciones de vistas de módulos |
+| `app/views/templates/` | Templates, header, footer y sus partes |
+| `public/` | CSS, JavaScript, imágenes y assets publicados |
+| `packages/` | Dependencias de Composer, incluido `gorvet/gframe` |
+| `storage/` | Estado interno y archivos de ejecución; no es público |
+| `storage/gframe-installed.json` | Registro de instalación y módulos |
+| `deployment/` | Ayudas de despliegue, no configuración PHP |
+| `.htaccess` y `nginx.conf` | Reglas de integración con el servidor web |
 
-Los módulos reutilizables que no sean necesarios en todas las aplicaciones se seleccionan desde el catálogo durante la instalación. Entre ellos están la biblioteca multimedia, el editor enriquecido, las notificaciones y WordPress headless. Los algoritmos propios de un dominio, como `TextClassifier` en una aplicación de bots, permanecen en su aplicación.
+`packages/` cumple la función del directorio de dependencias de Composer. `composer.lock` fija las versiones de paquetes; `storage/gframe-installed.json` registra el estado de instalación del proyecto. No son intercambiables.
 
-El núcleo y los archivos publicados por esos módulos son código administrado: una actualización puede reemplazarlos. Las aplicaciones personalizan el comportamiento desde sus propios servicios, adaptadores y contratos, sin editar directamente los archivos administrados.
+No edites `packages/gorvet/gframe/` para personalizar la aplicación: Composer puede reemplazarlo. Algunos archivos publicados también están administrados por el actualizador. Consulta [Actualizaciones](actualizaciones.md) antes de modificar assets compartidos.
 
-Los módulos fundamentales pueden incluir esquemas de instalación portables. El módulo de autenticación proporciona las tablas estándar de usuarios, roles y permisos; las aplicaciones no añaden datos de perfil o negocio a esa tabla base.
+Los originales de los módulos permanecen en el paquete. Para rutas asociadas a módulos, las convenciones runtime permiten buscar primero en la aplicación y después en el módulo. Consulta [Módulos runtime](modulos-runtime.md) para las rutas relativas, namespaces y ampliación de clases.
 
-## Compatibilidad inicial
+## Carpetas del repositorio del framework
 
-La versión `1.x` conserva las clases globales históricas del core junto a los componentes con namespace. Composer genera el mapa de clases y `GFrame\Foundation\Bootstrap` inicia la aplicación. Los cambios incompatibles posteriores requieren una nueva versión mayor y una guía de migración.
+Estas ubicaciones pertenecen al paquete, no al negocio de una aplicación.
 
-## Configuración
+| Ubicación | Contenido |
+| --- | --- |
+| `src/routing/` | Router y RouteBuilder |
+| `src/middleware/` | Ejecución de middleware |
+| `src/render/` | Render y Meta |
+| `src/database/` | ORM, conexiones y dialectos |
+| `src/GFrame/` | Componentes con namespace, como configuración, sesiones y runtime de módulos |
+| `src/async/`, `src/cron/`, `src/heartbeat/` | Ejecución asíncrona, tareas y heartbeat |
+| `src/seo/`, `src/error/` | SEO y errores |
+| `src/services/`, `src/utils/` | Servicios y utilidades compartidos |
+| `config/defaults.php` | Valores predeterminados del framework |
+| `resources/skeleton/` | Fuente del proyecto inicial |
+| `resources/modules/<identificador>/` | Manifiesto, código y recursos del módulo |
+| `docs/` | Documentación del paquete completo |
+| `skills/` | Instrucciones versionadas para asistentes |
+| `tests/` | Pruebas del framework |
 
-El framework admite dos modos de permisos:
+GFrame 1.x combina componentes con namespace `GFrame\` y clases globales históricas, como `Router`, `Render` y `RouteBuilder`. Composer carga ambas mediante PSR-4 y su mapa de clases. No necesitas incluir los archivos del núcleo en cada controlador.
 
-- Global, cuando la aplicación no define tenancy.
-- Por tenant, cuando define conjuntamente el identificador y la tabla correspondiente.
+## Recorrido de una petición
 
-Las reglas particulares de áreas, estados editoriales o visibilidad pertenecen a la aplicación.
+```text
+Petición HTTP
+  → servidor web → index.php → core/Load.php → Bootstrap
+  → Router: canal, idioma y ruta → middleware
+  ├─ web → Render → acción del controlador → vista y template → HTML
+  └─ AJAX / API / webhook / SSE → acción del controlador → respuesta del canal
 
-## Recursos públicos
+Dentro de una acción, cuando el caso lo necesita:
+  controlador → servicio → modelo → ORM → base de datos
+```
 
-Los recursos comunes y opcionales se registran en `resources/modules`. Cada manifiesto declara sus dependencias y los destinos bajo `public/vendors/external`, `public/vendors/internal`, `public/js/core` o el directorio público correspondiente. `ModuleAssetPublisher` resuelve dependencias y publica únicamente los módulos solicitados.
+Servicios y modelos no son pasos obligatorios. Una acción puede devolver datos sin consultar una base de datos.
 
-Los estilos propios de cada aplicación permanecen en `public/css/app` y se cargan después de los estilos compartidos.
+### Entrada y preparación
 
-## Proyecto inicial
+Apache o Nginx entrega las rutas de aplicación a `index.php`. Los archivos públicos permitidos pueden servirse directamente sin ejecutar Router. No abras `app/`, `packages/` o `storage/` al navegador; consulta [Servidores web](servidores-web.md).
 
-`gorvet/gframe` contiene el núcleo y mantiene en `resources/skeleton` la fuente única del proyecto inicial. El comando `composer new` genera desde allí la portada pública, la estructura MVC mínima y el instalador visual. No existen aplicaciones base diferentes por perfil: el mismo instalador configura un sitio estático, una aplicación administrada o un SaaS.
+`core/Load.php` carga `packages/autoload.php`. Una aplicación sin configuración ni registro de instalación puede redirigir al instalador antes de arrancar.
+
+`GFrame\Foundation\Bootstrap::boot()` carga `.env`, combina los valores del framework con `config/app.php`, prepara utilidades y autoload de la aplicación, inicializa los módulos registrados y carga `config/routes/routes_*.php`.
+
+Después, `index.php` registra el manejo de errores, inicia la sesión y crea Render y Router. La combinación de configuración se explica en [Configuración](configuracion.md).
+
+### Resolución y middleware
+
+Router detecta el canal por el prefijo de la URL: `ajax`, `api`, `webhook` o `sse`; las demás peticiones usan el canal web. Puede reconocer un idioma admitido al inicio de la ruta. Reconocer el idioma no traduce automáticamente los textos.
+
+La resolución compara el método HTTP y la ruta, extrae parámetros y prepara controlador, acción, vista, template, módulo de origen y middleware. El archivo de declaración y el canal de entrada deben ser coherentes.
+
+Antes de ejecutar la acción se aplican los middleware declarados y los guardas automáticos del canal. Pueden autorizar, rechazar, aportar contexto o finalizar un preflight CORS.
+
+La autorización de ruta no sustituye las reglas de negocio sobre registros concretos. Esas reglas deben comprobarse en los servicios o políticas de tu aplicación.
+
+### Acción y respuesta
+
+En el canal web, Router delega en Render. Render instancia el controlador, ejecuta la acción salvo que se haya omitido, interpreta sus datos, carga metas y vista y la envuelve con template, header y footer.
+
+Para AJAX, API, webhook y SSE, Router ejecuta directamente la acción. AJAX y API serializan resultados a JSON con sus respectivos contratos; webhook tiene su tratamiento de respuesta y SSE permite emitir eventos. Estos canales no reciben automáticamente un template HTML.
+
+`noAction()` permite omitir la ejecución del método. Los errores pueden desviar el recorrido a una vista o respuesta de error.
+
+## Ejemplo de la portada
+
+El proyecto inicial declara su portada en `config/routes/routes_web.php`:
+
+```php
+use RouteBuilder as Route;
+
+Route::get('', 'home/HomeController@index')
+    ->template('home')
+    ->view('homeIndex')
+    ->registerFinal();
+```
+
+La raíz ejecuta `HomeController::index()` en `app/controllers/home/HomeController.php`. Su resultado llega a `app/views/home/homeIndex.php` como `$data`. El template es `app/views/templates/homeTemplate.php`; las metas comunes están en `app/views/home/home.group.meta.php`.
+
+Por ejemplo, puedes devolver un texto desde la acción:
+
+```php
+final class HomeController
+{
+    public function index(): array
+    {
+        return ['welcome' => 'Bienvenido a mi proyecto'];
+    }
+}
+```
+
+Y utilizarlo en la vista, escapándolo antes de incorporarlo al HTML:
+
+```php
+<h1><?= htmlspecialchars($data['welcome'] ?? '', ENT_QUOTES, 'UTF-8') ?></h1>
+```
+
+Este ejemplo no necesita un modelo ni un servicio. Cuando necesites persistencia, añade esas piezas en la aplicación; no introduzcas la lógica del negocio en Router.
+
+## Guías relacionadas
+
+- [Router y rutas](rutas.md): declaraciones, canales y parámetros.
+- [Render](render.md): datos, vistas y templates.
+- [Metas](meta.md): etiquetas y assets por grupo y vista.
+- [Módulos runtime](modulos-runtime.md): resolución entre aplicación y módulo.
+- [Permisos](permisos.md): autorización global y por tenant.
+- [SEO](seo.md): metadatos y respuestas automáticas.
+
+Cada guía especializada desarrolla su contrato; aquí se explica la relación entre las piezas.

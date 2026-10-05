@@ -4,17 +4,15 @@ Primera versión publicada en GitHub, originalmente con el nombre Composer `gfra
 
 ## Alcance
 
-Incluye el núcleo, los cuatro perfiles del instalador, módulos MVC personalizables mediante herencia PHP, bibliotecas visuales conectadas a variables, multimedia, autenticación, administración de usuarios, notificaciones, campañas, colas y correo. Las guías explican los contratos y los puntos de personalización. Las mejoras no urgentes siguen en [mejoras pendientes](mejoras-pendientes.md).
+Incluye el núcleo, los cuatro perfiles del instalador, módulos MVC personalizables mediante herencia PHP, bibliotecas visuales conectadas a variables, multimedia, autenticación, administración de usuarios, notificaciones, campañas, colas y correo. Las guías explican los contratos y los puntos de personalización.
 
-PHP 8.1 es el entorno probado para esta publicación. Los resultados históricos y las restricciones de navegador, Nginx y PHP 8.4 se conservan en [preparación anterior](preparacion-0.9.0.md). El usuario confirmó que el instalador completó una instalación de web no administrada. Esa comprobación manual no implica que todos los perfiles ni todas las integraciones externas se hayan probado visualmente.
-
-La suite completa tras estos ajustes pasó en PHP 8.1.5 con MySQL habilitado: 320 pruebas, 3393 aserciones y una omisión, correspondiente al servidor Nginx no configurado para esa ejecución. Composer, auditoría de dependencias, sintaxis PHP y nueve skills fueron validados. El archivo Composer se comprobó sin dependencias locales, secretos ni capturas; incluye `nginx.conf` y no su ubicación anterior.
+PHP 8.1 es el entorno probado para esta publicación. No se declara certificada la integración con PHP 8.4.
 
 ## Organización del proyecto
 
 - `app/`: código y vistas propios; solo se preparan carpetas vacías para las capas que existen en cada módulo.
 - `config/`: configuración PHP, permisos, rutas y metadatos.
-- `nginx.conf`: fragmento para integrar manualmente en el servidor. `.htaccess` permanece en la raíz, donde Apache lo utiliza.
+- `.htaccess`: reglas que Apache utiliza desde la raíz. En las versiones actuales, `nginx.conf` se publica junto a él; consulte [servidores web](servidores-web.md) para integrar Nginx.
 - `packages/`: directorio de dependencias Composer; contiene GFrame y sus dependencias PHP. No se modifica manualmente.
 - `storage/gframe-installed.json`: única lista de módulos instalados, bloqueo de instalación y hashes de actualización. SQLite puede guardar su archivo en `storage/`.
 - `public/`: recursos publicados y accesibles desde el navegador.

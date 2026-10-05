@@ -52,7 +52,7 @@ Los contratos admiten:
 - `helpMsg`: explicación adicional opcional;
 - `helpUrl` y `helpLabel`: enlace de ayuda opcional;
 - `helpEnabled`: permite ocultar explícitamente la ayuda;
-- `http_code`: estado HTTP explícito para API o webhook.
+- `http_code`: estado HTTP explícito para API; en webhook fija el estado mediante `http_response_code()` en la acción cuando corresponda.
 
 ## Generar parámetros de error
 
@@ -81,15 +81,15 @@ Fuera del modo de depuración, las excepciones internas no exponen mensajes, rut
 
 ## Personalización
 
-Los archivos publicados pertenecen a la aplicación y pueden personalizarse sin modificar el núcleo:
+Las vistas personalizadas pertenecen a la aplicación y se resuelven antes que los originales runtime, sin modificar el núcleo:
 
 - crea `app/views/error-pages/_errorCard.php` para personalizar la estructura compartida;
-- edita una vista concreta para cambiar textos o acciones por código;
-- edita `app/views/templates/errorTemplate.php` para cambiar la envoltura visual;
+- crea una vista concreta en `app/views/error-pages/` para cambiar textos o acciones por código;
+- crea `app/views/templates/errorTemplate.php` para cambiar la envoltura visual;
 - crea `app/views/error-pages/error-pages.group.meta.php` para personalizar metadatos y recursos;
 - edita `public/css/404/404.css` para adaptar el diseño.
 
-La publicación de módulos conserva archivos existentes salvo que se solicite sobrescribirlos. Por eso, una actualización del framework no debe reemplazar automáticamente las personalizaciones de la aplicación.
+Las vistas runtime originales no se copian durante la instalación; las personalizaciones en `app/views/` se conservan. El CSS publicado es un archivo gestionado: revisa `composer gframe:update -- --dry-run` y utiliza `--preserve-custom` si debes conservar modificaciones directas. Preferiblemente añade tus ajustes en un CSS del proyecto referenciado por la meta personalizada.
 
 ## Extender el módulo
 
@@ -110,7 +110,15 @@ No es necesario crear un `ErrorController` vacío. `ErrorResponder` genera una r
 
 Con el modo de depuración activo, las excepciones web muestran una página técnica con tipo, mensaje, archivo, línea y traza. En producción se muestra la página 500 y se ocultan los detalles internos.
 
-Las páginas de error declaran `noindex, nofollow` para impedir que los buscadores las indexen.
+La política SEO del núcleo bloquea la indexación de las páginas de error por su código HTTP; no necesitas repetir un interruptor de indexación en cada meta.
+
+## Errores de negocio y feedback
+
+Para una validación o una operación rechazada devuelve un código estable y un mensaje público. En AJAX, el frontend interpreta el contrato y muestra `swalAlert` o `alertToast` según la interacción; las [Alertas](alerts.md) no son el módulo de páginas HTTP ni la bandeja de notificaciones.
+
+No uses un error 500 para representar todo rechazo funcional. En API declara un `http_code` apropiado cuando el código de negocio no tenga equivalencia en ErrorResponder. Un código desconocido no crea automáticamente una nueva vista: el resolver utiliza su categoría de error predeterminada.
+
+`ErrorHandler` registra el tratamiento global de excepciones y fallos fatales durante el arranque. No convierte todos los warnings y notices en excepciones; en producción configura PHP para registrar errores sin imprimirlos en respuestas HTML o JSON. Un fallo antes del bootstrap o una respuesta servida directamente por Nginx/Apache requiere la configuración del servidor, no una ruta del controlador.
 
 ## Verificación
 
@@ -121,7 +129,7 @@ Las pruebas del módulo cubren:
 - mensajes y enlaces de ayuda;
 - escape de contenido en las vistas;
 - respuestas AJAX, API, webhook, SSE y sistema;
-- publicación de todas las vistas, la plantilla y los estilos.
+- resolución de las vistas y la plantilla originales, y publicación de sus estilos.
 
 ```bash
 php packages/bin/phpunit --filter ErrorPagesTest

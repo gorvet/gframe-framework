@@ -11,20 +11,21 @@ Las dependencias se resuelven automáticamente. Por ejemplo, `alerts` incorpora 
 - SweetAlert2.
 - [`gframe-icons`](gframe-icons.md).
 - `alerts`: `alertToast`, `swalAlert`, estados de carga y estilos de toast.
-- `frontend-core`: formularios, errores, paginación y utilidades comunes. Véase [uso y funcionamiento](frontend-core.md). Markdown y GFTable se instalan por separado.
+- `frontend-core`: formularios, errores, paginación y utilidades comunes. Véase [uso y funcionamiento](frontend-core.md). Markdown tiene su propio módulo opcional.
+- [`gfselect`](gfselect.md): selector enriquecido propio, con búsqueda y selección simple o múltiple.
+- [`gf-table`](gf-table.md): búsqueda y ordenación local de tablas.
 - [`error-pages`](errores.md): gestión, plantilla y vistas 403, 404, 500 y 503.
 
 Estos componentes no se presentan como elecciones del instalador. Forman la interfaz mínima de GFrame y sus dependencias se publican automáticamente.
 
-## Módulos internos seleccionables
+## Módulos propios y requisitos del perfil
 
-- [`gf-table`](gf-table.md): búsqueda y ordenación local de tablas, con reinicio y soporte de inserción dinámica.
+No todos estos módulos son opcionales en todos los perfiles. `managed` e `intranet` incluyen Auth, Cuenta y seguridad, Panel administrativo, Gestión de usuarios y Multimedia; `saas` añade Notificaciones y tareas programadas. El instalador muestra únicamente opciones compatibles que no estén ya incluidas. Consulte [los perfiles](instalacion.md).
 
 - [`markdown`](markdown.md): conversión de Markdown y HTML en PHP y JavaScript, sin dependencia de bots.
 
 - `admin-panel`: estructura visual compartida del panel, con navbar, sidebar, tema y puntos de inserción. Los perfiles administrados lo incluyen automáticamente. Consulte [Panel administrativo](panel-administrativo.md).
 
-- [`gfselect`](gfselect.md): selector enriquecido propio, con búsqueda y selección simple o múltiple.
 - `auth-ui`: flujo MVC de autenticación, recuperación y verificación. Consulte [Interfaz de autenticación](auth-ui.md).
 - `self-account`: pantalla Mi cuenta y acciones sobre la cuenta propia. Consulte [Mi cuenta](self-account.md).
 - [`heartbeat-client`](heartbeat.md): cliente web, sesión, controlador y canales periódicos.
@@ -67,7 +68,7 @@ php bin/modules.php publish /ruta/del/proyecto/public
 php bin/modules.php publish /ruta/del/proyecto/public alerts gfselect
 ```
 
-Cuando no se indica ningún módulo, se publica automáticamente la base visual completa. La publicación conserva los archivos existentes por defecto. El instalador utilizará este catálogo y permitirá seleccionar los demás módulos sin exigir que el usuario recuerde estos comandos.
+Cuando no se indica ningún módulo, se publica automáticamente la base visual completa. La publicación conserva los archivos existentes por defecto. Para añadir módulos funcionales a un proyecto instalado, use [el actualizador](actualizaciones.md#añadir-módulos-después-de-instalar); publicar recursos por sí solo no instala tablas ni registra el módulo.
 
 ## Multimedia
 

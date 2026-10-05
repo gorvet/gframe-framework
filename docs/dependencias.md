@@ -13,26 +13,24 @@ Composer mantiene su estructura estándar `proveedor/paquete` dentro de esa carp
 | Función | Paquete |
 |---|---|
 | Correo SMTP | `phpmailer/phpmailer` |
-| Serialización de closures para PHPAsync | `opis/closure` 3.7 |
+| Serialización de closures para PHPAsync | `laravel/serializable-closure` 1.3 |
 | Server-Sent Events | `hhxsv5/php-sse` |
 
 Estas librerías no deben copiarse dentro de `src` ni mantenerse manualmente en `core/vendors`.
 
 ## Componentes propios
 
-- `PHPAsync`: pasa al componente asíncrono de GFrame y utiliza Opis Closure desde Composer.
+- `PHPAsync`: componente asíncrono de GFrame que utiliza Laravel Serializable Closure desde Composer.
 - `GFrame\Security\Encryption`: utilidad opcional de cifrado autenticado AES-256-GCM incluida en el framework. Su formato es propio y no migra automáticamente datos cifrados por implementaciones anteriores.
 - `gfselect`: componente propio de interfaz extraído y documentado en [GFSelect](gfselect.md).
 - `password-utils`: utilidad propia extraída y documentada en [Password Utils](password-utils.md).
 - Fuente de iconos [`gframe-icons`](gframe-icons.md): recurso propio extraído y documentado.
 
-`TextClassifier` permanece en una aplicación de bots porque es un algoritmo específico para bots conversacionales. `opusConverter` es propio, pero queda retirado porque ya no se necesita. PHPMailer, Opis Closure y PHP-SSE son dependencias externas y no se copiarán al repositorio.
-
-Los componentes propios podrán incorporarse al núcleo o convertirse en paquetes `gframe/*`. Las dependencias específicas de un proyecto permanecerán en ese proyecto.
+Las dependencias de negocio pertenecen al proyecto que las utiliza. PHPMailer, Laravel Serializable Closure y PHP-SSE se instalan mediante Composer; no se mantienen copias manuales en el núcleo.
 
 ## Dependencias del navegador
 
-Bootstrap, jQuery, SweetAlert, AOS, Venobox y otras librerías de interfaz se revisarán en la etapa de recursos públicos. Se conservarán solamente los archivos de distribución necesarios; se excluirán demos, repositorios fuente, mapas innecesarios y archivos del sistema operativo.
+Bootstrap, jQuery, SweetAlert2, AOS, Venobox y otras bibliotecas de interfaz se distribuyen mediante el [catálogo de módulos](modulos-opcionales.md). Cada manifiesto registra sus dependencias y destinos públicos. Las bibliotecas externas conservan su autoría y licencia; las guías de cada una enlazan su fuente oficial.
 
 ## Regla de actualización
 

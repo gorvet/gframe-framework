@@ -21,6 +21,18 @@ El módulo depende de `self-account`, `alerts` y `frontend-core`.
 
 `scope` admite `global`, `tenant` o `user`. En ámbitos no globales, `MediaScopeResolver` obtiene el identificador desde la sesión normalizada. `quota_bytes` limita el consumo total del ámbito; `0` lo deja sin límite. Estos dos valores describen la integración del proyecto, no el procesamiento de los archivos.
 
+### Elegir la biblioteca y su propietario
+
+| Ámbito | Biblioteca compartida por | Identidad utilizada |
+| --- | --- | --- |
+| `global` | Todos los usuarios autorizados del proyecto | Sin ID de propietario |
+| `user` | El usuario conectado | `$_SESSION['auth']['id']` |
+| `tenant` | Miembros autorizados del tenant activo | Clave de sesión indicada por `tenancy.key`, o `tenant_id` |
+
+El ámbito describe propiedad del almacenamiento, no quién tiene permiso para subir o borrar. La aplicación establece el tenant activo en sesión después de comprobar su acceso; el resolver no comprueba la membresía ni selecciona un tenant desde POST. Si falta la identidad de un ámbito user o tenant, falla sin utilizar la biblioteca global como respaldo.
+
+Las llamadas PHP al servicio aceptan un `MediaScope` explícito. Si lo omites utilizan `global`, aunque la configuración diga `tenant`: pasa el ámbito en todas las integraciones propias.
+
 Los tipos, límites por archivo y tamaños pertenecen al módulo: `resources/modules/media-library/config/media.php`. No se modifica esa copia instalada para personalizar un proyecto. Sus valores predeterminados son 25 MB, los formatos seguros habituales, `small` de 150×150 recortado y `medium` de hasta 300×300 proporcional. Se conserva el original intacto; no se genera `optimized` ni se amplían imágenes pequeñas. Las claves de compatibilidad de las miniaturas pueden referirse a un mismo archivo, sin generar copias adicionales.
 
 La personalización se realiza por herencia, por ejemplo en `app/services/media-library/ProjectMediaProcessor.php`:
@@ -49,6 +61,8 @@ El controlador del proyecto, en `app/controllers/media-library/MediaController.p
 
 ```php
 <?php
+namespace App\Controllers\MediaLibrary;
+
 class MediaController extends \GFrame\Modules\MediaLibrary\Controllers\MediaController
 {
     protected function createProcessor(): \GFrame\Media\MediaProcessor
@@ -62,6 +76,22 @@ La clase del servicio debe estar registrada en el autoload del proyecto o inclui
 
 Los cambios afectan únicamente a archivos nuevos. No se borran ni regeneran los tamaños existentes. `media.max_upload_bytes` de la antigua configuración del proyecto ya no define el límite: ahora lo define el procesador del módulo, y el backend lo comunica a los selectores.
 
+El límite efectivo también depende de PHP (`upload_max_filesize`, `post_max_size`) y del servidor web. Aumentar el valor del procesador no aumenta esos límites.
+
+### Organización del almacenamiento
+
+El controlador utiliza `public` como raíz de MediaStorage:
+
+```text
+public/uploads/<source>/<año>/<mes>/                  global
+public/uploads/user/<id>/<source>/<año>/<mes>/        usuario
+public/uploads/tenant/<id>/<source>/<año>/<mes>/      tenant
+```
+
+`source` identifica el origen funcional, como `library` o `articles`; no crea otro ámbito de seguridad. Las relaciones con publicaciones se guardan por separado.
+
+El aislamiento del listado no convierte los archivos en privados: están en `public` y pueden servirse directamente por URL. Para documentos confidenciales utiliza almacenamiento protegido y una descarga autorizada del proyecto; un enlace difícil de adivinar no sustituye esa protección.
+
 ## Permisos
 
 - `media.view`: abrir y consultar la biblioteca.
@@ -73,6 +103,25 @@ Los cambios afectan únicamente a archivos nuevos. No se borran ni regeneran los
 El superadministrador conserva acceso por la jerarquía general de permisos. Los demás roles deben recibir los permisos necesarios.
 
 ## Uso administrativo
+
+### Rutas y campos HTTP
+
+La pantalla es `GET admin/media`. Estas acciones son POST bajo `ajax/admin/media/`, con autenticación, la capacidad correspondiente y CSRF:
+
+| Acción | Campos principales | Capacidad |
+| --- | --- | --- |
+| `list` | `q`, `source`, `kind`, `ym`, `page`, `fragment` | `media.view` |
+| `field` | `media_ids`, `variant`, `allow_remove_one` | `media.view` |
+| `upload` | Archivo multipart `file`, `source` | `media.add` |
+| `hotlink` | `media_url`, `name`, `source` | `media.add` |
+| `base64` | `base64`, `name` | `media.add` |
+| `details` | `media_id` | `media.view` |
+| `save` | `media_id`, `original_name`, `alt_text` | `media.edit` |
+| `delete` | `media_id` | `media.delete` |
+| `quota` | Ámbito resuelto en el servidor | `media.view` |
+| `sync` | Ámbito resuelto en el servidor | `media.sync` |
+
+`fragment` del listado admite `library` o `picker`. No aceptes un nombre arbitrario de archivo PHP como fragmento.
 
 La página `admin/media` incluye biblioteca, filtros por origen, tipo y mes, búsqueda automática, carga y modal de detalles con texto alternativo, URL copiable y eliminación. El selector conserva las pestañas Biblioteca, Subir y Desde URL. Los tipos canónicos son `images`, `videos`, `audios` y `docs`. La cuota y la sincronización siguen disponibles mediante el servicio y sus rutas; esta vista original no añade controles nuevos para ellas ni muestra navegación anterior/siguiente.
 
@@ -126,21 +175,27 @@ use GFrame\Media\MediaLibraryService;
 use GFrame\Media\MediaModel;
 use GFrame\Media\MediaScope;
 use GFrame\Media\MediaStorage;
+use GFrame\Media\MediaScopeResolver;
 
 $media = new MediaLibraryService(
     new MediaModel(),
     new MediaStorage(ABSPATH . 'public')
 );
 
+$scope = (new MediaScopeResolver())->resolve();
+$identity = (array)($_SESSION['auth'] ?? []);
+$uploader = ['id' => (int)($identity['id'] ?? 0), 'name' => (string)($identity['name'] ?? $identity['email'] ?? '')];
+
 $result = $media->registerLocalFile(
     $temporaryPath,
     $originalName,
     'library',
-    MediaScope::tenant($tenantID)
+    $scope,
+    $uploader
 );
 
-$generated = $media->ingestBase64($base64, 'imagen-generada.png', $scope);
-$remote = $media->registerRemoteUrl('https://ejemplo.com/imagen.jpg', 'Imagen externa', 'library', $scope);
+$generated = $media->ingestBase64($base64, 'imagen-generada.png', $scope, $uploader);
+$remote = $media->registerRemoteUrl('https://ejemplo.com/imagen.jpg', 'Imagen externa', 'library', $scope, $uploader);
 $details = $media->details($mediaID, $scope);
 $media->updateMetadata($mediaID, [
     'original_name' => 'Portada principal',
@@ -166,6 +221,10 @@ $media->detach($mediaID, 'post', $postID, 'cover', $scope);
 ```
 
 El ámbito debe acompañar todas las operaciones. El servicio impide relacionar o separar un archivo que no pertenezca al ámbito solicitado.
+
+`relatedType` identifica una entidad del proyecto y `relatedID` su registro. `field` distingue portada, galería u otro uso; `sortOrder` conserva el orden. El proyecto debe comprobar que ese contenido exista y que el actor pueda modificarlo: el servicio valida el archivo, no la entidad de negocio relacionada.
+
+Guardar el JSON del campo no crea relaciones automáticamente. Al retirar una imagen de una galería, utiliza `detach()` si debe conservarse en la biblioteca. `delete()` elimina el registro y sus archivos locales y variantes; no es una simple desvinculación. Los enlaces remotos se retiran de la biblioteca sin borrar el recurso del servidor externo.
 
 ## Extensión
 
@@ -206,4 +265,36 @@ Las instalaciones antiguas pueden conservar vistas o controladores publicados en
 
 ## Actualización del esquema
 
-Las instalaciones nuevas reciben todas las columnas desde los esquemas del módulo. Las actualizaciones aplican las migraciones de metadatos y de `remote_url`. No se han ejecutado estas migraciones en los proyectos de origen.
+Las instalaciones nuevas reciben todas las columnas desde los esquemas del módulo. Las actualizaciones aplican las migraciones de metadatos y de `remote_url` mediante el actualizador del proyecto. Revisa los cambios con `composer gframe:update -- --dry-run` y verifica la aplicación después de aplicarlos.
+
+## Validar el campo al guardar un formulario
+
+El navegador envía IDs, no archivos completos ni rutas. Para un campo múltiple:
+
+```php
+<?php
+$raw = (string)($_POST['gallery_ids'] ?? '[]');
+$ids = json_decode($raw, true);
+if (!is_array($ids) || !array_is_list($ids) || count($ids) > 12) {
+    return ['status' => 'error', 'code' => 'invalid_gallery'];
+}
+foreach ($ids as $id) {
+    if (!is_int($id) || $id <= 0) {
+        return ['status' => 'error', 'code' => 'invalid_gallery'];
+    }
+}
+$ids = array_values(array_unique($ids));
+// Recupera cada archivo con details($id, $scope) antes de relacionarlo.
+return ['status' => 'success', 'data' => ['ids' => $ids]];
+```
+
+La aceptación del selector en el navegador no autoriza esos IDs. En el backend comprueba también el ámbito, tipo permitido y acceso al contenido que recibe la galería. Un campo simple requiere validar un ID positivo o un valor vacío cuando sea opcional.
+
+## Comprobación de una integración
+
+1. Prueba búsqueda por nombre y título descriptivo y los filtros del listado.
+2. Sube archivos permitidos y rechazados; comprueba límite, variantes y autor.
+3. Prueba campos simples y múltiples fuera de la biblioteca, incluyendo paginación, cancelación y contenido añadido por AJAX.
+4. Valida los IDs antes de crear relaciones con el contenido.
+5. En ámbitos user o tenant, comprueba que otro ámbito no obtiene detalles ni acciones sobre esos IDs.
+6. Comprueba por separado si las URLs físicas deben ser públicas o necesitan una descarga privada.

@@ -2,6 +2,8 @@
 
 El servidor entrega los recursos públicos y envía las peticiones de aplicación a `index.php`. El router mantiene sus rutas declarativas y el motor de vistas existente. El directorio raíz del sitio es la raíz del proyecto, no `public`.
 
+En Apache, el proyecto ya incluye `.htaccess`: no necesitas editarlo para instalar o declarar rutas. El servidor debe permitir sus reglas. En Nginx, que no interpreta `.htaccess`, integra el fragmento `nginx.conf` de GFrame en la configuración del sitio siguiendo el apartado siguiente.
+
 ## Nginx
 
 El instalador y `composer gframe:update` publican `nginx.conf`. Es un fragmento para incluir dentro del bloque `server` del sitio, no un virtual host completo. No instala ni recarga Nginx automáticamente.
@@ -19,19 +21,27 @@ server {
 
 Conserva una sola inclusión PHP del panel, con la versión correspondiente al sitio. El fragmento de GFrame no configura sockets, FastCGI ni manejadores PHP.
 
-Para comunicar los errores del servidor, añade esta línea dentro del `location` PHP existente del panel, junto a sus parámetros FastCGI:
+Si el manejador PHP del panel intercepta errores, se puede conservar intacto y definir un manejador exacto para el controlador frontal dentro del `server` de este proyecto, después de incluir `nginx.conf`:
 
 ```nginx
-fastcgi_param GFRAME_SERVER_ERROR $gframe_server_error;
+location = /index.php {
+    try_files /index.php =404;
+    include fastcgi.conf;
+    fastcgi_pass unix:/tmp/php-cgi-81.sock;
+    fastcgi_intercept_errors off;
+    fastcgi_param GFRAME_SERVER_ERROR $gframe_server_error;
+}
 ```
 
-Mantén allí `fastcgi_intercept_errors off;` para conservar las respuestas de la aplicación. No basta con declarar el parámetro en `server`: los parámetros definidos dentro del manejador PHP sustituyen la herencia de ese nivel. No retires sus parámetros existentes ni crees otro manejador PHP.
+El socket del ejemplo corresponde a la instalación habitual de PHP 8.1 en aaPanel; usa el socket o dirección real de PHP-FPM en tu servidor. `fastcgi.conf` debe existir en el directorio de configuración de Nginx y aportar los parámetros FastCGI normales, incluido `SCRIPT_FILENAME`. El bloque exacto tiene prioridad sobre el manejador PHP genérico del panel. No se edita ni se copia `enable-php-81.conf`, y su inclusión se conserva para el instalador.
+
+`fastcgi_intercept_errors off` conserva las respuestas de error generadas por PHP. `GFRAME_SERVER_ERROR` comunica al framework los errores originados en Nginx. Ambas directivas pertenecen al manejador que realmente ejecuta `index.php`; declararlas únicamente en `server` no garantiza su efecto si el manejador PHP define sus propios parámetros u opciones. No dupliques otro `location = /index.php` existente.
 
 El fragmento queda junto a `.htaccess` y bloquea el acceso web a `/nginx.conf`. Si una instalación anterior usa `deployment/nginx.conf` o `config/server/nginx.conf`, cambia su `include` a la raíz después de actualizar. Las copias antiguas se conservan para respetar personalizaciones.
 
 Conserva fuera del fragmento los certificados, redirección HTTPS, dominio, listeners, HTTP/2 o HTTP/3, registros, monitorización y límites del servidor. Ajusta `client_max_body_size` a los límites de Multimedia y los de PHP. El fragmento no habilita CORS indiscriminadamente; las API conservan sus middleware y los recursos que requieran CORS necesitan una política explícita del sitio.
 
-Incluye GFrame antes del manejador PHP y de los bloques estáticos del panel, para que sus bloqueos se evalúen primero. El archivo de rewrite del panel debe quedar vacío si GFrame ya define `location /`. Conserva el manejador PHP del panel.
+Incluye GFrame antes del manejador PHP y de los bloques estáticos del panel, para que sus bloqueos se evalúen primero. Quita del `server` la inclusión de rewrite del sitio, o conserva ese archivo vacío: GFrame ya define `location /`. Conserva las inclusiones nativas de PHP y de extensiones del panel. No dupliques las reglas de protección que ya aporta el fragmento.
 
 Antes de aplicar la configuración:
 
@@ -52,9 +62,9 @@ Solo tras una validación satisfactoria, recarga Nginx mediante el mecanismo del
 
 La biblioteca estándar permite acceso directo a `uploads/library/`, `uploads/user/<id>/library/` y `uploads/tenant/<id>/library/`. Son archivos públicos: separar carpetas por usuario o tenant no protege su descarga. Otras fuentes de `uploads/`, así como `download/` y `downloads/`, quedan bloqueadas al acceso directo. Las rutas de descarga con otros nombres siguen llegando al controlador, que valida permisos o tokens y entrega el archivo. Para una biblioteca privada, retira también su autorización pública y usa una ruta controlada. No guardes archivos privados en `public/` ni en las ubicaciones autorizadas.
 
-Fuentes multimedia adicionales requieren una autorización explícita en ambos servidores, situada después de los bloqueos de scripts y archivos sensibles. El SDK de WebChat de referencia está bajo `public/wcapi/` y no necesita otra excepción. No abras `storage/exports/` para servir ZIP: deben descargarse mediante el controlador. Archivos arbitrarios en la raíz, como copias ZIP o JSON, ya no se entregan directamente.
+Fuentes multimedia adicionales requieren una autorización explícita en ambos servidores, situada después de los bloqueos de scripts y archivos sensibles. Un SDK publicado bajo `public/wcapi/` no necesita otra excepción. No abras `storage/exports/` para servir ZIP: deben descargarse mediante el controlador. Archivos arbitrarios en la raíz, como copias ZIP o JSON, no se entregan directamente.
 
-El fragmento suministrado está preparado para un proyecto en la raíz del dominio, como el sitio Códice de referencia. No debe usarse sin adaptar las ubicaciones y `SCRIPT_NAME` en una instalación bajo un prefijo de URL. No modifica el sitio Códice ni sus certificados.
+El fragmento suministrado está preparado para un proyecto en la raíz del dominio. Una instalación bajo un prefijo de URL requiere adaptar las ubicaciones y `SCRIPT_NAME`.
 
 ### Errores del servidor y errores de la aplicación
 
@@ -82,6 +92,6 @@ $env:GFRAME_TEST_PHP_CGI = 'C:/xampp/php/php-cgi.exe'
 php packages/phpunit/phpunit/phpunit tests/ServerRoutingTest.php
 ```
 
-Comprobado con Nginx 1.28.3 y PHP 8.1.5: home, login, recursos, SDK público, biblioteca global/usuario/tenant, bloqueo de documentos privados y archivos ZIP/JSON fuera de las ubicaciones autorizadas, bloqueo de internos incluso con cabeceras falsificadas, errores 403/404/500/503 con CSS, JSON AJAX/API, SSE y POST de recuperación sin usuario existente. No se enviaron correos ni se cambiaron demos. Apache se comprueba aquí mediante aserciones de configuración, no mediante una prueba HTTP real. PHP 8.4 y el servidor remoto no se han probado aquí.
+Después de configurar el servidor, comprueba una URL válida, `robots.txt`, `sitemap.xml`, una URL inexistente y un recurso público inexistente. Las URL inexistentes deben conservar el estado HTTP 404 y mostrar la vista del framework, no la página nativa de Nginx. Estas comprobaciones del despliegue no se sustituyen por la suite del paquete.
 
 Referencias oficiales: [error_page y ubicaciones internas de Nginx](https://nginx.org/en/docs/http/ngx_http_core_module.html#error_page), [parámetros FastCGI e interceptación](https://nginx.org/en/docs/http/ngx_http_fastcgi_module.html#fastcgi_param), [errores personalizados de Apache](https://httpd.apache.org/docs/2.4/custom-error.html).

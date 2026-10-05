@@ -50,7 +50,7 @@ El núcleo principal y los módulos reutilizables están extraídos. Quedan pend
 
 ### Multimedia: capacidades verificadas
 
-El cotejo directo con BaseConfías, Bebots y Dane detectó que la primera extracción redujo el frontend y omitió la carga del selector. Se restauraron los flujos genéricos en GFrame. La paridad visual aún requiere probar una aplicación instalada. Véase [biblioteca multimedia](media-library.md).
+El cotejo directo con BaseConfías, Bebots y Dane detectó que la primera extracción redujo el frontend y omitió la carga del selector. Se restauraron los flujos genéricos en GFrame. La paridad visual aún requiere probar una aplicación instalada. Véase [biblioteca multimedia](../docs/media-library.md).
 
 - [x] Modelo, almacenamiento, procesador, ámbitos `global`, `tenant` y `user`.
 - [x] Listado, carga y eliminación básicos.
@@ -87,7 +87,7 @@ El cotejo directo con BaseConfías, Bebots y Dane detectó que la primera extrac
 ## Capa visual compartida
 
 - [x] Bootstrap, jQuery, SweetAlert2, iconos de GFrame, alertas y utilidades frontend están catalogados como módulos predeterminados.
-- [x] `frontend-core` conserva el cargador y cuatro utilitarios; Markdown y GFTable tienen módulos propios. Véase [frontend-core](frontend-core.md).
+- [x] `frontend-core` conserva el cargador y cuatro utilitarios; Markdown y GFTable tienen módulos propios. Véase [frontend-core](../docs/frontend-core.md).
 - [x] Los paquetes opcionales detectados están catalogados.
 - [x] QR y Opus Converter fueron excluidos por decisión expresa.
 - [x] TextClassifier permanece en Bebots por ser parte de su algoritmo conversacional.
@@ -144,7 +144,7 @@ Todos los manifiestos consultados apuntan a archivos de origen existentes.
 - [ ] Verificar por HTTP cada vista publicada de los módulos funcionales y todos sus recursos. Esta comprobación corresponde a la auditoría de cada módulo.
 - [ ] Probar autenticación, cierre por inactividad, Mi cuenta, usuarios, multimedia, notificaciones, cron, errores y SEO en instalaciones limpias durante la auditoría de cada módulo.
 
-Auditoría del instalador (29 de septiembre de 2026): los cuatro perfiles se instalan y arrancan por HTTP con SQLite; SaaS se probó además sobre una base MySQL temporal. Las credenciales administrativas inválidas se rechazan antes de publicar, los conflictos de configuración se detectan antes de copiar el esqueleto y una publicación fallida permite reintentar. `robots.txt` responde con `Disallow: /` cuando se desactiva la indexación. El instalador queda cerrado en PHP 8.1; PHP 8.4 y los recorridos completos de cada módulo mantienen sus casillas propias. Véase [instalación](instalacion.md).
+Auditoría del instalador (29 de septiembre de 2026): los cuatro perfiles se instalan y arrancan por HTTP con SQLite; SaaS se probó además sobre una base MySQL temporal. Las credenciales administrativas inválidas se rechazan antes de publicar, los conflictos de configuración se detectan antes de copiar el esqueleto y una publicación fallida permite reintentar. `robots.txt` responde con `Disallow: /` cuando se desactiva la indexación. El instalador queda cerrado en PHP 8.1; PHP 8.4 y los recorridos completos de cada módulo mantienen sus casillas propias. Véase [instalación](../docs/instalacion.md).
 
 ## Archivos comunes todavía fuera de GFrame
 

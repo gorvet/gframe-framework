@@ -6,7 +6,7 @@ Fecha de comprobación: 2 de octubre de 2026. Este documento no declara publicad
 
 El paquete Composer `gorvet/gframe` incluye el núcleo, la estructura inicial, el instalador y el catálogo de módulos. Los módulos MVC mantienen sus originales en el paquete; el proyecto puede personalizarlos mediante vistas propias y herencia PHP. Las bibliotecas visuales y las entradas CLI no necesitan una estructura MVC.
 
-Consulte [módulos runtime](modulos-runtime.md), [extensibilidad](extensibilidad.md), [instalación](instalacion.md) y las guías de cada módulo enlazadas desde el README. Las mejoras no urgentes permanecen en [mejoras pendientes](mejoras-pendientes.md); no se consideran implementadas por preparar esta versión.
+Consulte [módulos runtime](../docs/modulos-runtime.md), [extensibilidad](../docs/extensibilidad.md), [instalación](../docs/instalacion.md) y las guías de cada módulo enlazadas desde el README. Las mejoras no urgentes permanecen en [mejoras pendientes](mejoras-pendientes.md); no se consideran implementadas por preparar esta versión.
 
 ## Resultados reproducibles
 
