@@ -94,4 +94,4 @@ Abre `/bienvenida` bajo la URL del proyecto. Debes ver el título y los tres ele
 
 Si aparece una 404, revisa la declaración y `registerFinal()`, la ubicación del controlador y el nombre de la vista. Si faltan estilos, comprueba las metas globales y que el servidor entregue los recursos de `public/`.
 
-Cuando esta página te resulte clara, continúa con [Tu primera funcionalidad completa: Productos](primera-funcionalidad.md). Allí se conectan base de datos, servicio, modelo/ORM, formulario AJAX, fragmentos de vista y permisos en un único recorrido. Después utiliza [Rutas](rutas.md), [ORM](orm.md) y [Frontend core](frontend-core.md) como referencia de cada pieza.
+Cuando esta página te resulte clara, continúa con [Tutorial completo: Productos](tutorial-productos.md). Allí se conectan base de datos, servicio, modelo/ORM, formulario AJAX, fragmentos de vista y permisos en un único recorrido. Después utiliza [Rutas](rutas.md), [ORM](orm.md) y [Frontend core](frontend-core.md) como referencia de cada pieza.
