@@ -17,7 +17,7 @@ GFrame\ → src/GFrame/
 
 mediante PSR-4.
 
-También carga por classmap las clases globales históricas de áreas como:
+También carga por classmap varias áreas del core que exponen clases globales:
 
 ```text
 src/routing/
@@ -41,6 +41,8 @@ UrlHelper
 ```
 
 sin hacer `require` manual del archivo correspondiente.
+
+**Que una clase sea global y se cargue por classmap no significa que esté obsoleta.** Varias de estas clases forman parte de la API vigente de GFrame. La compatibilidad legacy se identifica por contratos concretos, como las funciones wrapper de `LegacyCompatibility.php` o fallbacks expresamente conservados, no por la ausencia de namespace.
 
 ## 2. El proyecto generado no declara PSR-4 para `App\`
 
@@ -290,11 +292,14 @@ Si GFrame adopta oficialmente ese modelo en una versión futura, debe hacerse co
 ¿Es una clase original del módulo?
   → namespace GFrame\Modules\... declarado por su manifiesto
 
-¿Es una clase del core moderno?
+¿Es una clase namespaced del core?
   → namespace GFrame\...
 
-¿Es una clase histórica classmapped del core?
-  → clase global
+¿Es una clase global del core cargada por classmap?
+  → usa su nombre global; no es legacy por ese solo hecho
+
+¿Es un wrapper o fallback conservado expresamente por compatibilidad?
+  → trátalo como compatibilidad legacy y no como patrón recomendado nuevo
 ```
 
 ## Referencia
