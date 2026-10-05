@@ -88,3 +88,91 @@ En la interfaz, comprueba primero `status`. Para errores de operación utiliza `
 Algunos códigos hacen que `successError` navegue a una página de error o recargue la página y devuelva un objeto vacío. Comprueba que haya un título antes de abrir otra alerta. No pases códigos de éxito a ese helper. Los ejemplos de integración están en [Frontend core](frontend-core.md) y [Alertas](alerts.md).
 
 Un mensaje de éxito debe describir el efecto confirmado: «Solicitud recibida» si quedó pendiente una tarea asíncrona, y «Enviado» solamente cuando se conoce ese resultado. La información técnica de excepciones pertenece al tratamiento de errores, no al mensaje público del formulario.
+
+
+## Diseño de contratos estables
+
+Un contrato público debe permitir que el consumidor distinga tres cosas sin inspeccionar texto libre: si la operación funcionó, qué situación funcional ocurrió y qué datos o metadatos acompañan el resultado. Use `status` para el estado general y `code` para la situación estable. El texto de `message` puede cambiar por idioma o redacción; no lo utilice como condición de negocio en JavaScript.
+
+```php
+return [
+    'status' => 'error',
+    'code' => 'product_not_available',
+    'message' => 'El producto ya no está disponible.',
+    'data' => ['product_id' => $productID],
+];
+```
+
+El frontend puede reaccionar a `product_not_available` aunque cambie el mensaje. Documente los códigos propios de cada módulo cuando formen parte de su API.
+
+## Validación de formularios
+
+Para errores de entrada, devuelva un código general estable y, cuando resulte útil, errores por campo dentro de `data`:
+
+```php
+return [
+    'status' => 'error',
+    'code' => 'validation_failed',
+    'message' => 'Revisa los campos indicados.',
+    'data' => [
+        'fields' => [
+            'email' => 'Introduce un correo válido.',
+            'name' => 'El nombre es obligatorio.',
+        ],
+    ],
+];
+```
+
+La validación del navegador mejora la interacción, pero el backend sigue siendo la autoridad. No devuelva consultas SQL, nombres de tablas, trazas, rutas internas ni mensajes de excepción dentro de `data`.
+
+## Paginación y filtros
+
+```php
+return [
+    'status' => 'success',
+    'data' => ['items' => $items],
+    'meta' => [
+        'page' => $page,
+        'per_page' => $perPage,
+        'total' => $total,
+        'total_pages' => $totalPages,
+    ],
+];
+```
+
+Si la respuesta AJAX incluye un parcial renderizado, `html` puede sustituir a `data.items` para esa pantalla, pero `meta` sigue describiendo la página solicitada. No mezcle metadatos de paginación con etiquetas SEO.
+
+## Operaciones asíncronas
+
+Una respuesta exitosa no siempre significa que el efecto externo ya terminó. Si la operación solo encoló un trabajo, use un código y mensaje que reflejen ese estado:
+
+```php
+return [
+    'status' => 'success',
+    'code' => 'queued',
+    'message' => 'La solicitud quedó en cola.',
+    'data' => ['job_id' => $jobID],
+];
+```
+
+No anuncie «Correo enviado» o «Proceso completado» cuando el framework solo confirmó que el trabajo fue registrado. El módulo que consume la cola debe conservar su propio estado de entrega o ejecución.
+
+## HTTP y contrato de negocio
+
+El estado HTTP describe el transporte; `status` y `code` describen el resultado funcional. En API, utilice `http_code` cuando necesite fijar expresamente el estado. En AJAX histórico, un error de negocio puede conservar HTTP 200 y seguir siendo un error por `status`.
+
+Por eso los consumidores deben comprobar primero el transporte, después `status`, interpretar `code` cuando necesiten una reacción específica y leer `message`, `data`, `meta` o `html` solo según el contrato de esa operación.
+
+## Compatibilidad y evolución
+
+Añadir un campo opcional suele ser compatible; cambiar el significado de un campo existente no lo es. Al evolucionar una respuesta pública:
+
+- conserve códigos existentes mientras siga existiendo la misma situación;
+- añada datos nuevos de forma aditiva cuando sea posible;
+- no cambie `data` de lista a objeto sin revisar todos los consumidores;
+- documente los nuevos estados o códigos;
+- actualice pruebas de controlador, frontend y documentación cuando el contrato esté cubierto por ellas.
+
+## Lista de comprobación
+
+Antes de exponer una respuesta nueva, confirme que `status` representa correctamente éxito o fallo, `code` es estable, `message` no contiene información técnica, `data` contiene solo información necesaria, `meta` se usa para información auxiliar, `html` es un fragmento y no un documento completo, y las operaciones asíncronas no prometen un resultado todavía no confirmado.
