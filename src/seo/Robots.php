@@ -56,7 +56,9 @@ class Robots
             $lines[] = '';
         }
 
-        $lines[] = 'Sitemap: ' . rtrim(site_url, '/') . '/sitemap.xml';
+        if (!defined('SEO_ENABLE_SITEMAP_XML') || SEO_ENABLE_SITEMAP_XML) {
+            $lines[] = 'Sitemap: ' . rtrim(site_url, '/') . '/sitemap.xml';
+        }
 
         return implode("\n", $lines) . "\n";
     }
