@@ -2,7 +2,7 @@
 
 Fecha de contraste: 2026-10-05.
 
-Este mapa relaciona el código vigente de `codex/auditoria-reconstruccion` con la documentación pública. Sirve para detectar capacidades reales sin guía y para evitar que un inventario histórico se interprete como estado actual.
+Este mapa relaciona el código vigente de `codex/reconstruccion-unificada` con la documentación pública. Sirve para detectar capacidades reales sin guía y para evitar que un inventario histórico se interprete como estado actual.
 
 La fuente de verdad es el código. Una fila «documentada» significa que existe una entrada pública suficiente para descubrir la capacidad y entender su contrato principal; no significa que cada método interno tenga una página propia.
 
@@ -18,7 +18,7 @@ La fuente de verdad es el código. Una fila «documentada» significa que existe
 | Metas y assets | `src/render/Meta.php` | meta global/template/grupo/vista | `docs/meta.md` | Documentada |
 | Contratos de respuesta | Router/Render/ErrorResponder | `status`, `code`, `message`, `data`, `meta`, `html` | `docs/respuestas.md` | Documentada |
 | Primera página | skeleton + routing/render | ruta + controlador + vista + meta | `docs/primer-proyecto.md` | Documentada |
-| Funcionalidad vertical | routing + controller + service de proyecto + ORM + AJAX | ejemplo Productos | `docs/primera-funcionalidad.md` | Documentada |
+| Funcionalidad vertical | routing + controller + service de proyecto + ORM + AJAX | ejemplo Productos | `docs/tutorial-productos.md` | Documentada |
 
 ## Datos y utilidades de aplicación
 
@@ -26,8 +26,8 @@ La fuente de verdad es el código. Una fila «documentada» significa que existe
 | --- | --- | --- | --- | --- |
 | Base de datos | `src/database/DatabaseManager.php` | conexiones MySQL/SQLite | `docs/configuracion.md`, `docs/orm.md` | Documentada |
 | ORM | `src/database/ORM.php` | consultas, agregados, escrituras, transacciones | `docs/orm.md` | Documentada |
-| Helpers PHP | `src/utils/*` | `UrlHelper`, `MenuHelper`, `PaginationHelper`, `ViewHelper`, `LogHelper`, etc. | `docs/helpers.md` | Documentada |
-| Wrappers legacy | `src/utils/LegacyCompatibility.php` | `guess_url()`, `buildMenu()`, `pagination()`, `logger()`, etc. | `docs/helpers.md` | Documentada como compatibilidad |
+| Helpers PHP | `src/utils/*` | `UrlHelper`, `MenuHelper`, `PaginationHelper`, `ViewHelper`, `LogHelper`, etc. | `docs/helpers-php.md` | Documentada |
+| Wrappers legacy | `src/utils/LegacyCompatibility.php` | `guess_url()`, `buildMenu()`, `pagination()`, `logger()`, etc. | `docs/helpers-php.md` | Documentada como compatibilidad |
 | Cliente HTTP saliente | `src/services/HttpClient.php` | `HttpClient::request()` | `docs/http-client.md` | Documentada |
 | Async fire-and-forget | `src/async/Async.php`, worker CLI | `Async::create()` | `docs/async.md` | Documentada |
 | Cron persistente/programado | `src/cron/*` + módulo `cron-runner` | tasks + runner | `docs/cron-runner.md` | Documentada |
@@ -44,7 +44,7 @@ La fuente de verdad es el código. Una fila «documentada» significa que existe
 | Administración de usuarios | módulo `user-admin` | operaciones administrativas existentes | `docs/user-admin.md` | Documentada |
 | Sanitización HTML | `src/GFrame/Security/HtmlSanitizer.php` | allowlist de HTML | `docs/html-sanitizer.md` | Documentada |
 | Cifrado reversible | `src/GFrame/Security/Encryption.php` | `encrypt()`, `decrypt()` AES-256-GCM | `docs/encryption.md` | Documentada |
-| CORS bajo nivel | `src/utils/CorsHelper.php` | `sendHeaders()` | `docs/helpers.md`; API normal en `docs/api-access.md` | Documentada |
+| CORS bajo nivel | `src/utils/CorsHelper.php` | `sendHeaders()` | `docs/helpers-php.md`; API normal en `docs/api-access.md` | Documentada |
 
 ## Publicación, SEO y canales externos
 
