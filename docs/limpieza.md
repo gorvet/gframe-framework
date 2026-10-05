@@ -57,3 +57,45 @@ Si instalas [Cron runner](cron-runner.md), registra un handler del proyecto que 
 No hay un comando general del core para purgar logs, cachés, temporales huérfanos o archivos multimedia sin referencias. Las funciones de caducidad anteriores no sustituyen esa herramienta.
 
 Para una limpieza específica del proyecto, establece directorios permitidos, antigüedad mínima, exclusiones de procesos activos y una ejecución de comprobación sin borrado. Resuelve rutas absolutas antes de eliminar y no borres un directorio completo por su nombre. Las relaciones de archivos multimedia y la retención de datos de negocio deben comprobarse mediante sus servicios, no mediante un recorrido genérico de carpetas.
+
+
+## Diseñar una tarea de mantenimiento
+
+Una tarea de limpieza debe ser idempotente: ejecutarla dos veces no debe borrar datos adicionales por accidente ni corromper el estado. Separe selección, validación y borrado; no elimine mientras todavía está descubriendo qué elementos pertenecen al conjunto.
+
+Para datos propios del proyecto, defina antes de automatizar:
+
+- qué estado convierte un registro en candidato;
+- cuánto tiempo debe conservarse;
+- qué relaciones bloquean su eliminación;
+- si se necesita borrado lógico o físico;
+- qué auditoría debe conservarse;
+- qué tamaño máximo procesa cada ejecución.
+
+## Lotes y tiempo de ejecución
+
+No presuponga que una limpieza completa cabe en una sola ejecución de cron. Para tablas o directorios grandes, procese lotes acotados y permita que la próxima ejecución continúe. Así se reducen bloqueos, memoria y riesgo de superar el tiempo permitido por el entorno.
+
+Mantenga una clave o criterio estable para continuar; no dependa únicamente del offset de una consulta si el propio proceso elimina filas.
+
+## Dry-run y observabilidad
+
+Para herramientas destructivas propias, implemente una modalidad de inspección que informe qué se eliminaría sin modificar datos. Registre cantidad procesada, omitida y fallida, pero no incluya secretos ni contenido personal innecesario.
+
+Una tarea programada debe permitir distinguir «no había nada que limpiar» de «la tarea falló antes de consultar». Use códigos o métricas propias en lugar de interpretar texto de logs.
+
+## Archivos
+
+Antes de borrar un archivo, resuelva su ruta absoluta y confirme que permanece dentro de un directorio permitido. No concatene directamente una ruta recibida del usuario ni siga enlaces simbólicos fuera del ámbito esperado sin una política explícita.
+
+Para Media Library, utilice sus relaciones y servicios; una búsqueda por nombre de archivo no demuestra que un recurso esté huérfano.
+
+## Recuperación y seguridad
+
+Para limpiezas irreversibles, mantenga backup y pruebe primero sobre una copia de datos. Evite ejecutar un comando destructivo nuevo directamente en producción con un conjunto grande.
+
+Si una tarea falla a mitad, la siguiente ejecución debe poder continuar desde el estado persistido. Las transacciones ayudan en cambios relacionados, pero no pueden revertir efectos externos como archivos ya eliminados o llamadas a terceros.
+
+## Lista de comprobación
+
+Antes de programar una limpieza, confirme ámbito, retención, idempotencia, lote, dry-run, logs, backup, relaciones, permisos del proceso y comportamiento ante ejecución simultánea. Para concurrencia periódica utilice las garantías de [Cron runner](cron-runner.md) y añada protección de negocio cuando una operación pueda durar más que el bloqueo del scheduler.
