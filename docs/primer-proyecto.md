@@ -95,3 +95,69 @@ Abre `/bienvenida` bajo la URL del proyecto. Debes ver el título y los tres ele
 Si aparece una 404, revisa la declaración y `registerFinal()`, la ubicación del controlador y el nombre de la vista. Si faltan estilos, comprueba las metas globales y que el servidor entregue los recursos de `public/`.
 
 Cuando esta página te resulte clara, continúa con [Tutorial completo: Productos](tutorial-productos.md). Allí se conectan base de datos, servicio, modelo/ORM, formulario AJAX, fragmentos de vista y permisos en un único recorrido. Después utiliza [Rutas](rutas.md), [ORM](orm.md) y [Frontend core](frontend-core.md) como referencia de cada pieza.
+
+
+## 7. Añadir recursos propios
+
+Cuando la página necesite estilos o comportamiento propios, manténgalos fuera de la vista:
+
+```text
+public/css/app/welcome/welcome.css
+public/js/app/welcome/welcome.js
+```
+
+Amplíe `welcomeIndex.meta.php`:
+
+```php
+<?php
+return [
+    'metaTags' => [
+        'title' => 'Bienvenida | Mi aplicación',
+        'description' => 'Conoce las funcionalidades de nuestra aplicación.',
+    ],
+    'css' => ['public/css/app/welcome/welcome.css'],
+    'js' => ['public/js/app/welcome/welcome.js'],
+];
+```
+
+No copie Bootstrap, jQuery ni los estilos comunes en cada pantalla. Esos recursos pertenecen a capas compartidas y la meta de la vista solo añade lo específico de esta página.
+
+## 8. Entender los parámetros de ruta
+
+Una página real suele identificar un recurso en la URL. Antes de avanzar a persistencia, practique el recorrido con un parámetro siguiendo la sintaxis documentada en [Rutas](rutas.md). El controlador debe validar el valor recibido y no asumir que una cadena de la URL es segura o existe.
+
+```text
+URL -> Router -> routeParams -> controlador -> datos -> vista
+```
+
+La vista no debe leer directamente la URL para decidir qué consultar.
+
+## 9. Convertir una parte en componente reutilizable
+
+Si la lista de funcionalidades crece, extraiga cada elemento a `app/views/welcome/parts/featureItem.php` y reutilícelo desde el bucle. La parte hereda las variables disponibles en el punto del `include`; no ejecuta otra acción de controlador ni recibe datos automáticamente.
+
+## 10. Comprobaciones antes de continuar
+
+Verifique deliberadamente cada capa:
+
+- la URL correcta responde y una URL inexistente conserva el 404;
+- el controlador no imprime HTML;
+- la vista no consulta la base de datos;
+- los valores dinámicos se escapan;
+- título y descripción aparecen en el documento;
+- CSS y JavaScript específicos cargan desde la meta;
+- no se añadieron recursos globales solo para esta pantalla.
+
+## 11. Qué cambia al añadir datos
+
+El siguiente paso no consiste en meter SQL dentro de este ejemplo. La arquitectura se amplía así:
+
+```text
+ruta -> controlador -> servicio -> modelo/ORM
+                         |
+                         +-> contrato de respuesta
+                               |
+                               +-> vista / AJAX
+```
+
+El [Tutorial completo: Productos](tutorial-productos.md) desarrolla ese recorrido con persistencia, validación, formularios AJAX, fragmentos, permisos y paginación. Esta primera página sirve como base mínima para entender dónde vive cada responsabilidad antes de añadir esas capas.
