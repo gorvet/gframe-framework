@@ -105,12 +105,11 @@ Si se necesita una categoría de error nueva con su propio código HTTP y vista,
 
 No es necesario crear un `ErrorController` vacío. `ErrorResponder` genera una ruta interna con `skipAction`, y `Render` carga directamente la vista correspondiente.
 
-
 ## Depuración y producción
 
 Con el modo de depuración activo, las excepciones web muestran una página técnica con tipo, mensaje, archivo, línea y traza. En producción se muestra la página 500 y se ocultan los detalles internos.
 
-La política SEO del núcleo bloquea la indexación de las páginas de error por su código HTTP; no necesitas repetir un interruptor de indexación en cada meta.
+El módulo `error-pages` declara por defecto `robots => noindex, nofollow` en `error-pages.group.meta.php`, y esa meta se aplica a sus vistas de error. El código HTTP sigue siendo importante para el navegador y los clientes HTTP, pero no es por sí solo el mecanismo que genera el `<meta name="robots">`. Si personalizas la meta de grupo, conserva conscientemente esa política cuando no quieras que las páginas de error sean indexables.
 
 ## Errores de negocio y feedback
 
