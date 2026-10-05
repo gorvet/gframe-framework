@@ -347,6 +347,8 @@ Los envíos inmediatos, las pruebas y la acción manual de procesar una campaña
 
 Para reintentos, campañas programadas, recurrencias y revisiones de avisos automáticos debe ejecutarse periódicamente `php bin/gframe-cron.php 50` en el proyecto. Instalar o registrar las tareas no pone en marcha un proceso del servidor.
 
+## Permisos
+
 - `notifications.campaigns.view`: consultar campañas.
 - `notifications.campaigns.manage`: crear, procesar, pausar, reanudar y cancelar.
 
