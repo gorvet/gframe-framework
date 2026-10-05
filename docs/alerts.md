@@ -102,3 +102,22 @@ En un template propio, compruebe que existan los recursos de las dependencias y 
 No añada otro si el template ya lo incluye. Los tooltips Bootstrap presentes al cargar `alertToast.js` también se inicializan; los insertados después por AJAX necesitan su inicialización específica.
 
 Mantenga las opciones de cada operación en el JavaScript de su vista. Para estilos del proyecto, use las variables comunes o un CSS propio cargado después del puente; no edite los assets publicados del módulo. `alerts` no ofrece una clase PHP que deba extenderse.
+
+
+## Verificación
+
+La suite JavaScript comprueba el contrato del componente:
+
+```bash
+node --test tests/js/alerts.test.cjs
+```
+
+Estas pruebas cubren duración, barra de progreso, tratamiento seguro del texto, combinación de clases, callbacks, inmutabilidad de opciones y reglas visuales del spinner.
+
+Para revisión manual existe una fixture aislada:
+
+```bash
+php -S 127.0.0.1:8767 -t . tests/fixtures/alerts-preview.php
+```
+
+La fixture permite comprobar toast, diálogos y carga sin depender de datos reales de una aplicación. Úsela además de los tests cuando cambien estilos, foco, responsive, tema oscuro o interacción con SweetAlert2.
