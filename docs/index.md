@@ -41,7 +41,7 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 
 ### Acceso, identidad y seguridad
 
-Estas piezas forman un mismo recorrido aunque tengan referencias separadas:
+Empieza por [Identidad, autenticación, permisos y sesiones](identidad-autorizacion.md), que conecta el recorrido completo. Después usa las referencias especializadas:
 
 - [Middleware y control de acceso](middleware.md).
 - [Autenticación](autenticacion.md).
@@ -90,7 +90,9 @@ Estas piezas forman un mismo recorrido aunque tengan referencias separadas:
 
 ## Módulos y extensibilidad
 
-Antes de personalizar un módulo, distingue entre una capacidad instalable, un módulo runtime MVC y una biblioteca frontend.
+Empieza por [Usar módulos en una aplicación](modulos-en-aplicacion.md) para distinguir funcionalidad propia, capacidad instalable, runtime MVC y componente frontend.
+
+Después consulta la referencia:
 
 - [Catálogo y dependencias](modulos-opcionales.md).
 - [Módulos, originales y personalizaciones](modulos-runtime.md).
