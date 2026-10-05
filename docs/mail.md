@@ -59,7 +59,7 @@ $result = (new MailService())->sendTemplateAsync(
 );
 ```
 
-`sendTemplateAsync()` y `sendHtmlAsync()` entregan una closure serializable al ejecutor `Async`, basado en Laravel Serializable Closure. El worker carga nuevamente la aplicación, lee SMTP desde `.env` y realiza el envío fuera de la petición web. La respuesta inmediata usa `mail_queued` o `mail_queue_failed`.
+`sendTemplateAsync()` y `sendHtmlAsync()` entregan una closure serializable al ejecutor `Async`, basado en `Opis\Closure\SerializableClosure` a través de `ClosureWrapper`. El worker carga nuevamente la aplicación, lee SMTP desde `.env` y realiza el envío fuera de la petición web. La respuesta inmediata usa `mail_queued` o `mail_queue_failed`.
 
 Consulta [Async](async.md) para ejecutar otras tareas PHP en segundo plano y revisar los requisitos del worker.
 
@@ -85,7 +85,7 @@ Los fallos posteriores se registran en el log PHP con el prefijo `[GFrame Mail A
 
 `recipient_name` identifica al destinatario; `reply_to` y `reply_name` definen a quién responder; `timeout` limita la espera SMTP en segundos, con 60 por defecto y mínimo 1. `rate_limit` solicita la protección del formulario público descrita abajo. La API actual recibe un destinatario por llamada y no ofrece parámetros de adjuntos, CC o BCC.
 
-PHPAsync requiere `laravel/serializable-closure:^1.3`. Antes de actualizar desde una versión que utiliza Opis Closure, deja finalizar los workers existentes: los formatos serializados son distintos. Actualiza el proyecto mediante `composer update gorvet/gframe --with-all-dependencies` cuando la versión corregida esté disponible. Una respuesta de cola confirma el inicio de la tarea, no la entrega del correo.
+Async requiere `opis/closure:^3.7`, dependencia declarada por el paquete actual. Si se cambia en el futuro la librería o el formato de serialización, deja finalizar los workers activos antes de desplegar el cambio: los payloads serializados deben ser compatibles con el código que los deserializa. Una respuesta de cola confirma el inicio de la tarea, no la entrega del correo.
 
 ## Límite para formularios públicos de correo
 
