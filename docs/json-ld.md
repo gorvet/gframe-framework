@@ -1,18 +1,34 @@
 # Datos estructurados JSON-LD
 
-JSON-LD describe las entidades de una página: la organización, un artículo, un producto, un servicio o una aplicación SaaS. GFrame construye un grafo Schema.org desde el bloque `schema` de las metas y lo imprime en el HTML mediante `Meta::renderSchema()`.
+GFrame construye un grafo Schema.org desde las metas de la página y lo imprime mediante `Meta::renderSchema()`.
 
-Declara datos que correspondan al contenido visible y real. El marcado puede ayudar a los buscadores a interpretar la página, pero no garantiza resultados enriquecidos. Sus requisitos dependen del tipo y del buscador; consulta la [documentación de Google Search Central](https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data).
+El recorrido actual es:
 
-## Dónde declarar los datos
+```text
+metas global/template/grupo/vista
+  ↓
+Meta
+  ↓
+SchemaComposer
+  ↓
+JsonLD
+  ↓
+<script type="application/ld+json">...</script>
+```
 
-Organiza las declaraciones con la misma jerarquía de [Metas](meta.md): datos del sitio en `config/meta/global.meta.php`, datos compartidos en la meta del template o del grupo y datos del contenido en la meta de la vista.
+Esta página documenta **el comportamiento del runtime actual**. Para sitemap, robots, llms e indexación consulta [SEO](seo.md).
 
-Ejemplo global, sustituyendo el dominio y los datos por los del proyecto:
+## Dónde declarar schema
+
+Utiliza el bloque `schema` de las metas:
 
 ```php
 <?php
 return [
+    'metaTags' => [
+        'title' => 'Servicios',
+        'description' => 'Servicios disponibles.',
+    ],
     'schema' => [
         'preset' => 'webpage',
         'siteName' => 'Mi proyecto',
@@ -20,94 +36,160 @@ return [
             'name' => 'Mi organización',
             'url' => 'https://example.com',
             'logo' => 'https://example.com/public/img/logo.png',
-            'sameAs' => ['https://example.org/perfil-oficial'],
-        ],
-        'search' => [
-            'target' => 'https://example.com/buscar?q={search_term_string}',
         ],
     ],
 ];
 ```
 
-`search.target` debe corresponder a un buscador existente. El compositor añade por defecto `/buscar?q={search_term_string}` si falta el valor. Si el sitio no tiene búsqueda, puedes usar una URL real sin ese placeholder, por ejemplo la portada; el renderer omitirá `SearchAction`. Un valor vacío no desactiva el valor por defecto.
+La jerarquía de metas se explica en [Metadatos y recursos de vistas](meta.md).
 
-La ruta decide la indexación y la meta describe las entidades. Con SEO desactivado se omite JSON-LD; con SEO activo puede emitirse aunque la ruta tenga `seo.indexable = false`. Consulta [SEO](seo.md) para la política global y por ruta.
+## Importante: `seo.enabled` no desactiva actualmente JSON-LD
 
-## Flujo y valores automáticos
-
-Render carga las metas; Meta combina sus bloques `schema`; SchemaComposer aplica los presets y completa valores; JsonLD genera `@context` y `@graph`; el header imprime el script. Mantén `Meta::renderSchema()` al personalizar el header.
-
-| Dato | Fuente si no lo declaras en `schema` |
-| --- | --- |
-| Título y descripción | `metaTags.title` y `metaTags.description` |
-| Imagen | `metaTags.ogimage` |
-| Nombre del sitio | `metaTags.ogsite_name`, título o host |
-| Idioma | Idioma de la ruta, `oglocale` o `es` |
-| URL de la página | `currentURL` de la ruta; después `site_url` |
-| Organización | Nombre del sitio y `site_url`; logo desde `ogimage` |
-| Autor de artículos | `schema.author` o `metaTags.author` |
-
-El grafo incluye `Organization`, `WebSite` y `WebPage`; añade `ImageObject` si hay imagen y las entidades específicas según los datos. Sus referencias `@id` enlazan nodos como `#organization`, `#website` y `#webpage`. Usa un logo explícito para evitar que una imagen social del contenido se utilice como logo de la organización.
-
-Las metas se combinan mediante `array_replace_recursive()`: una declaración posterior sustituye claves anteriores, pero una lista más corta puede conservar índices anteriores. No declares preguntas, planes o entidades de una sola página en las metas globales.
-
-## Presets básicos
-
-Un preset es un molde de configuración. Los siguientes seleccionan directamente el tipo:
-
-| Preset | Tipo o entidad |
-| --- | --- |
-| `webpage` | `WebPage` |
-| `collection`, `listing` | `CollectionPage`, junto a `WebPage` |
-| `contact` | `ContactPage`, junto a `WebPage` |
-| `article` | `Article` |
-| `blog`, `blog_post` | `BlogPosting` |
-| `news` | `NewsArticle` |
-| `product` | `Product` |
-| `software`, `app` | `SoftwareApplication` |
-| `service` | `Service` |
-| `course` | `Course` |
-| `event` | `Event` |
-| `local_business` | `LocalBusiness` |
-| `job`, `job_posting` | `JobPosting` |
-| `video` | `VideoObject` |
-| `recipe` | `Recipe` |
-| `creative_work` | `CreativeWork` |
-| `faq` | `WebPage`; añade `FAQPage` cuando hay preguntas |
-
-El catálogo contiene también estos moldes con campos preparados:
-
-| Molde | Tipo generado |
-| --- | --- |
-| `site_base`, `marketing_page`, `faq_page` | `WebPage` |
-| `contact_page` | `ContactPage` |
-| `blog_article` | `BlogPosting` |
-| `news_article` | `NewsArticle` |
-| `tech_article` | `TechArticle` |
-| `product_page` | `Product` |
-| `saas_landing` | `SoftwareApplication` |
-| `service_page` | `Service` |
-| `course_page` | `Course` |
-| `event_page` | `Event` |
-| `local_business_page` | `LocalBusiness` |
-| `job_posting_page` | `JobPosting` |
-| `video_page` | `VideoObject` |
-| `recipe_page` | `Recipe` |
-
-El compositor resuelve las referencias internas de cada molde de forma recursiva. Tus campos explícitos tienen prioridad sobre los valores del molde; `type` permite sustituir el tipo generado, pero no es necesario repetirlo. Una referencia circular lanza `LogicException` con la cadena de presets implicada. Un nombre desconocido cae en `WebPage`, sin error de validación.
-
-Puedes usar `presets` con una lista; se aplican en orden y tus valores explícitos tienen prioridad. Si existen simultáneamente `preset` y `presets`, gana `preset`. Evita heredar un `preset` global y añadir únicamente `presets` en una vista; declara en esa vista el selector que vas a utilizar.
-
-## Artículo
-
-En una meta como `app/views/articles/articleDetail.meta.php`:
+El header del esqueleto llama siempre a:
 
 ```php
-<?php
+$this->metasController->renderSchema()
+```
+
+Y el recorrido `Meta → SchemaComposer → JsonLD` no comprueba actualmente `SEO_ENABLED`.
+
+Por tanto, **no existe en esta versión la garantía de que `seo.enabled=false` elimine JSON-LD del HTML**.
+
+Además, `SchemaComposer` infiere `WebPage` cuando no encuentra otro tipo, por lo que puede generarse un grafo base incluso sin un bloque `schema` específico.
+
+Si necesitas cambiar esta política, hazlo en el runtime/header de forma deliberada y actualiza esta guía junto al código.
+
+## Valores que completa SchemaComposer
+
+Después de aplicar el preset, el compositor puede completar:
+
+| Campo | Fallback actual |
+| --- | --- |
+| `type` | inferencia por bloques; finalmente `WebPage` |
+| `lang` | idioma de ruta → `oglocale` → `es` |
+| `siteName` | `metaTags.ogsite_name` |
+| `title` | `metaTags.title` |
+| `description` | `metaTags.description` |
+| `image` | `metaTags.ogimage` |
+| `author` para Article | `metaTags.author` |
+| `org.logo` | `metaTags.ogimage` |
+| `search.target` | `<site_url>/buscar?q={search_term_string}` |
+
+Si no existe realmente un buscador en `/buscar`, declara un target propio sin `{search_term_string}` para que `JsonLD` no genere `SearchAction`.
+
+## Nodos base
+
+`JsonLD` genera un `@graph` que parte de:
+
+```text
+Organization
+WebSite
+WebPage
+```
+
+Según los datos añade otros nodos y relaciones. Si existe imagen principal, puede crear `ImageObject`.
+
+Los IDs base utilizan la URL del sitio/página, por ejemplo:
+
+```text
+#organization
+#website
+#webpage
+#primaryimage
+```
+
+## Presets directos fiables
+
+`src/seo/schema.presets.php` contiene estos presets simples que establecen directamente un tipo o bloque:
+
+| Preset | Resultado base |
+| --- | --- |
+| `webpage` | `WebPage` |
+| `collection`, `listing` | `CollectionPage` |
+| `contact` | `ContactPage` |
+| `article` | `Article` |
+| `blog`, `blog_post` | `BlogPosting` |
+| `news`, `news_article` | `NewsArticle` |
+| `tech_article` | `TechArticle` |
+| `product` | `Product` + bloque `product` |
+| `software`, `app` | `SoftwareApplication` + bloque `software` |
+| `service` | `Service` + bloque `service` |
+| `course` | `Course` + bloque `course` |
+| `event` | `Event` + bloque `event` |
+| `local_business` | `LocalBusiness` + bloque `business` |
+| `job`, `job_posting` | `JobPosting` + bloque `job` |
+| `video` | `VideoObject` + bloque `video` |
+| `recipe` | `Recipe` + bloque `recipe` |
+| `creative_work` | `CreativeWork` + bloque `creativeWork` |
+| `faq` | `WebPage` + bloque `faq` vacío |
+
+Para código nuevo, utiliza estos presets directos mientras no necesites el comportamiento de los moldes compuestos descritos abajo.
+
+## Limitación actual de los moldes compuestos
+
+El catálogo también contiene nombres como:
+
+```text
+site_base
+marketing_page
+faq_page
+contact_page
+blog_article
+product_page
+saas_landing
+service_page
+...
+```
+
+Esos moldes incluyen internamente claves `preset` o `presets`.
+
+Sin embargo, `SchemaComposer::applyPresetChain()` **no resuelve recursivamente un preset contenido dentro de otro preset**. Solo resuelve la lista solicitada inicialmente y fusiona el array resultante.
+
+Consecuencia: no todos esos nombres compuestos producen necesariamente el mismo tipo que su `preset` interno sugiere. Algunos funcionan por inferencia porque incluyen un bloque como `product`, `software` o `service`; otros pueden caer finalmente en `WebPage`.
+
+Hasta que el runtime implemente resolución recursiva, no documentes esos moldes como aliases totalmente equivalentes. Para un tipo concreto utiliza el preset directo:
+
+```php
+'preset' => 'contact'
+'preset' => 'blog'
+'preset' => 'product'
+```
+
+Tampoco existe actualmente detección de ciclos de presets, porque esa resolución recursiva no se ejecuta.
+
+## Varios presets
+
+Puedes declarar:
+
+```php
+'schema' => [
+    'presets' => ['software', 'faq'],
+    'software' => [
+        // ...
+    ],
+    'faq' => [
+        // ...
+    ],
+]
+```
+
+Los presets solicitados directamente se fusionan en orden y después tus valores explícitos tienen prioridad.
+
+Si aparecen simultáneamente `preset` y `presets`, el código toma `preset` primero mediante:
+
+```text
+schema['preset'] ?? schema['presets']
+```
+
+## Article
+
+Ejemplo:
+
+```php
 return [
     'metaTags' => [
         'title' => 'Cómo organizar una biblioteca',
-        'description' => 'Una guía práctica para clasificar libros.',
+        'description' => 'Una guía práctica.',
         'ogimage' => 'https://example.com/public/img/biblioteca.jpg',
     ],
     'schema' => [
@@ -119,121 +201,262 @@ return [
 ];
 ```
 
-Para contenido dinámico, obtén esos valores de `$data`, igual que las otras metas de la vista. El autor del artículo se recibe como nombre de persona, no como un objeto libre.
+Para tipos:
 
-## Producto
-
-```php
-<?php
-return ['schema' => [
-    'preset' => 'product_page',
-    'product' => [
-        'name' => 'Cuaderno de trabajo',
-        'description' => 'Cuaderno de 120 páginas.',
-        'sku' => 'CUADERNO-120',
-        'brand' => 'Mi marca',
-        'images' => ['https://example.com/public/img/cuaderno.jpg'],
-        'price' => '12.50',
-        'currency' => 'EUR',
-        'availability' => 'https://schema.org/InStock',
-    ],
-]];
+```text
+Article
+BlogPosting
+NewsArticle
+TechArticle
 ```
 
-`images` contiene URLs; `brand` es un nombre. El renderer construye `Offer` con el precio y la URL de la página. El molde usa USD y disponibilidad en stock por defecto: sustituye ambos por los datos reales. Actualmente un precio numérico cero se omite por los filtros del renderer; no utilices este ejemplo para representar un producto gratuito.
+`JsonLD` crea un nodo de artículo enlazado con WebPage, organización e imagen cuando existen esos datos.
 
-## Aplicación SaaS, planes y preguntas
+## Product
 
 ```php
-<?php
-return ['schema' => [
-    'preset' => 'software',
-    'software' => [
-        'name' => 'Agenda del equipo',
-        'category' => 'BusinessApplication',
-        'os' => 'Web',
-        'offers' => [
-            ['name' => 'Individual', 'price' => '9.00', 'currency' => 'EUR'],
-            ['name' => 'Equipo', 'price' => '25.00', 'currency' => 'EUR'],
+return [
+    'schema' => [
+        'preset' => 'product',
+        'product' => [
+            'name' => 'Cuaderno de trabajo',
+            'description' => 'Cuaderno de 120 páginas.',
+            'sku' => 'CUADERNO-120',
+            'brand' => 'Mi marca',
+            'images' => [
+                'https://example.com/public/img/cuaderno.jpg',
+            ],
+            'price' => '12.50',
+            'currency' => 'EUR',
+            'availability' => 'https://schema.org/InStock',
         ],
     ],
-    'faq' => [
-        ['q' => '¿Puedo cambiar de plan?', 'a' => 'Sí, desde la configuración de tu cuenta.'],
-    ],
-]];
+];
 ```
 
-La lista de planes genera `AggregateOffer` y sus ofertas. Todos deben utilizar la misma moneda. `saas_landing` combina software y FAQ sin cambiar el tipo principal de la aplicación; su molde contiene un bloque de valoraciones vacío. Para evitar emitir una valoración incompleta, usa `software` como en el ejemplo o declara `aggregateRating => null` cuando no existan valoraciones reales.
+El renderer transforma `brand` en `Brand` y, cuando `price` es no vacío, crea un `Offer`.
 
-Las preguntas utilizan claves `q` y `a`. El bloque FAQ se puede añadir junto a otro tipo; debe corresponder a preguntas y respuestas visibles en la página.
+La comprobación actual usa `!empty($p['price'])`; por eso un precio numérico `0` se omite. Comprueba el JSON final si cero tiene significado en tu caso.
 
-## Campos de los otros tipos
+## SoftwareApplication
 
-Los nombres siguientes son las claves que acepta GFrame, no una lista de requisitos para resultados enriquecidos. Las propiedades fuera de esta selección se añaden mediante `entities`.
+```php
+return [
+    'schema' => [
+        'preset' => 'software',
+        'software' => [
+            'name' => 'Agenda del equipo',
+            'category' => 'BusinessApplication',
+            'os' => 'Web',
+            'offers' => [
+                ['name' => 'Individual', 'price' => '9.00', 'currency' => 'EUR'],
+                ['name' => 'Equipo', 'price' => '25.00', 'currency' => 'EUR'],
+            ],
+        ],
+    ],
+];
+```
 
-| Bloque | Campos específicos admitidos |
+Con varios offers crea `AggregateOffer`, calcula low/high price y utiliza la moneda del primer offer como `priceCurrency` del agregado.
+
+El renderer no verifica que todos los planes utilicen la misma moneda: esa consistencia pertenece a tu aplicación.
+
+## Service, LocalBusiness y Course
+
+Bloques soportados:
+
+```text
+service
+business
+course
+```
+
+Campos consumidos directamente por el renderer:
+
+| Bloque | Campos |
 | --- | --- |
-| `service` | `name`, `description`, `serviceType`, `provider`, `areaServed`, `offers` |
+| `service` | `name`, `description`, `provider`, `areaServed`, `offers`, `serviceType` |
 | `business` | `type`, `name`, `description`, `url`, `image`, `telephone`, `address`, `geo`, `openingHoursSpecification`, `sameAs` |
-| `course` | `name`, `description`, `url`, `provider` |
-| `event` | `name`, `description`, `startDate`, `endDate`, `eventAttendanceMode`, `eventStatus`, `images`, `location`, `organizer`, `offers` |
-| `job` | `title`, `description`, `datePosted`, `validThrough`, `employmentType`, `hiringOrganization`, `jobLocation`, `baseSalary`, `applicantLocationRequirements`, `directApply` |
-| `video` | `name`, `description`, `thumbnailUrl`, `uploadDate`, `duration`, `contentUrl`, `embedUrl`, `publisher` |
-| `recipe` | `name`, `description`, `image`, `author`, `recipeYield`, `prepTime`, `cookTime`, `totalTime`, `recipeCategory`, `recipeCuisine`, `keywords`, `recipeIngredient`, `recipeInstructions`, `nutrition` |
-| `creativeWork` | `name`, `description`, `url`, `inLanguage`, `dateCreated`, `datePublished`, `dateModified`, `isAccessibleForFree`, `author`, `publisher`, `image`, `text`, `mainEntityOfPage` |
+| `course` | `name`, `description`, `provider`, `url` |
 
-Los objetos anidados, como `PostalAddress`, `Place`, `Person` u `Offer`, deben incluir sus claves Schema.org (`@type`, `priceCurrency`, etc.). Solo las ofertas de `product` y `software` reciben la transformación específica mostrada arriba. Usa fechas ISO 8601 y duraciones como `PT5M`.
+Los objetos anidados se entregan como estructuras Schema.org; GFrame no valida exhaustivamente su vocabulario.
 
-Ejemplo de servicio:
+## Event
 
-```php
-<?php
-return ['schema' => [
-    'preset' => 'service',
-    'service' => [
-        'name' => 'Consultoría de procesos',
-        'serviceType' => 'Consultoría empresarial',
-        'areaServed' => 'España',
-        'offers' => [
-            '@type' => 'Offer',
-            'price' => '150.00',
-            'priceCurrency' => 'EUR',
-        ],
-    ],
-]];
+`event` admite actualmente:
+
+```text
+name
+description
+startDate
+endDate
+eventAttendanceMode
+eventStatus
+images
+location
+organizer
+offers
 ```
 
-Los bloques de servicio, negocio, curso, evento, empleo, vídeo, receta y obra pueden generar entidades adicionales aunque el tipo principal sea otro. Producto y software requieren su `type` correspondiente. No basta cambiar `type` por cualquier nombre Schema.org para obtener un nodo de ese tipo.
+Usa fechas ISO 8601 y estructuras Schema.org válidas para location/offers.
 
-## Navegación y tipos adicionales
+## JobPosting
 
-`breadcrumbs` recibe una lista consecutiva de elementos con `name` y `url`; las posiciones se generan automáticamente. `entities` admite objetos Schema.org completos, incluidos tipos que no tienen preset:
+`job` consume:
 
-```php
-<?php
-return ['schema' => [
-    'preset' => 'webpage',
-    'breadcrumbs' => [
-        ['name' => 'Inicio', 'url' => 'https://example.com'],
-        ['name' => 'Libros', 'url' => 'https://example.com/libros'],
-    ],
-    'entities' => [[
-        '@type' => 'Book',
-        '@id' => 'https://example.com/libros/manual#book',
-        'name' => 'Manual de organización',
-        'author' => ['@type' => 'Person', 'name' => 'María Pérez'],
-        'isbn' => '9780000000002',
-    ]],
-]];
+```text
+title
+description
+datePosted
+validThrough
+employmentType
+hiringOrganization
+jobLocation
+baseSalary
+applicantLocationRequirements
+directApply
 ```
 
-Sin `@id`, GFrame asigna `#entity-1`, `#entity-2`, etc. Una entidad con el mismo `@id` de un nodo generado lo sustituye completamente, no fusiona propiedades. Usa identificadores distintos salvo que quieras reemplazar ese nodo.
+## VideoObject
+
+`video` consume:
+
+```text
+name
+description
+thumbnailUrl
+uploadDate
+duration
+contentUrl
+embedUrl
+publisher
+```
+
+## Recipe
+
+`recipe` consume:
+
+```text
+name
+description
+image
+author
+recipeYield
+prepTime
+cookTime
+totalTime
+recipeCategory
+recipeCuisine
+keywords
+recipeIngredient
+recipeInstructions
+nutrition
+```
+
+## CreativeWork
+
+`creativeWork` consume:
+
+```text
+name
+description
+url
+inLanguage
+dateCreated
+datePublished
+dateModified
+isAccessibleForFree
+author
+publisher
+image
+text
+mainEntityOfPage
+```
+
+## FAQ
+
+Si `schema.faq` es no vacío, GFrame añade un `FAQPage` separado enlazado con la WebPage.
+
+Formato esperado:
+
+```php
+'faq' => [
+    [
+        'q' => '¿Puedo cambiar de plan?',
+        'a' => 'Sí.',
+    ],
+]
+```
+
+El renderer accede directamente a `q` y `a`; valida la estructura antes de pasar datos dinámicos.
+
+## Breadcrumbs
+
+```php
+'breadcrumbs' => [
+    ['name' => 'Inicio', 'url' => 'https://example.com'],
+    ['name' => 'Libros', 'url' => 'https://example.com/libros'],
+]
+```
+
+GFrame crea un `BreadcrumbList` y asigna posiciones consecutivas.
+
+## Entidades personalizadas
+
+`entities` permite añadir nodos que el renderer no conoce específicamente:
+
+```php
+'entities' => [[
+    '@type' => 'Book',
+    '@id' => 'https://example.com/libros/manual#book',
+    'name' => 'Manual de organización',
+]]
+```
+
+Si falta `@id`, asigna:
+
+```text
+#entity-1
+#entity-2
+...
+```
+
+El grafo se indexa internamente por `@id`; una entidad custom con el mismo ID de un nodo generado lo sustituye en el array final.
+
+## `array_filter()` y valores vacíos
+
+Muchos nodos se construyen con `array_filter()` sin callback.
+
+Eso elimina valores evaluados como falsos, incluidos en varios casos:
+
+```text
+null
+''
+0
+false
+[]
+```
+
+Por eso debes revisar especialmente campos donde `0` o `false` sean datos válidos.
+
+## JSON y escaping
+
+El grafo se serializa con:
+
+```text
+JSON_UNESCAPED_SLASHES
+JSON_UNESCAPED_UNICODE
+```
+
+El renderer no valida requisitos de Google ni corrige semántica de negocio. Declara únicamente datos que correspondan al contenido real y visible.
 
 ## Comprobar el resultado
 
-1. Abre el código fuente de la página y localiza `application/ld+json`.
-2. Comprueba tipos, URLs absolutas, idioma, fechas y relaciones del grafo.
-3. Valida el vocabulario con el [validador Schema.org](https://validator.schema.org/) y la elegibilidad con la [prueba de resultados enriquecidos](https://search.google.com/test/rich-results).
-4. Contrasta cada dato con el contenido visible, incluidos precios, disponibilidad, preguntas y valoraciones.
+1. abre el código fuente de la página;
+2. localiza `application/ld+json`;
+3. revisa tipos, IDs, URLs, idioma, fechas, precios y relaciones;
+4. valida el vocabulario con Schema.org;
+5. usa la prueba de resultados enriquecidos del buscador cuando el tipo aplique;
+6. comprueba que el marcado coincide con el contenido visible.
 
-El renderer serializa los datos; no valida requisitos por tipo. Sus filtros pueden omitir valores `null`, vacíos, cero o `false`. Para propiedades donde esos valores tengan significado, comprueba el JSON generado o utiliza una entidad completa. Mantén el contenido editorial controlado y no insertes HTML arbitrario de usuarios en estos bloques.
+La referencia de [SEO](seo.md) explica por separado indexación, sitemap, robots y llms. Ninguno de esos mecanismos sustituye autenticación o autorización.
