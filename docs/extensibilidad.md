@@ -76,3 +76,16 @@ La sustitución de vistas y partes se describe en [Módulos del framework](modul
 Actualizar el paquete no mezcla automáticamente las mejoras de una vista original con una vista personalizada. Compara ambas y decide qué incorporar. Si retiras la personalización, el framework vuelve a utilizar la vista del módulo. Comprueba también los constructores y las firmas de métodos que heredes al actualizar.
 
 Si amplías el esquema de cuentas, integra también la eliminación de los datos asociados; heredar un modelo no modifica la limpieza de otros módulos. Consulta las guías de [Cuenta y seguridad](self-account.md) y [Campañas](notification-campaigns.md) para sus puntos de integración.
+
+
+## Límites y migraciones de mecanismos antiguos
+
+GFrame no incorpora un bus global de hooks como mecanismo universal de personalización. Un punto de extensión debe estar definido por una API concreta: herencia, constructor inyectable, registro de transportes, contrato de persistencia, proveedor de audiencia u otro mecanismo documentado. Cada punto debe especificar cuándo se ejecuta, qué argumentos recibe, qué devuelve y qué validaciones debe conservar.
+
+Los mecanismos antiguos basados en `config/auth/extensions.php` dejaron de formar parte del contrato de Auth. Si un proyecto conserva ese archivo, traslade sus integraciones a controladores, modelos o servicios personalizados y a sus constructores; la actualización no borra automáticamente el archivo antiguo.
+
+Campañas siguió la misma dirección: el registro histórico de callbacks y `config/notifications/automatic-campaigns.php` ya no se cargan como mecanismo de extensión. Las reglas propias deben vivir en métodos del modelo heredado, y el mismo modelo debe conectarse al controlador y al cron cuando corresponda. Los archivos antiguos pueden conservarse durante una migración, pero no deben considerarse activos por su mera presencia.
+
+No todos los módulos necesitan convertirse a MVC. `alerts`, por ejemplo, publica recursos de interfaz y no requiere controladores, modelos o vistas PHP. No confunda un componente visual con `notifications`, que sí expone lógica y contratos de dominio.
+
+Una extensión correcta debe conservar aislamiento por usuario o tenant, estabilidad de códigos de respuesta, autorización, idempotencia o deduplicación cuando aplique y validación de enlaces o destinatarios. Heredar una clase no transfiere automáticamente estas garantías a código nuevo.
