@@ -1,6 +1,6 @@
 # Hallazgos para la integración de ramas
 
-Este archivo registra diferencias detectadas durante la auditoría documental que no deben resolverse a ciegas durante una fusión. Algunas ya se corrigieron en la documentación de esta rama; otras son comportamientos del runtime que conviene decidir si se conservan o se corrigen.
+Este archivo registra diferencias detectadas durante la auditoría documental y de runtime que no deben resolverse a ciegas durante una fusión. Los hallazgos confirmados de esta rama ya se corrigieron o quedaron documentados como límites reales.
 
 La regla para integrar es simple: **después de fusionar código, el runtime resultante vuelve a ser la fuente de verdad**.
 
@@ -27,55 +27,43 @@ La documentación anterior prometía `rate_limit`, `MAIL_RATE_LIMIT_*` y código
 
 Si otra rama añade un rate limiter real a `MailService`, volver a auditar su API y documentarlo únicamente después de integrar ese código. No recuperar por conflicto la documentación antigua sin implementación.
 
-**Estado:** corrección documental resuelta en esta rama; capacidad de rate limit no presente en el runtime auditado.
+**Estado:** corrección documental resuelta; la capacidad de rate limit no forma parte del runtime auditado.
 
-## 2. Media: `media.max_upload_bytes` permanece en defaults pero no gobierna el límite actual
+## 2. Media: fuente única del límite de carga
 
-`config/defaults.php` todavía incluye:
+La auditoría detectó que `config/defaults.php` exponía `media.max_upload_bytes`, pero `MediaLibraryService` no consumía esa clave. El límite efectivo ya procedía de:
 
-```php
-'media' => [
-    'scope' => 'global',
-    'max_upload_bytes' => 26214400,
-    'quota_bytes' => 0,
-],
+```text
+resources/modules/media-library/config/media.php
 ```
 
-Sin embargo, `MediaLibraryService::registerLocalFile()` obtiene el límite mediante:
+mediante `MediaProcessor::getMaxUploadBytes()`.
 
-```php
-$this->processor->getMaxUploadBytes()
-```
+La clave residual fue retirada de `config/defaults.php`. El bloque de aplicación conserva únicamente opciones de integración como `scope` y `quota_bytes`; el procesamiento del archivo sigue perteneciendo al procesador del módulo.
 
-El procesador toma su configuración del módulo. `MediaLibraryService` sí consulta `media.quota_bytes`, pero no `media.max_upload_bytes`.
+Se añadió `ConfigurationDefaultsTest` para comprobar que:
 
-`docs/media-library.md` ya explica correctamente que la clave antigua `media.max_upload_bytes` no controla el límite actual.
+- el default global no vuelve a exponer `media.max_upload_bytes`;
+- el módulo sí declara `max_upload_bytes`;
+- `MediaProcessor::getMaxUploadBytes()` devuelve ese valor.
 
-### Decisión al integrar
+`docs/media-library.md` ya enseña la fuente correcta y explica la extensión mediante un `MediaProcessor` propio.
 
-Si ningún consumidor real sigue usando `media.max_upload_bytes`, conviene retirarla de defaults o volver a conectarla explícitamente al runtime para evitar una configuración engañosa.
+**Estado:** hallazgo de runtime resuelto y cubierto por prueba.
 
-**Estado:** documentación correcta; posible limpieza de código/configuración.
+## 3. SEO: `robots.txt` y sitemap desactivado
 
-## 3. SEO: `robots.txt` puede anunciar un sitemap desactivado
-
-`routes_system.php` solo registra `/sitemap.xml` cuando la indexación está permitida y `SEO_ENABLE_SITEMAP_XML` está activo.
-
-`Robots::render()`, cuando permite indexación, añade siempre:
+La auditoría detectó que `routes_system.php` omitía correctamente `/sitemap.xml` cuando `SEO_ENABLE_SITEMAP_XML` era falso, pero `Robots::render()` seguía anunciando:
 
 ```text
 Sitemap: <site_url>/sitemap.xml
 ```
 
-sin comprobar `SEO_ENABLE_SITEMAP_XML`.
+El runtime fue corregido para que `Robots` utilice la misma condición que el registro de la ruta: la línea `Sitemap:` solo aparece cuando el sitemap está habilitado o cuando la constante no está definida y se conserva el comportamiento predeterminado.
 
-Por tanto, una configuración con robots activo y sitemap desactivado puede publicar un `robots.txt` que anuncie una ruta de sitemap inexistente.
+`MetaSeoTest` incluye ahora un caso separado que verifica que un sitemap desactivado no sea anunciado por `robots.txt`.
 
-### Decisión al integrar
-
-Valorar que `Robots` añada la línea `Sitemap:` únicamente cuando el sitemap esté realmente habilitado/registrado.
-
-**Estado:** observación de runtime; `seo.md` ya documenta que los switches siguen caminos separados.
+**Estado:** hallazgo de runtime resuelto y cubierto por prueba.
 
 ## 4. Errores: origen real del `noindex`
 
@@ -89,7 +77,7 @@ en `error-pages.group.meta.php`. Ese metadato es el mecanismo que genera la pol�
 
 `docs/errores.md` ya fue corregido para atribuir el comportamiento al metadato del módulo y advertir que una personalización debe conservar conscientemente esa política si se desea mantener el `noindex`.
 
-**Estado:** corrección documental resuelta en esta rama.
+**Estado:** corrección documental resuelta.
 
 ## 5. Notifications Email: reintentos sí; recuperación de jobs `processing` abandonados no
 
@@ -105,7 +93,7 @@ No implementa por sí mismo recuperación temporal de filas que queden abandonad
 
 `docs/notifications-email.md` ya advierte esta limitación correctamente.
 
-**Estado:** documentación correcta; comportamiento a tener en cuenta operativamente.
+**Estado:** documentación correcta; comportamiento conocido, no presentado como una capacidad inexistente.
 
 ## 6. Campaigns y Cron: recuperación distinta a la cola de email
 
@@ -178,7 +166,7 @@ No deben promocionarse automáticamente a API recomendada solo porque continúen
 
 No se detectó durante esta pasada una red general de `class_alias()` o clases marcadas como deprecated que obligue a una segunda capa de migración global. La compatibilidad visible está concentrada en contratos concretos.
 
-**Estado:** clasificación documental cerrada en esta rama.
+**Estado:** clasificación documental cerrada.
 
 ## 8. Documentación interna fuera de `docs/`
 
@@ -196,8 +184,8 @@ Se revisaron las notas internas más relevantes encontradas durante la auditorí
 
 Antes de cerrar una integración con otras ramas:
 
-1. fusionar o comparar las ramas de código;
-2. volver a comprobar los hallazgos de runtime que sigan abiertos;
-3. no reintroducir por conflicto documentación ya retirada por carecer de implementación;
+1. comparar las ramas y revisar si la otra rama vuelve a tocar alguno de estos contratos;
+2. conservar los tests que fijan los comportamientos corregidos;
+3. no reintroducir por conflicto documentación retirada por carecer de implementación;
 4. conservar como historia los cambios del `CHANGELOG`, sin confundirlos con la API recomendada actual;
-5. después de integrar, tratar de nuevo el código resultante como fuente de verdad.
+5. después de integrar, ejecutar de nuevo la suite y tratar el código resultante como fuente de verdad.
