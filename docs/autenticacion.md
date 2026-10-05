@@ -35,8 +35,6 @@ AuthModel utiliza las tablas normalizadas `users` y `roles`. El nombre, teléfon
 
 Los nombres `Acount` son los identificadores actuales de la API. Cada operación devuelve `status` y `code`; `data` aparece cuando hay información adicional. El modelo no envía correos ni crea una sesión automáticamente.
 
-Ejemplo de consulta de credenciales desde PHP:
-
 ```php
 use GFrame\Auth\AuthModel;
 
@@ -53,7 +51,15 @@ Este ejemplo comprueba credenciales; el controlador estándar añade la autoriza
 
 El registro normaliza el correo, comprueba la política de contraseña y crea una cuenta `unverify` con el rol `registered`. No inicia sesión, no asigna el rol de administrador y no crea tenants ni perfiles del negocio.
 
-AuthController utiliza el token para preparar el enlace `login/verify?v=...` y encola el correo. Al abrirlo, `validateAcount()` activa la cuenta y rota el token. Después se puede iniciar sesión mediante el formulario de acceso.
+AuthController utiliza el token para preparar el enlace `login/verify?v=...` y encola el correo. Al abrirlo, `validateAcount()`:
+
+1. localiza la cuenta por token;
+2. comprueba `token_updated_at` mediante `TokenManager`;
+3. rechaza cuentas suspendidas o desactivadas;
+4. activa la cuenta;
+5. rota el token y su fecha.
+
+Un token vencido devuelve `invalid_token` y no activa la cuenta. Solicita un nuevo enlace mediante el flujo de reenvío de verificación.
 
 El registro y el envío son operaciones diferentes: si falla el encolado del correo, la cuenta puede existir ya aunque la respuesta indique `mail_delivery_failed`. Solicita el reenvío de verificación en lugar de repetir la inserción; consulta [Correo](mail.md).
 
@@ -68,8 +74,6 @@ El controlador devuelve `redirect`, relativo a la base del sitio, por ejemplo `a
 `invalid_user` no distingue públicamente entre un correo inexistente y una contraseña incorrecta. No aceptes identidad, rol ni permisos enviados por el formulario como autorización.
 
 ## Identidad y rutas protegidas
-
-En una acción protegida puedes consultar la identidad:
 
 ```php
 $identity = $_SESSION['auth'] ?? [];
@@ -109,14 +113,15 @@ Toda instalación debe crear el rol protegido `superadministrator` y asignarlo a
 
 `GFrame\Auth\AuthInstallationService` crea la primera cuenta mediante `UserModel`, la deja verificada y le asigna el rol `superadministrator`. Rechaza nuevas ejecuciones cuando ya existe algún usuario.
 
-
 ## Recuperación y tokens
 
 La solicitud devuelve `recovery_requested` también cuando no existe una cuenta recuperable. El controlador extrae el token interno, lo retira de la respuesta pública y encola el enlace `login/resetpassword?rp=...`. No devuelvas el resultado bruto del modelo al navegador.
 
-`resetPassword()` comprueba token, caducidad y estado, cambia el hash y rota el token. El anterior deja de servir. Las cuentas suspendidas o desactivadas no obtienen acceso mediante recuperación.
+`TokenManager` genera valores aleatorios de 32 bytes, representados en 64 caracteres hexadecimales. Su duración predeterminada es de 86 400 segundos.
 
-TokenManager genera valores aleatorios de 32 bytes, representados en 64 caracteres hexadecimales, y tiene una duración predeterminada de 86 400 segundos. Para cambiarla, inyecta el manager en el modelo:
+Tanto `validateAcount()` como `resetPassword()` comprueban `token_updated_at` mediante `TokenManager::isValidTimestamp()`. Generar un nuevo token de verificación o recuperación reemplaza el anterior porque ambos flujos comparten las columnas de token de la cuenta.
+
+Para cambiar la duración, inyecta el manager en el modelo:
 
 ```php
 use GFrame\Auth\AuthModel;
@@ -125,20 +130,26 @@ use GFrame\Auth\TokenManager;
 $model = new AuthModel(tokens: new TokenManager(3600));
 ```
 
-La duración se comprueba en `resetPassword()`. `validateAcount()` no comprueba actualmente la fecha del token: no presupongas que el enlace de verificación caduca por configurar TokenManager. Recuperación y verificación comparten las columnas de token de la cuenta; generar uno nuevo reemplaza el anterior.
+Con ese ejemplo, verificación y recuperación aceptan el token durante una hora. Una fecha inválida, futura o fuera de la ventana se trata como `invalid_token`.
+
+`resetPassword()` comprueba además el estado de la cuenta, cambia el hash y rota el token. Las cuentas suspendidas o desactivadas no obtienen acceso mediante recuperación.
 
 ## Contraseñas y configuración
 
 PasswordPolicy acepta por defecto entre 8 y 72 **bytes UTF-8**, no caracteres, y guarda hashes bcrypt. El indicador visual de fuerza no cambia esa regla. Nunca guardes una contraseña en texto claro ni expongas hashes.
 
-La expiración de contraseñas está desactivada por defecto. Si la activas, `password_changed_at` y `force_password_change` determinan el cambio obligatorio. Integra estas opciones en el bloque `auth` de tu configuración existente:
+La expiración de contraseñas está desactivada por defecto. Si la activas, `password_changed_at` y `force_password_change` determinan el cambio obligatorio:
 
 ```php
 return [
     'auth' => [
         'login_redirect' => 'admin',
         'password_change_redirect' => 'account',
-        'password_expiration' => ['enabled' => true, 'days' => 90, 'warning_days' => 7],
+        'password_expiration' => [
+            'enabled' => true,
+            'days' => 90,
+            'warning_days' => 7,
+        ],
     ],
 ];
 ```
@@ -154,3 +165,15 @@ Personaliza el controlador en `app/controllers/auth-ui/AuthController.php`, con 
 Una subclase no sustituye por sí misma los `new AuthModel()` existentes: el controlador debe utilizarla explícitamente. Conserva contratos de sesión, permisos, respuestas y eliminación de tokens. Consulta [Módulos runtime](modulos-runtime.md).
 
 Las rutas públicas del módulo usan `guest`, honeypot y sus exclusiones CSRF declaradas; no copies esas exclusiones a acciones privadas. Las vistas, perfiles y reglas del negocio se mantienen en el proyecto.
+
+## Verificación
+
+La suite incluye cobertura específica para:
+
+- registro, verificación e inicio de sesión;
+- recuperación sin enumeración de cuentas;
+- reset de contraseña;
+- estados suspendido/desactivado;
+- expiración obligatoria de contraseña;
+- caducidad de tokens de verificación;
+- contratos estables ante fallos de persistencia.
