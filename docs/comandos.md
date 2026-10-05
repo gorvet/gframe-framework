@@ -61,3 +61,78 @@ php packages/gorvet/gframe/bin/gframe-update --help
 - [Async](async.md): el framework lanza `bin/async-worker.php` internamente; no es un generador ni un comando para administrar proyectos.
 
 Actualmente no se incluyen generadores de CRUD, controladores o modelos. Esos archivos se desarrollan con las convenciones de [Arquitectura](arquitectura.md), [Rutas](rutas.md) y [Vistas](vistas.md).
+
+
+## Flujo recomendado por escenario
+
+### Crear una aplicación nueva
+
+```bash
+composer install
+composer new -- ../mi-proyecto
+cd ../mi-proyecto
+composer install
+```
+
+Después complete el instalador del proyecto, configure el servidor web y seleccione el perfil y los módulos necesarios. `composer new` crea el esqueleto; no sustituye la configuración de entorno ni la instalación de la base de datos.
+
+### Actualizar una aplicación existente
+
+```bash
+composer update gorvet/gframe
+composer gframe:update -- --dry-run
+composer gframe:update
+```
+
+Revise primero el dry-run, especialmente cuando existan archivos administrados modificados. En producción debe desplegar un `composer.lock` ya validado y ejecutar `composer install`; no use una resolución abierta de dependencias como mecanismo normal de despliegue.
+
+### Añadir un módulo después de instalar
+
+Use `composer gframe:update -- --modules=LISTA_COMPLETA` con todos los módulos que desea conservar registrados, no solamente con el nuevo. El actualizador resuelve dependencias, publica archivos administrados y ejecuta las migraciones correspondientes. Quitar un nombre de esa lista no equivale a desinstalar por completo una capacidad ni elimina automáticamente sus datos.
+
+### Publicar solamente recursos de una dependencia
+
+`bin/modules.php publish` es útil para copiar recursos públicos concretos cuando no necesita instalar una capacidad completa. No crea rutas, modelos, tablas ni configuración de aplicación. Antes de usarlo, determine si realmente necesita un recurso aislado o el módulo funcional que lo administra.
+
+## Dónde ejecutar cada comando
+
+Hay tres contextos distintos:
+
+| Contexto | Ejemplos | Qué modifica |
+| --- | --- | --- |
+| Repositorio del framework | `composer test`, `composer check`, `composer modules:list` | Código y validaciones del framework |
+| Proyecto instalado | `composer gframe:update` | Archivos administrados, registro de módulos y migraciones del proyecto |
+| Servidor / scheduler | `php bin/gframe-cron.php` | Ejecuta tareas ya registradas; no instala ni actualiza módulos |
+
+Confundir estos contextos es una causa frecuente de errores. Los scripts Composer definidos en el repositorio del framework no aparecen automáticamente en un proyecto consumidor, y los comandos de un proyecto no deben ejecutarse sobre la carpeta `packages/gorvet/gframe` como si fuera la raíz de la aplicación.
+
+## Comprobación y diagnóstico
+
+Antes de publicar cambios del framework ejecute:
+
+```bash
+composer check
+```
+
+Si necesita aislar el problema:
+
+```bash
+composer lint
+composer test
+composer skills:check
+```
+
+Un fallo de sintaxis debe corregirse antes de interpretar fallos posteriores. Si una prueba documental falla, revise primero rutas, nombres de archivos y contratos descritos: varias pruebas verifican que la documentación corresponda a archivos y APIs reales.
+
+En un proyecto, utilice primero `composer gframe:update -- --dry-run` para distinguir un conflicto de archivos de un problema de base de datos. `--no-database` sirve para inspeccionar o aplicar cambios que no dependan del esquema, pero no convierte en completa una actualización que requiera migraciones.
+
+## Reglas operativas
+
+- No edite `composer.lock` manualmente para forzar una versión.
+- No ejecute comandos de actualización directamente sobre `packages/gorvet/gframe`.
+- No trate `publish` como sustituto de la instalación de módulos.
+- No use `--no-database` para ocultar una migración fallida.
+- No elimine módulos de la lista registrada esperando que sus datos desaparezcan.
+- No dé por válido un despliegue solo porque Composer terminó sin error: compruebe rutas, recursos publicados, migraciones y tareas programadas cuando correspondan.
+
+Para el ciclo completo de mantenimiento consulte [Actualizaciones](actualizaciones.md), y para la composición de módulos consulte [Módulos opcionales](modulos-opcionales.md) y [Módulos del framework](modulos-runtime.md).
