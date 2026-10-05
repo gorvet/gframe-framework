@@ -115,12 +115,12 @@ Estados:
 | DOC-013 | Media | parcial | P1 | Referencia técnica ya fuerte; falta revisar si merece una entrada práctica más corta además de su integración en guía/tutorial. |
 | DOC-014 | Notificaciones | parcial | P1 | Referencia técnica fuerte; ya aparece en flujos de negocio, pero falta cerrar auditoría de campañas/transportes. |
 | DOC-015 | Mail | parcial | P1 | Referencia extensa; se corrigió dependencia Async. Evaluar una entrada práctica corta sin duplicar `mail.md`. |
-| DOC-016 | SEO | parcial | P1 | Auditar Sitemap/Robots/Llms/JsonLD/SchemaComposer y construir mapa práctico si aporta valor. |
+| DOC-016 | SEO | cubierto | P1 | `seo.md` y `json-ld.md` verificados contra `LegacyConfigBridge`, rutas system, `Sitemap`, `Llms`, `Robots` y `SchemaComposer`. Se registró una observación de runtime sobre robots/sitemap. |
 | DOC-017 | Autoload de aplicación vs módulos | cubierto | P1 | `autoload-proyecto.md` explica Bootstrap basename map frente a ModuleRuntime namespaced overrides. |
 | DOC-018 | Instalador y perfiles | cubierto | P1 | `perfiles-instalacion.md` verificado contra `profiles.php`, `InstallationProfileCatalog`, `ProjectInstaller`, `ProjectConfigWriter` y `SchemaInstaller`. |
 | DOC-019 | `src/database/ORM_GUIDE.md` | corregido | P0 | Sustituido por nota interna actual; ya no enseña `core/database` ni `config/Config.php`. |
 | DOC-020 | README / `composer new` | corregido | P1 | README aclara que `composer new` es un script del repo y no un comando nativo de Composer. |
-| DOC-021 | Capabilities map completo | en auditoría | P0 | Seguir cerrando SEO y áreas avanzadas antes de declararlo completo. |
+| DOC-021 | Capabilities map completo | en auditoría | P0 | Seguir cerrando Media, Notifications, Mail, Heartbeat, WordPress Headless y errores/respuestas. |
 | DOC-022 | Compatibilidad legacy | parcial | P1 | Helpers globales ya clasificados; continuar revisión de fachadas/contratos históricos restantes. |
 | DOC-023 | Serialización Async | corregido | P0 | `async.md` y `mail.md` ahora reflejan `Opis\Closure\SerializableClosure` / `opis/closure:^3.7`. |
 | DOC-024 | Autoload y namespaces | corregido/cubierto | P0 | Documentado que el proyecto generado no trae PSR-4 general `App\`; clases normales y overrides de módulos siguen contratos distintos. |
@@ -162,26 +162,24 @@ Estados:
 - `SchemaInstaller` aplica tenancy antes de auth y después los esquemas de módulos resueltos.
 - `docs/perfiles-instalacion.md` coincide con ese comportamiento en esta revisión.
 
+### SEO verificado
+
+- `LegacyConfigBridge` controla los switches derivados de SEO y su interacción con debug.
+- `routes_system.php` registra sitemap/llms solo con indexación permitida y robots según su switch propio.
+- `Sitemap` filtra rutas web GET y utiliza `context.sitemap.include=false` como exclusión explícita.
+- `Llms` respeta `llms.include=false` y también la exclusión del sitemap.
+- `SchemaComposer` aplica presets directos, normaliza bloques legacy e infiere `WebPage` cuando no hay otro tipo.
+- `docs/seo.md` y `docs/json-ld.md` reflejan correctamente esas limitaciones en esta revisión.
+
+**Observación de runtime:** `Robots::render()` añade siempre `Sitemap: <site_url>/sitemap.xml` cuando la indexación está permitida. Si `seo.robots=true` pero `seo.sitemap=false`, `robots.txt` puede anunciar una URL de sitemap cuya ruta no fue registrada. Esto no invalida la documentación actual, pero conviene decidir si el runtime debe condicionar esa línea a `SEO_ENABLE_SITEMAP_XML`.
+
 ## Siguiente bloque de auditoría
-
-### SEO
-
-Comparar documentación con:
-
-- `Sitemap`;
-- `SitemapDataProvider`;
-- `Robots`;
-- `Llms`;
-- `JsonLD`;
-- `SchemaComposer`;
-- presets de schema.
-
-### Capacidades avanzadas
 
 Cerrar auditoría de:
 
 - Media;
 - Notifications / Email transport / Campaigns;
+- Mail;
 - Heartbeat;
 - WordPress Headless;
 - errores y respuestas;
