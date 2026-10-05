@@ -95,3 +95,22 @@ Sube `.env` por un canal privado, sin versionarlo. Desactiva debug y revisa [la 
 Integre las reglas del servidor según [Apache y Nginx](servidores-web.md). Compruebe portada, contacto si existe, `robots.txt`, `sitemap.xml` y una URL inexistente. No declare el despliegue correcto solo porque la portada abre.
 
 Si Git impide desplegar porque un archivo no versionado sería sobrescrito, conserve ese archivo fuera de la raíz pública antes de repetir el despliegue. Compare su personalización con el archivo versionado nuevo; no use un checkout forzado ni borre una configuración activa sin revisarla.
+
+
+## Contrato de cobertura del actualizador
+
+Las pruebas de `ProjectUpdateServiceTest` comparan los archivos publicados por los módulos y los archivos administrados del proyecto con la política del actualizador. Cada archivo base nuevo debe quedar cubierto por la actualización o tener una excepción explícita y justificada.
+
+Esto convierte la política de actualización en un contrato comprobable: añadir un archivo al esqueleto sin decidir cómo se instala, actualiza o preserva debe hacer fallar la suite antes de publicar una versión.
+
+Cuando añada una capacidad al framework, compruebe como mínimo:
+
+1. si el archivo pertenece al paquete runtime o debe publicarse en el proyecto;
+2. si una actualización puede reemplazarlo o debe preservarlo;
+3. si necesita una migración de base de datos;
+4. si requiere registrar un módulo nuevo en `storage/gframe-installed.json`;
+5. si `--dry-run` informa correctamente el cambio;
+6. si `--preserve-custom` protege una modificación local administrada;
+7. si la suite cubre la nueva ruta de actualización.
+
+Una instalación limpia y una actualización desde una versión anterior son recorridos distintos. Verifique ambos antes de considerar completa una capacidad nueva.
