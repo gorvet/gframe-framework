@@ -13,24 +13,31 @@ Composer mantiene su estructura estándar `proveedor/paquete` dentro de esa carp
 | Función | Paquete |
 |---|---|
 | Correo SMTP | `phpmailer/phpmailer` |
-| Serialización de closures para PHPAsync | `laravel/serializable-closure` 1.3 |
+| Serialización de closures para `Async` | `opis/closure` `^3.7` |
 | Server-Sent Events | `hhxsv5/php-sse` |
+| Variables de entorno | `vlucas/phpdotenv` |
 
 Estas librerías no deben copiarse dentro de `src` ni mantenerse manualmente en `core/vendors`.
 
 ## Componentes propios
 
-- `PHPAsync`: componente asíncrono de GFrame que utiliza Laravel Serializable Closure desde Composer.
+- `Async`: componente asíncrono de GFrame que serializa closures mediante `Opis\Closure\SerializableClosure` y las ejecuta con PHP CLI. Consulta [Async](async.md) para sus límites: no es una cola persistente ni ofrece reintentos automáticos.
 - `GFrame\Security\Encryption`: utilidad opcional de cifrado autenticado AES-256-GCM incluida en el framework. Su formato es propio y no migra automáticamente datos cifrados por implementaciones anteriores.
 - `gfselect`: componente propio de interfaz extraído y documentado en [GFSelect](gfselect.md).
 - `password-utils`: utilidad propia extraída y documentada en [Password Utils](password-utils.md).
 - Fuente de iconos [`gframe-icons`](gframe-icons.md): recurso propio extraído y documentado.
 
-Las dependencias de negocio pertenecen al proyecto que las utiliza. PHPMailer, Laravel Serializable Closure y PHP-SSE se instalan mediante Composer; no se mantienen copias manuales en el núcleo.
+Las dependencias de negocio pertenecen al proyecto que las utiliza. PHPMailer, Opis Closure, PHP-SSE y PHP dotenv se instalan mediante Composer; no se mantienen copias manuales en el núcleo.
+
+## Componentes con requisito de extensión PHP
+
+Algunas capacidades del framework dependen además de extensiones del runtime y no de otro paquete Composer. Por ejemplo, el cliente HTTP saliente utiliza cURL. Consulta la guía de la capacidad y los requisitos generales antes de desplegarla.
 
 ## Dependencias del navegador
 
 Bootstrap, jQuery, SweetAlert2, AOS, Venobox y otras bibliotecas de interfaz se distribuyen mediante el [catálogo de módulos](modulos-opcionales.md). Cada manifiesto registra sus dependencias y destinos públicos. Las bibliotecas externas conservan su autoría y licencia; las guías de cada una enlazan su fuente oficial.
+
+El inventario de versiones y licencias de los archivos distribuidos está en [Dependencias frontend distribuidas](dependencias-frontend.md).
 
 ## Regla de actualización
 
