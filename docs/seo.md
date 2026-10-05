@@ -107,70 +107,89 @@ El perfil `intranet` genera SEO desactivado e indexación bloqueada. Aunque `seo
 
 La privacidad de una intranet depende de autenticación, autorización y configuración del servidor. SEO nunca es un control de acceso.
 
-## Metatag robots de las páginas HTML
+## Política de indexación de las páginas HTML
 
-`Meta::initializeConfig()` establece:
+GFrame aplica una política de indexación con dos niveles:
+
+1. el interruptor global `SEO_ALLOW_INDEXING`;
+2. el contrato de la ruta `context.seo.indexable`.
+
+Si cualquiera de los dos bloquea la indexación, `Meta::getMetaTag('robots')` devuelve:
 
 ```text
-SEO_ALLOW_INDEXING=true  → index,follow
-SEO_ALLOW_INDEXING=false → noindex,nofollow,noarchive
+noindex,nofollow,noarchive
 ```
 
-Las metas de template, grupo o vista se aplican después y pueden sobrescribir ese valor. Si una página concreta no debe indexarse, declara:
+Una meta de template, grupo o vista no puede volver a habilitar una página bloqueada globalmente o por ruta. En el sentido contrario, una vista tampoco utiliza `metaTags.robots` para convertir arbitrariamente en `noindex` una ruta que el contrato considera indexable: el valor final de robots se decide por la política global + ruta.
 
-```php
-return [
-    'metaTags' => [
-        'robots' => 'noindex,nofollow,noarchive',
-    ],
-];
+Cuando la indexación global está desactivada, el `index.php` del esqueleto añade además:
+
+```http
+X-Robots-Tag: noindex, nofollow, noarchive
 ```
 
-No existe un bloqueo dentro de `Meta::setMetaTags()` que impida una configuración contradictoria. Mantén coherencia entre la política global y las metas personalizadas.
+La cabecera y el meta robots son señales de indexación; no sustituyen autenticación ni autorización.
 
-## Exclusión de sitemap y llms
+## Excluir una página de los índices
 
-No existe un contrato genérico `context.seo.indexable`. La exclusión se declara con los contratos que el runtime consume realmente.
-
-### Excluir del sitemap
+Para excluir coherentemente una ruta de su HTML, Sitemap y LLMS, utiliza el contrato moderno:
 
 ```php
 Route::get('confirmacion', 'home/HomeController@confirmation')
     ->template('home')
     ->view('homeConfirmation')
     ->context([
-        'sitemap' => ['include' => false],
+        'seo' => ['indexable' => false],
     ])
     ->registerFinal();
 ```
 
-`context.sitemap.include=false` no modifica por sí solo el meta robots del HTML.
+`context.seo.indexable=false`:
 
-### Excluir de llms.txt
+- fuerza `noindex,nofollow,noarchive` en el HTML;
+- excluye la ruta del Sitemap;
+- excluye la ruta de `llms.txt`;
+- no modifica la autorización de la ruta;
+- no desactiva por sí solo JSON-LD cuando `SEO_ENABLED=true`.
 
-`Llms` reconoce:
+Una ruta no puede usar `seo.indexable=true` para superar `SEO_ALLOW_INDEXING=false`.
+
+### Compatibilidad con contratos anteriores
+
+Durante la migración siguen siendo reconocidos:
 
 ```php
-->context([
-    'llms' => ['include' => false],
-])
+->context(['sitemap' => ['include' => false]])
 ```
 
-También excluye rutas con `context.sitemap.include=false`. Por tanto, sitemap es el bloqueo común cuando quieres excluir de ambos; `llms.include=false` sirve para excluir solo de llms.
+para excluir Sitemap —y, por compatibilidad, también LLMS—, y:
+
+```php
+->context(['llms' => ['include' => false]])
+```
+
+para excluir únicamente `llms.txt`.
+
+Estos contratos legacy no fuerzan el meta robots de la página. Para una exclusión coherente de HTML + Sitemap + LLMS, prefiera `context.seo.indexable=false`.
 
 ## Qué rutas entran al sitemap
 
 `Sitemap` inspecciona rutas `GET` registradas cuyo `type` sea `web`.
 
-Excluye, entre otras:
+Excluye:
 
+- `context.seo.indexable=false`;
 - `context.sitemap.include=false`;
 - rutas con `permission` no vacío;
-- middleware `auth` y nombres que comiencen por `auth`;
-- `sitemap.xml`;
+- middleware `auth`, `admin`, nombres que comienzan por `auth`, `role:*` y `can:*`;
+- el propio `sitemap.xml`;
 - paths que comienzan por `admin`, `dashboard`, `api`, `ajax`, `webhook`, `auth`, `login` o `logout`.
 
-No interpreta genéricamente todos los posibles `role:*`, `can:*` o middlewares propios. Si una ruta no debe aparecer, exclúyela expresamente.
+`Llms` aplica la misma política moderna de `seo.indexable`, respeta los contratos legacy de sitemap/llms y excluye igualmente rutas protegidas por permisos o middleware. También filtra áreas internas como `core`, `app`, `storage` y `vendor`.
+
+Si una política propia protege una ruta mediante un middleware que el núcleo no reconoce como privado, declara además `context.seo.indexable=false`.
+
+Robots mantiene una política global de rastreo; no genera un `Disallow` individual por cada ruta marcada como no indexable.
 
 ## Rutas estáticas y `lastmod`
 
