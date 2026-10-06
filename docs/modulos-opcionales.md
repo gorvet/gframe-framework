@@ -109,3 +109,88 @@ Las aplicaciones con autenticación incorporan `heartbeat-client`. La ruta heart
 ## Esquemas y archivos
 
 Los módulos pueden declarar esquemas MySQL y SQLite, activos públicos y archivos de aplicación. El instalador resuelve dependencias, ejecuta los esquemas y publica los recursos seleccionados.
+
+
+## Contrato del manifiesto `module.php`
+
+Cada módulo vive en `resources/modules/<nombre>/module.php` y debe devolver un arreglo. `ModuleCatalog` valida y normaliza ese manifiesto antes de utilizarlo.
+
+Campos principales:
+
+| Campo | Uso |
+| --- | --- |
+| `name` | Identificador canónico del módulo |
+| `type` | Categoría informativa del módulo |
+| `description` | Descripción para catálogo y herramientas |
+| `dependencies` | Otros módulos requeridos |
+| `default` | Indica si forma parte de la base publicada por defecto |
+| `assets` | Recursos que pueden publicarse |
+| `application` | Archivos de aplicación, rutas u otros elementos administrados |
+| `runtime` | Raíz y namespace cuando el módulo expone clases/vistas runtime |
+| `schema` | Migraciones o esquemas cuando correspondan |
+
+El nombre debe usar minúsculas, números y guiones, empezando y terminando por un segmento alfanumérico. Por ejemplo, `notification-campaigns` es válido; nombres con espacios, mayúsculas o guiones repetidos no lo son.
+
+El catálogo rechaza módulos duplicados y manifiestos que no devuelvan un arreglo.
+
+## Resolución de dependencias
+
+`ModuleCatalog::resolve()` realiza una resolución recursiva y añade primero las dependencias de cada módulo. Por ejemplo:
+
+```text
+mi-modulo
+  -> alerts
+      -> jquery
+      -> sweetalert2
+      -> gframe-icons
+```
+
+La lista final contiene cada módulo una sola vez y respeta el orden necesario para publicar dependencias antes del consumidor.
+
+Si aparece una dependencia inexistente, la resolución falla. Si existe un ciclo, por ejemplo `a -> b -> a`, se lanza una excepción en lugar de continuar con un orden ambiguo.
+
+Esto implica que una dependencia debe declararse en el manifiesto y no confiar en que otro perfil o módulo la instale accidentalmente.
+
+## Módulos predeterminados
+
+`ModuleCatalog::defaults()` toma todos los manifiestos con `default => true` y resuelve también sus dependencias.
+
+La palabra «default» describe el catálogo de publicación base; no significa que el módulo esté habilitado funcionalmente en cualquier proyecto ni reemplaza la selección de perfil. Los perfiles pueden añadir módulos requeridos adicionales.
+
+## Publicación de recursos vs instalación funcional
+
+Hay que distinguir tres operaciones:
+
+```text
+catálogo
+  -> resolver dependencias
+
+publicación
+  -> copiar assets públicos
+
+instalación/actualización
+  -> registrar módulo
+  -> publicar application/assets
+  -> crear carpetas de personalización
+  -> ejecutar esquemas/migraciones
+```
+
+`bin/modules.php publish` trabaja sobre recursos publicables. No convierte por sí solo una aplicación existente en consumidora completa de un módulo MVC o de base de datos.
+
+Para una capacidad funcional use el instalador o `gframe:update -- --modules=...`.
+
+## Añadir un módulo nuevo al framework
+
+Antes de considerar terminado un módulo reutilizable:
+
+1. cree su carpeta y `module.php`;
+2. declare dependencias reales, no implícitas;
+3. añada assets, application, runtime y schema únicamente si existen;
+4. compruebe `composer modules:list`;
+5. pruebe resolución desde una instalación limpia;
+6. pruebe actualización de un proyecto existente;
+7. documente su uso en una guía existente o nueva;
+8. añádalo a `inventario-modulos.md` y al mapa de capacidades cuando exponga una capacidad pública;
+9. cubra publicación y dependencias con tests.
+
+Una instalación que funciona solo porque otro módulo ya había copiado sus dependencias está incompleta.
