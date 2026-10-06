@@ -562,6 +562,13 @@ El usuario autorizó retirar las ramas históricas después de comprobar su inte
 - Catálogo AST de 272 fuentes PHP propias, 150 tipos y 763 declaraciones públicas; parámetros, referencias/variádicos y padres/traits declarados. Las tres variantes públicas identificadas se preservan por compatibilidad. No se ejecutan fuentes inspeccionadas ni se cambia Composer/core.
 - N-03/N-04 mantienen el límite de sus muestras: no se ha comprobado cada transporte ni unicidad de IDs en todas las páginas renderizadas. Esas comprobaciones pertenecen a cambios concretos de consumidores/pantallas; ninguna mezcla de estilos se presenta como fallo de funcionamiento.
 
+## Aclaración de paginación y búsqueda
+
+El usuario preguntó si estaban documentadas y cómo se usan/crean. Verificadas las guías actuales de ORM, helpers PHP, frontend-core y lexical-search; la guía léxica ya incluye instalación, PHP/JS y herencia. Añadido un acceso explícito a paginación en el índice, sin crear una guía duplicada.
+
+- La referencia admin explica las APIs existentes de PaginationHelper/creaPaginacion, total/página frente a controles, callback, guardas para cero/una página y límites de IDs fijos. Una prueba JS existente correcta.
+- La receta léxica añade cálculo de metadatos y slice después de rank sobre el conjunto autorizado. El tamaño de página debe ser positivo y acotado; no se presenta ese array como un envelope HTTP completo.
+
 Fuentes locales para contrastar los hallazgos:
 
 - [Skills y su instalación](../docs/skills.md), [instalador](../bin/install-skills.ps1) y [verificador](../bin/validate-skills.php).

@@ -27,6 +27,14 @@ This keeps list markup in PHP views and prevents JS from embedding large HTML te
 
 ## Pagination Pattern
 
+The matching package's `docs/orm.md` explains data/count/page calculation; `docs/helpers-php.md` explains `PaginationHelper::render`; `docs/frontend-core.md` explains AJAX and `creaPaginacion`. Read those guides for the chosen mechanism instead of creating another paginator.
+
+`PaginationHelper::render($totalPages, $page)` echoes HTML; legacy `pagination($total_pages, $page)` delegates to it. Neither counts records or fetches a page. Call it only inside the partial's `total_pages > 1` branch. Its existing IDs/classes are contracts, even though new component IDs follow kebab-case.
+
+`creaPaginacion(total_pages, page)` renders JS controls for `#all_items_pagination`; the delegated click handlers call the application's `window.fetchDataForPage(page)`. The callback sends the existing filters/tokens to the authorized endpoint and replaces the returned partial. Wait for frontend-core readiness as described in the component reference. Do not mix a second custom click handler with the existing callback for the same controls.
+
+Both helpers can render one-page controls unless the caller guards them. With zero pages, the JS helper returns before clearing previous markup; clear/hide the owned container when appropriate. Fixed IDs/global callback support one such listing per screen; independent listings need their own established container controllers. Never use this helper to infer server authorization or relevance across records not loaded.
+
 Common admin pagination uses backend-rendered controls plus JS handlers.
 
 Render controls only when the real filtered `meta.total_pages > 1`. Empty lists and single-page lists must not show pagination, a disabled single-page bar, or substitute controls. Reuse the approved admin list markup rather than inventing another pagination style. Verify zero results, one page and multiple pages on both initial render and AJAX replacement, including filters that reduce the result to one page.

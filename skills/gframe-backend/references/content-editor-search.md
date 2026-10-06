@@ -61,6 +61,20 @@ $results = trim($query) === '' ? $authorizedRows : $engine->rank(
 
 The caller defines and bounds `$authorizedRows` and `$query`; field names/options are code-owned. Empty-query behavior above is an application choice. Rank before pagination for relevance across this dataset. Pagination before rank searches that page only; use a suitable indexed backend for large datasets.
 
+After ranking, compose list metadata and slice this result, rather than running ORM pagination on another unsorted query. Here `$requestedPage` is normalized by the controller and `$perPage` is a positive, bounded project setting:
+
+```php
+$totalItems = count($results);
+$totalPages = max(1, (int)ceil($totalItems / $perPage));
+$page = max(1, min($requestedPage, $totalPages));
+$rows = array_slice($results, ($page - 1) * $perPage, $perPage);
+$listing = ['data' => $rows, 'meta' => [
+    'page' => $page, 'total_pages' => $totalPages, 'total_items' => $totalItems,
+]];
+```
+
+An empty result still has no rows; the UI hides pagination for total_pages <= 1. Backend owns the operation envelope and frontend contract; this helper array is not a complete HTTP response. For rendered controls, use the matching-package admin pagination recipe.
+
 Results retain fields and add `_search_score` plus optional plain-text snippet. Escape snippet/title before HTML output; score is not a percentage and tied order is not guaranteed. A boost can include a nonmatching row. The engine owns no database index or persistent state.
 
 The native service is extensible, but declaring a project subclass does not replace explicit native construction: inject/instantiate the intended subclass. Browser JS publishes to `public/vendors/internal/lexical-search/lexical-search.js` and must be loaded in meta only when used.
