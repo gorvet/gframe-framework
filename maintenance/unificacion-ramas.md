@@ -80,3 +80,20 @@ Medida sobre los Markdown de `docs/` durante esta segunda auditoría:
 | `reconstruccion-unificada` | 93 | 746 KB | 8.0 KB | 69 | 40 | 4 |
 
 La métrica no sustituye la revisión técnica, pero confirma que la cobertura adicional no se consiguió reduciendo sistemáticamente la profundidad de las áreas existentes. Los documentos todavía muy pequeños son principalmente alias o notas históricas deliberadamente breves.
+
+
+## Cierre de la unificación
+
+La comparación final contra las dos ramas fuente confirma:
+
+- `codex/reconstruccion-documentacion` está completamente contenida en la historia de la unificada;
+- la divergencia restante de `codex/auditoria-reconstruccion` corresponde a commits históricos independientes, no a una rama que deba fusionarse completa;
+- los documentos donde auditoría seguía siendo físicamente mayor fueron revisados individualmente;
+- `mail.md` conservaba contratos obsoletos de Laravel Serializable Closure y rate limit que contradicen el runtime actual basado en Opis; se descartaron;
+- `seo.md` y `json-ld.md` conservaban formulaciones anteriores que ya fueron sustituidas por la política validada por runtime/tests;
+- `servidores-web.md` conservaba detalles operativos útiles; la unificada ya contiene esos contratos y se añadió una lista explícita de comprobación de despliegue;
+- `render.md` solo aportaba una referencia introductoria ya cubierta por `vistas.md`.
+
+Por tanto, no queda pendiente una fusión global de ninguna de las dos ramas fuente. Cualquier diferencia futura debe evaluarse contra código y tests como cambio nuevo, no como deuda de esta unificación.
+
+La rama `codex/reconstruccion-unificada` se considera la base documental canónica de esta reconstrucción cuando su CI final permanece verde.
