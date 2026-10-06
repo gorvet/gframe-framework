@@ -5,6 +5,8 @@ description: Design and review modern Bootstrap UX/UI for GFrame admin and publi
 
 # GFrame UX/UI with Bootstrap
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this skill when the task is visual design, interaction structure, responsive layout, usability, or frontend consistency in a GFrame application or an explicitly requested framework UI improvement. It does not authorize a redesign merely because code or skills are being audited.
 
 Read [references/bootstrap-patterns.md](references/bootstrap-patterns.md) before changing a screen and [references/ui-review-checklist.md](references/ui-review-checklist.md) before closing the task.

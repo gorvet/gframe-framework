@@ -5,6 +5,8 @@ description: Maintain the standalone GFrame package, including Composer integrat
 
 # GFrame Framework Maintenance
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this for changes to the reusable framework repository rather than one application's business code.
 
 Creating or updating an application is a separate task against an identified project. The integration recipes below do not authorize changing a consuming application merely because the framework changed.

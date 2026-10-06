@@ -5,6 +5,8 @@ description: Implement and review GFrame outbound HTTP and WordPress BridgeFrame
 
 # GFrame Integrations
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Choose the transport actually requested. Read [outbound HTTP and WordPress](references/outbound-and-wordpress.md) for remote consumption; read [inbound API, webhook and SSE](references/inbound-channels.md) for exposing channels. An outbound credential is not an inbound API consumer, and CORS is not authentication.
 
 Resolve the loaded package/version and full guides there: `docs/http-client.md`, `docs/wordpress-headless.md`, `docs/api-access.md`, `docs/rutas.md`. The local WordPress client declares BridgeFrame contract 2.0; this is not a plugin release number. Verify remote capability before relying on fields not supported by this client.

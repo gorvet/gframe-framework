@@ -5,6 +5,8 @@ description: Implement and review GFrame notification campaigns, authorized audi
 
 # GFrame Campaigns
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this for bulk notification business flows and automatic account rules. Single mail/inbox delivery belongs to the notification/mail specialist; generic worker operation belongs to background jobs. A campaign creates notification jobs, not SMTP delivery.
 
 Read [audience, dispatch and recurrence](references/audience-and-dispatch.md) for campaign creation/control. Read [automatic rules and account lifecycle](references/automatic-and-lifecycle.md) for state events, suppression, history or deactivation. Load both only when the task crosses those responsibilities.

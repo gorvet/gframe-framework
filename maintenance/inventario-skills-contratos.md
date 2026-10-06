@@ -58,11 +58,11 @@ Ejemplo de un mismo dato a través de distintas capas: `data-user-id="7"` en HTM
 | ID | Trabajo | Evidencia y salida esperada |
 | --- | --- | --- |
 | N-01 | Terminado para código nuevo: sufijo `ID` en PHP y preferido en JS propio. | Referencia canónica añadida con la autorización del primer lote. No se han renombrado símbolos existentes. |
-| N-02 | Parcial, lote 20: variables inventariadas y firmas representativas clasificadas. | [Inventario con evidencia](nomenclatura-20261006.md); catálogo completo de APIs, herencia y argumentos nombrados pendiente. Ningún renombrado aplicado. |
+| N-02 | Variables y declaraciones públicas catalogadas en lotes 20 y 30. | [Inventario con evidencia](nomenclatura-20261006.md): firmas, parámetros y padres/traits declarados; consumidores externos y herencia efectiva se comprueban antes de cualquier renombrado futuro. Ningún renombrado aplicado. |
 | N-03 | Parcial, lote 20: recorridos de usuarios, campañas, avisos, multimedia y CSRF. | Muestras de nombres entre capas verificadas; no se cerró el transporte/persistencia de todos los módulos. |
 | N-04 | Parcial, lote 20: selectores y atributos representativos inventariados. | Mezcla de estilos comprobada; colisiones en DOM renderizado y revisión completa de CSS pendientes. Reglas en frontend-admin. |
-| N-05 | Parcial: referencia común enlazada desde core, backend y ORM. | [Fuente canónica](../skills/gframe-core-architecture/references/naming-conventions.md) disponible y comprobada tras copiar las nueve skills. La integración con las demás skills y reglas frontend queda pendiente. |
-| N-06 | Preparar la adopción gradual y verificadores proporcionados. | Primero reglas para código nuevo. Los símbolos o selectores existentes solo cambian por lotes con pruebas de sus consumidores. |
+| N-05 | Referencia común enlazada desde las catorce skills en lote 30. | [Fuente canónica](../skills/gframe-core-architecture/references/naming-conventions.md); frontend-admin conserva las reglas de IDs/clases nuevos sin duplicarlas en core. |
+| N-06 | Adopción delimitada en lote 30. | Aplicar las reglas a código nuevo y conservar APIs/claves/selectores actuales. Solo un cambio futuro de nombre justifica comprobar y migrar todos sus consumidores; no se impone limpieza estética automática. |
 
 ## Inventario de las nueve skills existentes
 
@@ -554,6 +554,13 @@ El usuario autorizó retirar las ramas históricas después de comprobar su inte
 - Contrastados los tres manifiestos, servicios PHP, vista/meta del editor y APIs JS. El primer diagnóstico aislado no registró el módulo lexical-search y no pudo cargar su servicio; se corrigió el montaje de la prueba con ModuleRuntime y se documentó esa precondición, sin atribuir el fallo al framework.
 - Tres snippets ejecutados con fuentes reales, contenido ficticio y selección autorizada vacía; correctos. Pruebas existentes: 23 PHP/89 aserciones y tres JS, sin fallos. Las pruebas JS utilizan entornos simulados y no certifican interacción TinyMCE en navegador.
 - Verificador: catorce skills y 66 enlaces locales. COV-09 queda cubierto en instrucciones y recetas locales; autorización HTTP completa, persistencia del proyecto y QA de navegador se comprueban en el proyecto que integre estas capacidades.
+
+## Registro del lote 30: componentes y nomenclatura
+
+- COV-08/COV-11 reciben una referencia compartida de componentes y carga selectiva: readiness de frontend-core, límites de GFSelect/GFTable, alerts/iconos y lectura de la guía/manifiesto de cada vendor necesario. No se añaden dieciséis skills ni se actualizan bibliotecas. Doce pruebas JS existentes correctas; no equivalen a QA de navegador.
+- Referencia común de nombres enlazada desde las once entradas que faltaban, sin copiar sus reglas. Frontend-admin fija kebab-case para IDs/clases de componentes nuevos, preservando selectores actuales y contratos externos.
+- Catálogo AST de 272 fuentes PHP propias, 150 tipos y 763 declaraciones públicas; parámetros, referencias/variádicos y padres/traits declarados. Las tres variantes públicas identificadas se preservan por compatibilidad. No se ejecutan fuentes inspeccionadas ni se cambia Composer/core.
+- N-03/N-04 mantienen el límite de sus muestras: no se ha comprobado cada transporte ni unicidad de IDs en todas las páginas renderizadas. Esas comprobaciones pertenecen a cambios concretos de consumidores/pantallas; ninguna mezcla de estilos se presenta como fallo de funcionamiento.
 
 Fuentes locales para contrastar los hallazgos:
 

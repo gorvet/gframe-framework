@@ -5,6 +5,8 @@ description: Implement admin frontend in GFrame PHP apps with view meta files, m
 
 # GFrame Frontend Admin
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this when creating or modifying GFrame admin views, application overrides, or distributable module sources under `resources/modules/*`. Determine ownership and asset destinations from the module manifest before choosing a path; `app/views/admin/*` is not the universal location. Follow the approved layout and acceptance checks in the references below; do not rely on conversation memory.
 
 ## Read Order
@@ -16,6 +18,7 @@ Use this when creating or modifying GFrame admin views, application overrides, o
 5. [references/media-components.md](references/media-components.md) only when media picker or media field is involved
 6. [references/user-admin-ajax-recipe.md](references/user-admin-ajax-recipe.md) for a concrete runtime view, field mapping and AJAX list/action flow
 7. For rich-text editor lifecycle, Markdown or lexical search, [the content integration recipe](../gframe-backend/references/content-editor-search.md); locate the companion in the effective package if installed separately.
+8. For shared utilities or select/table/vendor integration, [component contracts and readiness](references/component-integration.md); load only the component guide affected by the task.
 
 ## Workflow
 

@@ -5,6 +5,8 @@ description: Implement and review GFrame MVC authentication, normalized sessions
 
 # GFrame Authentication and Access
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this for registration, login, verification, recovery, session identity, My Account actions, and administrative hierarchy.
 
 ## Read Order

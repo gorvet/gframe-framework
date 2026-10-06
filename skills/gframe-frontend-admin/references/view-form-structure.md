@@ -1,5 +1,13 @@
 # Admin View and Form Structure
 
+## Names for New Components
+
+For new GFrame-owned HTML IDs/classes, use kebab-case with a meaningful component prefix, for example `article-form`, `article-content` and `article-list-mount`. Preserve existing selectors such as `userModal`, dynamic ID formats and third-party classes. This convention applies to new components, not a bulk migration of working markup.
+
+Keep data attributes kebab-case (`data-user-id`) and map them explicitly to request keys (`user_id`) and code variables (`userID`). Native field names and array suffixes are the endpoint contract; do not derive them automatically from the DOM id. Labels, aria references, JS selectors and CSS must point to the same actual id. IDs must be unique in the rendered document, including repeated/dynamic fragments; a static source inventory cannot prove that uniqueness.
+
+Before any existing rename, check template/JS/CSS references, external callers, named PHP arguments and inherited signatures as applicable. If changing a public name is outside the requested task, preserve it. See the matching-package shared naming reference for PHP/JS/SQL conventions.
+
 ## Basic Screen Structure
 
 Typical admin screens keep this order:

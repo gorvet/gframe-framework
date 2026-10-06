@@ -5,6 +5,8 @@ description: Select the GFrame skills needed for a development or review task, r
 
 # GFrame Orchestrator
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this when a GFrame task crosses responsibilities or needs specialist selection. Use the relevant specialist directly when the task is already confined to it. This skill routes instructions; it does not schedule agents, replace specialist contracts or require loading every GFrame skill.
 
 ## Resolve the Target

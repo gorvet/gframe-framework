@@ -5,6 +5,8 @@ description: Implement and review GFrame background execution with Async, persis
 
 # GFrame Background Jobs
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Choose execution by the requested lifetime and observable result:
 
 | Need | Existing mechanism | Result to verify |

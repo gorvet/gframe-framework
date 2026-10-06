@@ -5,6 +5,8 @@ description: Implement and review GFrame email, inbox notifications and notifica
 
 # GFrame Mail and Notifications
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this for sending mail, creating inbox notices or integrating existing notification delivery. Campaign audience/scheduling and generic job orchestration are separate tasks; do not add them merely because a feature sends a message.
 
 ## Choose the Existing Path

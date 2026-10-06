@@ -70,4 +70,14 @@ No se verificaron aquí todos los modelos, SQL y consumidores de todos los módu
 3. Si se propone un renombrado local, delimitar archivo/bloque y demostrar que no cambia payloads, HTML, storage ni resultados.
 4. Si afecta parámetros públicos, templates de integración, selectores o persistencia, tratarlo como contrato y conciliar compatibilidad antes de implementar.
 
+## Firmas públicas y herencia
+
+[Catálogo de declaraciones](nomenclatura-apis-20261006.json), generado por [inventory-public-api.php](inventory-public-api.php): 272 archivos PHP, 150 tipos y 763 métodos públicos/funciones con sus nombres de parámetros, paso por referencia y variádicos. Incluye interfaces, padres y traits declarados; analiza AST con el parser de las dependencias de desarrollo, sin ejecutar fuentes del framework o módulos. Incluye los helpers propios Markdown/password-utils que el primer inventario de variables excluía.
+
+Solo tres parámetros públicos del conjunto usan guion bajo o sufijo Id/Ids: `DatabaseSessionHandler::gc($max_lifetime)`, `RedisSessionHandler::gc($max_lifetime)` y `pagination($total_pages)`. Los dos primeros respetan SessionHandlerInterface; el tercero es una función legacy cuyo parámetro puede usarse mediante argumentos nombrados. Se conservan los tres. Las variantes Id/Ids registradas como variables no justifican cambiar por sí solas una API pública.
+
+El catálogo representa declaraciones encontradas, no todos los métodos heredados efectivos ni llamadas externas. Omite clases anónimas como puntos de extensión estables, excluye módulos external-ui y carpetas sin manifiesto, y no certifica el API de dependencias o extensiones PHP. Antes de un renombrado público futuro, hay que seguir padres/traits/interfaces y consumidores de ese símbolo; un catálogo de firmas no puede demostrar ausencia de callers externos.
+
+La adopción actual se limita a código nuevo: referencia común desde las catorce skills y reglas de IDs/clases nuevos en frontend-admin. Se conservan todos los nombres existentes. Un renombrado futuro se trata como cambio independiente con mapeo de consumidores y compatibilidad; no se crea un verificador que declare errores por cada excepción histórica.
+
 El inventario no encontró evidencia de un fallo de funcionamiento causado únicamente por estas variantes. No evalúa por ese hecho la corrección completa de los módulos.

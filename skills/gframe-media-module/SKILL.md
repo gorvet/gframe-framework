@@ -5,6 +5,8 @@ description: Implement and maintain GFrame media libraries, uploads, scopes, reu
 
 # GFrame Media Module
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Work from the framework module manifest and preserve the MVC boundaries already present in GFrame.
 
 Read [references/scopes-and-field-integration.md](references/scopes-and-field-integration.md) when integrating a picker/field, calling the service from PHP, or assessing storage privacy. Locate `docs/media-library.md` in the project's resolved GFrame package for the full examples; an installed skill's location is not the package root.

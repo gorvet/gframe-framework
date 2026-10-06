@@ -5,6 +5,8 @@ description: Build and refactor public GFrame views with group and view meta fil
 
 # GFrame Frontend Public
 
+For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
+
 Use this when the task is about public-facing GFrame pages rather than admin screens.
 
 Examples:
@@ -61,6 +63,7 @@ Examples:
 
 ## Use With Other Skills
 
+- For shared utility readiness or select/table/vendor integration, use [component contracts](../gframe-frontend-admin/references/component-integration.md) from the effective package; these lifecycle rules also apply to public pages using those components.
 - For Markdown, sanitized rich content or authorized lexical search, use [the content integration recipe](../gframe-backend/references/content-editor-search.md) from the effective package; frontend preview/filtering does not replace backend authorization.
 - Use `gframe-ui-design-clean` when the task is mainly visual design.
 - Use `gframe-core-architecture` when the task changes route, template, or render conventions.
