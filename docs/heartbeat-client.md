@@ -96,3 +96,99 @@ La coordinación usa `localStorage` y, cuando existe, `BroadcastChannel`. El acc
 Extienda `GFrame\Modules\HeartbeatClient\Controllers\HeartbeatController`, conserve `parent::__construct()` y registre los canales del proyecto. No modifique el dispatcher ni consulte el estado de la cuenta en cada tick. Las operaciones que cambian datos necesitan rutas propias y protección CSRF.
 
 La [guía de Heartbeat](heartbeat.md) documenta la ruta, los canales, sus respuestas, los eventos JavaScript, la coordinación entre pestañas y las reglas de seguridad.
+
+
+## Elección de pestaña líder
+
+Heartbeat evita que cada pestaña abierta consulte el servidor por separado. Las pestañas compiten por una clave de liderazgo compartida en almacenamiento local.
+
+El modelo es:
+
+```text
+pestañas abiertas
+   |
+   +-> una líder
+   |     -> ejecuta polling HTTP
+   |     -> publica resultado
+   |
+   +-> seguidoras
+         -> reciben resultado compartido
+         -> no duplican polling
+```
+
+La líder renueva periódicamente su presencia. Si deja de hacerlo durante el plazo de caducidad, otra pestaña puede asumir el liderazgo.
+
+Este sistema reduce tráfico, pero no es un mecanismo de exclusión distribuida para operaciones de negocio. Dos pestañas pueden observar una transición de liderazgo muy cercana; los handlers del servidor deben seguir siendo idempotentes cuando su canal lo requiera.
+
+## Distribución de resultados
+
+Los resultados pueden viajar mediante BroadcastChannel y almacenamiento compartido. Cada pestaña transforma el resultado de un canal en el evento:
+
+```text
+gf:heartbeat:<nombre-del-canal>
+```
+
+El evento transporta el payload del canal y la respuesta general del heartbeat.
+
+Un consumidor debe tratar el evento como **estado observado**, no como una orden que debe ejecutarse exactamente una vez. Por ejemplo:
+
+```js
+document.addEventListener('gf:heartbeat:project.summary', event => {
+  const pending = Number(event.detail.payload?.data?.pending ?? 0);
+  document.querySelector('#pendingCount')?.replaceChildren(String(pending));
+});
+```
+
+No utilice un heartbeat para efectuar pagos, borrar registros o incrementar contadores. Esas operaciones deben tener endpoints explícitos y contratos idempotentes.
+
+## Visibilidad y frecuencia
+
+La pestaña líder reduce actividad cuando está oculta. Esto ahorra tráfico y batería, pero significa que Heartbeat no garantiza precisión temporal.
+
+Un canal que necesita ejecutar una tarea «cada minuto aunque nadie tenga la aplicación abierta» debe usar Cron, no Heartbeat.
+
+El intervalo PHP de cada canal sirve para decidir si ese canal participa en una petición heartbeat concreta. No crea un temporizador independiente en el navegador.
+
+## Forzado tras una mutación
+
+Después de una escritura AJAX, `GFHeartbeat.triggerNow()` puede pedir una actualización temprana:
+
+```text
+POST guardar
+  -> success
+  -> triggerNow()
+  -> líder solicita heartbeat
+  -> evento del canal
+  -> UI actualiza estado
+```
+
+Esto evita duplicar lógica de actualización cuando varias zonas de la interfaz consumen el mismo canal.
+
+El forzado no debe interpretarse como confirmación del trabajo anterior. La mutación y el heartbeat son contratos separados.
+
+## Diseño de canales de cliente
+
+Un buen payload de Heartbeat debe ser pequeño, estable y suficiente para actualizar la UI. Prefiera:
+
+- contadores;
+- estados;
+- timestamps;
+- pequeños resúmenes;
+- identificadores necesarios para refrescar otra ruta.
+
+Evite transportar grandes listados, HTML de páginas completas, secretos o datos que todas las pestañas no deban conocer.
+
+Si la información puede crecer mucho, use Heartbeat solo para señalar que hubo cambios y consulte el detalle mediante un endpoint normal.
+
+## Diagnóstico de liderazgo
+
+Cuando varias pestañas parecen consultar simultáneamente, revise:
+
+1. disponibilidad de `localStorage`;
+2. si el navegador bloquea almacenamiento;
+3. si las pestañas usan el mismo origen;
+4. eventos de `storage` y BroadcastChannel;
+5. si una navegación cambia el scope de aplicación;
+6. si un error JavaScript detuvo la renovación de la líder.
+
+No «solucione» el problema añadiendo otro `setInterval` en cada vista: eso elimina precisamente la coordinación que ofrece este módulo.
