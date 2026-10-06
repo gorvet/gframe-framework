@@ -104,7 +104,12 @@ echo "</pre>";*/
       foreach ($routesByUri as $pattern => $route) {
         if ($method === 'OPTIONS' && ($route['type'] ?? '') !== 'api') continue;
 
-        $regexPattern = preg_replace('#\{[a-zA-Z_]+\}#', '([a-zA-Z0-9_\-]+)', $pattern);
+        $segments = preg_split('/(\{[a-zA-Z_]+\})/', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $regexPattern = '';
+        foreach ($segments as $segment) {
+          $regexPattern .= preg_match('/^\{[a-zA-Z_]+\}$/', $segment)
+            ? '([a-zA-Z0-9_\-]+)' : preg_quote($segment, '#');
+        }
         $regexPattern = '#^' . $regexPattern . '$#';
         //echo "<pre>Comparando: pattern={$pattern} vs uriPath={$uriPath}</pre>";
 

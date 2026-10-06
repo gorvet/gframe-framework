@@ -242,8 +242,19 @@ private function webhook_guard(array $routeParams = []): array {
         return ['status'=>'unauthorized','code'=>'webhook_blocked','message'=>'Payload demasiado grande','http_code'=>403];
     }
 
-    // 🔒 DEFAULTS obligatorios si NO hay contexto
-    if (empty($ctx)) {
+    // Conservar los defaults si el contexto no configura una credencial verificable.
+    $hasHeaderSecret = !empty($ctx['require_header']) && is_string($ctx['expected_value'] ?? null) && $ctx['expected_value'] !== '';
+    $requiredQuery = (array)($ctx['require_query'] ?? []);
+    $hasQuerySecret = $requiredQuery !== [] && !empty($ctx['expected_value']);
+    foreach ($requiredQuery as $parameter) {
+        $expected = is_array($ctx['expected_value'] ?? null) ? ($ctx['expected_value'][$parameter] ?? null) : ($ctx['expected_value'] ?? null);
+        $hasQuerySecret = $hasQuerySecret && is_string($expected) && $expected !== '';
+    }
+    $hasHmac = !empty($ctx['validate_hmac']) && !empty($ctx['require_header']) && is_string($ctx['hmac_secret'] ?? null) && $ctx['hmac_secret'] !== '';
+    if (!empty($ctx['validate_hmac']) && !$hasHmac) {
+        return ['status' => 'unauthorized', 'code' => 'invalid_webhook_configuration', 'http_code' => 403];
+    }
+    if (!$hasHeaderSecret && !$hasQuerySecret && !$hasHmac) {
         // Exigir JSON
         if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') === false) {
             return ['status'=>'unauthorized','code'=>'unsupported_media','message'=>'Content-Type inválido','http_code'=>403];
@@ -262,7 +273,7 @@ private function webhook_guard(array $routeParams = []): array {
     // Reglas opcionales por contexto (si existen)
     if (!empty($ctx['require_header'])) {
         $headerValue = $_SERVER['HTTP_' . str_replace('-', '_', strtoupper($ctx['require_header']))] ?? '';
-        if ($ctx['expected_value'] ?? false) {
+        if (is_string($ctx['expected_value'] ?? null) && $ctx['expected_value'] !== '') {
             if (!hash_equals($ctx['expected_value'], (string)$headerValue)) {
                  return ['status'=>'unauthorized','code'=>'invalid_secret','message'=>'Cabecera inválida','http_code'=>403];
             }
@@ -348,6 +359,9 @@ private function sse_guard(array $routeParams = []): array {
 
     // 5) Token opcional via context
     if (!empty($ctx['require_token'])) {
+        if ((!is_string($ctx['expected'] ?? null) || $ctx['expected'] === '') && !is_callable($ctx['verify'] ?? null)) {
+            return ['status' => 'unauthorized', 'code' => 'sse_token_configuration', 'http_code' => 403];
+        }
         $paramName  = $ctx['token_param']  ?? 'token';
         $headerName = $ctx['token_header'] ?? 'Authorization';
 
@@ -355,7 +369,8 @@ private function sse_guard(array $routeParams = []): array {
         $token = $_GET[$paramName] ?? '';
 
         // o por header
-        if ($token === '') {
+        if (!is_string($token) || $token === '') {
+            $token = '';
             $hdrKey = 'HTTP_' . str_replace('-', '_', strtoupper($headerName));
             $rawHdr = $_SERVER[$hdrKey] ?? '';
             if ($rawHdr) {
@@ -368,7 +383,7 @@ private function sse_guard(array $routeParams = []): array {
         }
 
         // Validación simple por valor esperado
-        if (!empty($ctx['expected']) && !hash_equals((string)$ctx['expected'], (string)$token)) {
+        if (is_string($ctx['expected'] ?? null) && $ctx['expected'] !== '' && !hash_equals($ctx['expected'], $token)) {
             return ['status' => 'unauthorized', 'code' => 'sse_token_invalid', 'message' => 'Token inválido'];
         }
 
@@ -574,35 +589,7 @@ private function resolvePermissionTarget(string $permission, array $routeParams)
 }
 
 private function resolveTenantID(array $routeParams): int {
-    $params = (array)($routeParams['params'] ?? []);
-    $tenantKey = defined('TENANT') ? (string) TENANT : 'tenant_id';
-
-    $orderedLookups = [
-        [$params, $tenantKey],
-        [$_POST, $tenantKey],
-        [$_REQUEST, $tenantKey],
-        [$params, 'tenant_id'],
-        [$_POST, 'tenant_id'],
-        [$_REQUEST, 'tenant_id'],
-    ];
-
-    foreach ($orderedLookups as [$source, $key]) {
-        if (!is_array($source) || !array_key_exists($key, $source)) {
-            continue;
-        }
-
-        $rawValue = $source[$key];
-        if (is_array($rawValue)) {
-            continue;
-        }
-
-        $tenantID = (int) $rawValue;
-        if ($tenantID > 0) {
-            return $tenantID;
-        }
-    }
-
-    return 0;
+    return (new \GFrame\Auth\TenantContextResolver())->resolve((array)($routeParams['params'] ?? []));
 }
 public  function sessionTimeout($refresh = true): array{
     $maxIdle = max(60, (int)\GFrame\Config\ConfigRepository::get('session.idle_timeout', 1800));

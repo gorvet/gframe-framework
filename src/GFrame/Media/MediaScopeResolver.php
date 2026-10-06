@@ -23,8 +23,7 @@ final class MediaScopeResolver
             return MediaScope::user($userID);
         }
         if ($type === 'tenant') {
-            $key = trim((string)ConfigRepository::get('tenancy.key', 'tenant_id'));
-            $tenantID = (int)($session[$key] ?? $session['tenant_id'] ?? 0);
+            $tenantID = (new \GFrame\Auth\TenantContextResolver())->active($session) ?? 0;
             if ($tenantID <= 0) {
                 throw new RuntimeException('No se pudo resolver el tenant de la biblioteca multimedia.');
             }

@@ -214,6 +214,7 @@ final class RolePermissionService
         if (SessionRuntime::authorizationStale()) {
             $authorization = $this->roles->authorizationForUser($userID);
             if ($authorization === null) return null;
+            unset($authorization['tenant_id']);
             unset($identity['tenant_authorization']);
             $_SESSION['auth'] = array_replace($identity, $authorization);
             $this->sessions?->updateAuthorization($userID, session_id(), (int)$authorization['role_id'], (int)$authorization['role_version'], (int)$authorization['authorization_version']);
@@ -239,6 +240,7 @@ final class RolePermissionService
 
         $authorization = $this->roles->authorizationForUser($userID);
         if ($authorization === null) return null;
+        unset($authorization['tenant_id']);
         $_SESSION['auth'] = array_replace($identity, $authorization);
         $this->sessions?->updateAuthorization(
             $userID,

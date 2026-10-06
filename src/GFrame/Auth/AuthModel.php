@@ -43,7 +43,8 @@ class AuthModel extends \ORM
         private readonly string $activeStatus = 'verify',
         private readonly string $suspendedStatus = 'suspended',
         ?bool $passwordExpirationEnabled = null,
-        ?int $passwordExpirationDays = null
+        ?int $passwordExpirationDays = null,
+        private readonly ?\GFrame\Session\ActiveSessionRegistry $sessions = null
     ) {
         parent::__construct($attributes);
         $this->passwordExpirationEnabled = $passwordExpirationEnabled
@@ -151,6 +152,7 @@ class AuthModel extends \ORM
                 'force_password_change' => false,
             ]);
 
+            ($this->sessions ?? \GFrame\Session\SessionRuntime::registry())?->revokeUser((int)$user['user_id']);
             return ['status' => 'success', 'code' => 'password_reset'];
         } catch (Exception $exception) {
             return $this->exception($exception, 'password_reset_failed');

@@ -201,6 +201,8 @@ La creación inicial reserva el rol `superadministrator`. Los servicios impiden 
 
 ## Sesión y coste de consultas
 
+`TenantContextResolver` comprueba conjuntamente parámetros de ruta, solicitud y tenant activo de sesión. Los IDs presentes deben coincidir; una diferencia o un ID inválido bloquea la autorización. El ámbito multimedia utiliza el mismo resolver y requiere un tenant activo en sesión. `project_id` solo identifica el tenant si es la clave configurada. Para cambiar de tenant, el flujo del proyecto debe validar la membresía y actualizar de forma coherente el tenant activo antes de operar.
+
 El inicio de sesión carga los permisos globales. El primer acceso a un tenant carga su membresía y plantilla. La sesión conserva solo el tenant activo; cambiar de tenant carga la nueva membresía. El middleware `can:*` comprueba el resultado guardado en sesión sin consultar la tabla de permisos en cada operación.
 
 El almacenamiento de sesiones sí se lee en cada petición. El driver de base de datos comprueba en esa misma lectura las versiones del rol global, del rol del tenant activo y del usuario. Un cambio de plantilla, membresía o excepción hace que la siguiente operación recargue los permisos. El driver Redis usa claves de versión equivalentes. No hay una fila de permiso por usuario y acción.

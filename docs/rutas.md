@@ -284,7 +284,7 @@ Route::post('webhook/proveedor', 'integraciones/ProviderController@receive')
 
 Sin contexto, `webhook_guard` exige POST, contenido JSON y `X-Webhook-Secret` coincidente con `WEBHOOK_DEFAULT_SECRET`. También bloquea peticiones con Origin o Referer y limita el tamaño declarado del cuerpo a 2 MiB. Configura el secreto en el entorno y su puente de configuración; no lo incluyas en el repositorio.
 
-Un contexto no vacío cambia la rama de validación del guarda: no conserva automáticamente todos los requisitos anteriores. Si adaptas un proveedor, declara y comprueba explícitamente la cabecera, secreto o firma que necesita. El guarda admite validación HMAC SHA-256 mediante contexto, pero cada proveedor puede usar un formato distinto; no supongas compatibilidad automática.
+El contexto conserva la autenticación predeterminada mientras no declare una credencial verificable: cabecera con `expected_value`, parámetros con valores esperados o HMAC con cabecera y `hmac_secret`. Declarar únicamente `methods` o exigir la presencia de un campo no sustituye el secreto. El guarda admite HMAC SHA-256; comprueba el formato que utiliza cada proveedor.
 
 La acción debe validar el evento y decidir su procesamiento. Los arrays y objetos se responden como JSON; los escalares como texto. El canal no interpreta `http_code` del resultado como lo hace API: fija el estado HTTP explícitamente cuando sea necesario.
 
@@ -302,6 +302,8 @@ Route::get('sse/eventos', 'eventos/EventController@stream')
 ```
 
 `sse_guard` exige GET. La autenticación declarada se sigue comprobando; el guarda de SSE no la sustituye. Router prepara `text/event-stream`, desactiva buffering PHP cuando puede y libera el bloqueo de sesión antes de ejecutar la acción.
+
+Si usas `context.require_token`, configura un secreto `expected` o un callable `verify`. Una configuración sin verificador devuelve `sse_token_configuration`; tener un token arbitrario no autentica el stream.
 
 La acción emite los eventos, no devuelve un array para convertirlo en JSON:
 

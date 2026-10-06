@@ -154,7 +154,7 @@ Cada dispositivo recibe un identificador de sesión distinto. GFrame almacena so
 - Cerrar sesión borra solo la fila o clave de ese dispositivo. Todas las pestañas de un mismo navegador comparten ese ID, por lo que quedan desconectadas en su siguiente operación.
 - Suspender, desactivar o eliminar debe revocar todas las sesiones. `users.status` impide nuevos inicios mientras la cuenta no esté activa. En Redis, el servicio de revocación también activa su clave temporal de bloqueo hasta la reactivación.
 - Reactivar permite sesiones nuevas, pero no restaura las anteriores.
-- Cambiar contraseña o rol revoca las sesiones sin bloquear la cuenta.
+- Cambiar contraseña, recuperarla mediante token o cambiar de rol revoca las sesiones gestionadas sin bloquear la cuenta. El driver nativo no ofrece revocación multidispositivo.
 - Cambiar permisos incrementa `roles.security_version`; cada sesión refresca sus permisos en la siguiente operación sin cerrar el acceso.
 - Cambiar nombre, avatar o preferencias no requiere revocación.
 

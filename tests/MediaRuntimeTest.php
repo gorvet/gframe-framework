@@ -39,6 +39,10 @@ final class MediaRuntimeTest extends TestCase
                 $_SESSION = $session;
                 $_REQUEST = ['tenant_id' => 15, 'source' => 'all'];
                 $controller = new MediaController();
+                if ($type === 'tenant') {
+                    self::assertSame('media_scope_invalid', $controller->index()['code']);
+                    $_REQUEST['tenant_id'] = 14;
+                }
                 $list = $controller->index();
                 self::assertSame('success', $list['status']);
                 self::assertSame([$id], array_column($list['data'], 'media_id'));

@@ -142,8 +142,12 @@ final class WordPressClient
 
     private function normalizeData(mixed $data): ?array
     {
-        if (is_object($data)) return (array)$data;
-        return is_array($data) ? $data : null;
+        if (is_object($data)) $data = (array)$data;
+        if (!is_array($data)) return null;
+        foreach ($data as $key => $value) {
+            if (is_array($value) || is_object($value)) $data[$key] = $this->normalizeData($value);
+        }
+        return $data;
     }
 
     private function validEnvelope(?array $envelope): bool

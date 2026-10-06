@@ -61,14 +61,17 @@ final class Encryption
     {
         $json = base64_decode($payload, true);
         $data = is_string($json) ? json_decode($json, true) : null;
-        if (!is_array($data) || (int)($data['v'] ?? 0) !== self::VERSION) {
+        if (!is_array($data) || ($data['v'] ?? null) !== self::VERSION
+            || !is_string($data['iv'] ?? null) || !is_string($data['tag'] ?? null)
+            || !is_string($data['data'] ?? null)) {
             throw new InvalidArgumentException('El contenido cifrado no es válido.');
         }
 
         $iv = base64_decode((string)($data['iv'] ?? ''), true);
         $tag = base64_decode((string)($data['tag'] ?? ''), true);
         $cipherText = base64_decode((string)($data['data'] ?? ''), true);
-        if (!is_string($iv) || !is_string($tag) || !is_string($cipherText)) {
+        if (!is_string($iv) || !is_string($tag) || !is_string($cipherText)
+            || strlen($iv) !== openssl_cipher_iv_length(self::CIPHER) || strlen($tag) !== 16) {
             throw new InvalidArgumentException('El contenido cifrado no es válido.');
         }
 
