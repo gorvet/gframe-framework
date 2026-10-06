@@ -1,9 +1,19 @@
-param(
+﻿param(
     [ValidateSet('Codex', 'Claude', 'All')]
-    [string]$Target = 'All'
+    [string]$Target = 'All',
+    [string]$ProjectPath,
+    [switch]$DryRun,
+    [switch]$Json
 )
 
 $ErrorActionPreference = 'Stop'
+if ($ProjectPath) {
+    & (Join-Path $PSScriptRoot 'install-project-skills.ps1') -ProjectPath $ProjectPath -Target $Target -DryRun:$DryRun -Json:$Json
+    return
+}
+if ($DryRun -or $Json) {
+    throw 'DryRun y Json requieren ProjectPath. El modo global anterior no ofrece vista previa.'
+}
 $frameworkRoot = Split-Path -Parent $PSScriptRoot
 $sourceRoot = Join-Path $frameworkRoot 'skills'
 

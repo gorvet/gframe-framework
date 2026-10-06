@@ -1,5 +1,18 @@
 # Registro de cambios
 
+## Sin publicar
+
+- Lint incluye configuración, recursos publicados/skeleton, scripts internos y el ejecutable PHP sin extensión; comprobación aislada por raíz y pruebas de detección de errores sin ejecutar archivos.
+- Job independiente de CI para metadata YAML de skills y sus pruebas con Python 3.12 y PyYAML 6.0.3, sin dependencia adicional de Composer.
+- Job de CI para las pruebas JavaScript existentes con Node 24; conserva explícitas las omisiones de las pruebas optativas de navegador.
+- Verificación de enlaces de todas las referencias de skills y copias distribuidas; control YAML separado para metadata opcional sin nuevas dependencias del verificador PHP.
+- Generador del complemento de catorce skills propias con versión explícita, manifiestos portable/Claude, copia intacta, procedencia, hashes y comprobación de referencias.
+- Instalación de skills por proyecto con vista previa, fuente Composer instalada, registro de hashes y preservación de personalizaciones; se conserva el modo global anterior.
+- Corregidos la discrepancia entre el tenant autorizado y el ámbito multimedia, la aceptación de etiquetas GCM truncadas y la falta de revocación de sesiones gestionadas tras recuperar la contraseña.
+- Migraciones con transacciones únicamente en SQLite y reconocimiento de columnas compatibles en actualizaciones históricas, sin modificar los SQL publicados.
+- WordPress normaliza los objetos JSON anidados del transporte y Router escapa los caracteres literales de las rutas.
+- Webhook conserva el secreto predeterminado cuando el contexto no configura otra credencial verificable; SSE rechaza `require_token` sin secreto esperado ni verificador.
+
 ## 1.1.0 — 6 de octubre de 2026
 
 - Unificado el identificador `gf-select` con el formato de `gf-table`; `gfselect` y sus rutas públicas se conservan como compatibilidad para proyectos existentes.

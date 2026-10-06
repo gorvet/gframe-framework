@@ -1,6 +1,20 @@
 <?php
 
 $root = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'skills';
+if ($argc !== 1) {
+    if ($argc !== 3 || $argv[1] !== '--root') {
+        fwrite(STDERR, "Uso: php bin/validate-skills.php [--root <carpeta-skills>]\n");
+        exit(2);
+    }
+    $root = $argv[2];
+}
+$root = realpath($root);
+if ($root === false || !is_dir($root)) {
+    fwrite(STDERR, "La carpeta de skills no existe.\n");
+    exit(1);
+}
+$rootPrefix = str_replace('\\', '/', $root) . '/';
+$linkCount = 0;
 $errors = [];
 $skills = glob($root . DIRECTORY_SEPARATOR . 'gframe-*', GLOB_ONLYDIR) ?: [];
 
@@ -38,20 +52,48 @@ foreach ($skills as $directory) {
         $errors[] = "{$folder}: contiene marcadores pendientes.";
     }
 
-    preg_match_all('/\]\((references\/[^)]+)\)/', $content, $links);
-    foreach ($links[1] ?? [] as $relativePath) {
-        $resolved = $directory . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
-        if (!is_file($resolved)) {
-            $errors[] = "{$folder}: referencia inexistente {$relativePath}.";
-        }
-    }
-
     $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
     foreach ($files as $file) {
         if (!$file->isFile() || !in_array(strtolower($file->getExtension()), ['md', 'yaml', 'yml'], true)) {
             continue;
         }
         $text = (string)file_get_contents($file->getPathname());
+        if (!preg_match('//u', $text)) {
+            $errors[] = $folder . ': UTF-8 inválido en ' . $file->getFilename() . '.';
+            continue;
+        }
+        if (strtolower($file->getExtension()) === 'md') {
+            // Ignore fenced examples and inline code; inspect inline links/images and reference definitions.
+            $markdown = preg_replace('/^ {0,3}(`{3,}|~{3,})[^\r\n]*\R.*?^ {0,3}\1[^\r\n]*$/ms', '', $text);
+            $markdown = preg_replace('/(`+).*?\1/s', '', $markdown);
+            preg_match_all('/\]\(\s*(?:<([^>]+)>|([^\s)]+))(?:\s+"[^"\\r\\n]*")?\s*\)/', $markdown, $inline, PREG_SET_ORDER);
+            preg_match_all('/^ {0,3}\[[^\]\r\n]+\]:\s*(?:<([^>]+)>|(\S+))/m', $markdown, $references, PREG_SET_ORDER);
+            foreach (array_merge($inline, $references) as $link) {
+                $target = $link[1] !== '' ? $link[1] : $link[2];
+                if (str_starts_with($target, '#') || preg_match('/^(?:https?:|mailto:)/i', $target)) {
+                    continue;
+                }
+                if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $target) || str_starts_with($target, '//') || str_starts_with($target, '/') || str_contains($target, '\\')) {
+                    $errors[] = "{$folder}/{$file->getFilename()}: enlace no portable {$target}.";
+                    continue;
+                }
+                $relative = rawurldecode(explode('#', $target, 2)[0]);
+                if (str_contains($relative, "\0")) {
+                    $errors[] = "{$folder}/{$file->getFilename()}: enlace inválido.";
+                    continue;
+                }
+                $resolved = realpath($file->getPath() . DIRECTORY_SEPARATOR . $relative);
+                $normalized = $resolved === false ? '' : str_replace('\\', '/', $resolved);
+                $contained = PHP_OS_FAMILY === 'Windows'
+                    ? str_starts_with(strtolower($normalized), strtolower($rootPrefix))
+                    : str_starts_with($normalized, $rootPrefix);
+                if ($resolved === false || !is_file($resolved) || !$contained) {
+                    $errors[] = "{$folder}/{$file->getFilename()}: referencia inexistente o fuera de las skills {$target}.";
+                } else {
+                    $linkCount++;
+                }
+            }
+        }
         foreach (['core/routing/', 'core/render/', 'core/database/', 'config/Config.php'] as $obsolete) {
             if (str_contains($text, $obsolete)) {
                 $errors[] = $folder . ': referencia obsoleta `' . $obsolete . '` en ' . $file->getFilename() . '.';
@@ -69,3 +111,4 @@ if ($errors !== []) {
 }
 
 echo 'Skills válidos: ' . count($skills) . PHP_EOL;
+echo 'Enlaces locales comprobados: ' . $linkCount . PHP_EOL;

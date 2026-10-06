@@ -124,6 +124,10 @@ composer skills:check
 
 Un fallo de sintaxis debe corregirse antes de interpretar fallos posteriores. Si una prueba documental falla, revise primero rutas, nombres de archivos y contratos descritos: varias pruebas verifican que la documentación corresponda a archivos y APIs reales.
 
+`composer lint` comprueba PHP bajo `src`, `bin`, `tests`, `config`, `resources` y `maintenance`, más el ejecutable `bin/gframe-update` sin extensión. Incluye skeleton y archivos del instalador; conserva las bibliotecas PHP que ya se comprobaban dentro de los módulos. No recorre `packages`, `vendor`, `.git` ni carpetas de aplicaciones ajenas al conjunto seleccionado. Ejecuta `php -l`, sin cargar bootstrap ni ejecutar esos archivos; no sustituye pruebas funcionales.
+
+Para comprobar una copia identificada del framework puede usar `php bin/lint.php --root <carpeta-framework>`. Un destino inexistente, sin PHP seleccionado o con errores de sintaxis devuelve fallo. Las pruebas del comando están en `tests/LintCommandTest.php` y utilizan fixtures temporales.
+
 En un proyecto, utilice primero `composer gframe:update -- --dry-run` para distinguir un conflicto de archivos de un problema de base de datos. `--no-database` sirve para inspeccionar o aplicar cambios que no dependan del esquema, pero no convierte en completa una actualización que requiera migraciones.
 
 ## Reglas operativas

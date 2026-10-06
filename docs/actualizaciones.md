@@ -114,3 +114,11 @@ Cuando añada una capacidad al framework, compruebe como mínimo:
 7. si la suite cubre la nueva ruta de actualización.
 
 Una instalación limpia y una actualización desde una versión anterior son recorridos distintos. Verifique ambos antes de considerar completa una capacidad nueva.
+
+## Migraciones y recuperación
+
+SQLite ejecuta cada migración en una transacción. MySQL aplica DDL con commits implícitos, por lo que GFrame no lo envuelve en una transacción y registra la migración únicamente cuando terminan todas sus sentencias. No cambie una migración publicada o parcialmente aplicada.
+
+Las adiciones simples de columnas ya presentes se omiten solo cuando tipo, nulabilidad y valor predeterminado coinciden. Esto permite actualizar los esquemas históricos de autenticación sin duplicar `authorization_version`. Una definición incompatible detiene la actualización. No ejecute migraciones dentro de una transacción de la aplicación ni lance dos actualizaciones simultáneas.
+
+Si una migración MySQL falla o se interrumpe, las sentencias anteriores pueden haber quedado aplicadas. Compruebe el estado antes de reintentar operaciones que no sean idempotentes; no se garantiza recuperación automática de SQL arbitrario. Haga copia de seguridad y pruebe la actualización con el motor utilizado en producción.

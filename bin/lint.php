@@ -1,7 +1,21 @@
 <?php
 
 $root = dirname(__DIR__);
-$directories = [$root . '/src', $root . '/bin', $root . '/tests', $root . '/resources/modules'];
+if ($argc !== 1) {
+    if ($argc !== 3 || $argv[1] !== '--root') {
+        fwrite(STDERR, "Uso: php bin/lint.php [--root <carpeta-framework>]\n");
+        exit(2);
+    }
+    $root = $argv[2];
+}
+$root = realpath($root);
+if ($root === false || !is_dir($root)) {
+    fwrite(STDERR, "La carpeta del framework no existe.\n");
+    exit(1);
+}
+$directories = array_map(static fn(string $directory): string => $root . '/' . $directory,
+    ['src', 'bin', 'tests', 'config', 'resources', 'maintenance']);
+$files = [];
 $failed = [];
 
 foreach ($directories as $directory) {
@@ -18,11 +32,32 @@ foreach ($directories as $directory) {
             continue;
         }
 
-        $command = escapeshellarg(PHP_BINARY) . ' -l ' . escapeshellarg($file->getPathname());
-        exec($command, $output, $status);
-        if ($status !== 0) {
-            $failed[] = $file->getPathname();
-        }
+        $files[] = $file->getPathname();
+    }
+}
+
+// Composer publishes this PHP executable without a .php extension.
+if (is_file($root . '/bin/gframe-update')) {
+    $files[] = $root . '/bin/gframe-update';
+}
+sort($files);
+if ($files === []) {
+    fwrite(STDERR, "No se encontraron archivos PHP para comprobar.\n");
+    exit(1);
+}
+foreach ($files as $path) {
+    // Pass arguments directly: do not interpret framework paths through a shell.
+    $process = proc_open([PHP_BINARY, '-l', $path], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+    if (!is_resource($process)) {
+        $failed[] = $path;
+        continue;
+    }
+    stream_get_contents($pipes[1]);
+    stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    if (proc_close($process) !== 0) {
+        $failed[] = $path;
     }
 }
 
@@ -32,3 +67,4 @@ if ($failed !== []) {
 }
 
 echo "Todos los archivos PHP son válidos." . PHP_EOL;
+echo 'Archivos comprobados: ' . count($files) . PHP_EOL;
