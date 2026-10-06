@@ -38,7 +38,7 @@ Useful route modifiers include:
 
 ## Transport Type Inference
 
-RouteBuilder infers the route type from the declaring file:
+RouteBuilder infers the declared type from the filename that calls its registration method:
 
 - web
 - ajax
@@ -48,6 +48,12 @@ RouteBuilder infers the route type from the declaring file:
 - system
 
 This means route placement is part of behavior, not just organization.
+
+The current check recognizes `routes_webhook`, `routes_api`, `routes_ajax`, `routes_system` and `routes_sse` in that order, otherwise it declares `web`. A helper's calling file can therefore change inference. Bootstrap loads only the top-level `config/routes/routes_*.php` files, sorted by name; another file is not loaded automatically merely because it contains a route.
+
+Router separately detects the request channel from its first URL segment after the deployment base and optional supported-language segment: `ajax`, `api`, `webhook` or `sse`; other prefixes are `web`. Its runtime `routeParams.type` follows that channel. A route declared in `routes_api.php` without an `api/` URL does not automatically receive API execution, and an `ajax/` URL does not correct a declaration made from a web file. Keep filename, prefix, middleware and response contract aligned; API OPTIONS matching additionally checks the declared type.
+
+`system` is a declaration category, not a Router channel prefix. System routes such as `sitemap.xml` still follow the web URL channel. Preserve their controller/output contract rather than inventing `system/` URLs or treating every declared system route as JSON.
 
 ## Runtime Flow
 
@@ -63,6 +69,8 @@ High-level flow:
 6. for sse routes, controller may stream directly
 
 The application loads this runtime through Composer and `core/Load.php`, which delegates startup to `GFrame\Foundation\Bootstrap`.
+
+See [bootstrap, configuration and version discovery](bootstrap-configuration-version.md) for the startup order and actual package location. Locate the referenced full guides in that package, not by assuming relative paths from a copied skill reach repository `docs/`.
 
 Before URL normalization and route execution, Router accepts only trusted server error parameters `GFRAME_SERVER_ERROR` (Nginx FastCGI) or `REDIRECT_STATUS` (Apache), restricted to 403/404/500/503. Reuse ErrorResponder and the existing error views/transport responses; never consume `error_code` from query strings or HTTP headers. See `docs/servidores-web.md` for the managed Nginx server fragment, PHP entry-point restrictions and PHP-FPM outage limits.
 

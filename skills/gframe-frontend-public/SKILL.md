@@ -23,22 +23,23 @@ Examples:
 
 ## Workflow
 
-1. Identify the public route, template, and target view.
+1. Identify the public route, template, target view and ownership: application page, skeleton source or runtime module override.
 2. Confirm whether the page is static, content-driven, or slug-driven.
-3. Keep SEO and schema in the view meta files, not mixed into the PHP view body.
+3. Keep page metadata and schema in meta files. Check global and route indexability separately; `metaTags.robots` does not override that policy.
 4. Register only the required CSS and JS through meta files.
 5. Keep public markup content-focused and aligned with the selected template.
 6. Treat JS as progressive enhancement, not as the main source of page markup or copy.
+7. For sitemap/llms, verify their direct view-meta lookup and dataset filters rather than assuming the normal rendering context is available.
 
 ## Hard Rules
 
-- Do not modify GFrame source or vendored files to make a public page fit project-specific needs.
+- For application-specific pages, do not modify the installed GFrame package or vendors. For an authorized framework change, edit its skeleton or module originals rather than an installed application copy.
 - Keep repeated public-view patterns in the application's shared CSS instead of duplicating them across page stylesheets.
 - If public route, render, or tenancy behavior does not fit the framework, stop and surface the mismatch before taking action.
 - Keep public pages out of admin paths and admin templates.
 - Use group meta and view meta to load public assets and SEO data.
 - Keep schema definitions in meta files, not scattered through the view body.
-- Preserve current template layering through `app/views/templates/*Template.php`.
+- Preserve template resolution through `ModuleRuntime::template`, with application templates under `app/views/templates/*Template.php` and runtime providers when declared. Keep the standard shared header/footer layering.
 - Do not duplicate header or footer framework elements inside the page view.
 - Do not hardcode public page sections or content blocks inside JS string templates unless the task is explicitly for a JS-driven widget.
 - Do not hardcode user-facing public copy in JS when it belongs in PHP views, CMS/content data, or backend payloads.
@@ -49,6 +50,14 @@ Examples:
 - Do not use `section` for small internal chunks inside `article`, cards, repeated items, content widgets, or other local components. In those cases prefer `div` with a clear class name.
 - Keep content-driven pages safe when optional `$data` fields are missing.
 - Do not move SEO or schema concerns into controllers unless the task is explicitly about framework render behavior.
+
+## Final Checks
+
+- Trace the route to its controller, resolved view, template and meta layers; verify the actual published asset paths.
+- Check escaped text, trusted/sanitized rich HTML and absent optional content separately.
+- Verify canonical/social URL values, effective robots policy and emitted JSON-LD under the relevant configuration.
+- For dynamic indexes, check the direct meta lookup, placeholder-to-column mapping and explicit publication/tenant conditions.
+- Check navigation selectors and interactions when affected. Report browser or external SEO checks that were not performed; passing local tests is not a claim of search-engine indexing.
 
 ## Use With Other Skills
 

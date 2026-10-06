@@ -15,7 +15,7 @@ Supporting text is optional: add a subtitle only when it provides useful informa
 
 ## Mandatory reference and acceptance gate
 
-Before changing an admin screen, compare its markup with an approved screen of the same type. In the framework repository, the approved list reference is `resources/modules/notification-campaigns/application/app/views/notification-campaigns/index.php` and `_list.php`; in applications, use the corresponding published views or the user's explicit reference. Do not use an unfinished screen as a design reference or create another title, spacing, card or pagination convention. Keep these conventions in this skill, not duplicated in `AGENTS.md`.
+Before changing an admin screen, compare its markup with an approved screen of the same type. In the framework repository, the approved list reference is `resources/modules/notification-campaigns/application/app/views/notification-campaigns/index.php` and `_list.php`; in applications, use the corresponding runtime views, project overrides or the user's explicit reference. Do not use an unfinished screen as a design reference or create another title, spacing, card or pagination convention. Keep these conventions in this skill, not duplicated in `AGENTS.md`.
 
 When the user requests original files from Bebots, Dane or Base Confías, copy the specified originals rather than reinterpreting them. Apply only the explicitly agreed exceptions.
 
@@ -56,6 +56,16 @@ If HTML5 validation is active:
 
 When custom validation messages are used, keep a predictable target such as `.validation_<fieldId>`.
 
+## Field Names and Selectors
+
+Follow the shared [code and payload naming rules](../../gframe-core-architecture/references/naming-conventions.md). An HTML `id`, a submitted `name` and a PHP variable serve different consumers; they do not need identical spelling.
+
+- Preserve existing DOM IDs and selector conventions, including `userRoleForm`, `managedUserRole`, `user-admin-tokens` and `all_items_pagination`. No universal DOM renaming is authorized by this guide.
+- For a new field, choose an ID consistent with its component, keep it unique in the rendered page and match the label's `for`. Repeated rows should use classes and `data-*` rather than duplicate IDs.
+- Use the endpoint's existing `name` contract; new business payload keys use snake_case, such as `role_id`. Preserve technical CSRF names.
+- Use HTML `data-*` attributes such as `data-user-id`; match their existing JS lookup, such as `.data('user-id')`. Changing an ID also affects labels, validation targets, CSS, JS, ARIA references and tests.
+- Do not rename a field, route key or selector merely to match `$userID`. Trace its producer and consumer first; see the [user-admin recipe](user-admin-ajax-recipe.md).
+
 ## Token and AJAX Bridge
 
 Do not hand-build CSRF inputs in every form.
@@ -65,6 +75,8 @@ The normal pattern is:
 - form contains business fields
 - global `#tokens` form contains CSRF fields
 - JS combines token data plus form serialization before sending AJAX
+
+An existing local bridge is an exception to preserve, not a pattern to add to every new form. User-admin already supplies and serializes `#user-admin-tokens`.
 
 ## Partial Mount Pattern
 

@@ -1,0 +1,73 @@
+# Inventario de nomenclatura de GFrame
+
+Revisión del 6 de octubre de 2026, lote 20. No se renombró ningún símbolo ni se cambió runtime. La [convención canónica](../skills/gframe-core-architecture/references/naming-conventions.md) sigue aplicándose al código nuevo; este inventario clasifica el existente.
+
+## Alcance y método
+
+Inspección de `src/` y `resources/`, con exclusión de módulos `external-ui`, carpetas sin manifiesto, las bibliotecas PHP de markdown/password-utils, demos de iconos y JS minificado. Se conservaron wrappers propios de esos módulos backend. No se inspeccionaron proyectos instalados, dependencias Composer, tests, documentación como código ni scripts PowerShell.
+
+El [generador de evidencia](inventory-naming.php) lee los manifiestos como texto, sin ejecutarlos, y utiliza `token_get_all()` para variables PHP: no cuenta nombres dentro de comentarios o cadenas como variables. Registra ubicaciones para las variantes y hashes de los archivos inspeccionados. Las búsquedas JS y de IDs HTML son léxicas, no un parser de JavaScript ni una comprobación del DOM. Pueden omitir parámetros, destructuring, templates dinámicos o atributos interpolados; no prueban colisiones ni accesibilidad.
+
+Reproducir desde el framework:
+
+```powershell
+C:/xampp/php/php.exe maintenance/inventory-naming.php
+```
+
+El comando actualiza únicamente [nomenclatura-evidencia-20261006.json](nomenclatura-evidencia-20261006.json). El reporte identifica el generador y los archivos mediante SHA-256. Una ejecución posterior describe ese nuevo checkout, no preserva automáticamente la evidencia anterior.
+
+| Medida | Resultado | Interpretación |
+| --- | --- | --- |
+| PHP inspeccionado | 270 archivos | Variables tokenizadas, incluidos parámetros y vistas PHP. |
+| JS inspeccionado | 33 archivos | Candidatos léxicos y revisión puntual de consumidores. |
+| HTML inspeccionado | 6 archivos | Templates estáticos, además del HTML incluido en archivos PHP. |
+| Nombres PHP distintos terminados en `ID`/`IDs` | 23 | Uso existente; el sufijo por sí solo no prueba significado o calidad. |
+| Nombres PHP distintos terminados en `Id`/`Ids` | 6 | Mezcla de estilo que debe clasificarse antes de cambiar. |
+| Variables PHP distintas con guion bajo | 6 | Sin superglobales; incluye firmas públicas y variables de templates. |
+| Declaraciones/candidatos JS con `Id`/`Ids` | 12 ubicaciones | Incluye funciones y variables; no son doce fallos. |
+| Coincidencias de IDs HTML literales | 177 | Apariciones en fuentes; no son elementos únicos renderizados. |
+
+## Variantes PHP comprobadas
+
+| Nombre y fuente | Clasificación | Acción propuesta |
+| --- | --- | --- |
+| `$userId`, [Middleware.php](../src/middleware/Middleware.php), bloque de autorización | Variable local; llamadas usan valores posicionales en el bloque revisado. | Renombrado opcional a `$userID` cuando se trabaje ese bloque. No hay fallo demostrado por el nombre. |
+| `$firstId`, `$lastId`, [ORM.php](../src/database/ORM.php), inserción por lote y recorrido por chunks | Variables locales de algoritmos. | Conservar ahora; una edición de esos algoritmos podría unificar el sufijo con verificación funcional propia. |
+| `$mediaId`, `$mediaIds`, [SitemapDataProvider.php](../src/seo/SitemapDataProvider.php) | Locales y parámetro de un método privado, `fetchMediaUrlsByIds`. | Mejora opcional y acotada; revisar llamadas internas y recetas si se propone. |
+| `$mediaId`, [_mlist.php](../resources/modules/media-library/application/app/views/media-library/_mlist.php) | Variable local que produce IDs y atributos HTML existentes. | Un cambio local no debe alterar `mID_`, `data-media-id` ni `media_id`. |
+| `$submenuId`, [MenuHelper.php](../src/utils/MenuHelper.php) | Local que produce un ID de navegación con prefijo `sm_`. | Conservar el valor y los atributos relacionados; no convertir el prefijo por estética. |
+| `$csrf_token`, `$csrf_timestamp`, `$middle_name`, [Middleware.php](../src/middleware/Middleware.php) | Locales con nombres de otro estilo. Las claves de entrada son contratos distintos. | Mejora local opcional; conservar `csrfToken`, `csrfTimestamp` y `middle_name`. |
+| `$max_lifetime`, [DatabaseSessionHandler.php](../src/GFrame/Session/DatabaseSessionHandler.php) y [RedisSessionHandler.php](../src/GFrame/Session/RedisSessionHandler.php) | Parámetro público de `gc()` en implementaciones de interfaces de sesión. | Conservar junto con `create_sid()` y `validateId()`. No aplicar el estilo interno a firmas externas. |
+| `$total_pages`, [LegacyCompatibility.php](../src/utils/LegacyCompatibility.php) | Parámetro de la función pública de compatibilidad `pagination()`. | Preservar; cualquier cambio requiere revisar argumentos nombrados y consumidores externos. |
+| `$tenant_id`, [mediaPickerModal.php](../resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php) | Entrada opcional al template, usada cuando no se obtuvo tenant de la ruta. | Preservar como punto de integración. No tratarla como variable privada del template ni sustituir el tenant configurado por uno fijo. |
+
+## Nombres públicos y JavaScript
+
+- `AuthModel::registerAcount()` y `recoveryAcount()` existen y tienen consumidores en AuthController. Su errata histórica no autoriza reemplazarlos. Un alias o transición se concilia como cambio de compatibilidad separado.
+- `$byId` en los componentes multimedia representa una búsqueda de un nodo DOM, no un identificador de negocio. No se propone convertir todos los usos de `Id` indiscriminadamente ni modificar métodos externos como `getElementById()` o `lastInsertId()`.
+- `nextIds`, `currentIds` e `initialIds` en media-field almacenan selección multimedia; unificar sus locales sería una mejora de estilo posible, con revisión del flujo múltiple. Los campos `ids`, `id`, eventos y APIs del picker se conservan.
+- `buildScopeId()` de heartbeat y `getHashId()`/`loadHashId()` del skeleton identifican scope/fragmento. Se conservan nombres y formatos de storage/URLs. La búsqueda léxica no demuestra que todos sean APIs públicas ni garantiza ausencia de consumidores externos.
+- No se generó un catálogo completo de métodos públicos, herencia o argumentos nombrados. Esos controles siguen pendientes para cualquier propuesta de renombrado.
+
+## Recorridos entre capas comprobados
+
+| Recorrido | Evidencia revisada | Decisión |
+| --- | --- | --- |
+| Usuarios: `data-user-id` → `row.data('user-id')` → `user_id` → `$userID` | `_userList.php`, user-admin.js y UserAdminController.php; esquema auth usa `user_id`. | Conservar el mapeo. Cada capa usa su convención. |
+| Campañas: `#campaign-users` y `name="user_ids[]"` → `$_POST['user_ids']` → criterio `user_ids` | form.php, campaigns.js, CampaignController.php y CampaignUserAudience.php. | Conservar selector, lista enviada y criterios. `user_ids[]` no es nombre de variable PHP. |
+| Multimedia: `media_id` → `$mediaId` → `mID_<n>` y `data-media-id` | `_mlist.php`. | El sufijo local puede revisarse; la forma de IDs/atributos no cambia con él. No se auditó todo el transporte del picker en este lote. |
+| Avisos: `notification_id` → NotificationController → argumento `$notificationID` del servicio | notifications.js, NotificationController.php y NotificationService.php. | Conservar payload y API. El controlador ya existente no se creó en esta revisión. |
+| CSRF: formulario `csrfToken`/`csrfTimestamp` → SessionManager/Middleware | Vista user-admin y ambos componentes de seguridad. | Excepción técnica explícita; no convertir claves a snake_case. |
+
+No se verificaron aquí todos los modelos, SQL y consumidores de todos los módulos. Los recorridos anteriores son muestras concretas, no un cierre global de N-03.
+
+## Selectores y prioridad
+
+`userModal` y `userListMount` se comparten entre vista y JS de usuarios. `campaign-users` usa kebab-case en campañas; multimedia mantiene `mediaPickerModal` y IDs dinámicos `mID_`. La mezcla está comprobada. No se comprobó una colisión en una página renderizada y no se recomienda una conversión masiva. La decisión para componentes nuevos sigue en la skill frontend-admin; no se añade una regla global distinta aquí.
+
+1. Mantener las convenciones acordadas en código nuevo y respetar los nombres públicos/externos existentes.
+2. Priorizar cobertura de las instrucciones y verificadores de enlaces/metadata antes de renombrados puramente estéticos.
+3. Si se propone un renombrado local, delimitar archivo/bloque y demostrar que no cambia payloads, HTML, storage ni resultados.
+4. Si afecta parámetros públicos, templates de integración, selectores o persistencia, tratarlo como contrato y conciliar compatibilidad antes de implementar.
+
+El inventario no encontró evidencia de un fallo de funcionamiento causado únicamente por estas variantes. No evalúa por ese hecho la corrección completa de los módulos.

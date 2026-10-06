@@ -15,9 +15,13 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 1. [references/framework-conventions.md](references/framework-conventions.md)
 2. [references/backend-model-boundary.md](references/backend-model-boundary.md)
 
+For new symbols or a naming review, use the matching-version [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Distinguish code parameters from request keys; preserve existing public contracts.
+
+For a concrete normalized HTTP boundary, service operation and consumer response, use the [self-account password recipe](../gframe-auth-access/references/self-account-password-recipe.md). Locate the companion in the project's resolved package if it is not available beside the installed skill.
+
 ## Workflow
 
-1. Identify the route file and route type in `config/routes`.
+1. Identify the authorized application or standalone module source, its manifest when applicable, and the route file/type. Project routes live in `config/routes`; distributable route originals use the manifest's `application` source paths.
 2. Confirm middleware scope before touching controller logic.
 3. Keep controller as the HTTP boundary: parse request, validate required fields, sanitize and cast, orchestrate.
 4. Move reusable non-trivial orchestration to services.
@@ -29,10 +33,11 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 ## Hard Rules
 
 - Do not modify the GFrame repository or `packages/gorvet/gframe` for project-specific backend work.
+- For an explicitly authorized standalone framework/module change, edit its distributable originals. Resolve MVC runtime roots and published routes/assets from the module manifest; application paths below are not universal module source paths.
 - If backend requirements do not fit existing framework conventions, stop and call out the mismatch before changing code.
 - Prefer adapting controllers, models, services, routes in `config/routes`, and database schema before proposing any framework patch.
 - Routes live in `config/routes/*.php`, not `routes/*.php`.
-- Route type is inferred by the declaring file: `routes_web`, `routes_ajax`, `routes_api`, `routes_sse`, `routes_webhook`, `routes_system`.
+- RouteBuilder infers declared type from the calling file; Router chooses the execution channel from the URL prefix. Keep both aligned as described in the core routing reference.
 - Middleware decides access scope. Do not move `auth`, `admin`, or `can:*` permission logic into models.
 - Protected `can:*` flows need tenant context only when tenancy is configured. Global applications resolve permissions through `users.role_id` and `roles.permissions_json`; multitenant applications use `tenant_memberships`.
 - Keep the standard MVC path direct: controllers call services when reusable rules are needed, and services call ORM models. Add a contract only for a genuinely interchangeable external capability.
@@ -42,11 +47,12 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 - Model should not redo generic required-field validation already enforced by controller.
 - Use services for filesystem work, external APIs, reusable orchestration, or logic that should not live in controller/model.
 - `code` is part of the backend-frontend contract. Emit canonical lowercase codes, preferably `snake_case`, such as `empty_field`, `not_found`, `bad_json`, `to_login`, and `to_reload`.
-- Do not invent mixed conventions like camelCase for some modules and lowercase for others.
+- Do not invent mixed naming conventions for new emitted response codes across modules.
 - Do not lowercase or normalize controller/model business codes in Router `ajax` or `api` output. Payload codes must arrive at JS exactly as emitted by the module.
 - Numeric `4xx/5xx` codes may exist as framework aliases for transport and error resolution, but business/module payloads should prefer canonical string codes.
 - Router handles JSON output for `ajax` and `api`; controllers should return arrays instead of echoing JSON manually.
-- Expected model, service, and controller failures must return stable arrays with `status`, `code`, and `message`. Do not use `Throwable` as a replacement for this response flow; catch `Exception` at the owning layer and let the controller, Router, and frontend decide whether to use an error view, `swalAlert`, or `alertToast`.
+- Expected business failures use the operation's stable response contract. Include `status` in an operation envelope, `code` when the caller needs a stable reason, and `message` when public feedback is needed. Do not wrap raw ORM reads or force unused keys into established returns.
+- Catch `Exception` only where that layer can log and handle the failure. `Throwable` is appropriate for transaction cleanup followed by rethrow, or for an explicit outer error boundary. Do not convert programming errors into routine business failures with a generic catch-all.
 - For list refresh flows, prefer server-rendered partial HTML instead of assembling markup in JS.
 - If a frontend flow needs user-facing copy, return it from controller/model payloads or render it in PHP instead of forcing the module JS to invent texts locally.
 - Keep GET page-clamping redirects only on GET requests.
@@ -57,7 +63,8 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 - Read route params, `$_POST`, and `$_REQUEST` only at the controller boundary.
 - Cast numeric ids immediately.
 - Sanitize user text with framework helpers before passing it deeper.
-- Return early on invalid request state with `status`, `code`, and `message`.
+- Normalize according to the field contract: passwords/secrets preserve their exact value and must not receive trimming, casing changes or display-text/HTML sanitization. Escaping belongs at the output context, not in a credential transformation.
+- Return early on invalid request state with the existing operation contract; include a stable validation `code` and public `message` when the consumer needs them.
 - Compose final payloads for the frontend, including `html` when partial replacement is expected.
 - Keep side effects in controller or service when they orchestrate multiple collaborators.
 
@@ -73,7 +80,7 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 
 Use stable keys already common in the framework:
 
-- `status` is mandatory in success and error payloads.
+- `status` is mandatory in success/error operation envelopes, not in every raw ORM or helper return.
 - `message` is included when it adds user or caller value.
 - `code` is used for domain, validation, redirect, or transport-aware handling.
 - `data` is used for list, detail, and action payloads.
@@ -89,7 +96,7 @@ Do not rename these keys casually.
 - Keep code names stable and exact. Good examples: `empty_field`, `invalid_token`, `not_exists`, `user_exists`, `service_unavailable`.
 - Single-word lowercase codes are acceptable when they are truly canonical, but do not mix them with camelCase aliases for the same intent.
 - If the framework needs compatibility with numeric aliases like `404` or `503`, keep that alias handling inside core error resolution, not inside module payload mutation.
-- When refactoring legacy modules, migrate producers to canonical codes instead of teaching JS to guess or normalize variants.
+- When the task explicitly includes migrating legacy response codes, update producers and consumers together; do not teach JS to guess or normalize variants.
 
 ## Common Recipes
 

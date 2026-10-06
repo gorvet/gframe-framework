@@ -36,19 +36,31 @@ $rows = UserModel::queryTable('cache_items')
 
 `queryTable()` creates a new model instance. Calling it after `onConnection()` would discard the previously selected connection.
 
+`reset()` and `newQuery()` preserve an instance's selected connection. Static helpers such as `find`, `raw`, and transaction methods resolve their explicit connection argument (where available), then the model class default or framework default; they do not inherit a previous object's `onConnection()`. Connection names must exist in project configuration; selecting one does not create or register a driver.
+
 ## Transactions
 
 Keep transaction scope on a single connection:
 
 ```php
+$pdo = \DatabaseManager::connection('main');
 ORM::beginTransaction('main');
 try {
   // writes in main
   ORM::commit('main');
-} catch (Exception $e) {
-  ORM::rollBack('main');
+} catch (\Throwable $exception) {
+  if ($pdo instanceof \PDO && $pdo->inTransaction()) {
+    ORM::rollBack('main');
+  }
+  throw $exception;
 }
 ```
+
+This catch owns transaction cleanup only. Let the appropriate outer layer log and handle the failure; do not swallow it or report success after rollback.
+
+The example assumes `main` is configured. Every write inside it must also execute on `main`, through the model default or explicit `onConnection('main')`; merely passing `main` to `beginTransaction` does not redirect model queries. `DatabaseManager::connection` may return a failure array, while ORM execution checks can throw; do not assume every connection result is a PDO.
+
+The static transaction methods are direct PDO begin/commit/rollback calls, without savepoints or nested-transaction management. A method participating in an existing transaction should not start or commit another one blindly. Agree on the transaction owner. For MySQL, DDL can implicitly commit; do not promise rollback of schema changes from a DML recipe. Filesystem and external-service effects are not reversed by PDO rollback either.
 
 Do not assume atomic cross-engine transactions (for example MySQL + SQLite in one business flow).
 
@@ -68,3 +80,5 @@ When introducing a new engine (e.g. PostgreSQL):
 4. Add the named connection under `database.connections` in the application's `config/app.php`.
 
 Do not duplicate ORM methods per engine.
+
+Locate `docs/orm.md` in the project's resolved package for the complete API and return types. Keep examples on that version; a copied global skill does not establish engine support or the package location.

@@ -19,9 +19,13 @@ Authentication middleware reads the normalized `$_SESSION['auth']` identity as i
 - global permissions when tenancy configuration is omitted;
 - tenant permissions when tenant key and tenant table are both configured.
 
-Only tenant mode requires a tenant identifier from route parameters or request data. Defining only one tenancy setting is invalid.
+Ordinary tenant permission checks use `TenantContextResolver`, which requires any present route/request/session identities to agree. It recognizes the configured key, `tenant_id` and the supported session variants; `project_id` is not an additional universal tenant key. Missing, invalid or conflicting IDs fail the ordinary tenant check. Global mode does not require an ID; defining only one tenancy setting is invalid when tenant mode is evaluated.
+
+The superadministrator bypass precedes ordinary tenant resolution. Do not infer from a successful permission check that a module's tenant scope was also validated. Multimedia uses `TenantContextResolver::active()` and requires an existing session scope. Tenant switching needs a server-authorized application flow, not a request value that silently replaces active session state.
 
 Roles are permission templates. `RolePermissionService` resolves effective permissions from the session, including global and tenant-specific user overrides.
+
+For driver guarantees, managed-session invalidation and the full resolution rules, read the matching-version [auth session and tenancy reference](../../gframe-auth-access/references/sessions-and-tenancy.md). Keep this companion when copying the canonical skills, or read it from the project's resolved package.
 
 ## Administrative Hierarchy
 
@@ -35,7 +39,7 @@ Roles are permission templates. `RolePermissionService` resolves effective permi
 
 Tenant mode requires an explicit active row in `tenant_memberships`. Owning a project record does not grant framework permissions implicitly.
 
-Auth creates users and a global role only. The application module that creates a tenant must also create its `owner` membership atomically. The generic `tenants` table has no owner column; do not infer ownership from submitted IDs. An active owner may manage `gestor` memberships, and a gestor may leave. See [roles, permissions, and memberships](../../../docs/permisos.md) for installation variants, ownership verification, and the transaction example.
+Auth creates users and a global role only. The application module that creates a tenant must also create its `owner` membership atomically. The generic `tenants` table has no owner column; do not infer ownership from submitted IDs. An active owner may manage `gestor` memberships, and a gestor may leave. Read `docs/permisos.md` from the matching GFrame package for installation variants, ownership verification and the transaction example; package discovery is described in the auth reference above.
 
 ## Boundary Rule
 

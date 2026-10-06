@@ -1,0 +1,1311 @@
+{
+    "generator_sha256": "3675221ed36e6be1815c552568e61310d3d4f1200deb521ce261c592974a969a",
+    "scope": [
+        "src",
+        "resources"
+    ],
+    "excluded_prefixes": [
+        "resources/modules/aos/",
+        "resources/modules/bootstrap/",
+        "resources/modules/chartjs/",
+        "resources/modules/coloris/",
+        "resources/modules/flatpickr/",
+        "resources/modules/gframe-icons/public/demo-files/",
+        "resources/modules/html2canvas/",
+        "resources/modules/intl-tel-input/",
+        "resources/modules/jquery-ui/",
+        "resources/modules/jquery/",
+        "resources/modules/luxon/",
+        "resources/modules/markdown/src/",
+        "resources/modules/owl-carousel/",
+        "resources/modules/password-utils/src/",
+        "resources/modules/purecounter/",
+        "resources/modules/sweetalert2/",
+        "resources/modules/swiper/",
+        "resources/modules/tinymce/",
+        "resources/modules/venobox/",
+        "resources/modules/wordpress-styles/"
+    ],
+    "counts": {
+        "php_files": 270,
+        "js_files": 33,
+        "html_files": 6,
+        "html_ids": 177
+    },
+    "php_variables": {
+        "id_mixed_suffix": {
+            "$firstId": {
+                "occurrences": 2,
+                "locations": [
+                    "src/database/ORM.php:703",
+                    "src/database/ORM.php:708"
+                ]
+            },
+            "$lastId": {
+                "occurrences": 4,
+                "locations": [
+                    "src/database/ORM.php:401",
+                    "src/database/ORM.php:411",
+                    "src/database/ORM.php:412",
+                    "src/database/ORM.php:425"
+                ]
+            },
+            "$mediaId": {
+                "occurrences": 10,
+                "locations": [
+                    "src/seo/SitemapDataProvider.php:76",
+                    "src/seo/SitemapDataProvider.php:77",
+                    "src/seo/SitemapDataProvider.php:78",
+                    "src/seo/SitemapDataProvider.php:129",
+                    "src/seo/SitemapDataProvider.php:131",
+                    "src/seo/SitemapDataProvider.php:133",
+                    "resources/modules/media-library/application/app/views/media-library/_mlist.php:123",
+                    "resources/modules/media-library/application/app/views/media-library/_mlist.php:171",
+                    "resources/modules/media-library/application/app/views/media-library/_mlist.php:174"
+                ]
+            },
+            "$mediaIds": {
+                "occurrences": 8,
+                "locations": [
+                    "src/seo/SitemapDataProvider.php:49",
+                    "src/seo/SitemapDataProvider.php:57",
+                    "src/seo/SitemapDataProvider.php:62",
+                    "src/seo/SitemapDataProvider.php:110",
+                    "src/seo/SitemapDataProvider.php:112",
+                    "src/seo/SitemapDataProvider.php:113",
+                    "src/seo/SitemapDataProvider.php:121"
+                ]
+            },
+            "$submenuId": {
+                "occurrences": 3,
+                "locations": [
+                    "src/utils/MenuHelper.php:71",
+                    "src/utils/MenuHelper.php:94",
+                    "src/utils/MenuHelper.php:98"
+                ]
+            },
+            "$userId": {
+                "occurrences": 5,
+                "locations": [
+                    "src/middleware/Middleware.php:507",
+                    "src/middleware/Middleware.php:508",
+                    "src/middleware/Middleware.php:515",
+                    "src/middleware/Middleware.php:528",
+                    "src/middleware/Middleware.php:542"
+                ]
+            }
+        },
+        "id_upper_suffix": {
+            "$actorID": {
+                "occurrences": 61,
+                "files_count": 4
+            },
+            "$campaignID": {
+                "occurrences": 40,
+                "files_count": 4
+            },
+            "$currentID": {
+                "occurrences": 5,
+                "files_count": 1
+            },
+            "$currentUserID": {
+                "occurrences": 2,
+                "files_count": 1
+            },
+            "$editorID": {
+                "occurrences": 12,
+                "files_count": 1
+            },
+            "$eventID": {
+                "occurrences": 12,
+                "files_count": 4
+            },
+            "$fieldID": {
+                "occurrences": 3,
+                "files_count": 1
+            },
+            "$hasID": {
+                "occurrences": 2,
+                "files_count": 1
+            },
+            "$historyRunID": {
+                "occurrences": 2,
+                "files_count": 1
+            },
+            "$mediaID": {
+                "occurrences": 34,
+                "files_count": 3
+            },
+            "$notificationID": {
+                "occurrences": 40,
+                "files_count": 7
+            },
+            "$parentID": {
+                "occurrences": 2,
+                "files_count": 1
+            },
+            "$recipientID": {
+                "occurrences": 6,
+                "files_count": 2
+            },
+            "$relatedID": {
+                "occurrences": 17,
+                "files_count": 3
+            },
+            "$roleID": {
+                "occurrences": 108,
+                "files_count": 16
+            },
+            "$scopeID": {
+                "occurrences": 19,
+                "files_count": 3
+            },
+            "$selectedIDs": {
+                "occurrences": 2,
+                "files_count": 1
+            },
+            "$sessionID": {
+                "occurrences": 30,
+                "files_count": 4
+            },
+            "$sourceID": {
+                "occurrences": 3,
+                "files_count": 1
+            },
+            "$taskID": {
+                "occurrences": 15,
+                "files_count": 3
+            },
+            "$tenantID": {
+                "occurrences": 189,
+                "files_count": 20
+            },
+            "$tenantRoleID": {
+                "occurrences": 4,
+                "files_count": 1
+            },
+            "$userID": {
+                "occurrences": 353,
+                "files_count": 34
+            }
+        },
+        "underscore": {
+            "$csrf_timestamp": {
+                "occurrences": 3,
+                "locations": [
+                    "src/middleware/Middleware.php:428",
+                    "src/middleware/Middleware.php:435",
+                    "src/middleware/Middleware.php:440"
+                ]
+            },
+            "$csrf_token": {
+                "occurrences": 2,
+                "locations": [
+                    "src/middleware/Middleware.php:427",
+                    "src/middleware/Middleware.php:435"
+                ]
+            },
+            "$max_lifetime": {
+                "occurrences": 2,
+                "locations": [
+                    "src/GFrame/Session/DatabaseSessionHandler.php:81",
+                    "src/GFrame/Session/RedisSessionHandler.php:97"
+                ]
+            },
+            "$middle_name": {
+                "occurrences": 2,
+                "locations": [
+                    "src/middleware/Middleware.php:403",
+                    "src/middleware/Middleware.php:405"
+                ]
+            },
+            "$tenant_id": {
+                "occurrences": 2,
+                "locations": [
+                    "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:7",
+                    "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:8"
+                ]
+            },
+            "$total_pages": {
+                "occurrences": 2,
+                "locations": [
+                    "src/utils/LegacyCompatibility.php:46",
+                    "src/utils/LegacyCompatibility.php:48"
+                ]
+            }
+        }
+    },
+    "lexical_samples_not_ast": {
+        "literal_ids": [
+            {
+                "name": "sidebar-nav",
+                "location": "resources/modules/admin-panel/application/app/views/admin-panel/parts/aside.php:8"
+            },
+            {
+                "name": "darkmode",
+                "location": "resources/modules/admin-panel/application/app/views/admin-panel/parts/navbar.php:11"
+            },
+            {
+                "name": "header",
+                "location": "resources/modules/admin-panel/application/app/views/admin-panel/parts/navbar.php:6"
+            },
+            {
+                "name": "toastBox",
+                "location": "resources/modules/admin-panel/application/app/views/templates/adminTemplate.php:16"
+            },
+            {
+                "name": "sidebar",
+                "location": "resources/modules/admin-panel/application/app/views/templates/adminTemplate.php:3"
+            },
+            {
+                "name": "main",
+                "location": "resources/modules/admin-panel/application/app/views/templates/adminTemplate.php:6"
+            },
+            {
+                "name": "login_email",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authLogin.php:11"
+            },
+            {
+                "name": "login_password",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authLogin.php:17"
+            },
+            {
+                "name": "submit_login",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authLogin.php:27"
+            },
+            {
+                "name": "login",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authLogin.php:7"
+            },
+            {
+                "name": "recovery_step",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRecovery.php:1"
+            },
+            {
+                "name": "recovery_email",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRecovery.php:11"
+            },
+            {
+                "name": "submit_recovery",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRecovery.php:16"
+            },
+            {
+                "name": "recovery",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRecovery.php:7"
+            },
+            {
+                "name": "register_step",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php:1"
+            },
+            {
+                "name": "register_email",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php:11"
+            },
+            {
+                "name": "register_password",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php:17"
+            },
+            {
+                "name": "cover-register-checkbox",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php:24"
+            },
+            {
+                "name": "submit_register",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php:29"
+            },
+            {
+                "name": "register",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php:7"
+            },
+            {
+                "name": "middle_name",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php:8"
+            },
+            {
+                "name": "reset_step",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authReset.php:1"
+            },
+            {
+                "name": "reset_password",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authReset.php:13"
+            },
+            {
+                "name": "submit_reset",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authReset.php:20"
+            },
+            {
+                "name": "reset",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authReset.php:7"
+            },
+            {
+                "name": "rpuser_token",
+                "location": "resources/modules/auth-ui/application/app/views/auth-ui/authReset.php:9"
+            },
+            {
+                "name": "errorTitle",
+                "location": "resources/modules/error-pages/application/app/views/error-pages/_errorCard.php:15"
+            },
+            {
+                "name": "select-basic",
+                "location": "resources/modules/gf-select/public/demo-gfselect.html:34"
+            },
+            {
+                "name": "select-search",
+                "location": "resources/modules/gf-select/public/demo-gfselect.html:44"
+            },
+            {
+                "name": "select-custom",
+                "location": "resources/modules/gf-select/public/demo-gfselect.html:59"
+            },
+            {
+                "name": "select-destroy",
+                "location": "resources/modules/gf-select/public/demo-gfselect.html:69"
+            },
+            {
+                "name": "destroy-btn",
+                "location": "resources/modules/gf-select/public/demo-gfselect.html:74"
+            },
+            {
+                "name": "fontSize",
+                "location": "resources/modules/gframe-icons/public/demo.html:1986"
+            },
+            {
+                "name": "testText",
+                "location": "resources/modules/gframe-icons/public/demo.html:1990"
+            },
+            {
+                "name": "testDrive",
+                "location": "resources/modules/gframe-icons/public/demo.html:1992"
+            },
+            {
+                "name": "media-search-btn",
+                "location": "resources/modules/media-library/application/app/views/media-library/_mlist.php:102"
+            },
+            {
+                "name": "media-clear-filters-btn",
+                "location": "resources/modules/media-library/application/app/views/media-library/_mlist.php:107"
+            },
+            {
+                "name": "noM",
+                "location": "resources/modules/media-library/application/app/views/media-library/_mlist.php:227"
+            },
+            {
+                "name": "media-source-filter",
+                "location": "resources/modules/media-library/application/app/views/media-library/_mlist.php:23"
+            },
+            {
+                "name": "media-kind-filter",
+                "location": "resources/modules/media-library/application/app/views/media-library/_mlist.php:46"
+            },
+            {
+                "name": "media-date-filter",
+                "location": "resources/modules/media-library/application/app/views/media-library/_mlist.php:69"
+            },
+            {
+                "name": "media-search-input",
+                "location": "resources/modules/media-library/application/app/views/media-library/_mlist.php:96"
+            },
+            {
+                "name": "editMediaNext",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:11"
+            },
+            {
+                "name": "editMediaModal",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:2"
+            },
+            {
+                "name": "img_details",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:22"
+            },
+            {
+                "name": "file_details",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:24"
+            },
+            {
+                "name": "file_details_ext",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:34"
+            },
+            {
+                "name": "editMedia",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:42"
+            },
+            {
+                "name": "media_id",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:45"
+            },
+            {
+                "name": "upload_date",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:50"
+            },
+            {
+                "name": "uploaded_by",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:54"
+            },
+            {
+                "name": "uploaded_to",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:58"
+            },
+            {
+                "name": "mime_type",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:62"
+            },
+            {
+                "name": "name",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:66"
+            },
+            {
+                "name": "file_weight",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:70"
+            },
+            {
+                "name": "file_size",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:74"
+            },
+            {
+                "name": "editMediaPrev",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:8"
+            },
+            {
+                "name": "alt_text",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:81"
+            },
+            {
+                "name": "img_url",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:86"
+            },
+            {
+                "name": "copyUrlBtn",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:87"
+            },
+            {
+                "name": "delmedia",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:92"
+            },
+            {
+                "name": "editMedia_guardar",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php:99"
+            },
+            {
+                "name": "knowledgeMediaUpload",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaIndex.php:14"
+            },
+            {
+                "name": "knowledgeMediaFile",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaIndex.php:17"
+            },
+            {
+                "name": "knowledgeMediaClose",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaIndex.php:18"
+            },
+            {
+                "name": "knowledgeMediaSelect",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaIndex.php:19"
+            },
+            {
+                "name": "knowledgeMediaList",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaIndex.php:24"
+            },
+            {
+                "name": "knowledgeMediaAdd",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaIndex.php:9"
+            },
+            {
+                "name": "mediaPickerModal",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:11"
+            },
+            {
+                "name": "mp-library",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:40"
+            },
+            {
+                "name": "mp-upload",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:45"
+            },
+            {
+                "name": "mp-hotlink",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:54"
+            },
+            {
+                "name": "mp-hotlink-url",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:58"
+            },
+            {
+                "name": "mp-hotlink-name",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:70"
+            },
+            {
+                "name": "mp-selected-label",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:81"
+            },
+            {
+                "name": "mp-insert",
+                "location": "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php:83"
+            },
+            {
+                "name": "campaign-title",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:17"
+            },
+            {
+                "name": "campaign-audience",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:18"
+            },
+            {
+                "name": "campaign-users",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:19"
+            },
+            {
+                "name": "campaign-message",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:20"
+            },
+            {
+                "name": "campaign-action-url",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:22"
+            },
+            {
+                "name": "campaign-importance",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:23"
+            },
+            {
+                "name": "campaign-expiry",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:24"
+            },
+            {
+                "name": "campaign-scheduled",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:29"
+            },
+            {
+                "name": "campaign-recurrence",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:30"
+            },
+            {
+                "name": "campaign-email",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:31"
+            },
+            {
+                "name": "campaign-inbox",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:31"
+            },
+            {
+                "name": "campaign-audience-preview",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:40"
+            },
+            {
+                "name": "campaign-preview-title",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php:40"
+            },
+            {
+                "name": "campaign-status",
+                "location": "resources/modules/notification-campaigns/application/app/views/notification-campaigns/index.php:23"
+            },
+            {
+                "name": "notification-detail-modal",
+                "location": "resources/modules/notifications/application/app/views/notifications/_detailModal.php:7"
+            },
+            {
+                "name": "notification-detail-title",
+                "location": "resources/modules/notifications/application/app/views/notifications/_detailModal.php:8"
+            },
+            {
+                "name": "notification-dropdown",
+                "location": "resources/modules/notifications/application/app/views/notifications/parts/bell.php:5"
+            },
+            {
+                "name": "account-password-form",
+                "location": "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php:37"
+            },
+            {
+                "name": "current_password",
+                "location": "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php:40"
+            },
+            {
+                "name": "new_password",
+                "location": "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php:44"
+            },
+            {
+                "name": "new_password_confirmation",
+                "location": "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php:48"
+            },
+            {
+                "name": "account-password-button",
+                "location": "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php:50"
+            },
+            {
+                "name": "account-deactivate-button",
+                "location": "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php:62"
+            },
+            {
+                "name": "self-account-tokens",
+                "location": "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php:9"
+            },
+            {
+                "name": "userFilters",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:18"
+            },
+            {
+                "name": "userSearch",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:21"
+            },
+            {
+                "name": "userRoleFilter",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:25"
+            },
+            {
+                "name": "userStatusFilter",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:34"
+            },
+            {
+                "name": "clearUserFilters",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:41"
+            },
+            {
+                "name": "userListMount",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:46"
+            },
+            {
+                "name": "userModal",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:52"
+            },
+            {
+                "name": "userModalTitle",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:54"
+            },
+            {
+                "name": "managedUserEmail",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:56"
+            },
+            {
+                "name": "userRoleForm",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:57"
+            },
+            {
+                "name": "managedUserRole",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:60"
+            },
+            {
+                "name": "managedUserStatus",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:67"
+            },
+            {
+                "name": "user-admin-tokens",
+                "location": "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php:9"
+            },
+            {
+                "name": "navbar",
+                "location": "resources/skeleton/app/views/home/homeIndex.php:15"
+            },
+            {
+                "name": "homeTitle",
+                "location": "resources/skeleton/app/views/home/homeIndex.php:34"
+            },
+            {
+                "name": "homeHeader",
+                "location": "resources/skeleton/app/views/home/homeIndex.php:9"
+            },
+            {
+                "name": "footer",
+                "location": "resources/skeleton/app/views/templates/footer.php:10"
+            },
+            {
+                "name": "toastBox",
+                "location": "resources/skeleton/app/views/templates/footer.php:20"
+            },
+            {
+                "name": "tokens",
+                "location": "resources/skeleton/app/views/templates/header.php:21"
+            },
+            {
+                "name": "installer-form",
+                "location": "resources/skeleton/install.php:169"
+            },
+            {
+                "name": "app_name",
+                "location": "resources/skeleton/install.php:176"
+            },
+            {
+                "name": "profile",
+                "location": "resources/skeleton/install.php:177"
+            },
+            {
+                "name": "profile-description",
+                "location": "resources/skeleton/install.php:177"
+            },
+            {
+                "name": "installer-account",
+                "location": "resources/skeleton/install.php:178"
+            },
+            {
+                "name": "email",
+                "location": "resources/skeleton/install.php:180"
+            },
+            {
+                "name": "installer-show-password",
+                "location": "resources/skeleton/install.php:181"
+            },
+            {
+                "name": "password",
+                "location": "resources/skeleton/install.php:181"
+            },
+            {
+                "name": "database_driver",
+                "location": "resources/skeleton/install.php:188"
+            },
+            {
+                "name": "database_name",
+                "location": "resources/skeleton/install.php:189"
+            },
+            {
+                "name": "database_user",
+                "location": "resources/skeleton/install.php:190"
+            },
+            {
+                "name": "database_password",
+                "location": "resources/skeleton/install.php:191"
+            },
+            {
+                "name": "database_host",
+                "location": "resources/skeleton/install.php:192"
+            },
+            {
+                "name": "database_port",
+                "location": "resources/skeleton/install.php:193"
+            },
+            {
+                "name": "database-status",
+                "location": "resources/skeleton/install.php:195"
+            },
+            {
+                "name": "installer-summary",
+                "location": "resources/skeleton/install.php:217"
+            },
+            {
+                "name": "installer-back",
+                "location": "resources/skeleton/install.php:220"
+            },
+            {
+                "name": "installer-next",
+                "location": "resources/skeleton/install.php:221"
+            },
+            {
+                "name": "installer-submit",
+                "location": "resources/skeleton/install.php:222"
+            },
+            {
+                "name": "installer-data",
+                "location": "resources/skeleton/install.php:229"
+            },
+            {
+                "name": "bootstrapInput",
+                "location": "resources/skeleton/public/css/colores.html:114"
+            },
+            {
+                "name": "status",
+                "location": "resources/skeleton/public/css/colores.html:117"
+            },
+            {
+                "name": "cPrimary",
+                "location": "resources/skeleton/public/css/colores.html:119"
+            },
+            {
+                "name": "hPrimary",
+                "location": "resources/skeleton/public/css/colores.html:119"
+            },
+            {
+                "name": "gPrimary",
+                "location": "resources/skeleton/public/css/colores.html:120"
+            },
+            {
+                "name": "cSecondary",
+                "location": "resources/skeleton/public/css/colores.html:124"
+            },
+            {
+                "name": "hSecondary",
+                "location": "resources/skeleton/public/css/colores.html:124"
+            },
+            {
+                "name": "gSecondary",
+                "location": "resources/skeleton/public/css/colores.html:125"
+            },
+            {
+                "name": "cSuccess",
+                "location": "resources/skeleton/public/css/colores.html:129"
+            },
+            {
+                "name": "hSuccess",
+                "location": "resources/skeleton/public/css/colores.html:129"
+            },
+            {
+                "name": "gSuccess",
+                "location": "resources/skeleton/public/css/colores.html:130"
+            },
+            {
+                "name": "cInfo",
+                "location": "resources/skeleton/public/css/colores.html:134"
+            },
+            {
+                "name": "hInfo",
+                "location": "resources/skeleton/public/css/colores.html:134"
+            },
+            {
+                "name": "gInfo",
+                "location": "resources/skeleton/public/css/colores.html:135"
+            },
+            {
+                "name": "cWarning",
+                "location": "resources/skeleton/public/css/colores.html:139"
+            },
+            {
+                "name": "hWarning",
+                "location": "resources/skeleton/public/css/colores.html:139"
+            },
+            {
+                "name": "gWarning",
+                "location": "resources/skeleton/public/css/colores.html:140"
+            },
+            {
+                "name": "cDanger",
+                "location": "resources/skeleton/public/css/colores.html:144"
+            },
+            {
+                "name": "hDanger",
+                "location": "resources/skeleton/public/css/colores.html:144"
+            },
+            {
+                "name": "gDanger",
+                "location": "resources/skeleton/public/css/colores.html:145"
+            },
+            {
+                "name": "cGrays",
+                "location": "resources/skeleton/public/css/colores.html:149"
+            },
+            {
+                "name": "gGrays",
+                "location": "resources/skeleton/public/css/colores.html:150"
+            },
+            {
+                "name": "cSurfaces",
+                "location": "resources/skeleton/public/css/colores.html:154"
+            },
+            {
+                "name": "gSurfaces",
+                "location": "resources/skeleton/public/css/colores.html:155"
+            },
+            {
+                "name": "cType",
+                "location": "resources/skeleton/public/css/colores.html:159"
+            },
+            {
+                "name": "gType",
+                "location": "resources/skeleton/public/css/colores.html:160"
+            },
+            {
+                "name": "cShadows",
+                "location": "resources/skeleton/public/css/colores.html:164"
+            },
+            {
+                "name": "gShadows",
+                "location": "resources/skeleton/public/css/colores.html:165"
+            },
+            {
+                "name": "cOther",
+                "location": "resources/skeleton/public/css/colores.html:169"
+            },
+            {
+                "name": "gOther",
+                "location": "resources/skeleton/public/css/colores.html:170"
+            },
+            {
+                "name": "toast",
+                "location": "resources/skeleton/public/css/colores.html:174"
+            },
+            {
+                "name": "q",
+                "location": "resources/skeleton/public/css/colores.html:81"
+            },
+            {
+                "name": "tLight",
+                "location": "resources/skeleton/public/css/colores.html:83"
+            },
+            {
+                "name": "tDark",
+                "location": "resources/skeleton/public/css/colores.html:84"
+            },
+            {
+                "name": "copyAll",
+                "location": "resources/skeleton/public/css/colores.html:86"
+            },
+            {
+                "name": "gframe-content-root",
+                "location": "src/GFrame/Security/HtmlSanitizer.php:40"
+            },
+            {
+                "name": "all_items_pagination",
+                "location": "src/utils/PaginationHelper.php:100"
+            },
+            {
+                "name": "pagination",
+                "location": "src/utils/PaginationHelper.php:98"
+            }
+        ],
+        "js_mixed_id": [
+            {
+                "name": "buildScopeId",
+                "location": "resources/modules/heartbeat-client/public/heartbeat.js:11"
+            },
+            {
+                "name": "$byId",
+                "location": "resources/modules/media-library/javascript/media-field.js:27"
+            },
+            {
+                "name": "initIds",
+                "location": "resources/modules/media-library/javascript/media-field.js:382"
+            },
+            {
+                "name": "nextIds",
+                "location": "resources/modules/media-library/javascript/media-field.js:461"
+            },
+            {
+                "name": "currentIds",
+                "location": "resources/modules/media-library/javascript/media-field.js:468"
+            },
+            {
+                "name": "currentIds",
+                "location": "resources/modules/media-library/javascript/media-field.js:535"
+            },
+            {
+                "name": "initialIds",
+                "location": "resources/modules/media-library/javascript/media-field.js:566"
+            },
+            {
+                "name": "readDomIds",
+                "location": "resources/modules/media-library/javascript/media-field.js:68"
+            },
+            {
+                "name": "$byId",
+                "location": "resources/modules/media-library/javascript/media-library.js:117"
+            },
+            {
+                "name": "$byId",
+                "location": "resources/modules/media-library/javascript/media-picker.js:70"
+            },
+            {
+                "name": "getHashId",
+                "location": "resources/skeleton/public/js/app/home/mngnoadmin.js:25"
+            },
+            {
+                "name": "loadHashId",
+                "location": "resources/skeleton/public/js/app/home/mngnoadmin.js:283"
+            }
+        ]
+    },
+    "source_hashes": {
+        "resources/install/optional-modules.php": "438c2029fa61776c11eba0c1fa1f6ba25d0c0e8ad941df6a7ced1b657a05a49a",
+        "resources/install/profiles.php": "100f694142b224b0342400d3f04f8d74544e935f0f77232f59b601b52ae125d7",
+        "resources/modules/admin-panel/application/app/controllers/admin-panel/AdminController.php": "604a537c201e4a99d153f36a1cca195e417d7388967fb8b2a8cd74b9724eb891",
+        "resources/modules/admin-panel/application/app/views/admin-panel/admin-panel.group.meta.php": "2f04036864e363bdd170bf525b3c4ee43bf1313c1f8f9e28d77cdbf685ea908f",
+        "resources/modules/admin-panel/application/app/views/admin-panel/adminIndex.php": "2c789436c9c98be016ac69f1d63b662a28478a10336ac46acf5d7c7fbf92857c",
+        "resources/modules/admin-panel/application/app/views/admin-panel/parts/aside.php": "ca30d417a0a449b7009d14a518385e675b6f20c797d72422f03e928c4b0268ae",
+        "resources/modules/admin-panel/application/app/views/admin-panel/parts/menu.php": "826cd001bf603ec99fa11b5b06d1ba7ec9431399f821f1bbdd719e49af0f3ee5",
+        "resources/modules/admin-panel/application/app/views/admin-panel/parts/navbar.php": "defd9dcaecd008855a1fd1b1be5159363b2b18b4982f0fdd69030614b328f235",
+        "resources/modules/admin-panel/application/app/views/templates/admin.meta.php": "f13996088c336270d796bd07e300f430e94a10fca4b7c7066200ffb09f2596e2",
+        "resources/modules/admin-panel/application/app/views/templates/adminTemplate.php": "3641692556728ae03414bfa2d23c5e1f1268d13917554e8e5b28d752807b9120",
+        "resources/modules/admin-panel/application/routes/routes_admin_dashboard.php": "3488edd90e34569473dedbeb48de2e11ea4c49036a340910204f4cc62e019ead",
+        "resources/modules/admin-panel/javascript/admin.js": "10f33409f4dc0e75b8cf794c4817e27185ea3e79c6b701133580b55332bc9835",
+        "resources/modules/admin-panel/javascript/preload.js": "edfcc298bc3bed31b1a0e5b94527e729b88599bccc47d3befd7425e8531ae40f",
+        "resources/modules/admin-panel/module.php": "f7e1eb89b73d9f3c67241999903cde8af2ab56809245cc11c49225d7b39fac3e",
+        "resources/modules/alerts/module.php": "1fe83321fc6cfc5303de70eeb269e84794b853fab5d4ba7a4613b7c5534c1e56",
+        "resources/modules/alerts/public/alertToast.js": "078e5e4d59cdf0dd4a16cff2309d8c469a31498eb4fb30555878518f34d2a35e",
+        "resources/modules/auth-ui/application/app/controllers/auth-ui/AuthController.php": "b90a94c67f0a1be892b0d4b84cd7aad7427a8a1e5de555a69cf8be09eb84e64f",
+        "resources/modules/auth-ui/application/app/views/auth-ui/auth-ui.group.meta.php": "2eda9b2238fb05d05e97395cae9db6f082796f1816e101793889269579f02ab7",
+        "resources/modules/auth-ui/application/app/views/auth-ui/authLogin.php": "b5b310f245570afa242277b5bbba3be2c20dca08247dd32deabadb93d023ad59",
+        "resources/modules/auth-ui/application/app/views/auth-ui/authRecovery.php": "d857e15f3d1517fb8f5edd2339e8674b799c6ae0d26792fa186fba9333898031",
+        "resources/modules/auth-ui/application/app/views/auth-ui/authRegister.php": "679108e35b486c60c61f85093b63cf5b0df2bceb2bb2406765dbeddf7f497eb0",
+        "resources/modules/auth-ui/application/app/views/auth-ui/authReset.php": "274dc44676eb9572b3022bec14016da00a7292b425370097c8e003600a1a3889",
+        "resources/modules/auth-ui/application/app/views/auth-ui/authVerify.php": "e5e8b984dfbf1634ab1174dd3dca86c2924b16d362d46caafcda1e518fb4b323",
+        "resources/modules/auth-ui/application/app/views/templates/authTemplate.php": "d2526d39a486b42bc17c43465365cda42a11343e9f9fd3181f825776dc383436",
+        "resources/modules/auth-ui/application/routes/routes_ajax_auth.php": "98b7eb823ced2d94d46cfe4439d2092fec104c9ac0264b768cc76aa1bf268a97",
+        "resources/modules/auth-ui/application/routes/routes_auth.php": "41667f89b725461c3641170295f1179a2564f9b375cbb804b20797090c3b6208",
+        "resources/modules/auth-ui/javascript/AuthLogin.js": "0f710e05456d09743c7389903d6e0521539887dd202b0dc9e762ad407a4029b4",
+        "resources/modules/auth-ui/javascript/AuthLostpassword.js": "10c02197253c2f72fab3343c52242ede20cd092ddd50ca7e253d04559eb30a6a",
+        "resources/modules/auth-ui/javascript/AuthRegister.js": "23ad46ac0e64057e84c3df8bcfa91954ccaeecf39f424e23e15e153ba0b950b0",
+        "resources/modules/auth-ui/javascript/AuthResetpassword.js": "0f154a8cd1be169186b156f7130b9b8b2ca241e47439ba08e9674faa701a5782",
+        "resources/modules/auth-ui/javascript/auth.js": "d81a2dc17019bdb22e14444e4808b2ed5a3beadd489a9527f78c6214c0a1abb6",
+        "resources/modules/auth-ui/module.php": "a785a9dae8a6e5a2060f2519a7f428390a5b1e03fca431e83cf7e623cfd39c59",
+        "resources/modules/cron-runner/application/bin/gframe-cron.php": "d344f0917fcb028aace51fc3cfe9058887eef4877877504bcad0db61737b26da",
+        "resources/modules/cron-runner/module.php": "f948c3465a2de9eadf859090c954a57d4a5a25039b1fd86fa3d7e5a5b133cc53",
+        "resources/modules/error-pages/application/app/views/error-pages/_errorCard.php": "7e08f89311d0bf9911a953f760eba9eaa23d796c588720746a2dc927930e77fa",
+        "resources/modules/error-pages/application/app/views/error-pages/error-pages.group.meta.php": "8779db3a78ec346222bd6040c3fe489894c97529adc5574ae7af304f852f54ff",
+        "resources/modules/error-pages/application/app/views/error-pages/error403.php": "89f588bf07be72a42282fc6b04db60af32760dac7bd7556fb29dad36dd0332ff",
+        "resources/modules/error-pages/application/app/views/error-pages/error404.php": "4cb0d5b927340a99101f5b5e7c044453389e1bed42d9926a228132b70c97537a",
+        "resources/modules/error-pages/application/app/views/error-pages/error500.php": "abf332b9387c9eea9113daf0c3eea2cc19e77f000d2782dae8b3d0aaf58cc4e3",
+        "resources/modules/error-pages/application/app/views/error-pages/error503.php": "2b075cfdfc49605295e77ec029d8f6236b465769eb4ac91856ad4a054f3b2afc",
+        "resources/modules/error-pages/application/app/views/error-pages/errorPermissions.php": "668d84b6dbdb809a753e07df0f6d9992527bfa91b2ba3f66220faa1ee3312969",
+        "resources/modules/error-pages/application/app/views/templates/errorTemplate.php": "734c03d8be39f061791eb46439418f7154730465827575c44dbf154049cf0a24",
+        "resources/modules/error-pages/module.php": "94a25d91a43c1b96ee124f02b61fbe782c6c9af2376087e83297e4c275b4a00f",
+        "resources/modules/frontend-core/module.php": "50e2583a0365b93c49cd04229f51adba62a1c57e3477456fcf09544101696649",
+        "resources/modules/frontend-core/public/utils.js": "951e9a2cd29fc9b265cd82f3154858311c6b0ab4dd387f361e54ac149fc031b5",
+        "resources/modules/frontend-core/public/utils/errors.js": "21a7bee6f1ccba6f616ed6cbc00a74fc1e2e1c40de9d8a36bbc7a7aa6edafe11",
+        "resources/modules/frontend-core/public/utils/forms.js": "4f8c6ab71ff6de40f9d3eb43226cbff88b521086c52d4dc188b51c35fabf6a41",
+        "resources/modules/frontend-core/public/utils/helpers.js": "da3f2c495aff93b572223f2a6fe91b586e32bcce5827d34dbb9a9c051c4f4195",
+        "resources/modules/frontend-core/public/utils/pagination.js": "bf363995427c9430969e237a1c8fb19bb057f0aba0ec17589e8a917aa37d9db0",
+        "resources/modules/gf-select/module.php": "e7a17cc56312921f6a96010ee0825fb5a21addb94e358239d2463a4224df90d3",
+        "resources/modules/gf-select/public/demo-gfselect.html": "906a6a0769b9b06b3459a6c9b3f06e266b22398d6eb40f991a6ce1ff3030af88",
+        "resources/modules/gf-select/public/gf-select.js": "67f1e084dbc78f099023772f3a44002f656b23d20d6f035130ed428397bdb1ec",
+        "resources/modules/gf-table/module.php": "c452ee7106ed6af13e8f102661642685ce12203ce612444c51d694b502a40dc1",
+        "resources/modules/gf-table/public/gf-table.js": "d0ce9a605d834188b8ea3fafea1d3ddbda8a841330b591702d3c81201f44cac8",
+        "resources/modules/gframe-icons/module.php": "f8ab068a1d51e71b14f293cb50a06ff46c10859957f339bc694f61b0778640a5",
+        "resources/modules/gframe-icons/public/demo.html": "bfb62241160d1e0db7bd5ed94e183be218cd9a465b8749ed5b760413e563dba4",
+        "resources/modules/gframe-icons/public/ie7/ie7.js": "4aa443f56e5ef5fb3271f9a106ff74eb6790d14a310d26b1b4c0274bda94aed9",
+        "resources/modules/heartbeat-client/application/app/controllers/heartbeat-client/HeartbeatController.php": "16fe5b0bc31d402e955dbd1f29f8334b408877ced29b5f761bc6d20583c0e170",
+        "resources/modules/heartbeat-client/application/routes/routes_system_heartbeat.php": "476f0700a9d37bfa6a5eb3ff0c34eb59e41742c7fb872fee983048f592e555b1",
+        "resources/modules/heartbeat-client/module.php": "86f9cdbb268efb33f8a9b0c9bb7af7cbe3549bfa0eb355ed2fec179f9a052356",
+        "resources/modules/heartbeat-client/public/heartbeat.js": "7d209702ef1f82222b927d0d0b0308f65d915263155cd09614ce9a7f5a47d77e",
+        "resources/modules/heartbeat-client/public/session.js": "d1bf10644459b70f8e2d498471fcd3372064a96529251d07c5a4f2944b5731b1",
+        "resources/modules/lexical-search/application/app/services/lexical-search/LexicalSearchEngine.php": "a69dcceba66169a145d0231b6e5be7f5a52617f89aaa6b0911b66d7732c9ed6f",
+        "resources/modules/lexical-search/module.php": "4008c4696ad3dacc95b0f63ced6cbbe37a150d6d16e92fd76c2bbe76f0e86721",
+        "resources/modules/lexical-search/public/lexical-search.js": "bc0a466bf069e3a4b4ef9e0a54c4cd1f1e8ea2731964bfe9a7142878f9978768",
+        "resources/modules/markdown/module.php": "769d5e2694285255367968603aa2fac765cbc933e3577981164fe8dc695cf9f6",
+        "resources/modules/markdown/public/markdown.js": "d531732328f06a9c74b137f62608bc013bc1b3240651b59ba48e658f2537dd7c",
+        "resources/modules/media-library/application/admin/media-menu.php": "21073a022f9922c47e4ef399b52183c294636fa1b2f545715734bafb5d8895f1",
+        "resources/modules/media-library/application/app/controllers/media-library/MediaController.php": "ae707b76f05fa274a449e6a6553327feaf72dfc7cb8b1993af9a4b5ff8a8155a",
+        "resources/modules/media-library/application/app/views/media-library/_gthumb.php": "4b68297c8cb3b0649445962cf8950a508f7143b48d2c7af3cda17b2db5bbb725",
+        "resources/modules/media-library/application/app/views/media-library/_mlist.php": "15a090b0c5ee960a2a8acd85f010409c9c76144432220ebd5be20d5c37d54f8b",
+        "resources/modules/media-library/application/app/views/media-library/_sthumb.php": "0f07f465c8cfc3b871be57d1f57be74563cd31779d57ab0e671cf1fe62cb6635",
+        "resources/modules/media-library/application/app/views/media-library/media-library.group.meta.php": "14df17aa083d4e709ae1768da661a1c0bce3f1435473ee4dd461c39eebe770c8",
+        "resources/modules/media-library/application/app/views/media-library/mediaEditModal.php": "23b3b1094e74aa2f6f0be0744a819ca71851d0248fc4bc6050328b21b0c2933e",
+        "resources/modules/media-library/application/app/views/media-library/mediaField.php": "d159137ddfa21fedb755217a7004090e7ccb077293512cc9223a923b9257aa64",
+        "resources/modules/media-library/application/app/views/media-library/mediaIndex.php": "efdd81be2a972f83c6463963b7c0c335f9830020f7a52dbf915e45373f476291",
+        "resources/modules/media-library/application/app/views/media-library/mediaPickerModal.php": "2686bcbb902d0296a3856c97ff0c82e757795d7c28dfe312b2f8f6929af79158",
+        "resources/modules/media-library/application/components/mediaField.php": "c770a9d584f1f9f58544b4a3dc92ccd6f5e27580efa25958d35427eef40d8c48",
+        "resources/modules/media-library/application/components/mediaPicker.php": "98d470db9b4edf1b0d6ad70c879b1ad13e19832cf44c0304b321c5f5bba1ed7d",
+        "resources/modules/media-library/application/routes/routes_admin_media.php": "a7623e456a018245c1bb58fa0f03349c09955eb5522357ad35ed1066b743d861",
+        "resources/modules/media-library/application/routes/routes_ajax_admin_media.php": "2b7a3e3b79991365b01b54de986a8fb24e2b06f775137794a788b49d5f52c89a",
+        "resources/modules/media-library/config/media.php": "1fe399753c49aae174f556d5ed6df39c6c473cf955beca527bfae648b5bb233c",
+        "resources/modules/media-library/javascript/media-admin.js": "c33a75a4b96e7eb48e23ff38d5885ec109d70bd17e1b6034b9b04db3c807f1c3",
+        "resources/modules/media-library/javascript/media-field.js": "e519c46bd0729cf7c8f954c51a2dde7d363c1f63017826dc0f716965201544d5",
+        "resources/modules/media-library/javascript/media-library.js": "81ae44d9186c021345b03c41fcb2f37f3c7c61e0b11c6ecc0bf2fd82f13c7cb1",
+        "resources/modules/media-library/javascript/media-picker.js": "79a28fe18f69f04a63d73953de472de3e268693c213516d39e0a0b7fc9433598",
+        "resources/modules/media-library/module.php": "7927d95f600b1ac876b974aaf93a5066da40ee1d330323b9d7b7d06218c7406a",
+        "resources/modules/notification-campaigns/application/admin/campaigns-menu.php": "877cf6f3233cc676a5e665c95d5419d475fb123fb3076ccb0a9d08350e97a109",
+        "resources/modules/notification-campaigns/application/app/controllers/notification-campaigns/CampaignController.php": "4e5acaf86ffb0401eeef8c5e352554e06b57c1b556f6d2fc87d899e757a16be8",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/_audiencePreview.php": "d7a578ce27bd3ac5a0cdf2edb834bebeb3ddde573bfcecd64e3cc10a02d72464",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/_automaticHistory.php": "1f5011a0dd44e1f39dd22037fdf4ece0f328fff0516832c13378bae570b35434",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/_list.php": "d3871c1e3b05a528c956f562ae61c3ccc9c528211945d2cc6c9f0fbae3e540df",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/_placeholders.php": "ba1d6bd9517670735f1a4c4e6218b95198b2622935536c2d7fdb601d49d7679c",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/automatic.meta.php": "6696dd02b31f68c8f3267c0be0f29afaaf1d09bff1efc8edc9cb9acdea614a3b",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/automatic.php": "c956a34e491d2ff4db979c1478b6bcb915d2a9de9d3743d3540bac67edf7496e",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/automaticHistory.meta.php": "3abc437f4f3fea4839e9ef77aeb5a03fe6cf222157fbed844b5b8ad5dab3d1f9",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/automaticHistory.php": "b72c9a9afe3f6d2c5daa052183c9f5d657b9238ac27a62964ae20f2fab759851",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.meta.php": "d5c839ad5c29ac1a6ac6392a42daa0c892554d1e42832e9d5267a5a84b513c68",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/form.php": "e957ec37626b20754af336dcff0ba3416cb7277b312ee04aa16ac0482ee8914f",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/index.meta.php": "3abc437f4f3fea4839e9ef77aeb5a03fe6cf222157fbed844b5b8ad5dab3d1f9",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/index.php": "114f50dd845588b436f259e2678a0b258aa6cd32cb2c9521438fe756b01ec7bf",
+        "resources/modules/notification-campaigns/application/app/views/notification-campaigns/notification-campaigns.group.meta.php": "210412e9ec0c08dad8b36a39fa2a05b02fd9f6b681547f7ce10f16efb22fd74a",
+        "resources/modules/notification-campaigns/application/routes/routes_admin_notification_campaigns.php": "b9566261f668771b7aaa24890b34bab4f767ad72b1d4617fdbb124ddde0b0813",
+        "resources/modules/notification-campaigns/application/routes/routes_ajax_notification_campaigns.php": "664b1493f35e9ceeec2903e9c79682c45054a4133420b2359b067218a731de4e",
+        "resources/modules/notification-campaigns/javascript/automatic.js": "f4308ab2ad6bae71d3f13d7f519267a4d947bf7a73baeccdfafbc0aec2855660",
+        "resources/modules/notification-campaigns/javascript/campaigns.js": "0f082a194c80d4aeec0cf0ecbae174746620955ebcf567b9fe10eb0ee35ef5d4",
+        "resources/modules/notification-campaigns/module.php": "75744f9d0b47154c3f569c7951019d8771308e1466b1a48f05175d6cd048dd52",
+        "resources/modules/notifications-email/application/cron/register-email-queue.php": "c322c7b1ed9726f8fb8a2fb6e233c05bf42f0550c6d20671f96f44beefe8ac82",
+        "resources/modules/notifications-email/application/mail/notification.html": "790da9763ff3fa669b8a68bef107e7978397e5286276b9b55e0e33c10e58a25d",
+        "resources/modules/notifications-email/module.php": "bb4403dc5dde1d0b5aaeea196acbb995c2dcc65bec9214ef7691c2087c240f94",
+        "resources/modules/notifications/application/admin/notifications-menu.php": "0c70c8831236194203de55514f7ef3517510ea6af1a6375ad3c0a3971f9e3433",
+        "resources/modules/notifications/application/admin/notifications.meta.php": "9f87154d9fd1f811c46e6ea555faf9e187c805addfd32d39d675dcc0e12b3fe3",
+        "resources/modules/notifications/application/admin/notifications.php": "c6f14dd119ec71887b0beaebcd081b034d18a057cc7d7d6e637c55897f428aa5",
+        "resources/modules/notifications/application/app/controllers/notifications/NotificationController.php": "9439483ecf70a2a432d86a8570ac13c2b3c50fdc927d6c5dbfba15292346d5d2",
+        "resources/modules/notifications/application/app/views/notifications/_detailModal.php": "81fb3161ec0b6fde8e9c0248773bd31eafee8149350d8b7eeef675cf6d7c9d89",
+        "resources/modules/notifications/application/app/views/notifications/_history.php": "ee046b547ec20770e341b50dda4a5c7908aad6f88ed5750b882bf9523bbc81a6",
+        "resources/modules/notifications/application/app/views/notifications/_inbox.php": "e679f4cf983f2c8754ac1f5daaa7a0b4699f218b8d21dc60d14da00ed859de56",
+        "resources/modules/notifications/application/app/views/notifications/notifications.group.meta.php": "aa229942144c557b7d9892855a4a9ce14c3068b7aeeb7644114e1e08fa636338",
+        "resources/modules/notifications/application/app/views/notifications/notificationsIndex.php": "c92fa97eb8fec954534e79edcabfe171496093900002bf2fc8b48a7cca0a60ec",
+        "resources/modules/notifications/application/app/views/notifications/notificationsView.php": "cd4553de002689a358f218361663af433074c6c4fdd5c380306e6cf147bd2079",
+        "resources/modules/notifications/application/app/views/notifications/parts/bell.php": "14fa37bd10629ebdd4da57edf099f6486fb6eac31196a3c2e72ec9491f283d6e",
+        "resources/modules/notifications/application/cron/register-inbox-queue.php": "65c90a3f399f34c08b5e37509055e6c4b6a180f4d1d605069864634d7e421da8",
+        "resources/modules/notifications/application/routes/routes_ajax_notifications.php": "bf9c25590e31a6306fe1b6b78ca11d9af7460d92b09a90af69543ef4be8042d5",
+        "resources/modules/notifications/application/routes/routes_web_notifications.php": "8d3b4962388efd114f7d2850a5a921759fc2640d955e5d277e4237cab29bbd88",
+        "resources/modules/notifications/javascript/notifications.js": "c3c184a14be4a8f5ee0fa3130a1d759a4c367e1bd19ba91d2f0429d589066575",
+        "resources/modules/notifications/module.php": "4e93e22b97cd2ab37cfb64d4745bb5888e3f8e1c94227e1c6bf5aa13e792dcb3",
+        "resources/modules/password-utils/module.php": "08d729efba683c44424f98d8306dfb80ea885a48423e47c40d60890cd45d2f65",
+        "resources/modules/password-utils/public/passwordUtils.js": "9ff9f17ef8246f47e3d0ef1b641bf78e191283a20549a887954355f638200417",
+        "resources/modules/rich-text-editor/application/app/views/rich-text-editor/richTextEditor.meta.php": "488b0de465222f11c81420653fd143614e9d9771684b5ab97956dfee0546deed",
+        "resources/modules/rich-text-editor/application/app/views/rich-text-editor/richTextEditor.php": "ae3349d2d5896b32240ca21a26b6fe624139cffc80d1ba89622980178428c39b",
+        "resources/modules/rich-text-editor/module.php": "38648d1f4907748edab6ba93dadd11cdcdd2042c27315d6429a1f15f110c794c",
+        "resources/modules/rich-text-editor/public/rich-text-editor.js": "1352956e4132aa5bf527890510119f9cddfa31ce14bbe5ec4482d40fe775ad36",
+        "resources/modules/self-account/application/app/controllers/self-account/SelfAccountController.php": "7d30e0038781045fe75030dfa311e8145b9115d543965328a576098ccf33dc16",
+        "resources/modules/self-account/application/app/views/self-account/self-account.group.meta.php": "36f239269f7addceac4a5e3c36936ddbae7c7fa49dbd98ea06807b2b856d2848",
+        "resources/modules/self-account/application/app/views/self-account/self-accountIndex.php": "3297301099bf49288b1794bf9af5c44c30139fc55e20731c070d90f223aa3578",
+        "resources/modules/self-account/application/routes/routes_account.php": "3eb2906de954d6064a8730d0b2ba25dafc74eb1bb374896ee6a226fe02ee5c3d",
+        "resources/modules/self-account/application/routes/routes_ajax_account.php": "3117e71689825373a77d9504fc4b25990a3d420520d0a2e0f2a850f8c5fb9855",
+        "resources/modules/self-account/javascript/self-account.js": "60b422abdf3d8f00cfd6b933203aa6d4e1d20b035e857c6c2ba11fba0da9c47a",
+        "resources/modules/self-account/module.php": "1835b9a5c946b4a1ecbf127190f237e8904fea3c608ea0c350713d815458855e",
+        "resources/modules/user-admin/application/admin/users-menu.php": "16165965e38b4b5392da60591a15d4ad78990a52facf65c13a4163b77870d2f6",
+        "resources/modules/user-admin/application/app/controllers/user-admin/UserAdminController.php": "46a738ad22d6dc079afc424f5781c107a6ba7de2011e9faa8625f1c59192e50f",
+        "resources/modules/user-admin/application/app/views/user-admin/_userList.php": "b2ca04472e3483791111ea7b72fd57ff6079d391e5f72e391b549e8218c830f2",
+        "resources/modules/user-admin/application/app/views/user-admin/user-admin.group.meta.php": "ae2b2026307702634e59636db35aa63c37e9c9390953e3929c37d9d5f68ae7bd",
+        "resources/modules/user-admin/application/app/views/user-admin/user-adminIndex.php": "0a69a4c7718ce05140467e67fd8a93b04ee85e55500889b654776d1a7d81055e",
+        "resources/modules/user-admin/application/routes/routes_admin_users.php": "cad0729d775e78bd27ccb2726d50dfcde376e58415a1fb69f2dbb576d3e0e4f9",
+        "resources/modules/user-admin/application/routes/routes_ajax_admin_users.php": "4ad861b03a511e455fb07332ea191faee1ea141d7412654c45fd85a64887bcbf",
+        "resources/modules/user-admin/javascript/user-admin.js": "3704d1b22fc5c4c63c611c226d099c707438a0f87bae04d87da6da4a7bbcc5e4",
+        "resources/modules/user-admin/module.php": "007743d8cc64684770c0237b9c34c0a28a8a7b68607390470eaa461d1c441c8e",
+        "resources/modules/wordpress-headless/module.php": "aab3f18e0f3710616e3fc9bde32bd9e5e99b09900e903a7e532548f3937c4963",
+        "resources/skeleton/app/controllers/home/HomeController.php": "bca23d8415a96011e28c8c38f2ba48c0a662ffe5630a518386b0e58596a11987",
+        "resources/skeleton/app/views/home/home.group.meta.php": "fe81776509ecd62afe87eea8ab0d843da19a49e54bce690ac1b5f6bc2c950c2a",
+        "resources/skeleton/app/views/home/homeIndex.php": "643c99a9a871cf389c58931f807fcc6c6a5b340544887664b6e086558bf35128",
+        "resources/skeleton/app/views/templates/footer.php": "e0ce4ceb5712d82aebd280caa8caaf98de1b9886c8f23eb6270a684d97c4943f",
+        "resources/skeleton/app/views/templates/footer/copyright.php": "826ba10c3229299a3f3934c41bb11910da7d71a074af8f95ea25e898bc683632",
+        "resources/skeleton/app/views/templates/footer/credits.php": "2756f974d18fb7f8d0fdc545cacaefb478a342cc3a05246b3bf465c5fdfa1ac3",
+        "resources/skeleton/app/views/templates/header.php": "0e5b5a4045ce32dd80c60acf3e85453ac9f557287b9ec252e5ed65b65d5e98ef",
+        "resources/skeleton/app/views/templates/homeTemplate.php": "09dea0fc1a5f154e4b4097c786c6f51b3b9601c094f9fdf28f7ae482be00aa7b",
+        "resources/skeleton/app/views/templates/mail/contactTemplate.html": "97e9199763c6e4eb3c86b3fc111e5aa55b170c82e8a8a7116f9ebeb39b98ac96",
+        "resources/skeleton/app/views/templates/mail/mailTemplate.html": "82a1641da64d537c0871ea729c1854c87763cd5bfd162c36e1a041599d77d4a4",
+        "resources/skeleton/config/Permissions.php": "85cd2f710873e3cf16971ea4513a948a31c6c29127ec7c8e28fbf0d0c0a2373f",
+        "resources/skeleton/config/meta/global.meta.php": "13d5e9a3c0a0bd41afbf8205636eab4888227b474db38a67b445c93104276b94",
+        "resources/skeleton/config/routes/routes_system.php": "6ab31591266927082486a0f1659963bf08628455c95768a008f77d51e6e451d4",
+        "resources/skeleton/config/routes/routes_web.php": "319046766e6333dde76a884f48fcde7ea121a890541ea7ab9bc2bfc61e537b94",
+        "resources/skeleton/core/Load.php": "66ed4a2a9e89780762333a816823571cbf6dec89fc8a0113cce892948c9c50ba",
+        "resources/skeleton/index.php": "7da7604a16a27d29f6dd6c8bddf1205ec666429ea896bbfbe185ece7b1313488",
+        "resources/skeleton/install.php": "24a749ad9ab751f5a04485ed9e686358e766f0b3f5078371e16e21515cf4e73d",
+        "resources/skeleton/public/css/colores.html": "6b87ab7972c8d2b33f2637a27112133497fda7de39e829499a8892bf25c941dd",
+        "resources/skeleton/public/js/app/home/mngnoadmin.js": "faf8a0bd25862bca1e6e4e8796d33a11fa3293a3af58647f461203b1f6997a6e",
+        "resources/skeleton/public/js/install/install.js": "73dcfdea3f29846ed270ab54b773c7f80418ba34cf9440094a3071aadcceae84",
+        "src/GFrame/Auth/AuthInstallationService.php": "b322bed3cfb704c6c7fcf0c2895e271f86fbaf58d8f742577af32b55fdff8998",
+        "src/GFrame/Auth/AuthModel.php": "f44a8c0c12f5dabbb9f2ab3db2b86ce5c69938cfc3897cd93422d7a2caf34219",
+        "src/GFrame/Auth/Contracts/AccountDeactivationPolicy.php": "dca015968576a422ceaa6cfa2496b5329d0f6bdcfc848fe16f61f3a273ff9c48",
+        "src/GFrame/Auth/Contracts/RoleAdministrationRepository.php": "8b99d5f99869d19ecfb5ac09cb550abee29485aaa0b7ef51a90673b082f51805",
+        "src/GFrame/Auth/Contracts/SelfAccountRepository.php": "0b4b96436e9a023610437fad64ab0a95cb23905038882fb3746196366c31ae22",
+        "src/GFrame/Auth/Contracts/UserAdministrationRepository.php": "e53df587ac32684955261f436f4ccdf2987ee6be6caedd7b6dd51738775069e3",
+        "src/GFrame/Auth/Contracts/UserModerationRepository.php": "d4e7fd001a604f552426e2334d167105bfbb614e5960f8b9f6a4b18c587f6636",
+        "src/GFrame/Auth/RoleModel.php": "13f72cef195903653780b0346339fd49c297e50a2ed71bfa9ef7c204a3a9f37c",
+        "src/GFrame/Auth/RolePermissionService.php": "8007a00dc09a3ec9bd3faa59d19d8bad6dc2ebfca1bcfbdb088b4d759cf051d0",
+        "src/GFrame/Auth/SelfAccountService.php": "1a89dc2f803fcdcad23142ab72891c7af18f6007042e1392b37ccac0d50ff140",
+        "src/GFrame/Auth/SessionManager.php": "22bc94c37ea5a146f9e99a147815cf1a16cc6c7f097a16152a986b01df50e87a",
+        "src/GFrame/Auth/SystemRole.php": "68e95d72452193172d478534f384d49039c3563ca77868609f30711db74cd281",
+        "src/GFrame/Auth/TenantContextResolver.php": "29ee83f7fac12446f25ea95cb0309ccccef4bceb0d4d22dffaa576201829348e",
+        "src/GFrame/Auth/TokenManager.php": "f429bc8a13000ff023fe5b477fed012d4a0bff8de68eaf6898e898f7479ffd29",
+        "src/GFrame/Auth/UserAdministrationService.php": "0e555282e01db3f72724d67f0b928397f97e67c22a0c4845498baec29fe65a56",
+        "src/GFrame/Auth/UserModel.php": "72108f760e22bee86423a5db6ef8759d28968316dcf4673817814cfbfe21e6c2",
+        "src/GFrame/Auth/UserPermissionService.php": "bbd41d291032fc6670cae87777cf954c56f787fa0f309e5f81ac49b79438ac78",
+        "src/GFrame/Config/ConfigRepository.php": "125d52e89ca488d6e3e1fdb9020496aa371b92f617059428f267b16cd95faaf6",
+        "src/GFrame/Config/Environment.php": "c2a36b681322cbd8812bc44ecf43ccb3ec3367847450a3d99ec2ade530106ef9",
+        "src/GFrame/Config/LegacyConfigBridge.php": "c495deeda3b04234caff10bed2f4b4da94eabee09b8eeb441c390efc994190f2",
+        "src/GFrame/Config/functions.php": "aaef3dd2e1b062bbcc3e6071921990403f68880ee6f42630a3be3e498d554e8f",
+        "src/GFrame/Foundation/Bootstrap.php": "33d824d1598b1de1a91c10cf65f40f0c10eae96919f47218221c85a923090f38",
+        "src/GFrame/Headless/WordPressClient.php": "f049c5c56646b0c3f79d0a7b4bd624245faa52351d01f0b461daa107a647cd83",
+        "src/GFrame/Http/Contracts/ApiCredentialProvider.php": "14ad19aa16c0fd335c4a59313c075f5b0420ec00a2fa7e4e341262cf122a3159",
+        "src/GFrame/Http/RouteApiCredentialProvider.php": "c999d75f82abff17f5fdd456f588d6d2356215684124899c57cb6d34fc34718d",
+        "src/GFrame/Install/DatabasePreflight.php": "ab764c489e7b49fc7553f8c7eedec9c3e3942e9cf2ec717c7ebac1a683911714",
+        "src/GFrame/Install/InstallationProfileCatalog.php": "892941187ef85c460e224971d1d36013d1f784a7c9670e0c4960a68e66b3dd82",
+        "src/GFrame/Install/MigrationRunner.php": "400edeae385c31fa2e757ce8882714261595af7ce08205d4d0feb8d06a7c8c11",
+        "src/GFrame/Install/PermissionTemplateSynchronizer.php": "204dc3ed9a8a623b284fb8de85886958d2168dba0b293ceb8e2159b25ce7ce76",
+        "src/GFrame/Install/ProjectConfigWriter.php": "4e587ed5950d6dcb3b22e3242d01dc201ece91c734f6aa32373a8ab0d3fa43a6",
+        "src/GFrame/Install/ProjectInstaller.php": "b9e3d45dc178abb996d5c0b9c8a838f1bd91d62097c50a81e8ba7871ca06eb82",
+        "src/GFrame/Install/ProjectScaffolder.php": "57ac7c9b50aa1ec840d00f780e6aab94bb41579ee1c069399a2200fe51057fe5",
+        "src/GFrame/Install/ProjectUpdateService.php": "bc331499c9181635f1638efadf009d562c20d893444dbd4764ff26628e5570ad",
+        "src/GFrame/Install/SchemaInstaller.php": "d297c6eb5574b0d7aeaaf423ceb8c4cae254576084cf4953d5a03bcb617f2a34",
+        "src/GFrame/Install/SqlStatementParser.php": "f532e329d84ef0907d77dcc74017e10807578f2257bda0d8fbe8ee9a1487d9e3",
+        "src/GFrame/Install/SuperadministratorInstaller.php": "3b40851ac58193b3ebedd2a2c6be294fa52edd8a3cb45ab6b1f764c827bb8d46",
+        "src/GFrame/Mail/Contracts/MailSender.php": "3c25b2c5ecfd07a0df2419d58009e8afb69b547671aa60f9741218a0f0e77ace",
+        "src/GFrame/Mail/MailRateLimiter.php": "414e5bee549ff22b3b1ee5289a5479a709c91b3ec2c4bf0381c479d13599e0b8",
+        "src/GFrame/Mail/MailService.php": "45e203bff137bd5f98d02f37ebcf12c4e3dbe30a6f4f0b5f0441c2245f212461",
+        "src/GFrame/Mail/MailTemplateRegistry.php": "8672bb62fffee72ce4b08104b6e2b35b0b9d9840b8fe484f28334fdbe88f26b3",
+        "src/GFrame/Mail/SmtpConfiguration.php": "ee396d30edc4838f354dd43d0812ac76a01b12d2c8124e019ce3f550dd6a4d5d",
+        "src/GFrame/Media/Contracts/MediaRepository.php": "5c6950ffe5a867a9db9c71fcee44dfadd70affd89f75fa20e1a30f402b54ca4f",
+        "src/GFrame/Media/MediaLibraryService.php": "d83ad98ba53f4490639537099fd776ed5547d158095080a1c539b38c599bcd3d",
+        "src/GFrame/Media/MediaModel.php": "033cb79f9d1de9eb4c5f0ce7ad9f286c165a96e7486a4c7022c12ca8ef0e810b",
+        "src/GFrame/Media/MediaProcessor.php": "75d320a76d191567f44e227c720e190e468e0dd0a1851d933b9f16dc41d8dc95",
+        "src/GFrame/Media/MediaScope.php": "0c1a73452c39be2ebb35b33e9f9931431e27f1a49930fefdc97cd0c2d6e48930",
+        "src/GFrame/Media/MediaScopeResolver.php": "a2c3914f23423a4eaa583ea6883d8ffe9127785f9e34d21d604b1598aac21838",
+        "src/GFrame/Media/MediaStorage.php": "b1c622e4679cb93be0a426520a8ce3c8aba858fac08b2089100804111bc5deeb",
+        "src/GFrame/Media/MediaSyncService.php": "a2ba4e8c6a9065425a5b3b1a2839cc462db6b63ef1531affd6cf9f26760b136e",
+        "src/GFrame/Media/RemoteMediaInspector.php": "ef75867d977ca195f75b0ffc67b6e2a0057f9d35f40fccfe0b2cf10a3cf31886",
+        "src/GFrame/Modules/ModuleAssetPublisher.php": "1c5bf58466a06bb125fc970361e37197dcf9346d0b0692f933bc083ec1e1dfc9",
+        "src/GFrame/Modules/ModuleCatalog.php": "e221c236fba7845db75994f67ca82a720eefd6a486b9de41c295f38635e23ca5",
+        "src/GFrame/Modules/ModuleRuntime.php": "aebf95c2cf7255fc0124babc170f357e3e4efd1b1de815123d9261d6d8da0d39",
+        "src/GFrame/Notifications/Campaigns/AccountDeactivationLifecycle.php": "790892b6ee239967221ace765fc0769fa36cea1977d1276510476b400b15b84f",
+        "src/GFrame/Notifications/Campaigns/AccountDeactivationModel.php": "97c6f5c6eb84372ff1a4b4bd3411a39b29f1649f8d1f1942fcf2314ce85fd47c",
+        "src/GFrame/Notifications/Campaigns/AutomaticCampaignCronHandler.php": "f760357b3d29fd9ad86ef788337873d591a5e48c7d56f9f5e71edb8195e9cc34",
+        "src/GFrame/Notifications/Campaigns/AutomaticCampaignDeliveryModel.php": "01e4fe0a27118baeb078f3ac5419092e1f98a17fa5fb9f54b2f845d24d889212",
+        "src/GFrame/Notifications/Campaigns/AutomaticCampaignDispatcher.php": "5b28b0dece60341c1b47e77c615dd1e27e8f39aa04beb6381c53eb203ddfa465",
+        "src/GFrame/Notifications/Campaigns/AutomaticCampaignHistoryModel.php": "409a462f656792e81203278a51645da8d0be24e4384fb2a82bf536f0e8e64f93",
+        "src/GFrame/Notifications/Campaigns/AutomaticCampaignModel.php": "681c9757e68b2195c1b835a81fd8114346598d83cd1ad41e168a30f94a48a538",
+        "src/GFrame/Notifications/Campaigns/CampaignCronHandler.php": "f2453f9d507bde7ccbee295f5dc81934e3d574e90ee611a339cb77fad54e2ca7",
+        "src/GFrame/Notifications/Campaigns/CampaignModel.php": "a4d1737a2ecb8bc71e12132e22294b2a8db57e4b370c6d2df77bdd3684db809f",
+        "src/GFrame/Notifications/Campaigns/CampaignPlaceholders.php": "840bf654cf144baae8990d2fb96b373f223e3dc194764f62f263a02d969c50b2",
+        "src/GFrame/Notifications/Campaigns/CampaignRecurrenceCronHandler.php": "7d1f72d84fdcc5645434146a6d1e95a14db25897bd790e714dbb876ad7c58fcc",
+        "src/GFrame/Notifications/Campaigns/CampaignRecurrenceModel.php": "ec520609ea70df0b497bd0a22d3526ac53e70f1e735b7c601d944b77a3aef430",
+        "src/GFrame/Notifications/Campaigns/CampaignSchedule.php": "cbe7652cbafb3621bd73612a563b608c4949ef14db9abad40315f30bd730c2eb",
+        "src/GFrame/Notifications/Campaigns/CampaignService.php": "8d058b3d2c65123475cc67356822c84df8ee6856f565acc6343a0c1ddeb12a84",
+        "src/GFrame/Notifications/Campaigns/CampaignUserAudience.php": "e1100fd04b7925d4358de742b69fb5e32283834c7a8d0336b60d7ddcb94e3796",
+        "src/GFrame/Notifications/Campaigns/Contracts/CampaignAudienceProvider.php": "b9ac05f69d415708b4a775fca5d9ecf7c76b4d76fd9dab8ee0f6eefa79c42b97",
+        "src/GFrame/Notifications/Campaigns/Contracts/CampaignRecipientGuard.php": "a7f108ad3850c6f09a1c87db9d280edb60d103e952c1f76891e1a41160e59441",
+        "src/GFrame/Notifications/Campaigns/Contracts/CampaignRepository.php": "dc8597e80193ca4d0013f8af80170a8481c0be7ac5c4f63b6928e029bab3d209",
+        "src/GFrame/Notifications/Contracts/NotificationQueueRepository.php": "388fd8bb5d9424f7662a933f851167448d1591a3ecd9412f39a4456cceb9d757",
+        "src/GFrame/Notifications/Contracts/NotificationRepository.php": "8b40630b03fdf04dd8f88aa753a2caeff87f09efd5558ff66907b6adf628a6c5",
+        "src/GFrame/Notifications/Contracts/NotificationTransport.php": "383e85b180b9a0a1e376196b16a94c90a9f4f589e1a18f6445c5a0afd4b3a9dc",
+        "src/GFrame/Notifications/Email/EmailNotificationTransport.php": "7742d1f61c0e0b861dab2db952e3e2e9ba72033b08e72d34c1d9d1a4b6c5e984",
+        "src/GFrame/Notifications/Email/EmailQueueCronHandler.php": "93acea5e4a5c0299b9b1f218c90203e7afaddab8c7ce80985e36999f96fb7253",
+        "src/GFrame/Notifications/Email/EmailQueueProcessor.php": "56873f695a1c8dad944eb4c9b5b4d6f0a39c35860d0f16f456084cf3281b8ae2",
+        "src/GFrame/Notifications/InboxNotificationTransport.php": "335c39c49b9078637cbe4e7ff6808c366f6fd49129b19a61d71ad3175495618b",
+        "src/GFrame/Notifications/InboxQueueCronHandler.php": "fc0750658876e00c40c7ad5b3f9ca38c39d803d07e0648ffd9f40eab38d8a2fd",
+        "src/GFrame/Notifications/InboxQueueProcessor.php": "6b30359b5572653a0d6bb609f363e7dc1e76b3d09fab6d00b675894085d04136",
+        "src/GFrame/Notifications/NotificationBatchProcessor.php": "9da34aaa23d8d0debae3947be9148de4b131f3077e986c321cc9eb797f3dd9dd",
+        "src/GFrame/Notifications/NotificationModel.php": "3c3173a6e3728e81be7917a78eeebea1446cae7fb859cfacba4ab4507c5aae90",
+        "src/GFrame/Notifications/NotificationQueueModel.php": "9c836b9993fda9155273ee12f46ea8525506e6d5c53b43797a267eb00a27b277",
+        "src/GFrame/Notifications/NotificationQueueService.php": "bd00ca885ef32112564974739bb47f7aa8ef8bdc0a57a7b37f53baf2a3bec332",
+        "src/GFrame/Notifications/NotificationQueueWorker.php": "e847d609374fe1d42ffd28dde2833449b982f41580ccf80e229f9cce95e91e7d",
+        "src/GFrame/Notifications/NotificationService.php": "7a7a65c464a7a05a45a8f2983f8d60cfaa2cd5dd5f149d3c4575493a97f0abdf",
+        "src/GFrame/Notifications/NotificationTime.php": "adc328ddfe1218549e1e5726657244728cedd6e1560994da03bd7c48d51273eb",
+        "src/GFrame/Notifications/NotificationTransportRegistry.php": "d18fe0efb1622e71d874499fe87267711110cc3dc902525f94465311bc696dfe",
+        "src/GFrame/Security/Encryption.php": "f179414b620d7a675fb5b0e65893cc29fc78d3266d4d885ce87f37e664a64635",
+        "src/GFrame/Security/HtmlSanitizer.php": "de954deb2ec1b503bdadf59b0501b737979bf9ffa4b7243b533a49aca2d793ca",
+        "src/GFrame/Seo/SeoPolicy.php": "5b2e3e2d99874e9c6526c8546a09f881ccfad63e067dfc7fa2ade997dea830f7",
+        "src/GFrame/Session/ActiveSessionRegistry.php": "72c6ca481d68e8bc86a1db6e0bff4ff4ffb602d97529571e62c2de6443fe5ffb",
+        "src/GFrame/Session/DatabaseSessionHandler.php": "e7fb64f01c30ea99081c215f95d0c2a1b6889b5a1541d2c369563b617ee026dc",
+        "src/GFrame/Session/RedisSessionHandler.php": "e1908da8bdd3a6924b084c8e90bd94df0fc97f59f5eb63ee31896df9fd4f85a8",
+        "src/GFrame/Session/SessionRuntime.php": "5dc4369c1ed1307f9a51db6851068977bb7a325b3a5f008fc56182080bf62fc8",
+        "src/async/Async.php": "b591a0aa560cfc0bf9601dabc1ea2d08a4f6a4e590743d5a67a5d4e3107e3a71",
+        "src/async/ClosureWrapper.php": "d80e16b08f745114599af7c04c3afd72260113410c6dc71eb9b363800f9ea5e7",
+        "src/cron/Cron.php": "c086b5c5f7c86137f474ac7fa4a073090cca9de305a10028d456224aa479a76f",
+        "src/cron/CronDataProvider.php": "495d33de44ac39de686fee0d3d6bd2ab72966da2709c48b0fcbac7681c8d9f8e",
+        "src/cron/CronRunner.php": "7f4f0b8aace7305204e47b72db24a314878ddd3018b86c357f5b5f9d94962bfb",
+        "src/cron/CronScheduler.php": "490d5d2bcd07058db0b44d7f6480bb28bf3852f3e5a7a95ad18c10d9fd4e22e5",
+        "src/cron/CronTaskRepository.php": "266801f9f0ca55b382fb21208b75187ab7f30de6586c5d04b3bf6469c8e95a58",
+        "src/cron/CronTaskService.php": "15474f5e8bd2b2c85d387d749c24561d260412eab3e286fc312f62c0ef32a1fb",
+        "src/database/DatabaseConnectionInterface.php": "e5b1abd22919e65d83ad34569fb7881c89c78c4c8c8e0577f0d9aecdfb9213da",
+        "src/database/DatabaseManager.php": "fcbed3862839d2398b52b96b611d8e2d5acf461a852efbb6de495b0dcda7db3b",
+        "src/database/MySqlConnection.php": "ae71897339826010704957a02c6571155e883329bb4e8703b2c2508631ca251b",
+        "src/database/ORM.php": "2e0aa7042bb3735a9d56eb99b9119e8888c0ff1db6e320706b0cd0c5368fd0d2",
+        "src/database/SqliteConnection.php": "48585d121ceb59c94de487c83afd7fc4be3d281317d40d9c31693f628fbe6d1b",
+        "src/database/dialects/DatabaseDialectInterface.php": "646aede240f3153ae72969c91eb95c87340f9ce31986f7f6677801dcaeb17a6e",
+        "src/database/dialects/MySqlDialect.php": "5aee6357f4aa5b01395fdee619d7d585ec4ef8b31330e61baf8e18a93458d962",
+        "src/database/dialects/SqliteDialect.php": "a03b025fd7a4229205ebc99283c570f6761963d64664f1ad402689b7cc721c19",
+        "src/error/ErrorHandler.php": "38b47295e5119fe7dc6308cd77481493a9b09111c46c42c49bc4f500a6cc20a6",
+        "src/error/ErrorResponder.php": "4bf783a7d4572e2d7ed8ae24f733292b6c74efae8bb5bb325567e3c0a769bd94",
+        "src/heartbeat/HeartbeatChannelRegistry.php": "9e8bb888012c87a03565d49179dc59fe74f872ee0c1283759cbdf7a1e3727ce4",
+        "src/heartbeat/HeartbeatChannelTrait.php": "5fd701c4f532d3742a9235ebdd72d8a90120e720bc6fca23b065b10b95420582",
+        "src/heartbeat/HeartbeatMaster.php": "659a8462f2cae313780621346d98e9576253bfe926d0be64a2053098e4d453ab",
+        "src/middleware/Middleware.php": "838b388cbb1ed3c94403194f45faf6d1c027b9ffa8e4f6b3d408e9fa7a4bb91f",
+        "src/render/Meta.php": "877318e2cc864df9729ca15ac46996e2b70b5688309a4fe386ea05209a099bd5",
+        "src/render/Render.php": "4ddf3d53a78a1ab68d3152c3f10b4b9c07b6ba1d2b2481fc339a84e534692240",
+        "src/routing/RouteBuilder.php": "4f5b8c9996c95250ddeda7053f03842a55342a771daa859ccfd217469af2a2fd",
+        "src/routing/Router.php": "29ba4a7164d72b56dbb95cf69350e11a75500c12400c8424f81f5f934b10ef23",
+        "src/seo/JsonLD.php": "5fdbd7e27af74f50b2f47f4adbed6a81fefcbf4d4db86978b08fb82ab6e76c77",
+        "src/seo/Llms.php": "6116f73ca7a5892131ad486cba06854e47da86ad701976563e6f59143a73125e",
+        "src/seo/Robots.php": "3d5d22584abae283b8ceefb7dc4d203670ab9487a04cb24037cc8c4268d4711f",
+        "src/seo/SchemaComposer.php": "ae7fccec93d4d2a08906c7202d252ea315181bd6a4e0307dcde663f8b031cae8",
+        "src/seo/Sitemap.php": "12bf4c7ad8d94a9887e17ad651845c7c53c0eb8c64994ab7b7b465232f4f8325",
+        "src/seo/SitemapDataProvider.php": "5f41e4342f58d41a8e5b3a76d93f7a87a7eec00dd4ae974a8e76adac35b7feeb",
+        "src/seo/schema.presets.php": "f0c1653d23e09ee34bee3f67f496792de99495fd6a1e08361a809c2526d88fa2",
+        "src/services/HttpClient.php": "76a2326434d57c79e1aff629de7f444f64567690f1efc4882fa66b23818469ba",
+        "src/services/mail/MailThemeHelper.php": "a865c25d687bfb5d4a5d494882715ba053c690e7c70016a8e53f0fff388141a1",
+        "src/utils/CorsHelper.php": "7d02fb0dd0fd1d2555ecdd9e4d252bd544db14549b6aa1b2783d62534901a913",
+        "src/utils/LegacyCompatibility.php": "8c3f4c21cc2363ffbc4af01578ecfc063303fdc12716dab6a53924819ae9e8cb",
+        "src/utils/LogHelper.php": "295f46d225f0621e7fc43a1f32c09cb0a21554500ca67010fc81ee9ebf03a9e7",
+        "src/utils/MediaPathHelper.php": "afd0e9def04cb83078308a1cf26f845c17d6890a930b73015eb726def0d80abb",
+        "src/utils/MenuHelper.php": "7a31476ca7fceb1dfd2a70b1f0c718043d1e2257e0d455cbc869100b3b917183",
+        "src/utils/PaginationHelper.php": "9808a3dcab8d45cae4aa397a89d151505cb688f5eacc172e204b30d6358b762c",
+        "src/utils/SanitizeHelper.php": "7f7e44a64527a8661ff47f5ac168d3c13f189cbfc3f3dbeadf6f1e510e5bfbeb",
+        "src/utils/TextHelper.php": "b5ec34137271a3fbeb6146c6bc881cfba891f6c817a5c1f4b770c81040ca8c85",
+        "src/utils/UrlHelper.php": "614b0d7394e54a7cb7b36dcb67cf4d8a89c681e57fae9bec3c444fe8fb92e53c",
+        "src/utils/ViewHelper.php": "2f9ba1af1a1fc14d13ca4c53652985d2bb60aab8d66dc28669ca71cad4d874a1"
+    }
+}

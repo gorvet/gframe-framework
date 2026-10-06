@@ -23,10 +23,12 @@ Models should own:
 
 - read raw request payloads
 - inspect frontend form state
-- duplicate generic `emptyField` checks already done in controller
+- duplicate generic required-field checks already done in controller
 - duplicate `auth`, `admin`, or `can:*` logic
 
 ## Response Shape
+
+These examples describe operation envelopes. `message`, `data` and `meta` are optional when the caller does not need them; raw ORM reads and writes keep their documented shapes.
 
 Typical success:
 
@@ -64,10 +66,10 @@ Mirror the existing module contract first.
 
 ## Catch Blocks
 
-Use structured catches and avoid exposing internal database messages:
+Expected business rejections return the existing operation response without needing an exception. Catch `Exception` at the owning layer when it can log and recover or return a safe error. Avoid exposing internal database messages:
 
 ```php
-catch (Throwable $exception) {
+catch (\Exception $exception) {
   error_log('[ModuleModel] ' . $exception->getMessage());
   return [
     'status' => 'error',
@@ -77,4 +79,4 @@ catch (Throwable $exception) {
 }
 ```
 
-Rollback first if the method is inside a transaction.
+For a transaction owned by this method, `catch (\Throwable $exception)` may protect rollback for both exceptions and programming errors, then rethrow the original failure. Guard rollback with the connection's active-transaction state and use that same connection. An explicit outer error boundary may handle `Throwable`; ordinary model methods should not silently turn every programming error into `operation_failed`. Do not mechanically replace existing catch types.

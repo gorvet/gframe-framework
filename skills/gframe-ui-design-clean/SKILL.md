@@ -5,9 +5,19 @@ description: Design and review modern Bootstrap UX/UI for GFrame admin and publi
 
 # GFrame UX/UI with Bootstrap
 
-Use this skill when the task is visual design, interaction structure, responsive layout, usability, or frontend consistency in a GFrame application.
+Use this skill when the task is visual design, interaction structure, responsive layout, usability, or frontend consistency in a GFrame application or an explicitly requested framework UI improvement. It does not authorize a redesign merely because code or skills are being audited.
 
 Read [references/bootstrap-patterns.md](references/bootstrap-patterns.md) before changing a screen and [references/ui-review-checklist.md](references/ui-review-checklist.md) before closing the task.
+
+## Coordinate With Technical Frontend Rules
+
+| Task surface | Technical reference |
+| --- | --- |
+| Admin view, form, list or modal | [Canonical admin structure and acceptance checks](../gframe-frontend-admin/references/view-form-structure.md) and [assets/meta ownership](../gframe-frontend-admin/references/project-structure-meta.md) |
+| Public page or navigation | [Public templates and assets](../gframe-frontend-public/references/public-template-and-assets.md); use that skill's SEO/meta references when those concerns change |
+| AJAX feedback | [Existing request and feedback helpers](../gframe-frontend-admin/references/ajax-feedback-pattern.md) |
+
+Use this skill to decide hierarchy and usability; keep technical view conventions in their canonical references. Preserve the user's approved design and inspect an approved screen of the same type. A generic pattern here does not replace its title, actions, padding, selectors, template, theme or response contracts. If companion references are unavailable in an installed copy, locate them in the project's resolved GFrame package rather than substituting unrelated global instructions.
 
 ## Start From the User Task
 
@@ -22,7 +32,7 @@ Read [references/bootstrap-patterns.md](references/bootstrap-patterns.md) before
 - Prefer the current Bootstrap version already installed by the project; do not introduce another UI framework.
 - Use `container` or `container-fluid`, `row`, `col-*`, gutters, spacing utilities, flex utilities, forms, buttons, navs, tables, badges, alerts, pagination, modals, offcanvas, accordions, and dropdowns before custom replacements.
 - Use responsive columns intentionally. Do not force every screen into identical equal-width cards.
-- Use flexbox for local alignment. Use CSS Grid only when the content relationship genuinely requires two-dimensional layout.
+- Use flexbox for local alignment. Follow the applicable frontend skill's Bootstrap/columns/flex-first layout rule; use CSS Grid only when those cannot express the required relationship. Do not replace an established layout merely to apply this preference.
 - Preserve native Bootstrap behavior and accessibility attributes instead of restyling components until they become unfamiliar.
 - Avoid hardcoded widths when a Bootstrap container or column expresses the intended measure.
 
@@ -37,11 +47,12 @@ Read [references/bootstrap-patterns.md](references/bootstrap-patterns.md) before
 
 ## Product Consistency
 
-- Framework assets and application assets are separate. Do not patch GFrame or `packages/gorvet/gframe` for a project-only design.
+- Framework assets and application assets are separate. Do not patch an installed GFrame package for a project-only design. For an authorized framework improvement, edit skeleton/module originals and respect their manifest asset targets.
 - Keep view-specific rules in the module stylesheet.
-- Move genuinely reused application patterns to `public/css/app/common.css` or the appropriate application-wide admin stylesheet.
+- Move genuinely reused application patterns to the project's established shared layer, such as `public/css/app/common.css`; do not force a runtime module's assets into legacy application paths.
 - Change framework-level tokens or shared assets only for an explicitly authorized GFrame-wide improvement.
 - Reuse existing card radius, typography, button hierarchy, form sizing, sidebar treatment, hero rhythm, and content widths.
+- Preserve the existing theme selector, persistence and controller. Inspect loaded Bootstrap variables and module styles before adding tokens or another theme layer; use the canonical frontend asset rules for their locations.
 
 ## Interaction and Content
 
@@ -65,3 +76,9 @@ Read [references/bootstrap-patterns.md](references/bootstrap-patterns.md) before
 - Do not change controllers, models, permissions, or validation rules for a visual-only task.
 - If the UX problem requires backend or framework behavior, state that dependency before expanding scope.
 - Do not modify shared CSS merely to fix one isolated screen.
+
+## Verification Evidence
+
+For an implementation, review the affected states in the rendered screen and record what passed, failed or could not be checked. Static source inspection cannot establish responsive appearance, contrast or keyboard behavior. Scale verification to the actual change; do not claim a browser review or introduce new product controls solely to satisfy a generic checklist.
+
+For edits to this skill alone, validate its structure, links and agreement with the canonical frontend rules. Do not redesign screens or rerun unrelated runtime suites as part of that documentation task.

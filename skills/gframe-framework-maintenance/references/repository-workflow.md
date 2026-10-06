@@ -2,23 +2,40 @@
 
 The GFrame repository is the source of framework code. Applications consume it with Composer and normally retain only `core/Load.php` as a bootstrap bridge.
 
-For a shared change:
+## Framework Change
+
+For a shared change in the standalone repository:
 
 1. implement and test it in GFrame;
-2. commit the framework change;
-3. run `composer update gorvet/gframe` in the application;
-4. verify application routes and adapters;
-5. commit the application lock and integration changes.
+2. update affected contracts, documentation and canonical skills;
+3. prepare reviewable changes and record verification plus integration limits;
+4. commit, tag or publish only when the respective action belongs to the user's authorized task.
 
-Before installation, the same update command must refresh installer/bootstrap files without loading project configuration, connecting to a database, publishing application modules or writing an installation lock. Test both `--dry-run` and execution. Unconfigured web requests must redirect to the installer before application bootstrap, preserving the deployment subdirectory; do not enable reinstallation merely because an installed project's configuration is missing.
+Changing GFrame does not automatically update an installed application or global assistant skills. Verify consumer behavior in a temporary project when needed; do not use a real application as a test fixture without authorization. Preserve existing work and separate a behavior fix from a proposed compatibility change.
 
-For an installed project, update the package and then run the managed project updater:
+## Application Integration
 
-1. `composer update gorvet/gframe`;
-2. `composer gframe:update -- --dry-run`;
+Use the following recipe only when the user has authorized updating a specific consuming project. Confirm its root, Composer-resolved GFrame version, installed modules and managed/custom files. Resolve its configured vendor directory rather than assuming every project uses `packages/`. Creating a project, installing a module, publishing assets and upgrading an existing project are different operations; consult the matching package's `docs/comandos.md`, `docs/instalacion.md` and `docs/actualizaciones.md` for that task.
+
+The commands here describe the integration path; reading this reference does not authorize running them in other projects.
+
+When developing or verifying the pre-installation updater, the same update command must refresh installer/bootstrap files without loading project configuration, connecting to a database, publishing application modules or writing an installation lock. Test both `--dry-run` and execution. Unconfigured web requests must redirect to the installer before application bootstrap, preserving the deployment subdirectory; do not enable reinstallation merely because an installed project's configuration is missing. These checks are not prerequisites for updating an already installed application.
+
+For an authorized installed-project upgrade, update the package and then run the managed project updater:
+
+1. confirm the requested target version is permitted by the project's Composer constraint; if an exact version was requested, resolve that exact target rather than an arbitrary allowed latest version. Adjust the constraint only as needed within the authorized update, then run `composer update gorvet/gframe` and verify the resolved lock and installed package match the target;
+2. `composer gframe:update -- --dry-run --preserve-custom` when preserving customizations;
 3. review the managed files that will be replaced;
-4. `composer gframe:update`;
-5. run the application integration checks and commit `composer.lock` plus `storage/gframe-installed.json`.
+4. `composer gframe:update -- --preserve-custom`, retaining the preservation policy reviewed in dry-run; replace customized managed files only when that replacement is in scope;
+5. resolve reported conflicts without discarding personalizations, then run application integration checks and verify the final loaded version. Include changed Composer metadata, `composer.lock` and `storage/gframe-installed.json` in the review, and commit them only when committing is part of the task.
+
+`composer update gorvet/gframe` resolves/downloads the package and changes the lock. `composer gframe:update` applies managed files and migrations from that downloaded version. `--dry-run` previews changes; `--preserve-custom` preserves modified managed files and reports conflicts, rather than merging them. `--no-database` is not a completed upgrade when schema changes are required. Plan the compatibility path before applying a migration or replacing a customized managed file.
+
+Production deployment and release publication remain separate from validating a temporary integration project. Follow existing task authorization; do not add a new approval requirement for an action the user has already authorized.
+
+## Distribution and Installer Contracts
+
+Read the following only for installer/updater/distribution development or the specific integration surface being verified. Updating one installed application does not require redesigning or retesting the entire visual installer.
 
 Module schema changes must be delivered as ordered MySQL and SQLite migrations in the module manifest. Fresh installations baseline those migrations after installing the current schema.
 

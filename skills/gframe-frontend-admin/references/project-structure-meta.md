@@ -2,9 +2,11 @@
 
 ## Relevant Folders
 
-- `app/views/admin/<module>/` for admin views and partials
-- `public/js/app/admin/<module>/` for module JS
-- `public/css/app/admin/<module>/` for module CSS
+- `resources/modules/<module>/application/app/` for framework-owned runtime originals, when declared by the manifest
+- `app/views/<module>/` for project overrides of those runtime views; resolve originals and overrides through `ModuleRuntime::file`
+- `app/views/admin/<module>/` for application-owned or legacy admin views that already use that structure
+- module manifest asset sources for framework-owned JS/CSS; published targets are relative to the project's `public/`, for example `js/modules/user-admin`
+- `public/js/app/admin/<module>/` and `public/css/app/admin/<module>/` for application assets following that convention
 - `public/js/core/` for shared JS helpers
 - `public/js/core/utils/` for shared JS utilities
 
@@ -27,6 +29,8 @@ Keep one-screen styling in its module. Promote a rule to application shared CSS 
 - `public/js/core/utils/forms.js` for HTML5 validation feedback
 - `public/js/app/admin/<module>/*` for module-specific behavior
 
+These application layers do not replace a distributable module's manifest targets. For example, user-admin edits `resources/modules/user-admin/javascript/user-admin.js` and publishes it as `public/js/modules/user-admin/user-admin.js`. Do not edit only a generated asset and expect the change to survive an update.
+
 ## Meta File Strategy
 
 The rich-text-editor component also uses runtime originals: resolve rich-text-editor/richTextEditor.php and richTextEditor.meta.php through ModuleRuntime::file('views', ..., 'rich-text-editor'). Project overrides live in app/views/rich-text-editor/. Do not depend on copied originals under app/views/admin/components; its public JS destination remains unchanged. Sanitize untrusted saved rich HTML in backend through GFrame\Security\HtmlSanitizer, not only TinyMCE paste cleanup.
@@ -35,15 +39,17 @@ The distributable admin-panel now keeps its original controller, dashboard, temp
 
 Use meta files to load assets.
 
-The admin template's shared assets live in `app/views/templates/admin.meta.php`. Modules may add template-level assets through `app/views/templates/meta/admin/*.meta.php`; these are loaded before group and view meta.
+The admin template's shared assets resolve the project override `app/views/templates/admin.meta.php` first, then the admin-panel runtime provider. Modules may add template-level assets through `app/views/templates/meta/admin/*.meta.php`; these are loaded before group and view meta.
 
 Group meta:
 
-- `app/views/admin/<module>/<module>.group.meta.php`
+- runtime original: `resources/modules/<module>/application/app/views/<module>/<module>.group.meta.php`
+- project override: `app/views/<module>/<module>.group.meta.php`
+- application-owned/legacy view: `app/views/admin/<module>/<module>.group.meta.php` when that is its existing group path
 
 View meta:
 
-- `app/views/admin/<module>/<viewName>.meta.php`
+- the corresponding resolved view directory and `<viewName>.meta.php`; do not force a runtime module into an `admin/` directory
 
 Use group meta for assets reused across module views.
 Use view meta for screen-specific CSS, JS, title, schema, or extra dependencies.
@@ -55,15 +61,17 @@ Use view meta for screen-specific CSS, JS, title, schema, or extra dependencies.
 - dynamic CSS and JS from Meta
 - global token form `#tokens`
 - CSRF values used by AJAX flows
-- `site_url` and `is_protected` globals
 
 `app/views/templates/footer.php` already provides:
 
 - footer JS injections
 - the optional footer areas
+- `site_url` and `is_protected` globals before the module's footer JS
 
 The admin template provides `#toastBox`.
 
 The `alerts` module also publishes its toast styles. Load both the module CSS and JS through meta files.
 
 Do not duplicate those framework-level elements without a compatibility reason.
+
+These guarantees describe the standard skeleton template. Check customized templates and the module's existing bridge before assuming a token form or helper is available. User-admin currently serializes `#user-admin-tokens`; preserve it when changing that module rather than silently switching selectors.

@@ -8,11 +8,11 @@ Use jQuery AJAX patterns already common in GFrame:
 - `$.post(...)` only for very short, simple flows
 
 Always include CSRF data when the route requires it.
-The normal source is the global `#tokens` form.
+The normal source is the global `#tokens` form. Preserve the source actually used by the module; user-admin currently serializes its existing `#user-admin-tokens` bridge.
 
 ## Payload and Response Contract
 
-Expected backend JSON keys:
+Common backend JSON keys (not a requirement that every endpoint return all six):
 
 - `status`
 - `message`
@@ -54,7 +54,7 @@ Do not use `swalAlert` as the default replacement for every toast.
 
 ## Recommended Success Flow
 
-1. Build request data from `#tokens` plus form payload.
+1. Build request data from the existing token source, normally `#tokens`, plus form payload.
 2. Send AJAX.
 3. In success:
    - if `status === 'success'`, update UI and show success toast if appropriate

@@ -2,6 +2,8 @@
 
 ## Core Layout
 
+The paths below describe application-owned files and overrides. For a distributable module, inspect `resources/modules/<module>/module.php`: `runtime.root` owns its native MVC source, `application` maps published project files, and `assets` maps public destinations. For example, user-admin uses `application/app` as its runtime root, publishes route originals from `application/routes` into `config/routes`, and publishes JavaScript to `public/js/modules/user-admin`. Edit originals for an authorized framework task and project extensions for application work.
+
 - `config/routes/` stores route declarations by transport type.
 - GFrame internals live in the standalone framework repository under `src/` and are installed with Composer.
 - Application `core/Load.php` is only a bootstrap bridge to `GFrame\Foundation\Bootstrap`.
@@ -15,7 +17,7 @@
 
 ## Route Files and Transport Types
 
-Routes are declared in `config/routes/*.php`.
+Project routes are declared in `config/routes/*.php`; a module's distributable route originals live at the source paths declared by its manifest.
 
 The current route type is inferred by `RouteBuilder` from the declaring file:
 
@@ -35,7 +37,7 @@ Route::post('ajax/admin/projects/save', 'admin/project/ProjectController@save');
 
 ## Route to Controller Resolution
 
-The route target string maps to:
+For a legacy application controller, the route target string maps to:
 
 - controller file: `app/controllers/<target>.php`
 - controller class: last path segment
@@ -46,6 +48,8 @@ Example:
 - route target: `admin/project/ProjectController@index`
 - controller file: `app/controllers/admin/project/ProjectController.php`
 - controller class: `ProjectController`
+
+For migrated MVC modules, Router first uses `ModuleRuntime::controller` with the route's source module. Resolution prefers the project file under `app/controllers`, then the module's registered runtime root. Project classes may use `App\Controllers\...` with a legacy basename fallback; native classes use the manifest namespace. Do not infer a module's actual file or fully qualified class from the basename alone.
 
 Keep exact file and class case for Linux-safe deployments.
 
@@ -64,13 +68,9 @@ Common middleware names:
 
 Access scope is decided in middleware and route config, not in models.
 
-`can:*` protection supports global and tenant-aware applications. In tenant mode, middleware resolves tenant mainly from:
+`can:*` protection supports global and tenant-aware applications. Ordinary tenant checks use `TenantContextResolver` to compare route/request/session identities. It recognizes the configured `TENANT` key, `tenant_id` and compatible session variants. `project_id` identifies the tenant only if it is the configured key, not as an unconditional fallback.
 
-- route params keyed by `TENANT`
-- `project_id`
-- `tenant_id`
-
-Missing tenant context fails only when tenancy is enabled. Global mode does not require a tenant identifier.
+Missing, invalid or conflicting context fails the ordinary tenant check. Global mode does not require a tenant identifier. A session-scoped module still validates its own active scope; do not treat the superadministrator permission bypass as scope validation. For the full rules and session-driver guarantees, use the matching-version [auth session and tenancy reference](../../gframe-auth-access/references/sessions-and-tenancy.md).
 
 The protected `superadministrator` role bypasses permission checks. Other roles remain subordinate and require `admin.access` for the `admin` middleware.
 

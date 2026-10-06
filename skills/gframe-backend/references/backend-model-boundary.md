@@ -38,7 +38,7 @@ Models should not:
 - enforce middleware-level access rules
 - duplicate generic required-field checks already done in controller
 
-Expected persistence and business failures return structured arrays. Models may catch `Exception` and return `status`, `code`, and `message`; controllers propagate or adapt that response. Do not replace this flow with `Throwable`. Presentation remains outside the model and may become an error view, `swalAlert`, or `alertToast` according to the route and frontend contract.
+Expected business failures use the operation's established structured response. Models may catch `Exception` when they can log and handle the failure; controllers propagate or adapt that response. Use `Throwable` for transaction cleanup followed by rethrow, or at an explicit outer error boundary, rather than turning programming errors into routine business failures. Presentation remains outside the model and may become an error view, `swalAlert`, or `alertToast` according to the route and frontend contract.
 
 ## Project-owned extensions
 
@@ -58,3 +58,5 @@ The stable backend keys are:
 - `html`
 
 Use `html` only when the frontend replaces a backend-rendered fragment.
+
+These are available keys, not a requirement to return all of them. Operation envelopes include `status`; `code` identifies a situation the caller needs to distinguish, and `message` supplies public feedback when needed. Raw ORM reads can return records and writes retain their documented result. Do not force them into an HTTP envelope.
