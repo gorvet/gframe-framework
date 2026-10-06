@@ -2,7 +2,7 @@
 
 ## Requisitos
 
-- PHP 8.1 o superior; la versión 1.x se ha probado en PHP 8.1.
+- PHP 8.1.9 o superior; la versión 1.x se ha probado en PHP 8.1. Este mínimo evita el fallo de referencias en WeakMap que afecta a Async con Opis 4.
 - Composer 2 y las extensiones DOM, JSON, Mbstring y OpenSSL.
 - Apache con `mod_rewrite` o Nginx con PHP-FPM.
 - MySQL o SQLite si el proyecto utiliza base de datos.

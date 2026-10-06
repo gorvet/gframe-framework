@@ -2,6 +2,7 @@
 
 return [
     'name' => 'coloris',
+    'version' => '0.25.0',
     'homepage' => 'https://coloris.js.org/',
     'type' => 'external-ui',
     'description' => 'Selector de colores.',

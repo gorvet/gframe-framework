@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'metaTags' => ['title' => 'Notificaciones - ' . site_name, 'robots' => 'noindex, nofollow'],
+    'metaTags' => ['title' => 'Notificaciones - ' . site_name],
     'css' => [
         'public/vendors/external/bootstrap/css/bootstrap.min.css',
         'public/css/variables.css',

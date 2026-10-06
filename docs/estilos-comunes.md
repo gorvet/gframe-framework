@@ -1,4 +1,4 @@
-# Variables, estilos comunes y botones
+# Variables CSS, estilos comunes y botones
 
 La base visual utiliza Bootstrap y tres hojas propias: `variables.css` define los valores del tema, `bootstrap-buttons-compat.css` conecta esos valores con los botones y `common.css` establece la presentación común de los elementos. El CSS de cada vista añade solo lo específico de esa pantalla.
 
@@ -61,6 +61,8 @@ La selección cambia el fondo, no añade otro borde que desplace el contenido. R
 ## Claro y oscuro
 
 El tema se identifica mediante `data-bs-theme` en el elemento raíz. `variables.css` define valores comunes y sobrescrituras para `light` y `dark`, además de `color-scheme`. En el panel, el controlador de tema existente modifica ese atributo y conserva la preferencia.
+
+El [panel administrativo](panel-administrativo.md#persistencia-del-tema-y-del-menú) guarda la elección en `localStorage` y la recupera con un script `hjs` antes de pintar la página. Las variables CSS aportan los colores; el script decide qué modo aplicar.
 
 No crees un segundo atributo de tema para una vista o biblioteca. Los componentes que utilizan colores semánticos heredan el cambio; los [puentes de bibliotecas](paquetes-visuales.md) conectan los controles externos con esa misma fuente.
 

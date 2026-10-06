@@ -6,16 +6,24 @@ use Exception;
 use GFrame\Mail\Contracts\MailSender;
 use PHPMailer\PHPMailer\PHPMailer;
 
+/**
+ * La opción rate_limit protege formularios públicos de correo.
+ * Los envíos internos de la aplicación deben omitir esa opción.
+ */
 final class MailService implements MailSender
 {
     public function __construct(
         private readonly ?SmtpConfiguration $configuration = null,
         private readonly ?MailTemplateRegistry $templates = null,
-        private readonly ?\Async $async = null
+        private readonly ?\Async $async = null,
+        private readonly ?MailRateLimiter $rateLimiter = null
     ) {}
 
     public function sendTemplateAsync(string $recipient, string $subject, string $template, array $variables = [], array $options = []): array
     {
+        if (array_key_exists('rate_limit', $options)) {
+            return $this->limited($options, fn(array $clean): array => $this->sendTemplateAsync($recipient, $subject, $template, $variables, $clean));
+        }
         return $this->dispatch(static function () use ($recipient, $subject, $template, $variables, $options): void {
             $result = (new MailService())->sendTemplate($recipient, $subject, $template, $variables, $options);
             if (($result['status'] ?? '') !== 'success') error_log('[GFrame Mail Async] ' . (string)($result['code'] ?? 'mail_send_failed'));
@@ -24,6 +32,9 @@ final class MailService implements MailSender
 
     public function sendHtmlAsync(string $recipient, string $subject, string $html, array $options = []): array
     {
+        if (array_key_exists('rate_limit', $options)) {
+            return $this->limited($options, fn(array $clean): array => $this->sendHtmlAsync($recipient, $subject, $html, $clean));
+        }
         return $this->dispatch(static function () use ($recipient, $subject, $html, $options): void {
             $result = (new MailService())->sendHtml($recipient, $subject, $html, $options);
             if (($result['status'] ?? '') !== 'success') error_log('[GFrame Mail Async] ' . (string)($result['code'] ?? 'mail_send_failed'));
@@ -32,6 +43,9 @@ final class MailService implements MailSender
 
     public function sendTemplate(string $recipient, string $subject, string $template, array $variables = [], array $options = []): array
     {
+        if (array_key_exists('rate_limit', $options)) {
+            return $this->limited($options, fn(array $clean): array => $this->sendTemplate($recipient, $subject, $template, $variables, $clean));
+        }
         try {
             $variables += ['recipient_name' => trim((string)($options['recipient_name'] ?? '')) ?: (trim((string)($variables['user_name'] ?? '')) ?: (string)strtok($recipient, '@'))];
             $html = ($this->templates ?? new MailTemplateRegistry())->render($template, $variables);
@@ -44,6 +58,9 @@ final class MailService implements MailSender
 
     public function sendHtml(string $recipient, string $subject, string $html, array $options = []): array
     {
+        if (array_key_exists('rate_limit', $options)) {
+            return $this->limited($options, fn(array $clean): array => $this->sendHtml($recipient, $subject, $html, $clean));
+        }
         if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
             return ['status' => 'error', 'code' => 'invalid_email'];
         }
@@ -79,6 +96,16 @@ final class MailService implements MailSender
             error_log('[GFrame Mail] ' . $exception->getMessage());
             return ['status' => 'error', 'code' => 'mail_send_failed'];
         }
+    }
+
+    private function limited(array $options, \Closure $send): array
+    {
+        $limit = $options['rate_limit'];
+        unset($options['rate_limit']);
+        if (!is_array($limit) || !is_string($limit['scope'] ?? null) || !is_string($limit['identity'] ?? null)) {
+            return ['status' => 'error', 'code' => 'mail_rate_limit_invalid'];
+        }
+        return ($this->rateLimiter ?? new MailRateLimiter())->run($limit['scope'], $limit['identity'], fn(): array => $send($options));
     }
 
     private function dispatch(\Closure $job): array

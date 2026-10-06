@@ -4,10 +4,10 @@ Los archivos distribuidos con los módulos conservan sus avisos originales. Esta
 
 | Módulo | Versión incluida | Fuente de versión | Licencia | Proyecto |
 |---|---:|---|---|---|
-| AOS | Sin versión exacta identificada | Distribución vendorizada sin versión fiable en el manifiesto | MIT | [Proyecto](https://michalsnik.github.io/aos/) |
+| AOS | 3.0.0-beta.6 | JS y CSS coincidentes con la distribución oficial de npm; versión registrada en el manifiesto | MIT | [Proyecto](https://www.npmjs.com/package/aos/v/3.0.0-beta.6) |
 | Bootstrap | 5.3.8 | Manifiesto del módulo | MIT | https://getbootstrap.com/ |
 | Chart.js | 4.4.2 | Manifiesto del módulo | MIT | https://www.chartjs.org/ |
-| Coloris | Sin versión exacta identificada | Distribución vendorizada sin versión fiable en el manifiesto | MIT | [Proyecto](https://github.com/mdbassit/Coloris) |
+| Coloris | 0.25.0 | JavaScript coincidente con la etiqueta oficial y versión registrada en el manifiesto | MIT | [Proyecto](https://github.com/mdbassit/Coloris/tree/v0.25.0) |
 | Flatpickr | 4.6.13 | Manifiesto del módulo | MIT | https://flatpickr.js.org/ |
 | html2canvas | 1.4.0 | Manifiesto del módulo | MIT | https://html2canvas.hertzen.com/ |
 | intl-tel-input | 24.7.0 | Manifiesto del módulo | MIT | https://github.com/jackocnr/intl-tel-input |
@@ -21,7 +21,7 @@ Los archivos distribuidos con los módulos conservan sus avisos originales. Esta
 | TinyMCE | 8.6.0 | Manifiesto del módulo | GPL-2.0-or-later | https://www.tiny.cloud/ |
 | VenoBox | 2.0.4 | Manifiesto del módulo | MIT | https://veno.es/venobox/ |
 
-`gfselect`, `password-utils`, `gframe-icons`, `alerts`, `frontend-core`, `heartbeat-client` y la integración `rich-text-editor` son componentes propios.
+`gf-select`, `password-utils`, `gframe-icons`, `alerts`, `frontend-core`, `heartbeat-client` y la integración `rich-text-editor` son componentes propios.
 
 `gf-table` también es un componente propio. Los números indican la copia distribuida, no la versión actual de la web del proveedor. Consulta las guías enlazadas desde [Instalación de módulos](modulos-opcionales.md#integraciones-y-componentes-externos) para carga, ejemplos y dependencias; [Puentes visuales](paquetes-visuales.md) reúne su adaptación al tema.
 

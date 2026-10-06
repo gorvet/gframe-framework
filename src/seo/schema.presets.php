@@ -25,7 +25,7 @@ return [
     'video' => ['type' => 'VideoObject', 'video' => []],
     'recipe' => ['type' => 'Recipe', 'recipe' => []],
     'creative_work' => ['type' => 'CreativeWork', 'creativeWork' => []],
-    'faq' => ['type' => 'WebPage', 'faq' => []],
+    'faq' => ['faq' => []],
 
     // Moldes "de uso comun" para vistas
     'site_base' => [

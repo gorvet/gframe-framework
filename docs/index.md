@@ -4,13 +4,14 @@ La documentación está organizada primero por **lo que quieres construir** y de
 
 ## Empieza aquí
 
-1. [Instalación y perfiles](instalacion.md): crea el proyecto.
-2. [Qué instala cada perfil](perfiles-instalacion.md): diferencia real entre `static`, `managed`, `intranet` y `saas`.
-3. [Desarrollar una aplicación con GFrame](guia-desarrollo.md): modelo mental, carpetas y recorrido de una petición.
-4. [Tu primera página](primer-proyecto.md): ruta, controlador, vista y metadatos sin base de datos.
-5. [Tutorial: Productos de extremo a extremo](tutorial-productos.md): controller, service, model/ORM, vista, AJAX y permisos en una funcionalidad completa.
-6. [Mapa de capacidades y módulos](inventario-modulos.md): comprueba qué ya existe antes de implementarlo desde cero.
-7. [Arquitectura](arquitectura.md): referencia del núcleo, módulos y recorrido interno.
+1. [Apache y Nginx](servidores-web.md): prepara el servidor web.
+2. [Instalación y perfiles](instalacion.md): crea el proyecto.
+3. [Qué instala cada perfil](perfiles-instalacion.md): diferencia real entre `static`, `managed`, `intranet` y `saas`.
+4. [Desarrollar una aplicación con GFrame](guia-desarrollo.md): modelo mental, carpetas y recorrido de una petición.
+5. [Tu primera página](primer-proyecto.md): ruta, controlador, vista y metadatos sin base de datos.
+6. [Tutorial: Productos de extremo a extremo](tutorial-productos.md): controller, service, model/ORM, vista, AJAX y permisos en una funcionalidad completa.
+7. [Mapa de capacidades y módulos](inventario-modulos.md): comprueba qué ya existe antes de implementarlo desde cero.
+8. [Arquitectura](arquitectura.md): referencia del núcleo, módulos y recorrido interno.
 
 Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), [Configuración y entorno](configuracion.md) y [Desarrollo con una copia local](instalacion-local.md).
 
@@ -19,10 +20,13 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 ### Páginas, rutas y presentación
 
 - [Router y declaración de rutas](rutas.md).
-- [Render, vistas y templates](render.md).
+- [Vistas, templates y partes](vistas.md).
+- [Render y composición de páginas](render.md).
 - [Metadatos y recursos de vistas](meta.md).
+- [Header y apertura del documento](header.md).
+- [Menús con MenuHelper](menus.md): enlaces, dropdowns, sidebar y marcado del elemento actual.
 - [Navegación pública](navegacion-publica.md): comportamiento del menú y navegación del home inicial distribuido con el esqueleto.
-- [Footer](footer.md).
+- [Footer compartido y áreas de plantilla](footer.md).
 - [Multilenguaje: rutas, textos y vistas](multilenguaje.md).
 
 ### Datos, clases y lógica de negocio
@@ -37,8 +41,8 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 
 - [Utilidades frontend y formularios](frontend-core.md).
 - [Alertas](alerts.md).
-- [GFSelect](gfselect.md).
-- [GFTable](gf-table.md).
+- [GF Select](gfselect.md).
+- [GF Table](gf-table.md).
 - [Iconos GFrame](gframe-icons.md).
 - [Editor de texto enriquecido](rich-text-editor.md).
 - [Markdown y HTML](markdown.md).
@@ -57,6 +61,7 @@ Empieza por [Identidad, autenticación, permisos y sesiones](identidad-autorizac
 - [Administración de usuarios](user-admin.md).
 - [Utilidades de contraseñas](password-utils.md).
 - [Sanitización de HTML](html-sanitizer.md).
+- [Sanitización y escape de datos](sanitizacion.md): texto plano, HTML enriquecido y wrappers de compatibilidad.
 - [Cifrado de datos de aplicación](encryption.md).
 
 ## Añadir capacidades

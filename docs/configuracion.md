@@ -167,4 +167,4 @@ IMPORT_MAX_ROWS=500
 $limit = (int)config('import.max_rows', 1000);
 ```
 
-La configuración se carga al arrancar cada proceso. Recarga la página o reinicia los trabajadores persistentes después de cambiarla. No imprimas credenciales ni el arreglo completo de configuración en respuestas públicas.
+Al cambiar `IMPORT_MAX_ROWS` en `.env`, la siguiente petición web leerá el nuevo límite. Si una importación se ejecuta en un worker que permanece activo, reinícialo para que vuelva a cargar la configuración; un proceso ya iniciado conserva los valores que leyó al arrancar.

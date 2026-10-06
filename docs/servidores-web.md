@@ -1,8 +1,24 @@
 # Apache y Nginx
 
-El servidor entrega los recursos públicos y envía las peticiones de aplicación a `index.php`. El router mantiene sus rutas declarativas y el motor de vistas existente. El directorio raíz del sitio es la raíz del proyecto, no `public`.
+`index.php` es el controlador frontal: recibe las peticiones de aplicación, carga GFrame y entrega la petición al router. Por ejemplo, `/account` llega a ese archivo mediante una reescritura interna; la dirección del navegador sigue siendo `/account`. Los recursos públicos existentes se entregan directamente, sin ejecutar un controlador PHP.
+
+Configura la raíz del sitio en el directorio del proyecto, donde están `index.php` e `install.php`. `public/` contiene los recursos estáticos, pero no los puntos de entrada. Las reglas incluidas protegen los directorios internos aunque estén dentro de esa raíz.
 
 En Apache, el proyecto ya incluye `.htaccess`: no necesitas editarlo para instalar o declarar rutas. El servidor debe permitir sus reglas. En Nginx, que no interpreta `.htaccess`, integra el fragmento `nginx.conf` de GFrame en la configuración del sitio siguiendo el apartado siguiente.
+
+## Apache
+
+El proyecto incluye `.htaccess`. Para una instalación habitual no necesitas modificarlo ni añadir reglas por cada ruta del framework.
+
+1. Apunta `DocumentRoot` al directorio del proyecto.
+2. Habilita `mod_rewrite` y permite las directivas del archivo mediante `AllowOverride` en la configuración del sitio.
+3. Abre la URL del proyecto y completa la instalación.
+
+El archivo reescribe las rutas hacia `index.php`, protege los archivos internos y configura las páginas de error. Los permisos `AllowOverride` deben admitir también las directivas `Options` y `ErrorDocument` utilizadas en el archivo.
+
+Apache comunica los errores internos a PHP mediante `REDIRECT_STATUS`; el router reconoce 403, 404, 500 y 503. La configuración incluida contempla un dominio con el proyecto en su raíz y el caso local de una carpeta bajo `localhost`, también con puerto. Un despliegue con Alias o prefijos distintos requiere ajustar `ErrorDocument` al punto de entrada real, sin deducir ese prefijo del nombre del dominio.
+
+`.htaccess` bloquea archivos internos, ocultos y scripts PHP distintos de los puntos de entrada. Una cabecera AJAX o de webhook no autoriza su acceso. Las ubicaciones públicas y las descargas protegidas deben conservar sus reglas de autorización.
 
 ## Nginx
 
@@ -75,12 +91,6 @@ El resultado depende del canal original: web usa las vistas y estados HTTP corre
 `fastcgi_intercept_errors off` conserva los errores ya procesados por GFrame, incluidos JSON y vistas. No se interceptan y ejecutan de nuevo las operaciones PHP. `recursive_error_pages off` evita encadenar manejadores de error.
 
 Un 502/504 por PHP-FPM caído no puede renderizar una vista PHP. Debe conservar una respuesta nativa o una página estática del servidor; enviar otra vez esa petición al mismo PHP caído no lo resuelve. Tampoco se promete una vista de GFrame cuando el bootstrap o sus dependencias no pueden cargar.
-
-## Apache
-
-El proyecto publica `.htaccess`, con `mod_rewrite` y permisos `AllowOverride` apropiados. Mantiene el controlador frontal y bloquea archivos internos, ocultos y scripts PHP que no sean los puntos de entrada. No autoriza acceso mediante cabeceras.
-
-Apache comunica los errores internos a PHP mediante `REDIRECT_STATUS`; el router acepta los mismos cuatro estados. El esqueleto conserva los `ErrorDocument` de dominio raíz y el caso local de proyecto en una carpeta bajo `localhost`, incluidos hosts con puerto. Para prefijos distintos o Alias personalizados, ajusta los `ErrorDocument` al punto de entrada real del proyecto. No se deduce arbitrariamente ese prefijo a partir del nombre del dominio.
 
 ## Prueba reproducible
 

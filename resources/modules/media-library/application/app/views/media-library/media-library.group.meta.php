@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'metaTags' => ['title' => 'Medios - ' . site_name, 'robots' => 'noindex, nofollow'],
+    'metaTags' => ['title' => 'Medios - ' . site_name],
     'css' => [
         'public/css/modules/media-library/media-library.css',
     ],

@@ -4,15 +4,15 @@ Este archivo registra diferencias detectadas durante la auditoría documental y 
 
 La regla para integrar es simple: **después de fusionar código, el runtime resultante vuelve a ser la fuente de verdad**.
 
-## 1. Mail: rate limit no implementado por `MailService`
+## 1. Mail: protección antispam integrada después de la auditoría
 
-La auditoría confirmó que `GFrame\Mail\MailService` no implementa un rate limiter propio para formularios públicos. Sus opciones efectivas se relacionan con SMTP, destinatario, `reply_to`, `recipient_name` y `timeout`; las variantes asíncronas delegan en `Async`.
+La auditoría de reconstrucción confirmó que `GFrame\Mail\MailService` no implementaba un rate limiter propio para formularios públicos. La integración posterior incorpora `MailRateLimiter` y la opción explícita `rate_limit`, sin limitar el correo interno que omite esa opción. Consulta [Correo y plantillas](mail.md) para el contrato vigente.
 
 La configuración bajo `notifications.email.max_attempts` y `retry_delay_seconds` pertenece a la cola de `notifications-email`, no a `MailService`.
 
-La documentación anterior prometía `rate_limit`, `MAIL_RATE_LIMIT_*` y códigos `mail_rate_*`; esa afirmación fue retirada de `docs/mail.md`.
+La documentación anterior prometía `rate_limit`, `MAIL_RATE_LIMIT_*` y códigos `mail_rate_*` sin implementación; esa afirmación se retiró durante la auditoría. Ahora esas opciones cuentan con implementación y pruebas de ventana móvil, fallos, concurrencia y envío asíncrono.
 
-**Estado:** corrección documental resuelta; esa capacidad no forma parte del runtime auditado.
+**Estado:** capacidad integrada en el código actual; no formaba parte del runtime de la auditoría original.
 
 ## 2. Media: fuente única del límite de carga
 

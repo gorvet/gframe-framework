@@ -64,7 +64,7 @@ SEO no es una única capacidad activada/desactivada de forma homogénea. Sitemap
 | `gframe-icons` | iconografía propia |
 | `alerts` | `alertToast`, `swalAlert` y estados de carga |
 | `frontend-core` | formularios, errores, paginación y helpers JS comunes |
-| `gfselect` | selector enriquecido propio |
+| `gf-select` | selector enriquecido propio |
 | `gf-table` | ordenación/búsqueda local de tablas |
 | `error-pages` | template y vistas runtime para 403/404/500/503 |
 

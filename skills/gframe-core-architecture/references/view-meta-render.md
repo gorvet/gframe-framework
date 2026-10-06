@@ -43,6 +43,8 @@ Do not recreate those framework elements inside module views.
 
 ## Protected Pages
 
+`GFrame\Seo\SeoPolicy` shares modern route indexability across HTML robots, Sitemap and LLMS. Router exposes the declared URI pattern as `routeParams.uri`, separate from the controller's `relativePath`. Protected/private routes and HTTP errors must remain non-indexable. Keep global `seo.enabled` / `seo.allow_indexing`, individual `seo.sitemap` / `seo.robots` / `seo.llms` switches and legacy index exclusions working. Legacy `sitemap.include` excludes both indexes; `llms.include` excludes LLMS only; neither forces HTML robots. Use `context.seo.indexable=false` for a consistent route exclusion. View metadata cannot override robots policy, and JSON-LD remains controlled by `SEO_ENABLED`.
+
 Render receives route params that include `isProtected`.
 
 Protected state affects page-level behavior and meta handling, so preserve that signal when changing route or middleware conventions.

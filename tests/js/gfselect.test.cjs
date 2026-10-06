@@ -6,7 +6,7 @@ const {createContext, runInContext} = require('node:vm');
 
 function prototype() {
   const context = createContext({window: {}, document: {}});
-  runInContext(readFileSync(join(__dirname, '../../resources/modules/gfselect/public/gf-select.js'), 'utf8'), context);
+  runInContext(readFileSync(join(__dirname, '../../resources/modules/gf-select/public/gf-select.js'), 'utf8'), context);
   return context.window.GFSelect.prototype;
 }
 
@@ -67,7 +67,7 @@ test('GFSelect cierra el desplegable cuando el select pasa a disabled', () => {
 });
 
 test('GFSelect mantiene un puente de variables y estados sin borde más grueso', () => {
-  const css = readFileSync(join(__dirname, '../../resources/modules/gfselect/public/gf-select.css'), 'utf8');
+  const css = readFileSync(join(__dirname, '../../resources/modules/gf-select/public/gf-select.css'), 'utf8');
   for (const name of ['--bs-body-font-size', '--bs-form-control-bg', '--bs-border-color', '--bs-primary-bg-subtle', '--bs-danger', '--bs-form-control-disabled-bg']) {
     assert.ok(css.includes(name), name);
   }

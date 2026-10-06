@@ -33,14 +33,6 @@ class Meta {
     }
 
     public function initializeConfig() {
-        $defaultRobots = (defined('SEO_ALLOW_INDEXING') && SEO_ALLOW_INDEXING)
-            ? 'index,follow'
-            : 'noindex,nofollow,noarchive';
-
-        $this->setMetaTags([
-            'robots' => $defaultRobots,
-        ]);
-
         $configPath = realpath(ABSPATH . 'config/meta/global.meta.php');
         if ($configPath !== false && file_exists($configPath)) {
             $globalMeta = require $configPath;
@@ -73,6 +65,7 @@ class Meta {
     }
 
     public function setMetaTags($metaTags) {
+        unset($metaTags['robots']);
         $this->metaTags = array_merge($this->metaTags, $metaTags);
     }
 
@@ -135,10 +128,7 @@ class Meta {
     }
 
     private function isIndexingBlocked(): bool {
-        if (defined('SEO_ALLOW_INDEXING') && !SEO_ALLOW_INDEXING) {
-            return true;
-        }
-
-        return ($this->routeParams['context']['seo']['indexable'] ?? true) === false;
+        return !\GFrame\Seo\SeoPolicy::allowsIndexing()
+            || !\GFrame\Seo\SeoPolicy::routeIsIndexable($this->routeParams);
     }
 }

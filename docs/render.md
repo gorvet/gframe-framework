@@ -2,6 +2,8 @@
 
 Render construye la respuesta HTML de las rutas web. Ejecuta la acción del controlador, entrega sus datos a la vista, prepara las metas y envuelve el contenido con el template, header y footer.
 
+La organización de archivos se describe en [Vistas, templates y partes](vistas.md). Las responsabilidades de apertura y cierre del documento están en [Header](header.md) y [Footer](footer.md).
+
 No necesitas llamar a Render desde cada acción. [Router](rutas.md) lo invoca después de resolver la ruta y ejecutar los middleware. Los canales AJAX, API, webhook y SSE tienen respuestas directas y no pasan por este montaje HTML.
 
 ## De la ruta a los archivos

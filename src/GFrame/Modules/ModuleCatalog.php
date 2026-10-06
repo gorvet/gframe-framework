@@ -16,6 +16,11 @@ final class ModuleCatalog
         return new self(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . 'modules');
     }
 
+    public static function canonicalName(string $name): string
+    {
+        return $name === 'gfselect' ? 'gf-select' : $name;
+    }
+
     /** @return array<string, array<string, mixed>> */
     public function all(): array
     {
@@ -114,6 +119,6 @@ final class ModuleCatalog
             throw new InvalidArgumentException("Nombre de módulo inválido: {$name}.");
         }
 
-        return $name;
+        return self::canonicalName($name);
     }
 }

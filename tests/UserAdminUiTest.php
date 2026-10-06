@@ -27,7 +27,7 @@ final class UserAdminUiTest extends TestCase
     {
         $manifest = require $this->modulePath . '/module.php';
         self::assertSame('user-admin', $manifest['name']);
-        self::assertNotContains('gfselect', $manifest['dependencies']);
+        self::assertNotContains('gf-select', $manifest['dependencies']);
         self::assertNotContains('self-account', $manifest['dependencies']);
         self::assertContains('admin-panel', $manifest['dependencies']);
         $menu = (string)file_get_contents($this->modulePath . '/application/admin/users-menu.php');

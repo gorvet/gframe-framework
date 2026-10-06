@@ -1,6 +1,6 @@
 <?php
 
-// Ejecutor de tareas en segundo plano basado en Opis Closure.
+// Ejecutor de tareas en segundo plano con closures serializables.
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'ClosureWrapper.php';
 
 class Async

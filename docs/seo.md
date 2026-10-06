@@ -10,6 +10,8 @@ GFrame incluye infraestructura para:
 
 Estas piezas comparten configuración global, pero mantienen contratos específicos por ruta y por vista.
 
+`GFrame\Seo\SeoPolicy` concentra la política moderna de indexación que utilizan Meta, Sitemap y LLMS. Una ruta protegida, privada o de error queda excluida de los índices y recibe `noindex,nofollow,noarchive` en HTML. Los controles individuales de los endpoints y el alcance de los contratos legacy se mantienen.
+
 ## Configuración
 
 `config/defaults.php` define:
@@ -181,11 +183,12 @@ Excluye:
 - `context.seo.indexable=false`;
 - `context.sitemap.include=false`;
 - rutas con `permission` no vacío;
+- rutas marcadas con `isProtected` o con `httpCode` de 400 en adelante;
 - middleware `auth`, `admin`, nombres que comienzan por `auth`, `role:*` y `can:*`;
-- el propio `sitemap.xml`;
-- paths que comienzan por `admin`, `dashboard`, `api`, `ajax`, `webhook`, `auth`, `login` o `logout`.
+- los endpoints `sitemap.xml`, `robots.txt` y `llms.txt`;
+- paths que comienzan por `admin`, `dashboard`, `api`, `ajax`, `webhook`, `auth`, `login`, `logout`, `core`, `app`, `storage`, `packages` o `vendor`.
 
-`Llms` aplica la misma política moderna de `seo.indexable`, respeta los contratos legacy de sitemap/llms y excluye igualmente rutas protegidas por permisos o middleware. También filtra áreas internas como `core`, `app`, `storage` y `vendor`.
+`Llms` aplica la misma política moderna de `seo.indexable`, respeta los contratos legacy de sitemap/llms y excluye las mismas rutas protegidas e internas. Meta utiliza el patrón de `routeParams.uri` para reconocer esas áreas y conserva el alcance específico de las exclusiones legacy descritas arriba.
 
 Si una política propia protege una ruta mediante un middleware que el núcleo no reconoce como privado, declara además `context.seo.indexable=false`.
 

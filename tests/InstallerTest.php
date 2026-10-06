@@ -129,6 +129,10 @@ final class InstallerTest extends TestCase
         self::assertArrayNotHasKey('config/routes/routes_web.php', $lock['managed_files']);
         self::assertFileExists($databasePath);
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . '.env');
+        $environmentText = (string)file_get_contents($this->temporaryPath . DIRECTORY_SEPARATOR . '.env');
+        self::assertStringContainsString('MAIL_RATE_LIMIT_ENABLED="true"', $environmentText);
+        self::assertStringContainsString('MAIL_RATE_LIMIT_MAX_ATTEMPTS="5"', $environmentText);
+        self::assertStringContainsString('MAIL_RATE_LIMIT_WINDOW_SECONDS="3600"', $environmentText);
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php');
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'routes_system.php');
         self::assertFileExists($this->temporaryPath . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'gframe-installed.json');

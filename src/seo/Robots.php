@@ -11,7 +11,7 @@ class Robots
 
     private function render(): string
     {
-        if (defined('SEO_ALLOW_INDEXING') && !SEO_ALLOW_INDEXING) {
+        if (!\GFrame\Seo\SeoPolicy::allowsIndexing()) {
             return "User-agent: *\nDisallow: /\n";
         }
 

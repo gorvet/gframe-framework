@@ -111,15 +111,36 @@ final class ModuleCatalogTest extends TestCase
     {
         $public = $this->temporaryPath . DIRECTORY_SEPARATOR . 'public';
         $result = (new ModuleAssetPublisher(ModuleCatalog::frameworkDefault()))
-            ->publish(['gfselect'], $public);
+            ->publish(['gfselect', 'gf-select'], $public);
 
-        self::assertContains('gfselect', $result['modules']);
+        self::assertContains('gf-select', $result['modules']);
+        self::assertNotContains('gfselect', $result['modules']);
+        self::assertCount(1, array_filter($result['modules'], static fn(string $name): bool => $name === 'gf-select'));
         $directory = $public . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . 'internal'
-            . DIRECTORY_SEPARATOR . 'gfselect';
+            . DIRECTORY_SEPARATOR . 'gf-select';
         self::assertFileExists($directory . DIRECTORY_SEPARATOR . 'gf-select.js');
         self::assertFileExists($directory . DIRECTORY_SEPARATOR . 'gf-select.css');
         self::assertFileDoesNotExist($directory . DIRECTORY_SEPARATOR . 'demo-gfselect.html');
         self::assertFileDoesNotExist($directory . DIRECTORY_SEPARATOR . 'README.md');
+
+        $legacy = $public . '/vendors/internal/gfselect/';
+        self::assertSame(file_get_contents($directory . '/gf-select.js'), file_get_contents($legacy . 'gf-select.js'));
+        self::assertSame(file_get_contents($directory . '/gf-select.css'), file_get_contents($legacy . 'gf-select.css'));
+        \GFrame\Modules\ModuleRuntime::initialize(ModuleCatalog::frameworkDefault(), ['gfselect', 'gf-select'], $this->temporaryPath);
+        self::assertTrue(\GFrame\Modules\ModuleRuntime::isInstalled('gfselect'));
+        self::assertTrue(\GFrame\Modules\ModuleRuntime::isInstalled('gf-select'));
+
+        $project = $this->temporaryPath . '/legacy-project';
+        mkdir($project . '/storage', 0775, true);
+        file_put_contents($project . '/storage/gframe-installed.json', json_encode(['modules' => ['gfselect']]));
+        $catalog = ModuleCatalog::frameworkDefault();
+        $updater = new \GFrame\Install\ProjectUpdateService($catalog, new \GFrame\Install\MigrationRunner($catalog));
+        $updater->update($project);
+        $lock = json_decode(file_get_contents($project . '/storage/gframe-installed.json'), true);
+        self::assertContains('gf-select', $lock['modules']);
+        self::assertNotContains('gfselect', $lock['modules']);
+        self::assertFileExists($project . '/public/vendors/internal/gf-select/gf-select.js');
+        self::assertFileExists($project . '/public/vendors/internal/gfselect/gf-select.js');
 
         $javascript = file_get_contents($directory . DIRECTORY_SEPARATOR . 'gf-select.js');
         self::assertStringContainsString('static getInstance(', $javascript);

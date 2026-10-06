@@ -82,6 +82,8 @@ Aunque utiliza aleatoriedad segura, esta función produce un **nombre**, no un c
 
 ## SanitizeHelper
 
+Para elegir entre texto plano, HTML enriquecido y escape de salida, consulta [Sanitización y escape de datos](sanitizacion.md).
+
 ```php
 $text = SanitizeHelper::sanitize($input);
 ```
@@ -149,6 +151,8 @@ Este helper solo aplica la convención de nombre. No crea la miniatura, no consu
 Para procesamiento, scopes y relaciones utiliza [Biblioteca multimedia](media-library.md).
 
 ## MenuHelper
+
+La guía [Menús con MenuHelper](menus.md) detalla el formato posicional, submenús, contenedores, enlace actual y límites de los destinos.
 
 ```php
 MenuHelper::build($items, $currentUrl, 'nav');

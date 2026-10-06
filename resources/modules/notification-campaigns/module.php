@@ -4,7 +4,7 @@ return [
     'name' => 'notification-campaigns',
     'type' => 'backend-module',
     'description' => 'Campañas masivas inmediatas o programadas mediante transportes de notificaciones.',
-    'dependencies' => ['notifications', 'cron-runner', 'alerts', 'frontend-core', 'flatpickr', 'gfselect'],
+    'dependencies' => ['notifications', 'cron-runner', 'alerts', 'frontend-core', 'flatpickr', 'gf-select'],
     'runtime' => ['root' => 'application/app', 'namespace' => 'GFrame\\Modules\\NotificationCampaigns'],
     'schemas' => ['mysql' => 'database/mysql.sql', 'sqlite' => 'database/sqlite.sql'],
     'migrations' => [

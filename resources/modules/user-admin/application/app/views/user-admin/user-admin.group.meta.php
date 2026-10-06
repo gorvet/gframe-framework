@@ -4,7 +4,6 @@ return [
     'metaTags' => [
         'title' => 'Usuarios - ' . site_name,
         'description' => 'Administración de usuarios.',
-        'robots' => 'noindex, nofollow',
     ],
     'css' => [
         'public/vendors/internal/gframe-alerts/alertToast.css',

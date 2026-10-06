@@ -39,7 +39,7 @@ JsonLD
 - aplica `preset` o `presets` solicitados directamente;
 - normaliza bloques legacy como `website` y `webpage`;
 - infiere el tipo principal cuando falta;
-- completa idioma, nombre del sitio, título, descripción, imagen, organización y target de búsqueda con los fallbacks actuales.
+- completa idioma, nombre del sitio, título, descripción, imagen y organización con los fallbacks actuales; conserva la búsqueda solo cuando está declarada.
 
 `JsonLD` transforma ese resultado en el grafo Schema.org final.
 
@@ -72,11 +72,11 @@ faq
 
 El catálogo contiene además moldes compuestos como `site_base`, `marketing_page`, `product_page`, `service_page` y otros.
 
-### Limitación importante
+### Composición recursiva
 
-`SchemaComposer::applyPresetChain()` no resuelve recursivamente un `preset` o `presets` declarado **dentro** de otro preset. Por ello, un molde compuesto no debe documentarse internamente como alias garantizado de su preset anidado.
+`SchemaComposer::applyPresetChain()` resuelve recursivamente el `preset` o `presets` declarado dentro de otro preset. La detección de ciclos conserva la cadena de referencias y lanza `LogicException` si vuelve a aparecer el mismo nombre.
 
-Algunos moldes producen el tipo esperado por inferencia porque incorporan bloques como `product`, `service` o `software`; otros pueden terminar en `WebPage`.
+Los valores de la vista tienen la última prioridad. El complemento `faq` no sustituye el tipo principal de otro preset. No se añade una búsqueda ficticia cuando falta `search.target`.
 
 La referencia exacta y ejemplos actualizados están en [`docs/json-ld.md`](../../docs/json-ld.md).
 

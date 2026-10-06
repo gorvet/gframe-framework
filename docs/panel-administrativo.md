@@ -107,9 +107,16 @@ Los botones de acciones de listados usan:
 
 Añade `dropdown-toggle` y los atributos de Bootstrap cuando abran un desplegable. En formularios, coloca Cancelar antes de la acción principal y alinea las acciones a la derecha. Los botones de SweetAlert están centrados.
 
-## Tema y menú móvil
+## Persistencia del tema y del menú
 
-El tema se controla con `data-bs-theme` en `html`. Se guarda en `gf-theme`, sigue el sistema sin preferencia explícita y se sincroniza entre pestañas.
+El panel conserva estas preferencias en `localStorage`, dentro del navegador y del origen del sitio. No se guardan en la sesión PHP ni se sincronizan entre dispositivos.
+
+| Preferencia | Clave | Valores | Aplicación |
+| --- | --- | --- | --- |
+| Tema | `gf-theme` | `light` o `dark` | Atributo `data-bs-theme` de `<html>` |
+| Barra lateral de escritorio | `gf-sidebar` | `collapsed` o `expanded` | Atributo `data-gf-sidebar` de `<html>` |
+
+`public/js/modules/admin-panel/preload.js`, declarado en `hjs` de `admin.meta.php`, restaura ambos atributos desde el header antes de que se dibuje la página. Después, `admin.js` atiende los controles y guarda sus cambios. El tema sigue la preferencia del sistema cuando no hay una elección explícita; los cambios se sincronizan entre pestañas del mismo sitio mediante el evento `storage`.
 
 Después de cargar `admin.js`:
 
@@ -121,6 +128,8 @@ GFTheme.resetToSystem();     // Vuelve a seguir al sistema.
 ```
 
 El menú de escritorio guarda su estado en `gf-sidebar`. En móvil abre temporalmente desde la izquierda, con fondo de bloqueo y control de cierre; no reutiliza el estado colapsado de escritorio.
+
+Si el navegador impide usar `localStorage`, el panel mantiene sus controles en la página actual, pero no puede conservar la elección para la siguiente carga. El preload aplica el tema del sistema y deja la barra de escritorio desplegada cuando no hay preferencias válidas.
 
 Para consultar los tokens y componentes, abre `public/css/colores.html` por HTTP desde el proyecto. El visor permite buscar y copiar valores, pero no modifica el CSS.
 

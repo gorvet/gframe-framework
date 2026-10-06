@@ -99,7 +99,7 @@ final class ProjectUpdateService
                 $nextManaged[$relative] = $sourceHash;
                 continue;
             }
-            $copies[$source] = $target;
+            $copies[] = ['source' => $source, 'target' => $target];
             if ($targetHash === null) {
                 $added[] = $relative;
             } else {
@@ -119,7 +119,7 @@ final class ProjectUpdateService
 
         if (!$dryRun) {
             foreach ($resolved as $module) \GFrame\Modules\ModuleRuntime::createCustomizationDirectories($module, $projectRoot);
-            foreach ($copies as $source => $target) $this->copy($source, $target);
+            foreach ($copies as $copy) $this->copy($copy['source'], $copy['target']);
             $lock['modules'] = $moduleNames;
             $lock['managed_files'] = $nextManaged;
             $lock['framework_version'] = $this->frameworkVersion();

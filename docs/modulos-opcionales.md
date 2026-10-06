@@ -14,7 +14,7 @@ Los módulos opcionales pueden añadirse después de instalar el proyecto. No es
 - [`gframe-icons`](gframe-icons.md).
 - `alerts`: `alertToast`, `swalAlert`, estados de carga y estilos de toast.
 - `frontend-core`: formularios, errores, paginación y utilidades comunes. Véase [uso y funcionamiento](frontend-core.md). Markdown tiene su propio módulo opcional.
-- [`gfselect`](gfselect.md): selector enriquecido propio, con búsqueda y selección simple o múltiple.
+- [`gf-select`](gfselect.md): selector enriquecido propio, con búsqueda y selección simple o múltiple.
 - [`gf-table`](gf-table.md): búsqueda y ordenación local de tablas.
 - [`error-pages`](errores.md): gestión, plantilla y vistas 403, 404, 500 y 503.
 
@@ -70,7 +70,7 @@ Owl Carousel y Swiper son opciones independientes. Instalar una no obliga a publ
 ```bash
 php bin/modules.php list
 php bin/modules.php publish /ruta/del/proyecto/public
-php bin/modules.php publish /ruta/del/proyecto/public alerts gfselect
+php bin/modules.php publish /ruta/del/proyecto/public alerts gf-select
 ```
 
 Cuando no se indica ningún módulo, se publica automáticamente la base visual completa. La publicación conserva los archivos existentes por defecto. Para añadir módulos funcionales a un proyecto instalado, use [el actualizador](actualizaciones.md#añadir-módulos-después-de-instalar); publicar recursos por sí solo no instala tablas ni registra el módulo.

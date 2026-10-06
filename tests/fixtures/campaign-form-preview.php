@@ -13,7 +13,7 @@ $data = ['data' => [], 'meta' => []];
 $assets = [
  'public/vendors/external/flatpickr/flatpickr.js' => '/resources/modules/flatpickr/public/flatpickr.js',
  'public/vendors/external/flatpickr/flatpickr_es.js' => '/resources/modules/flatpickr/public/flatpickr_es.js',
- 'public/vendors/internal/gfselect/gf-select.js' => '/resources/modules/gfselect/public/gf-select.js',
+ 'public/vendors/internal/gf-select/gf-select.js' => '/resources/modules/gf-select/public/gf-select.js',
  'public/js/modules/notification-campaigns/campaigns.js' => '/resources/modules/notification-campaigns/javascript/campaigns.js',
 ];
 ?>
@@ -23,7 +23,7 @@ $assets = [
 <link rel="stylesheet" href="/resources/skeleton/public/css/common.css">
 <link rel="stylesheet" href="/resources/modules/flatpickr/public/flatpickr.min.css">
 <link rel="stylesheet" href="/resources/modules/flatpickr/public/gframe-flatpickr.css">
-<link rel="stylesheet" href="/resources/modules/gfselect/public/gf-select.css">
+<link rel="stylesheet" href="/resources/modules/gf-select/public/gf-select.css">
 </head><body class="p-4"><main><?php include $directory . 'form.php'; ?></main>
 <script src="/resources/modules/jquery/public/jquery.min.js"></script>
 <script>document.querySelectorAll('[type="submit"], [data-test-campaign], [data-preview-audience]').forEach(button => button.disabled = true);</script>

@@ -22,7 +22,8 @@ Las responsabilidades de las hojas compartidas se explican en [Variables, estilo
 | PureCounter | 1.5.0 |
 | Swiper | 11.2.10 |
 | VenoBox | 2.0.4 |
-| AOS y Coloris | Sin identificación de versión exacta en el manifiesto o las cabeceras |
+| AOS | 3.0.0-beta.6, comprobada frente a la distribución oficial |
+| Coloris | 0.25.0, comprobada frente a la etiqueta oficial |
 
 Las versiones corresponden a los archivos del paquete, no a las versiones más recientes del proveedor. Cada guía enlaza su fuente oficial. Una actualización de biblioteca debe comprobar su API, los plugins dependientes y el puente visual; no sustituya archivos del proyecto por versiones de CDN sin esa revisión.
 
@@ -32,7 +33,7 @@ Cargue primero el CSS original y después su puente. Mantenga Bootstrap, variabl
 
 | Módulo | Puente publicado, relativo a public |
 | --- | --- |
-| GFSelect | `vendors/internal/gfselect/gf-select.css`, integración con variables de GFrame |
+| GFSelect | `vendors/internal/gf-select/gf-select.css`, integración con variables de GFrame |
 | GFTable | Indicadores en `css/common.css`; usa tablas de Bootstrap |
 | Flatpickr | `vendors/external/flatpickr/gframe-flatpickr.css` |
 | Coloris | `vendors/external/coloris/gframe-coloris.css` |

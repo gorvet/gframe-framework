@@ -25,7 +25,8 @@ final class FrameworkSmokeTest extends TestCase
     {
         self::assertTrue(class_exists(\PHPMailer\PHPMailer\PHPMailer::class));
         self::assertTrue(class_exists(\Hhxsv5\SSE\SSE::class));
-        self::assertTrue(class_exists(\Opis\Closure\SerializableClosure::class));
+        self::assertTrue(function_exists('Opis\\Closure\\serialize'));
+        self::assertTrue(function_exists('Opis\\Closure\\unserialize'));
     }
 
     public function testClosuresCanBeSerializedForBackgroundJobs(): void

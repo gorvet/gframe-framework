@@ -13,7 +13,7 @@ Composer mantiene su estructura estándar `proveedor/paquete` dentro de esa carp
 | Función | Paquete |
 |---|---|
 | Correo SMTP | `phpmailer/phpmailer` |
-| Serialización de closures para `Async` | `opis/closure` `^3.7` |
+| Serialización de closures para `Async` | `opis/closure` `^4.3` |
 | Server-Sent Events | `hhxsv5/php-sse` |
 | Variables de entorno | `vlucas/phpdotenv` |
 
@@ -21,9 +21,9 @@ Estas librerías no deben copiarse dentro de `src` ni mantenerse manualmente en 
 
 ## Componentes propios
 
-- `Async`: componente asíncrono de GFrame que serializa closures mediante `Opis\Closure\SerializableClosure` y las ejecuta con PHP CLI. Consulta [Async](async.md) para sus límites: no es una cola persistente ni ofrece reintentos automáticos.
+- `Async`: componente asíncrono de GFrame que serializa closures mediante `Opis\Closure\serialize()` y las ejecuta con PHP CLI. Consulta [Async](async.md) para sus límites y compatibilidad con Opis 3: no es una cola persistente ni ofrece reintentos automáticos.
 - `GFrame\Security\Encryption`: utilidad opcional de cifrado autenticado AES-256-GCM incluida en el framework. Su formato es propio y no migra automáticamente datos cifrados por implementaciones anteriores.
-- `gfselect`: componente propio de interfaz extraído y documentado en [GFSelect](gfselect.md).
+- `gf-select`: componente propio de interfaz extraído y documentado en [GF Select](gfselect.md).
 - `password-utils`: utilidad propia extraída y documentada en [Password Utils](password-utils.md).
 - Fuente de iconos [`gframe-icons`](gframe-icons.md): recurso propio extraído y documentado.
 

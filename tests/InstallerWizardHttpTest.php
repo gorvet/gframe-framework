@@ -86,7 +86,7 @@ PHP);
                 }
                 $lock = json_decode(file_get_contents($root . '/storage/gframe-installed.json'), true);
                 self::assertSame($profile, $lock['profile']);
-                self::assertContains('gfselect', $lock['modules']);
+                self::assertContains('gf-select', $lock['modules']);
                 self::assertContains('gf-table', $lock['modules']);
                 self::assertNotContains('rich-text-editor', $lock['modules']);
                 if ($profile === 'static') {

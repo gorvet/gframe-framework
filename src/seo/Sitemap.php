@@ -18,25 +18,16 @@ class Sitemap {
   }
 
   private function collectPublicGetRoutes(array $routesByMethod): array {
+    if (!\GFrame\Seo\SeoPolicy::allowsIndexing()
+        || (defined('SEO_ENABLE_SITEMAP_XML') && !SEO_ENABLE_SITEMAP_XML)) return [];
     $items = [];
     $GET = $routesByMethod['GET'] ?? [];
 
     foreach ($GET as $uri => $r) {
 
-      // 1) Solo rutas web públicas
-      if (($r['type'] ?? 'web') !== 'web') continue;
-
-      // 1.1) Excluir por contrato moderno de indexación o compatibilidad legacy
-      if (($r['context']['seo']['indexable'] ?? true) === false) continue;
-      if (($r['context']['sitemap']['include'] ?? true) === false) continue;
-
-      // 2) Excluir rutas con auth/permiso
-      if ($this->isProtectedRoute($r)) continue;
-
-      // 3) Excluir zonas privadas y el propio sitemap
+      // Política compartida con el HTML y llms.
+      if (!\GFrame\Seo\SeoPolicy::routeIsIndexable($r, $uri, 'sitemap')) continue;
       $path = trim($uri, '/');
-      if ($path === 'sitemap.xml') continue;
-      if ($path !== '' && preg_match('#^(admin|dashboard|api|ajax|webhook|auth|login|logout)(/|$)#i', $path)) continue;
 
       // ====== DINÁMICAS ======
       if (strpos($uri, '{') !== false) {
@@ -96,25 +87,6 @@ class Sitemap {
       if (!isset($seen[$it['loc']])) { $seen[$it['loc']] = true; $out[] = $it; }
     }
     return $out;
-  }
-
-  private function isProtectedRoute(array $route): bool {
-    if (!empty($route['permission'])) return true;
-
-    foreach (($route['middleware'] ?? []) as $middleware) {
-      $name = (string)$middleware;
-      if (
-        $name === 'auth'
-        || $name === 'admin'
-        || strpos($name, 'auth') === 0
-        || strpos($name, 'role:') === 0
-        || strpos($name, 'can:') === 0
-      ) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   private function expandDynamicRoute(string $uriTemplate, array $r, array $sm): array {

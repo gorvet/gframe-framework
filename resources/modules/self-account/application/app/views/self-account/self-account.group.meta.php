@@ -4,7 +4,6 @@ return [
     'metaTags' => [
         'title' => 'Cuenta y seguridad - ' . site_name,
         'description' => 'Administra los datos de acceso de tu cuenta.',
-        'robots' => 'noindex, nofollow',
     ],
     'css' => [
         'public/vendors/external/bootstrap/css/bootstrap.min.css',

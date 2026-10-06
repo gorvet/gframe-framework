@@ -6,9 +6,11 @@ Para generar el proyecto, empieza por [Instalación](instalacion.md).
 
 ## Las tres capas
 
-1. **Núcleo PHP**: arranque, configuración, Router y RouteBuilder, middleware, Render y Meta, ORM y dialectos, errores, SEO y servicios internos.
-2. **Módulos de ampliación**: funcionalidades PHP o híbridas PHP/JavaScript, como usuarios, multimedia, notificaciones y campañas. Los requisitos dependen del perfil: no todos son opcionales en todos los proyectos.
-3. **Módulos de vista y frontend**: componentes y utilidades de interfaz, como GF Select, GF Table y alertas visuales. Las bibliotecas externas, como Bootstrap y SweetAlert2, se presentan por separado dentro de esta capa.
+1. **Núcleo PHP**: coordina la ejecución de cada petición. Carga la configuración, resuelve la ruta, ejecuta las comprobaciones previas y entrega una respuesta. Proporciona los contratos comunes que utilizan la aplicación y sus módulos.
+2. **Módulos de ampliación**: añaden capacidades reutilizables sobre esos contratos. Cada módulo declara sus dependencias y puede aportar rutas, clases, esquemas y recursos. La aplicación configura o amplía esa capacidad sin modificar su original en el paquete.
+3. **Interfaz y recursos frontend**: presenta los datos y gestiona la interacción en el navegador. Las vistas generan HTML; CSS define su apariencia y JavaScript atiende eventos y peticiones AJAX. Los componentes propios y las bibliotecas externas se integran mediante los recursos declarados en las metas.
+
+Estos nombres describen responsabilidades, no listas de módulos. En los ejemplos, `Router`, `Render` y `Middleware` conservan las mayúsculas de sus clases PHP; ruta, renderizado y middleware se escriben en minúscula cuando nombran el concepto.
 
 ## MVC y lógica de la aplicación
 

@@ -6,7 +6,7 @@ Seleccione `luxon` en el instalador o publíquelo con `php bin/modules.php publi
 
 ## Versión y zonas horarias
 
-El archivo distribuido identifica **3.6.1** mediante `luxon.VERSION`, aunque el manifiesto no declara versión.
+La versión distribuida es **3.6.1**, identificada mediante `luxon.VERSION` y registrada en el manifiesto del módulo.
 
 ```js
 const localDate = luxon.DateTime.fromISO('2026-10-05T09:30', {

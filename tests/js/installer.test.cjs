@@ -127,7 +127,7 @@ test('El asistente instala los cuatro perfiles con cuenta condicional y opciones
                 }
                 assert.equal(await page.locator('[data-step="Módulos"]').isVisible(), true);
                 if (profile === 'static') assert.equal(await page.locator('[name="modules[]"][value="rich-text-editor"]').isDisabled(), true);
-                assert.equal(await page.locator('[name="modules[]"][value="gfselect"]').count(), 0);
+                assert.equal(await page.locator('[name="modules[]"][value="gf-select"]').count(), 0);
                 await page.locator('#installer-next').click();
                 assert.equal(await page.locator('[data-step="Resumen"]').isVisible(), true);
                 assert.equal(fs.existsSync(path.join(project, 'storage/gframe-installed.json')), false);
@@ -139,7 +139,7 @@ test('El asistente instala los cuatro perfiles con cuenta condicional y opciones
                 assert.match(await page.locator('.result').textContent(), /instalada correctamente/);
                 const installed = JSON.parse(fs.readFileSync(path.join(project, 'storage/gframe-installed.json'), 'utf8'));
                 assert.equal(installed.profile, profile);
-                assert.ok(installed.modules.includes('gfselect'));
+                assert.ok(installed.modules.includes('gf-select'));
                 assert.ok(installed.modules.includes('gf-table'));
                 if (profile !== 'static') assert.ok(installed.modules.includes('auth-ui'));
                 assert.deepEqual(errors, []);

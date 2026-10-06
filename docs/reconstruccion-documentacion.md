@@ -1,5 +1,7 @@
 # Reconstrucción de la documentación de GFrame
 
+Este registro conserva las decisiones de la reconstrucción original. La integración local posterior actualiza Opis Closure a la rama 4 e incorpora la protección antispam de Mail; para esos contratos vigentes, consulta [Async](async.md), [Correo y plantillas](mail.md) y [Política de dependencias](dependencias.md).
+
 Esta rama reconstruye la documentación de GFrame tomando **el código como fuente de verdad**. La documentación existente se reutiliza cuando coincide con el runtime, se corrige cuando quedó obsoleta y se reorganiza cuando el problema es de aprendizaje o descubribilidad.
 
 ## Objetivo

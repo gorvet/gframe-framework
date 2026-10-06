@@ -59,12 +59,26 @@ final class ModuleRuntimeTest extends TestCase
         $params = $method->invoke($router, ['module-runtime-test']);
         self::assertSame('demo', $params['sourceModule']);
         self::assertSame('demo', $params['relativePath']);
+        self::assertSame('module-runtime-test', $params['uri']);
         self::assertSame('custom', $params['view']);
         self::assertSame('different', $params['templateName']);
         $inferred = $method->invoke($router, ['module-runtime-inferred']);
         self::assertSame('demo', $inferred['sourceModule']);
         self::assertSame('demoIndex', $inferred['view']);
         self::assertNull(ModuleRuntime::inferModule('other/OtherController'));
+    }
+
+    public function testRouterPreservesDynamicUriSeparatelyFromControllerPath(): void
+    {
+        define('APP_LANG', 'es');
+        \RouteBuilder::get('catalogo/{id}', 'demo/DemoController@index')->registerFinal();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $router = new \Router();
+        (new \ReflectionProperty($router, 'intendedType'))->setValue($router, 'web');
+        $params = (new \ReflectionMethod($router, 'getRouteParamsFromDeclarative'))->invoke($router, ['catalogo', '25']);
+        self::assertSame('catalogo/{id}', $params['uri']);
+        self::assertSame('25', $params['params']['id']);
+        self::assertSame('demo', $params['relativePath']);
     }
 
     public function testViewsMetaTemplatesAndControllersUseProjectFirstAndNativeFallback(): void

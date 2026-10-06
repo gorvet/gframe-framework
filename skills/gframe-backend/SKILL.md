@@ -141,6 +141,8 @@ If the frontend already expects backend-rendered fragments, do not move that mar
 
 ## Final Self-Check
 
+Mail's `rate_limit` is an antispam protection for public email forms, not a global mail quota. Internal application mail (notifications, campaigns, transactional messages, account verification and password recovery) must omit this option; enabling `MAIL_RATE_LIMIT_ENABLED` does not limit those calls. For public forms sending mail, keep honeypot and input checks in the controller. Use MailService's optional `rate_limit` options (`scope`, server-derived `identity`) instead of implementing a project-specific limiter. Configure its enablement, quota and window through `MAIL_RATE_LIMIT_*` environment variables; handle `mail_rate_limited` and `data.retry_after`. Do not pass client-controlled identity keys or forward rate-limit options to an asynchronous worker.
+
 1. Route points to an existing controller class and public action.
 2. Middleware matches public, guest, auth, admin, or tenant-protected intent.
 3. Controller owns validation and sanitization.

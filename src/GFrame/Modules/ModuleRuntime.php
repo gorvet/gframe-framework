@@ -50,7 +50,7 @@ final class ModuleRuntime
     /** Consulta el registro cargado al arrancar, incluidos los módulos sin MVC. */
     public static function isInstalled(string $module): bool
     {
-        return isset(self::$installed[$module]);
+        return isset(self::$installed[ModuleCatalog::canonicalName($module)]);
     }
 
     public static function file(string $type, string $relative, ?string $module = null): ?string

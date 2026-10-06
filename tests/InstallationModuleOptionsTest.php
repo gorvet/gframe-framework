@@ -55,10 +55,10 @@ final class InstallationModuleOptionsTest extends TestCase
     {
         $catalog = ModuleCatalog::frameworkDefault();
         $campaigns = array_column($catalog->resolve(['notification-campaigns']), 'name');
-        foreach (['notifications', 'cron-runner', 'flatpickr', 'gfselect'] as $name) self::assertContains($name, $campaigns);
+        foreach (['notifications', 'cron-runner', 'flatpickr', 'gf-select'] as $name) self::assertContains($name, $campaigns);
         self::assertContains('cron-runner', array_column($catalog->resolve(['notifications']), 'name'));
         self::assertContains('tinymce', array_column($catalog->resolve(['rich-text-editor']), 'name'));
         $defaults = array_column($catalog->defaults(), 'name');
-        foreach (['bootstrap', 'jquery', 'sweetalert2', 'alerts', 'frontend-core', 'gframe-icons', 'gfselect', 'gf-table', 'error-pages'] as $name) self::assertContains($name, $defaults);
+        foreach (['bootstrap', 'jquery', 'sweetalert2', 'alerts', 'frontend-core', 'gframe-icons', 'gf-select', 'gf-table', 'error-pages'] as $name) self::assertContains($name, $defaults);
     }
 }

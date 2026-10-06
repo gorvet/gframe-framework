@@ -1,6 +1,6 @@
-# Footer por plantillas
+# Footer compartido y áreas de plantilla
 
-El proyecto conserva `app/views/templates/footer.php` como contenedor general. Ahí se imprimen las áreas visibles y, después, se cargan los JavaScript y demás recursos del final de la página.
+`app/views/templates/footer.php` es el footer compartido de las páginas web de toda la aplicación. Render lo incluye después del template y de la vista. Imprime las áreas visibles, carga los JavaScript declarados en las metas y cierra el documento abierto por el [header](header.md).
 
 El espaciado del footer se define una sola vez en `public/css/common.css`, bajo `#footer.gframe-footer`, para home, Auth y errores. Ese CSS controla el padding del contenedor, copyright y créditos, evitando el padding vertical duplicado de los fragmentos. Las hojas de cada vista no repiten esos ajustes; pueden definir el fondo o el comportamiento de su layout.
 
@@ -42,6 +42,8 @@ El proyecto puede editar `app/views/templates/footer.php` para definir las etiqu
 
 Una instalación existente que use la antigua clave meta `credits` debe trasladar ese HTML a la plantilla `credits.php` y separar el copyright en `copyright.php` durante su migración completa. GFrame no actualiza automáticamente los proyectos existentes.
 
+La apertura del documento está descrita en [Header](header.md), y la generación de enlaces en [Menús con MenuHelper](menus.md). La composición de vistas, templates y partes se explica conjuntamente en [Vistas, templates y partes](vistas.md).
+
 ## Funciones compartidas
 
 El contenedor conserva `id="footer"`, `footer-credits`, copyright y créditos, la carga ordenada de los JS declarados, el punto de montaje `#toastBox`, el aviso entre pestañas `session_expired_<scope>` y la carga opcional de Metricool. `site_url` e `is_protected` se declaran en el footer antes de cargar los scripts. Los scripts del header se reservan para precarga y no deben depender de esas variables. Heartbeat y sesión se publican mediante `heartbeat-client` y se declaran en `config/meta/global.meta.php`, después de sus dependencias. El footer solo imprime la lista recibida; no añade estos archivos por su cuenta.
@@ -65,7 +67,7 @@ Los scripts globales deben vivir en meta global y los de una pantalla en su meta
 
 ## Personalizaciones y actualizaciones
 
-Una personalización de `footer.php` pertenece al proyecto y no recibe automáticamente mejoras de la plantilla original. Después de actualizar GFrame, compare responsabilidades nuevas del footer base —variables, puntos de montaje o recursos— antes de conservar una copia antigua sin cambios.
+`footer.php` es un archivo gestionado por el actualizador. Antes de aplicar `composer gframe:update`, revise el modo `--dry-run` y las opciones de conservación de personalizaciones en [Actualizaciones](actualizaciones.md). Si conserva una copia personalizada, compare las responsabilidades del footer base, como variables, puntos de montaje y recursos, para incorporar las mejoras necesarias.
 
 Los parciales `content`, `copyright` y `credits` son una alternativa más estable cuando solo necesita cambiar contenido. Prefiera personalizar el contenedor completo únicamente cuando cambie su estructura.
 

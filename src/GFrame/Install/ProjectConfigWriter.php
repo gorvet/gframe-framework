@@ -89,6 +89,9 @@ final class ProjectConfigWriter
             'SESSION_REDIS_PORT' => '6379',
             'SESSION_REDIS_PASSWORD' => '',
             'SESSION_REDIS_DATABASE' => '0',
+            'MAIL_RATE_LIMIT_ENABLED' => 'true',
+            'MAIL_RATE_LIMIT_MAX_ATTEMPTS' => '5',
+            'MAIL_RATE_LIMIT_WINDOW_SECONDS' => '3600',
         ];
         if ($database !== []) {
             $values['DB_DRIVER'] = (string)($database['driver'] ?? 'mysql');

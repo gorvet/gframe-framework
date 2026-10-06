@@ -89,6 +89,8 @@ El patrón no ofrece parámetros opcionales ni comodines para capturar varias ca
 
 La query string no participa en la coincidencia. En `/productos/25?formato=breve`, `id` llega en `$routeParams['params']`; `formato` se consulta en `$_GET`. Los campos de formulario se leen de `$_POST`. Un cuerpo JSON necesita lectura y validación explícitas; no aparece automáticamente en `$_POST`.
 
+`$routeParams['uri']` conserva el patrón declarado, por ejemplo `productos/{id}`. Se distingue de `relativePath`, que identifica la carpeta del controlador, y de `currentURL`, que contiene la URL de la petición. La política SEO utiliza el patrón para reconocer rutas privadas aunque su controlador pertenezca a otra carpeta.
+
 ## Inferencia de vista y template
 
 Si omites `view()` y `template()`, se usa la última carpeta del controlador:

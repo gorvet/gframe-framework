@@ -17,7 +17,7 @@ Use this for changes to the reusable framework repository rather than one applic
 1. Confirm the change is reusable across GFrame applications.
 2. Modify the standalone framework repository, never an application's vendored copy.
 3. Add or update tests for observable behavior.
-4. Update the relevant framework documentation and `CHANGELOG.md`.
+4. Update the relevant framework documentation. Add changelog entries for release-relevant changes, not minor editorial adjustments unless requested.
 5. Review the canonical skills under `skills/` and update any affected instructions.
 6. Run Composer validation, security audit, lint, tests, and skill validation.
 7. Commit GFrame, update the consuming application's Composer lock, and verify its integration.

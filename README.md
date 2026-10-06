@@ -6,7 +6,7 @@ La serie `1.0` estabiliza el núcleo, la instalación mediante Composer y el fun
 
 ## Requisitos
 
-- PHP 8.1 o superior.
+- PHP 8.1.9 o superior.
 - Composer 2.
 - Extensiones DOM, JSON, Mbstring y OpenSSL.
 - MySQL o SQLite cuando la aplicación utilice base de datos.

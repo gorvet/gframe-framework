@@ -9,6 +9,7 @@
 *.woff2 binary
 *.ttf binary
 *.eot binary
+/tests/fixtures/async-opis3.serialized binary
 
 /vendor export-ignore
 /packages export-ignore

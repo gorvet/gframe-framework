@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'metaTags' => ['robots' => 'noindex,nofollow'],
     'css' => [
         'public/vendors/external/bootstrap/css/bootstrap.min.css',
         'public/vendors/external/sweetalert2/sweetalert2.min.css',

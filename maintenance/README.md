@@ -6,6 +6,9 @@ El estado canónico de la reconstrucción documental y su backlog cerrado/abiert
 
 ## Estado y auditorías canónicas
 
+- [Ajustes posteriores de documentación e identificadores](ajustes-documentacion-20261006.md): revisión del sitio local, versiones de bibliotecas, guías visibles y compatibilidad de `gf-select`.
+- [Integración de mejoras locales sobre main](integracion-local-main.md): respaldo, revisión de diferencias, selección de código y documentación, y comprobaciones de la integración local sin publicar.
+- [Comparativa de GitHub, trabajo local e integración](comparativa-github-local.md): archivos mejorados por cada fuente, problemas frente a la otra versión y aportes añadidos durante la integración.
 - [Unificación de las dos reconstrucciones](unificacion-ramas.md): criterio, decisiones, segunda auditoría de profundidad y cierre formal.
 - [Auditoría de diferencias entre main y reconstrucción unificada](auditoria-main-unificada.md): clasificación de cambios funcionales frente a `main`, evidencia y tests asociados.
 - [Auditoría final de reconstrucción](auditoria-reconstruccion-final.md): inventario técnico de la rama de auditoría utilizado durante la síntesis.

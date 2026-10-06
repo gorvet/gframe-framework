@@ -1,5 +1,7 @@
 # Datos estructurados JSON-LD
 
+Para metas listas para adaptar, consulta [Ejemplos completos de JSON-LD](json-ld-ejemplos.md): página, artículo, producto, SaaS, servicio y entidad personalizada.
+
 GFrame construye un grafo Schema.org desde las metas de la página y lo imprime mediante `Meta::renderSchema()`.
 
 El recorrido actual es:
@@ -129,7 +131,7 @@ Los IDs base utilizan la URL del sitio o página:
 | `video` | `VideoObject` + bloque `video` |
 | `recipe` | `Recipe` + bloque `recipe` |
 | `creative_work` | `CreativeWork` + bloque `creativeWork` |
-| `faq` | `WebPage` + bloque `faq` |
+| `faq` | Bloque `faq`; conserva el tipo de los otros presets y usa `WebPage` si se declara solo |
 
 ## Moldes compuestos
 

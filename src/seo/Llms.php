@@ -25,8 +25,7 @@ class Llms
 
     private function isEnabled(): bool
     {
-        return defined('SEO_ALLOW_INDEXING')
-            && SEO_ALLOW_INDEXING
+        return \GFrame\Seo\SeoPolicy::allowsIndexing()
             && (!defined('SEO_ENABLE_LLMS_TXT') || SEO_ENABLE_LLMS_TXT);
     }
 
@@ -128,51 +127,7 @@ class Llms
 
     private function isPublicRoute(string $uri, array $route): bool
     {
-        if (($route['context']['seo']['indexable'] ?? true) === false) {
-            return false;
-        }
-
-        if (array_key_exists('include', (array)($route['context']['llms'] ?? [])) && $route['context']['llms']['include'] === false) {
-            return false;
-        }
-
-        if (array_key_exists('include', (array)($route['context']['sitemap'] ?? [])) && $route['context']['sitemap']['include'] === false) {
-            return false;
-        }
-
-        if ($this->isProtectedRoute($route)) {
-            return false;
-        }
-
-        $path = trim($uri, '/');
-        if (in_array($path, ['sitemap.xml', 'robots.txt', 'llms.txt'], true)) {
-            return false;
-        }
-
-        return $path === ''
-            || !preg_match('#^(admin|dashboard|api|ajax|webhook|auth|login|logout|core|app|storage|vendor)(/|$)#i', $path);
-    }
-
-    private function isProtectedRoute(array $route): bool
-    {
-        if (!empty($route['permission'])) {
-            return true;
-        }
-
-        foreach (($route['middleware'] ?? []) as $middleware) {
-            $name = (string)$middleware;
-            if (
-                $name === 'auth'
-                || $name === 'admin'
-                || strpos($name, 'auth') === 0
-                || strpos($name, 'role:') === 0
-                || strpos($name, 'can:') === 0
-            ) {
-                return true;
-            }
-        }
-
-        return false;
+        return \GFrame\Seo\SeoPolicy::routeIsIndexable($route, $uri, 'llms');
     }
 
     private function expandDynamicRoute(string $uriTemplate, array $route): array
@@ -397,15 +352,13 @@ class Llms
 
     private function isSitemapEnabled(): bool
     {
-        return defined('SEO_ALLOW_INDEXING')
-            && SEO_ALLOW_INDEXING
+        return \GFrame\Seo\SeoPolicy::allowsIndexing()
             && (!defined('SEO_ENABLE_SITEMAP_XML') || SEO_ENABLE_SITEMAP_XML);
     }
 
     private function isRobotsEnabled(): bool
     {
-        return defined('SEO_ALLOW_INDEXING')
-            && SEO_ALLOW_INDEXING
+        return \GFrame\Seo\SeoPolicy::allowsIndexing()
             && (!defined('SEO_ENABLE_ROBOTS_TXT') || SEO_ENABLE_ROBOTS_TXT);
     }
 }

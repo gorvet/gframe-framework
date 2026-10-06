@@ -2,6 +2,8 @@
 
 `coloris` es una librería externa opcional para seleccionar colores. GFrame la conserva sin modificar su código. Está registrada para publicarse en `public/vendors/external/coloris/`.
 
+Versión distribuida: **0.25.0**. El JavaScript original coincide con el archivo de la [etiqueta oficial v0.25.0](https://github.com/mdbassit/Coloris/blob/v0.25.0/dist/coloris.js), comparando el contenido con los saltos de línea normalizados.
+
 Para usarla, seleccione el módulo en el instalador o publíquelo con `php bin/modules.php publish /ruta/del/proyecto/public coloris`. Incluya `coloris.min.css` y `coloris.min.js` desde esa carpeta en el meta de la vista que los necesita. La aplicación decide qué campos activan el selector y cómo guardar el color.
 
 El manifiesto publica también `examples.html` como referencia de uso.
@@ -23,7 +25,7 @@ Coloris({ el: '[data-coloris]', format: 'hex' });
 
 Guarde el valor del input y valide el formato en el servidor. El puente adapta el control al tema sin alterar los colores reales de muestras y gradientes. Dentro de un modal, configure `parent` con su contenedor para conservar el foco.
 
-El manifiesto y la cabecera de los archivos no identifican una versión exacta; no se presupone que coincida con la versión actual del proveedor. [Documentación oficial](https://coloris.js.org/) y [código fuente](https://github.com/mdbassit/Coloris).
+[Documentación oficial](https://coloris.js.org/) y [código fuente](https://github.com/mdbassit/Coloris).
 
 
 ## Formatos y validación

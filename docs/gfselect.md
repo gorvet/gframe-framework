@@ -4,9 +4,11 @@ GFSelect presenta un `<select>` nativo como desplegable con búsqueda. El valor,
 
 ## Instalación y carga
 
-El instalador publica `gfselect` automáticamente. Para una publicación manual, use `php bin/modules.php publish /ruta/del/proyecto/public gfselect`. Los archivos quedan en `public/vendors/internal/gfselect/`. Incluya `gf-select.js` en el meta de la vista; el componente carga automáticamente `gf-select.css` desde la misma carpeta al crear la primera instancia. También puede incluir ambos archivos en el meta y usar `loadStyles: false` para evitar esa carga automática.
+El instalador publica `gf-select` automáticamente. Para una publicación manual, use `php bin/modules.php publish /ruta/del/proyecto/public gf-select`. Los archivos quedan en `public/vendors/internal/gf-select/`. Incluya `gf-select.js` en el meta de la vista; el componente carga automáticamente `gf-select.css` desde la misma carpeta al crear la primera instancia. También puede incluir ambos archivos en el meta y usar `loadStyles: false` para evitar esa carga automática.
 
 No se publican el README ni la demo incluidos en el código fuente del módulo.
+
+El identificador canónico es `gf-select`, con el mismo prefijo que `gf-table`. `gfselect` se conserva como alias para comandos, dependencias y registros de instalación anteriores; ambos resuelven un único módulo. También se publican los archivos en `vendors/internal/gfselect/` para mantener las metas existentes. Los proyectos nuevos deben usar `vendors/internal/gf-select/`. La clase JavaScript `GFSelect` mantiene su nombre.
 
 ## Uso
 

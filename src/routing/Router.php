@@ -146,6 +146,7 @@ echo "</pre>";*/
           return [
             'type'       => $this->intendedType,
             'method'       => $routeMethod,
+            'uri'          => $pattern,
             'controller'   => $route['controller'],
             'relativePath' => $relativePath,
             'sourceModule' => $route['sourceModule'] ?? \GFrame\Modules\ModuleRuntime::inferModule($route['controller']),

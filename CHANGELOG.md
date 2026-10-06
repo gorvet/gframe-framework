@@ -1,5 +1,16 @@
 # Registro de cambios
 
+## 1.1.0 — 6 de octubre de 2026
+
+- Unificado el identificador `gf-select` con el formato de `gf-table`; `gfselect` y sus rutas públicas se conservan como compatibilidad para proyectos existentes.
+- El actualizador conserva todos los destinos cuando un mismo archivo de origen se publica en varias rutas; esto permite actualizar las rutas nuevas y de compatibilidad de GF Select.
+- Documentación reorganizada para preparar Apache/Nginx antes de la instalación, reunir header/footer/menús y explicar la persistencia del panel y las variables CSS. Versiones distribuidas registradas para AOS, Coloris, Luxon y jQuery UI.
+
+- Async actualiza Opis Closure a la rama 4, conserva la lectura de tareas de Opis 3 y elimina la sustitución local por Laravel Serializable Closure. PHP 8.1 requiere al menos 8.1.9 por el fallo corregido de referencias en WeakMap. Antes de actualizar código usado por tareas activas, deben finalizar esas tareas.
+- Mail incorpora protección antispam opcional para formularios públicos mediante `rate_limit`, con límites configurables, ventana móvil y bloqueo para envíos concurrentes. El correo interno conserva su comportamiento al omitir esa opción.
+- Router conserva el patrón declarado en `routeParams.uri`. HTML, Sitemap y LLMS comparten la exclusión de rutas privadas, protegidas y de error, manteniendo los controles individuales y los contratos anteriores de los índices.
+- El preset FAQ complementa otros tipos de JSON-LD sin sustituirlos por WebPage.
+
 ## 1.0.2 — 2 de octubre de 2026
 
 - El fragmento Nginx conserva el manejador PHP del panel: solo define enrutamiento, protección y destinos de errores. El manejador existente comunica el código mediante `GFRAME_SERVER_ERROR`.

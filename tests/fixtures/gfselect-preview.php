@@ -9,7 +9,7 @@ if (str_starts_with((string)parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/
 <link rel="stylesheet" href="/resources/modules/bootstrap/public/css/bootstrap.min.css">
 <link rel="stylesheet" href="/resources/skeleton/public/css/variables.css">
 <link rel="stylesheet" href="/resources/skeleton/public/css/common.css">
-<link rel="stylesheet" href="/resources/modules/gfselect/public/gf-select.css">
+<link rel="stylesheet" href="/resources/modules/gf-select/public/gf-select.css">
 </head><body class="p-4">
 <main class="container"><h1>GFSelect</h1>
 <div class="d-flex gap-2 mb-4"><button id="theme" class="btn btn-secondary">Cambiar tema</button>
@@ -27,7 +27,7 @@ if (str_starts_with((string)parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/
 <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div>
 </div></div></div>
 <script src="/resources/modules/bootstrap/public/js/bootstrap.bundle.min.js"></script>
-<script src="/resources/modules/gfselect/public/gf-select.js"></script>
+<script src="/resources/modules/gf-select/public/gf-select.js"></script>
 <script>
 ['country', 'multi', 'disabled', 'modalSelect'].forEach(id => new GFSelect('#' + id, {loadStyles: false}));
 document.getElementById('theme').onclick = () => document.documentElement.dataset.bsTheme = document.documentElement.dataset.bsTheme === 'dark' ? 'light' : 'dark';

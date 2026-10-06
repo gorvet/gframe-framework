@@ -18,7 +18,6 @@ return [
     'metaTags' => [
         'title' => $authTitle . ' - ' . site_name,
         'description' => $authTitle . ' en ' . site_name . '.',
-        'robots' => 'noindex, nofollow',
     ],
     'css' => [
         'public/vendors/external/bootstrap/css/bootstrap.min.css',

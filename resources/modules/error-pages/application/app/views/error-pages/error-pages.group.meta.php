@@ -7,7 +7,6 @@ return [
     'metaTags' =>  [ 
             'title' => trim($actionName) . ' - ' . site_name,
             'description' => 'No fue posible mostrar la página solicitada.',
-            'robots' => 'noindex, nofollow',
             'tolink' => isset($routeParams['tolink']) ? $routeParams['tolink'] : '',
             'infoMsg' =>isset($routeParams['infoMsg']) ? $routeParams['infoMsg'] : '',
         ],

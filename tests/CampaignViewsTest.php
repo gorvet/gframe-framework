@@ -98,7 +98,7 @@ final class CampaignViewsTest extends TestCase
         self::assertSame([
             'public/vendors/external/flatpickr/flatpickr.js',
             'public/vendors/external/flatpickr/flatpickr_es.js',
-            'public/vendors/internal/gfselect/gf-select.js',
+            'public/vendors/internal/gf-select/gf-select.js',
             'public/js/modules/notification-campaigns/campaigns.js',
         ], $mergedScripts);
         $historyAssets = require $directory . 'automaticHistory.meta.php';

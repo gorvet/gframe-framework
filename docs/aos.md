@@ -2,6 +2,8 @@
 
 `aos` es una librería externa para animaciones al desplazarse. GFrame la distribuye como componente visual opcional; no modifica su código ni impone animaciones a las vistas.
 
+Versión distribuida: **3.0.0-beta.6**. Los archivos `aos.js`, `aos.esm.js`, `aos.cjs.js` y `aos.css` coinciden con la [distribución oficial de esa versión](https://www.npmjs.com/package/aos/v/3.0.0-beta.6), comparando el contenido con los saltos de línea normalizados.
+
 Seleccione `aos` en el instalador o publique sus archivos con `php bin/modules.php publish /ruta/del/proyecto/public aos`. Se copian a `public/vendors/external/aos/`.
 
 Para usarla, declare `aos.css` y `aos.js` en el meta de la vista o del grupo de vistas. La aplicación decide dónde inicializar `AOS` y qué elementos llevan atributos `data-aos`. GFrame no hace esa inicialización automáticamente.

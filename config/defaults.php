@@ -65,6 +65,13 @@ return [
             'hash' => '',
         ],
     ],
+    'mail' => [
+        'rate_limit' => [
+            'enabled' => true,
+            'max_attempts' => 5,
+            'window_seconds' => 3600,
+        ],
+    ],
     'notifications' => [
         'email' => [
             'max_attempts' => 5,
