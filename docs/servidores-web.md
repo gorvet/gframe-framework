@@ -95,3 +95,25 @@ php packages/phpunit/phpunit/phpunit tests/ServerRoutingTest.php
 Después de configurar el servidor, comprueba una URL válida, `robots.txt`, `sitemap.xml`, una URL inexistente y un recurso público inexistente. Las URL inexistentes deben conservar el estado HTTP 404 y mostrar la vista del framework, no la página nativa de Nginx. Estas comprobaciones del despliegue no se sustituyen por la suite del paquete.
 
 Referencias oficiales: [error_page y ubicaciones internas de Nginx](https://nginx.org/en/docs/http/ngx_http_core_module.html#error_page), [parámetros FastCGI e interceptación](https://nginx.org/en/docs/http/ngx_http_fastcgi_module.html#fastcgi_param), [errores personalizados de Apache](https://httpd.apache.org/docs/2.4/custom-error.html).
+
+
+## Lista de comprobación de despliegue
+
+Después de configurar Apache o Nginx, comprueba de forma explícita:
+
+| Petición | Resultado esperado |
+| --- | --- |
+| Ruta válida de la aplicación | Respuesta del controlador correspondiente |
+| Archivo existente bajo `public/` | Entrega directa, sin pasar por Router |
+| URL inexistente | Vista de error GFrame con HTTP 404 |
+| Recurso inexistente bajo `public/` | HTTP 404, sin revelar rutas internas |
+| `/.env`, `/composer.json` o archivo interno | Acceso bloqueado |
+| Script PHP distinto de `index.php` o `install.php` | Acceso bloqueado |
+| `/robots.txt` | Respuesta dinámica cuando corresponde |
+| `/sitemap.xml` | Respuesta dinámica solo si SEO e indexación lo permiten |
+| Descarga protegida | Pasa por controlador y conserva autorización |
+| Archivo de biblioteca pública autorizada | Entrega directa únicamente en las rutas permitidas |
+
+Comprueba también un error 403/500/503 cuando sea reproducible en el entorno. El objetivo es distinguir errores que GFrame puede renderizar de fallos donde PHP-FPM o el bootstrap completo ya no están disponibles.
+
+En Nginx ejecuta `nginx -t` antes de recargar. En Apache revisa que `AllowOverride` permita las directivas usadas por `.htaccess`. Una configuración que funciona para la portada pero expone archivos internos no se considera válida.
