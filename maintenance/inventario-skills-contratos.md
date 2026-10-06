@@ -541,6 +541,13 @@ El usuario autorizó retirar las ramas históricas después de comprobar su inte
 - Eliminadas las tres ramas remotas `codex/auditoria-reconstruccion`, `codex/reconstruccion-documentacion` y `codex/reconstruccion-unificada`, mediante operación atómica condicionada a sus hashes comprobados. Retirada también la rama local de auditoría.
 - Confirmados main local y main remoto como únicas ramas restantes. No se enviaron los commits nuevos de main ni se modificó el código. S-02 sigue siendo el siguiente pendiente activo.
 
+## Registro del lote 28: cierre del recorrido backend
+
+- Contrastados servicio, modelo, controlador, Router y JS de Mi cuenta y user-admin. Backend ahora explicita `unauthorized/forbidden`, estados ORM frente al envelope HTTP, errores de negocio con HTTP 200 en AJAX y resolución de parciales runtime con limpieza del buffer.
+- No se cambian productores, consumidores ni códigos. La receta existente de contraseña ya comprobaba retornos sin message y mensajes añadidos por el controlador; se conserva sin duplicarla ni crear otra capa.
+- Pruebas dirigidas de servicios/UI de ambas áreas: 27 pruebas y 155 aserciones correctas. La comprobación es de contratos locales; no acredita navegador, peticiones CSRF completas ni Redis real.
+- S-02 queda revisada para los contratos y recorridos representativos del inventario, con las limitaciones anteriores. Nuevos endpoints requieren su comprobación concreta; no se certifica cada ruta del framework por extrapolación.
+
 Fuentes locales para contrastar los hallazgos:
 
 - [Skills y su instalación](../docs/skills.md), [instalador](../bin/install-skills.ps1) y [verificador](../bin/validate-skills.php).

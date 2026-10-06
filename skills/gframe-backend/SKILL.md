@@ -81,6 +81,7 @@ For a concrete normalized HTTP boundary, service operation and consumer response
 Use stable keys already common in the framework:
 
 - `status` is mandatory in success/error operation envelopes, not in every raw ORM or helper return.
+- Preserve existing status values: user administration uses `unauthorized` with `code: forbidden`; ORM writes use states such as `updated`, `no_change` or `deleted`. Do not rewrite these into `success`/`error` without adapting the actual boundary and its consumers.
 - `message` is included when it adds user or caller value.
 - `code` is used for domain, validation, redirect, or transport-aware handling.
 - `data` is used for list, detail, and action payloads.
@@ -89,6 +90,8 @@ Use stable keys already common in the framework:
 - Prefer the backend as the source of user-visible messages or labels when AJAX flows need dynamic copy.
 
 Do not rename these keys casually.
+
+HTTP success is distinct from business success. The current Router action path emits AJAX responses with HTTP 200, including business errors; its API path respects explicit `http_code` or resolves error/unauthorized codes to an HTTP status. A pre-action middleware rejection has its own transport behavior. Consumers must inspect the established payload, not infer completion solely from jQuery `done` or HTTP 2xx. See the concrete boundary examples in [backend-model-boundary.md](references/backend-model-boundary.md).
 
 ### Code Convention
 
@@ -134,6 +137,8 @@ return $response;
 ```
 
 If the frontend already expects backend-rendered fragments, do not move that markup into JS templates.
+
+This include example applies to an application-owned partial. For a migrated module, resolve the partial through `ModuleRuntime::file` so project overrides and native fallback agree; follow the [user-admin list recipe](../gframe-frontend-admin/references/user-admin-ajax-recipe.md). Preserve output-buffer cleanup on exceptions, as its controller does with `finally`.
 
 ## Anti-Patterns
 
