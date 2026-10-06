@@ -4,6 +4,12 @@ Estos documentos conservan planes, decisiones de trabajo, tareas pendientes y ev
 
 El estado canónico de la reconstrucción documental y su backlog cerrado/abierto está en [Reconstrucción de la documentación](../docs/reconstruccion-documentacion.md). **No uses las casillas pendientes de los planes históricos de esta carpeta como backlog actual sin volver a comprobar el código y ese documento canónico.**
 
+## Estado y auditorías canónicas
+
+- [Unificación de las dos reconstrucciones](unificacion-ramas.md): criterio, decisiones, segunda auditoría de profundidad y cierre formal.
+- [Auditoría de diferencias entre main y reconstrucción unificada](auditoria-main-unificada.md): clasificación de cambios funcionales frente a `main`, evidencia y tests asociados.
+- [Auditoría final de reconstrucción](auditoria-reconstruccion-final.md): inventario técnico de la rama de auditoría utilizado durante la síntesis.
+
 ## Planes y registros de la reconstrucción
 
 - [Plan de documentación](plan-documentacion.md): snapshot de una fase anterior de la auditoría; varias filas marcadas como pendientes ya fueron resueltas posteriormente.
