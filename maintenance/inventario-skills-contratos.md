@@ -188,7 +188,7 @@ En el lote 11 estos casos solo se contrastaron documentalmente. En el lote 16 un
 
 ### Lista activa de pendientes, en orden
 
-1. Guardar el trabajo acumulado en commits separados de código, skills/documentación y herramientas. Retirar únicamente ramas locales ya integradas; conservar las divergentes y no borrar ramas remotas.
+1. Terminado: trabajo acumulado guardado en tres commits separados (4a5a4ec, 74e2a2a y 806d264). Ramas históricas retiradas con autorización posterior del usuario y respaldo verificado; quedan main y origin/main. Los commits nuevos de main aún no se han enviado al remoto.
 2. Cerrar la revisión semántica de S-01–S-09 con la evidencia ya obtenida y las comprobaciones concretas que faltan. Próximo recorrido: S-02, backend → servicio/modelo → respuesta → consumidor. No repetir correcciones ya registradas ni crear tareas por recomendaciones sin comprobar.
 3. Completar los huecos de cobertura de módulos registrados en COV y sus recetas, aprovechando las catorce skills existentes antes de proponer otras.
 4. Completar N-02–N-05 y concretar N-06, preservando APIs públicas, claves y selectores existentes. Ningún renombrado masivo.
@@ -533,6 +533,13 @@ El usuario pidió mantener la lista de pendientes, guardar el trabajo acumulado 
 - Repetición dirigida antes del cierre: AuditRegressionTest, MediaRuntimeTest, SkillsValidatorTest y LintCommandTest; 26 pruebas y 237 aserciones correctas. Catorce skills y 61 enlaces válidos; `git diff --check` correcto. Las pruebas anteriores conservan sus límites e integraciones pendientes.
 - Retirada la rama local `codex/integracion-main-local`, que apuntaba al mismo commit de partida que main. Conservada `codex/auditoria-reconstruccion`, con commits divergentes; no se eliminaron ramas remotas ni se equiparó divergencia con trabajo perdido.
 - Lista activa explicitada arriba. El siguiente lote sigue siendo S-02; no se retoma CI Windows, MCP ni las mejoras de contratos pospuestas.
+
+## Limpieza de ramas autorizada
+
+El usuario autorizó retirar las ramas históricas después de comprobar su integración selectiva y conservar un respaldo. Bundle completo verificado en `C:/Users/Juank de Gorvet/Downloads/GFrame-historial-ramas-20261006-173201.bundle`, incluidos los HEAD local y remoto divergentes.
+
+- Eliminadas las tres ramas remotas `codex/auditoria-reconstruccion`, `codex/reconstruccion-documentacion` y `codex/reconstruccion-unificada`, mediante operación atómica condicionada a sus hashes comprobados. Retirada también la rama local de auditoría.
+- Confirmados main local y main remoto como únicas ramas restantes. No se enviaron los commits nuevos de main ni se modificó el código. S-02 sigue siendo el siguiente pendiente activo.
 
 Fuentes locales para contrastar los hallazgos:
 
