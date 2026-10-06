@@ -1,137 +1,127 @@
-# ORM Multi-Connection + Dialects Guide
+# ORM: nota interna de arquitectura
 
-Este framework usa un ORM unico (`ORM`) para los modelos, y separa lo especifico de cada motor en capas inferiores.
+> La documentación de uso del ORM vive en [`docs/orm.md`](../../docs/orm.md). Para aprender a utilizarlo dentro de una funcionalidad completa, consulta también [`docs/guia-desarrollo.md`](../../docs/guia-desarrollo.md) y [`docs/tutorial-productos.md`](../../docs/tutorial-productos.md).
 
-## Arquitectura
+Este archivo permanece junto al código para describir únicamente la arquitectura interna de la capa de datos. La configuración y ejemplos de aplicación no deben mantenerse duplicados aquí.
 
-### Capa de modelo (API comun)
+## Ubicación actual
 
-- `core/database/ORM.php`
-- Los modelos hacen `extends ORM` y usan los mismos metodos (`select`, `where`, `join`, `update`, `upsert`, etc.).
+La implementación vive en `src/database/`:
 
-### Capa de conexion (por motor)
-
-- `core/database/DatabaseConnectionInterface.php`
-- `core/database/MySqlConnection.php`
-- `core/database/SqliteConnection.php`
-
-Estas clases crean `PDO` segun el `driver` configurado.
-
-### Capa de dialecto SQL (por motor)
-
-- `core/database/dialects/DatabaseDialectInterface.php`
-- `core/database/dialects/MySqlDialect.php`
-- `core/database/dialects/SqliteDialect.php`
-
-Estas clases encapsulan diferencias SQL entre motores:
-
-- `upsert`
-- `group_concat`
-- expresiones JSON
-- casteo string
-- introspeccion de indices unicos
-
-### Orquestacion
-
-- `core/database/DatabaseManager.php`
-
-Resuelve por nombre de conexion:
-
-- `connection(name)` -> `PDO`
-- `dialect(name)` -> dialecto del motor
-
-Con cache interna por conexion.
-
-## Configuracion
-
-Definir conexiones en `config/Config.php`:
-
-```php
-define('DB_DEFAULT_CONNECTION', 'main');
-define('DB_CONNECTIONS', [
-  'main' => [
-    'driver' => 'mysql',
-    'host' => 'localhost',
-    'database' => 'app',
-    'username' => 'root',
-    'password' => '',
-    'charset' => 'utf8mb4',
-  ],
-  'sqlite_cache' => [
-    'driver' => 'sqlite',
-    'path' => ABSPATH . 'database/cache.sqlite',
-    'foreign_keys' => true,
-    'busy_timeout_ms' => 5000,
-  ],
-]);
+```text
+src/database/
+  ORM.php
+  DatabaseManager.php
+  DatabaseConnectionInterface.php
+  MySqlConnection.php
+  SqliteConnection.php
+  dialects/
 ```
 
-Reglas:
+Las rutas históricas `core/database/...` no describen la estructura actual del paquete.
 
-- Si un modelo no define `$connection`, usa `DB_DEFAULT_CONNECTION`.
-- Si una conexion no existe en `DB_CONNECTIONS`, lanza excepcion.
+## Capas
 
-## Uso en modelos
+### ORM
 
-Conexion por defecto:
+`ORM.php` expone la API común utilizada por los modelos:
+
+- `find`, `all`, `get`, `first`, `firstOrFail`;
+- `select`, `where`, grupos, `whereIn`, `whereBetween`, `whereLike`;
+- `orderBy`, `limit`, `offset`, `paginate`;
+- `insert`, `save`, `update`, `updateColumns`, `delete`, `deleteWhere`, `upsert`;
+- agregados y relaciones;
+- transacciones por conexión.
+
+Las diferencias de motor no deben repartirse arbitrariamente por los modelos.
+
+### Conexiones
+
+`DatabaseManager` resuelve conexiones por nombre y devuelve `PDO`.
+
+Las implementaciones actuales incluidas son MySQL y SQLite.
+
+### Dialectos
+
+`src/database/dialects/` encapsula diferencias SQL como:
+
+- upsert;
+- expresiones JSON;
+- `group_concat`;
+- casteo;
+- introspección necesaria para índices/operaciones específicas.
+
+## Configuración actual
+
+La configuración principal del proyecto se genera en:
+
+```text
+config/app.php
+```
+
+con estructura:
 
 ```php
-class UserModel extends ORM {
+return [
+    'database' => [
+        'default' => 'main',
+        'connections' => [
+            'main' => [
+                'driver' => 'mysql',
+                'host' => env('DB_HOST', 'localhost'),
+                'port' => env_int('DB_PORT', 3306),
+                'database' => env('DB_NAME', ''),
+                'username' => env('DB_USER', ''),
+                'password' => env('DB_PASSWORD', ''),
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'auto_create' => false,
+            ],
+        ],
+    ],
+];
+```
+
+Para SQLite, el instalador genera una conexión con `driver => sqlite`, `path` y `foreign_keys`.
+
+`LegacyConfigBridge` puede exponer constantes históricas para compatibilidad, pero esas constantes no son la forma recomendada de documentar la configuración de proyectos nuevos.
+
+Consulta [`docs/configuracion.md`](../../docs/configuracion.md) para la configuración soportada.
+
+## Modelo mínimo
+
+```php
+final class UserModel extends ORM
+{
     protected $table = 'users';
     protected $primaryKey = 'user_id';
 }
 ```
 
-Modelo atado a conexion especifica:
-
-```php
-class CacheModel extends ORM {
-    protected $connection = 'sqlite_cache';
-    protected $table = 'cache_items';
-    protected $primaryKey = 'cache_id';
-}
-```
-
-Cambio de conexion en runtime:
-
-```php
-$rows = (new UserModel())
-  ->onConnection('sqlite_cache')
-  ->queryTable('cache_items')
-  ->where('scope', '=', 'tokens')
-  ->get();
-```
+Una conexión específica puede declararse mediante `$connection` o seleccionarse con `onConnection()` cuando el caso lo requiera.
 
 ## Transacciones
 
-Por conexion especifica:
-
 ```php
 ORM::beginTransaction('main');
+
 try {
-  // writes en main
-  ORM::commit('main');
-} catch (Exception $e) {
-  ORM::rollBack('main');
-  throw $e;
+    // operaciones sobre la conexión main
+    ORM::commit('main');
+} catch (Throwable $exception) {
+    ORM::rollBack('main');
+    throw $exception;
 }
 ```
 
-Nota: no hay transaccion atomica distribuida entre MySQL y SQLite. Si usas dos motores en un mismo flujo, maneja compensacion/logica de consistencia a nivel aplicacion.
+Una transacción pertenece a una conexión. GFrame no convierte operaciones simultáneas sobre motores independientes en una transacción distribuida.
 
-## Extender a otro motor (ej. PostgreSQL)
+## Regla de mantenimiento
 
-1. Crear `PostgresConnection` implementando `DatabaseConnectionInterface`.
-2. Crear `PostgresDialect` implementando `DatabaseDialectInterface`.
-3. Registrar ambos en `DatabaseManager::resolveConnection()` y `DatabaseManager::resolveDialect()`.
-4. Agregar conexion en `DB_CONNECTIONS` con `'driver' => 'pgsql'`.
+No añadas aquí ejemplos de configuración, rutas de proyecto o tutoriales que ya estén cubiertos por `docs/`.
 
-Con eso, `ORM` no necesita condicionales por motor.
+Cuando cambie el ORM:
 
-## Checklist rapido
-
-- Modelo siempre extiende `ORM`.
-- Definir `$connection` solo cuando no use la default.
-- No mezclar SQL de motor en el modelo.
-- Diferencias SQL se resuelven en dialectos.
-- Mantener `DB_CONNECTIONS` como unica fuente de verdad.
+1. actualiza primero el código y sus pruebas;
+2. actualiza `docs/orm.md` como referencia pública;
+3. modifica este archivo solo si cambió la arquitectura interna de `src/database/`.

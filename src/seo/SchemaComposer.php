@@ -2,9 +2,7 @@
 
 class SchemaComposer {
     public function compose(array $schema, array $metaTags = [], array $routeParams = []): array {
-        $composed = $schema;
-
-        $composed = $this->applyPresetChain($composed);
+        $composed = $this->applyPresetChain($schema);
 
         $composed = $this->normalizeLegacyBlocks($composed);
 
@@ -30,11 +28,6 @@ class SchemaComposer {
 
         if (empty($composed['image']) && !empty($metaTags['ogimage'])) {
             $composed['image'] = $metaTags['ogimage'];
-        }
-
-        if (empty($composed['search']['target'])) {
-            $composed['search'] = $composed['search'] ?? [];
-            $composed['search']['target'] = rtrim(site_url, '/') . '/buscar?q={search_term_string}';
         }
 
         if (($composed['type'] ?? '') === 'Article' && empty($composed['author']) && !empty($metaTags['author'])) {
@@ -66,12 +59,7 @@ class SchemaComposer {
         return 'WebPage';
     }
 
-    private function presetDefaults(string $preset): array {
-        $presets = $this->getBuiltInPresets();
-        return $presets[$preset] ?? ['type' => 'WebPage'];
-    }
-
-    private function applyPresetChain(array $schema): array {
+    private function applyPresetChain(array $schema, array $stack = []): array {
         $presetConfig = $schema['preset'] ?? ($schema['presets'] ?? null);
         unset($schema['preset'], $schema['presets']);
 
@@ -87,10 +75,24 @@ class SchemaComposer {
             if ($name === '') {
                 continue;
             }
-            $resolved = $this->mergeRecursiveDistinct($resolved, $this->presetDefaults($name));
+            $resolved = $this->mergeRecursiveDistinct($resolved, $this->resolvePreset($name, $stack));
         }
 
         return $this->mergeRecursiveDistinct($resolved, $schema);
+    }
+
+    private function resolvePreset(string $preset, array $stack): array {
+        if (in_array($preset, $stack, true)) {
+            $chain = array_merge($stack, [$preset]);
+            throw new \LogicException('Referencia circular de presets JSON-LD: ' . implode(' -> ', $chain));
+        }
+
+        $presets = $this->getBuiltInPresets();
+        if (!isset($presets[$preset]) || !is_array($presets[$preset])) {
+            return ['type' => 'WebPage'];
+        }
+
+        return $this->applyPresetChain($presets[$preset], array_merge($stack, [$preset]));
     }
 
     private function getBuiltInPresets(): array {
@@ -159,7 +161,7 @@ class SchemaComposer {
     }
 
     private function isAssoc(array $array): bool {
-        return array_keys($array) !== range(0, count($array) - 1);
+        return $array !== [] && array_keys($array) !== range(0, count($array) - 1);
     }
 
     private function hasSchemaBlock(array $schema, string $key): bool {

@@ -39,3 +39,11 @@ test('el generador no produce contraseña sin API criptográfica', () => {
   const { generatePassword } = load(null);
   assert.equal(generatePassword(), null);
 });
+
+test('el medidor orientativo no decide la aceptación obligatoria', () => {
+  const {evaluatePassword, passwordValidate} = load();
+  assert.ok(evaluatePassword('abcdefgh', '') <= 2);
+  assert.equal(passwordValidate('abcdefgh'), true);
+  assert.equal(passwordValidate('áááá'), true);
+  assert.ok(evaluatePassword('MiClaveSegura2026!', '') > 6);
+});

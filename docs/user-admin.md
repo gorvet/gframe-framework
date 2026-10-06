@@ -1,107 +1,211 @@
 # Administración de usuarios
 
-El módulo `user-admin` permite consultar usuarios, filtrar la lista, verificar cuentas, suspender/restablecer el acceso, eliminar cuentas y asignar roles. No crea cuentas ni cambia contraseñas administrativamente. Las acciones se agrupan en el modal «Administrar», dentro de la plantilla administrativa común.
+`user-admin` permite listar cuentas, buscar por correo, filtrar por rol o estado y administrar acceso y roles. Se incluye en los perfiles administrados. La cuenta propia se gestiona en [Cuenta y seguridad](self-account.md).
 
-## Instalación
+## Acceder a la pantalla
 
-```powershell
-php bin/modules.php publish-project user-admin C:\ruta\del\proyecto
+Abre `/admin/users` con el superadministrador inicial. Para permitir acceso a otro rol, declara sus capacidades en `config/Permissions.php`:
+
+```php
+return [
+    'gestor' => [
+        'admin' => ['access' => true],
+        'users' => ['view' => true, 'manage' => true],
+    ],
+];
 ```
 
-El módulo requiere el esquema `auth` y publica el controlador, las rutas, las vistas y el JavaScript. También instala sus dependencias `admin-panel`, `alerts` y `frontend-core`. La pantalla usa la plantilla administrativa y aporta su enlace dentro de Administración cuando el usuario tiene `users.view`. Mi cuenta es un módulo independiente.
+Integra esa entrada con los roles que ya tenga el archivo, ejecuta `composer gframe:update` y asigna el rol al usuario. Consulta [roles y permisos](permisos.md).
 
-La vista utiliza título administrativo, filtros con etiquetas visibles y listado en una tarjeta separada, con el padding normal de `card-body`. Los roles se obtienen del contrato de GFrame. Las acciones se agrupan en un modal, los estados tienen etiquetas en español y la cuenta propia y el superadministrador no muestran acciones de modificación. La búsqueda se realiza por correo.
+| Capacidad | Permite |
+| --- | --- |
+| `users.view` | Consultar, buscar, filtrar y paginar. |
+| `users.manage` | Verificar, suspender, restablecer, eliminar y asignar roles. |
 
-Los filtros buscan por AJAX automáticamente: 300 ms después de escribir y al cambiar un selector. No hay botón Filtrar; el botón de limpiar usa gicon-close y solo aparece cuando hay filtros activos. La ruta de lista devuelve el parcial HTML y los metadatos; solo se sustituye userListMount. La URL conserva filtros y página, y se cancelan las peticiones anteriores para evitar respuestas fuera de orden. Sin JavaScript, el formulario conserva el envío GET con Enter.
+El superadministrador tiene acceso automáticamente. La comprobación del servidor se mantiene aunque un control esté oculto o deshabilitado.
 
-## Permisos
+## Operaciones
 
-Las rutas utilizan dos permisos:
+Selecciona «Administrar» en una fila:
 
-- `users.view`: abrir la pantalla, buscar, filtrar y paginar;
-- `users.manage`: cambiar estados y asignar roles.
+| Operación | Condición |
+| --- | --- |
+| Asignar rol | El rol existe y el actor tiene autoridad para asignarlo. |
+| Verificar | La cuenta está `unverify`. |
+| Suspender | La cuenta está `verify`. |
+| Restablecer | La cuenta está `suspended`; vuelve a estar verificada. |
+| Eliminar | Requiere confirmación y elimina la cuenta estándar y sus relaciones de autenticación. |
 
-El superadministrador pasa ambos permisos automáticamente. Para habilitar administradores subordinados, cree estos permisos y asígnelos a los roles correspondientes mediante `RolePermissionService`.
+No permite modificar al superadministrador ni administrar la propia cuenta desde esta pantalla. Un administrador subordinado tampoco puede modificar cuentas con un rol que tenga `admin.access`.
 
-Un rol que solo tenga `users.view` verá los controles de modificación desactivados. El endpoint de actualización siempre exige `users.manage`.
+`disabled` corresponde a la desactivación voluntaria en Cuenta y seguridad; no se restablece desde esta pantalla. Crear cuentas o cambiar contraseñas administrativamente no son funciones incluidas.
 
-## Rutas
+### Por qué solo aparece «Usuario registrado»
 
-| Método | Ruta | Permiso |
+La instalación base crea `superadministrator` y `registered`. El primero es protegido y no se puede asignar a otra cuenta. Si necesitas editor, gestor u otros roles, decláralos en `config/Permissions.php` y sincroniza con el actualizador. No se crean ni asignan automáticamente por tener un nombre en una vista.
+
+## Rutas y respuestas
+
+| Método | Ruta | Función |
 | --- | --- | --- |
-| `GET` | `/admin/users` | `users.view` |
-| `POST` | `/ajax/admin/users/list` | `users.view` |
-| `POST` | `/ajax/admin/users/update` | `users.manage` |
+| GET | `admin/users` | Pantalla inicial. |
+| POST | `ajax/admin/users/list` | Listado filtrado. |
+| POST | `ajax/admin/users/update` | Operación administrativa. |
 
-Las rutas AJAX conservan la protección CSRF automática.
+Las rutas AJAX exigen autenticación y CSRF. El listado entrega JSON con datos, metadatos de paginación y el parcial HTML. La interfaz actualiza la lista automáticamente y conserva filtros y página en la URL.
 
-## Operaciones incluidas
+Las operaciones responden con `status`, `code` y `message`, y datos adicionales cuando corresponda. Las excepciones se registran en el servidor; el navegador recibe mensajes públicos.
 
-La lista admite búsqueda por correo, filtro por rol, filtro por estado y paginación. La actualización acepta únicamente estas operaciones:
+## Personalizar la vista
+
+Crea `app/views/user-admin/user-adminIndex.php` para sustituir la pantalla, o `app/views/user-admin/_userList.php` para cambiar las filas. La carga inicial y el listado AJAX utilizan el mismo parcial.
+
+Puedes copiar el original desde `packages/gorvet/gframe/resources/modules/user-admin/application/app/views/user-admin/`. Registra los recursos propios en los metadatos de grupo o vista. Consulta [módulos runtime](modulos-runtime.md).
+
+## Personalizar el controlador y los datos
+
+Para conservar el almacenamiento estándar y añadir comportamiento, crea `app/controllers/user-admin/UserAdminController.php`:
+
+```php
+<?php
+namespace App\Controllers\UserAdmin;
+
+class UserAdminController extends \GFrame\Modules\UserAdmin\Controllers\UserAdminController
+{
+    public function index(): array
+    {
+        $response = parent::index();
+        if (($response['status'] ?? '') !== 'success') return $response;
+        $response['data']['support_email'] = 'soporte@example.com';
+        return $response;
+    }
+}
+```
+
+En la vista personalizada, el valor se encuentra en `$data['data']['support_email']`.
+
+Para otro esquema, implementa los contratos `GFrame\Auth\Contracts\UserAdministrationRepository`, `UserModerationRepository` y `RoleAdministrationRepository`. Construye el servicio con esos adaptadores e inyéctalo desde el constructor personalizado:
+
+```php
+public function __construct()
+{
+    parent::__construct(
+        new \GFrame\Auth\UserAdministrationService(
+            new \App\Models\UserAdmin\ProjectUserRepository(),
+            new \App\Models\UserAdmin\ProjectRoleRepository()
+        )
+    );
+}
+```
+
+Las clases `ProjectUserRepository` y `ProjectRoleRepository` del ejemplo deben implementarse y registrarse en el autoload del proyecto. El servicio admite además un registro de sesiones alternativo como tercer argumento.
+
+## Garantías del almacenamiento
+
+Los adaptadores propios deben conservar estas garantías:
+
+- Suspender o desactivar invalida tokens de correo y revoca las sesiones. Reactivar no recupera enlaces ni sesiones antiguos.
+- Cambiar el rol revoca sesiones para que el siguiente acceso cargue la nueva autorización.
+- Borrar la cuenta y sus relaciones de autenticación ocurre en una transacción; un fallo revierte la operación.
+- La eliminación no borra archivos, artículos ni entidades del negocio. Su limpieza debe integrarse en el repositorio propio.
+
+Las personalizaciones de `app` no se sobrescriben al actualizar. No modifiques directamente los controladores o vistas del paquete.
+
+
+## Contrato del servicio
+
+`UserAdministrationService` concentra autorización, filtros, cambios de rol y moderación. El controlador del módulo no debe saltarse este servicio para ejecutar escrituras directamente sobre el modelo.
+
+Sus operaciones públicas principales son:
+
+| Método | Uso |
+| --- | --- |
+| `paginate($actorID, $page, $perPage, $search, $role, $status)` | Lista usuarios visibles para el actor |
+| `assignableRoles($actorID)` | Devuelve los roles que pueden ofrecerse en la interfaz |
+| `capabilities($actorID)` | Informa si el actor puede ver y administrar |
+| `assignRole($actorID, $userID, $roleID)` | Cambia el rol y revoca las sesiones del usuario |
+| `moderate($actorID, $userID, $operation)` | Verifica, suspende, restaura o elimina |
+| `setActive($actorID, $userID, $active)` | Activa o desactiva desde integraciones que usen este contrato |
+
+`users.manage` permite las escrituras. Para lectura basta `users.view` o `users.manage`. El superadministrador supera ambas comprobaciones mediante su rol del sistema.
+
+### Filtros y paginación
+
+El servicio normaliza los filtros antes de consultar el repositorio:
+
+- `page` nunca baja de 1;
+- `perPage` queda entre 1 y 100;
+- la búsqueda se recorta a 120 caracteres;
+- el filtro de rol acepta slugs normalizados;
+- el estado solo admite `verify`, `unverify`, `disabled` o `suspended`.
+
+El controlador estándar utiliza 20 elementos por página. Un valor de filtro inválido se normaliza a vacío y no se transmite como un estado o rol arbitrario al repositorio.
+
+### Transiciones protegidas
+
+La moderación no es un cambio libre de estado:
+
+| Operación | Estado requerido | Resultado |
+| --- | --- | --- |
+| `verify` | `unverify` | `verify` |
+| `suspend` | `verify` | `suspended` |
+| `restore` | `suspended` | `verify` |
+| `delete` | cuenta administrable | eliminación |
+
+Una transición incompatible devuelve `invalid_status_transition`. El servicio también bloquea la propia cuenta del actor y la cuenta del superadministrador. Un actor que no sea superadministrador tampoco puede administrar una cuenta cuyo rol tenga `admin.access`, ni asignar un rol administrativo.
+
+La operación de moderación requiere que el repositorio implemente `UserModerationRepository`; de lo contrario devuelve `moderation_not_supported`.
+
+### Sesiones y revocación
+
+Los cambios administrativos afectan las sesiones activas:
+
+- suspender o desactivar revoca sesiones y bloquea al usuario en el registro de sesiones;
+- restaurar o activar vuelve a permitir la cuenta, pero no recupera sesiones antiguas;
+- cambiar el rol revoca sesiones para que la próxima autenticación cargue la nueva autorización;
+- eliminar revoca y bloquea las sesiones después de borrar la cuenta.
+
+Un adaptador propio que ignore estas garantías puede dejar sesiones con permisos anteriores aunque el registro de usuario ya haya cambiado.
+
+## Códigos de respuesta
+
+Los códigos funcionales más importantes son:
+
+| Código | Significado |
+| --- | --- |
+| `users_loaded` | Listado cargado |
+| `roles_loaded` | Roles cargados |
+| `role_assigned` | Rol actualizado |
+| `user_verified` | Cuenta verificada |
+| `user_suspended` | Cuenta suspendida |
+| `user_restored` | Cuenta restaurada |
+| `user_deleted` | Cuenta eliminada |
+| `forbidden` | El actor no tiene autorización |
+| `self_protection` | Intento de modificar la propia cuenta |
+| `protected_user` | Cuenta protegida por jerarquía |
+| `invalid_role_assignment` | Rol inexistente o no asignable |
+| `invalid_status_transition` | Operación incompatible con el estado actual |
+| `moderation_not_supported` | El repositorio no implementa moderación |
+
+Los mensajes públicos se añaden en el controlador. Las integraciones deben reaccionar al código estable, no comparar el texto del mensaje.
+
+## Recorrido del listado AJAX
+
+La pantalla inicial llama al mismo servicio que el endpoint AJAX. El recorrido es:
 
 ```text
-operation=role
-operation=verify
-operation=suspend
-operation=restore
-operation=delete
+/admin/users
+  -> UserAdminController::index()
+  -> UserAdministrationService::paginate()
+  -> repositorio
+  -> vista completa
+
+filtros / búsqueda / página
+  -> /ajax/admin/users/list
+  -> UserAdminController::list()
+  -> mismo servicio
+  -> _userList.php
+  -> JSON + html + meta
 ```
 
-El servicio comprueba que el usuario y el rol existan antes de escribir. También impide modificar al superadministrador y que un administrador cambie su propia cuenta desde esta pantalla.
-
-`verify` solo acepta cuentas `unverify`; `suspend` solo acepta cuentas `verify`; `restore` solo acepta cuentas `suspended`. Así, suspender/restablecer no verifica implícitamente un correo pendiente. `disabled` se reserva a la desactivación voluntaria en Mi cuenta y no se ofrece como operación administrativa, ni se restablece desde este panel. No existe una acción de desverificar.
-
-La eliminación requiere confirmación visible y `confirmed=1` en la petición. El repositorio predeterminado borra la cuenta, sus membresías y sus sesiones dentro de una transacción; una relación externa que impida borrar revierte la operación completa. No borra contenidos, archivos ni entidades propios de una aplicación. Esas reglas pertenecen a su repositorio. Los repositorios personalizados implementan el contrato adicional `UserModerationRepository` (`setAccountStatus()` y `deleteAccount()`) para habilitar las nuevas operaciones; el contrato previo no cambia. El antiguo método `setActive()` se conserva como compatibilidad, pero el controlador administrativo ya no acepta `operation=status`.
-
-Un administrador subordinado no puede activar, desactivar, ascender ni degradar a otro rol con `admin.access`. La administración de esos roles queda reservada al superadministrador.
-
-## Contratos
-
-Las respuestas utilizan `status`, `code`, `message`, `data` y `meta`. La carga inicial entrega:
-
-```php
-[
-    'status' => 'success',
-    'code' => 'users_loaded',
-    'message' => 'Usuarios cargados correctamente.',
-    'data' => [
-        'users' => $paginatedResponse,
-        'roles' => $assignableRoles,
-        'can_manage' => true,
-    ],
-]
-```
-
-Las excepciones se registran en el servidor y se transforman en códigos estables. El controlador aporta mensajes aptos para la interfaz y el JavaScript los presenta mediante `alertToast`.
-
-## Adaptar el almacenamiento
-
-Declare `app/controllers/user-admin/UserAdminController.php` con namespace `App\Controllers\UserAdmin`, extendiendo `GFrame\Modules\UserAdmin\Controllers\UserAdminController`. Construya su servicio en ese controlador y entréguelo a `parent::__construct(...)`. Las vistas propias van en `app/views/user-admin`; la principal se llama `user-adminIndex.php`. Consulte [estructura y migración](modulos-runtime.md).
-
-Las aplicaciones con otro esquema implementan:
-
-- `GFrame\Auth\Contracts\UserAdministrationRepository` para consultar y modificar usuarios;
-- `GFrame\Auth\Contracts\RoleAdministrationRepository` para resolver roles y permisos.
-
-Después se entregan los adaptadores al servicio:
-
-```php
-$service = new UserAdministrationService(
-    new ApplicationUserAdministrationRepository(),
-    new ApplicationRoleAdministrationRepository()
-);
-```
-
-El controlador original admite inyección de `UserAdministrationService` y `RoleModel` para facilitar esta sustitución y las pruebas.
-
-## Extensiones de la aplicación
-
-El modelo estándar desactiva mediante `updateAuthUser()`, que rota el token y su fecha en la misma escritura que el estado. Así invalida los enlaces de correo anteriores; reactivar no los recupera. Un repositorio propio debe mantener esa garantía y comunicar escrituras fallidas al servicio.
-
-Al desactivar, `UserAdministrationService` revoca todas las sesiones registradas del usuario y bloquea el alta de otras nuevas. Al reactivar, habilita de nuevo el registro; las sesiones anteriores no reaparecen. No se consulta la base de datos desde cada heartbeat. Si una aplicación añade eliminación de usuarios, debe llamar igualmente a `ActiveSessionRegistry::revokeUser()` dentro de ese flujo.
-
-Asignar otro rol revoca las sesiones sin bloquear la cuenta, de modo que el siguiente acceso cargue la identidad vigente. Los cambios meramente descriptivos no deben cerrar sesiones.
-
-Áreas, perfiles, membresías, verificación de identidad, bots y métricas pertenecen a cada proyecto. Pueden añadirse mediante un repositorio propio, filtros adicionales y vistas personalizadas sin cambiar el núcleo.
-
-La creación manual de cuentas y el cambio administrativo de contraseñas no forman parte del módulo actual. «Añadir usuarios desde el admin» queda registrado como mejora no urgente, sin implementar, en [Mejoras pendientes](mejoras-pendientes.md). Si una aplicación los implementa, debe exigir permisos separados, registrar la operación y activar `force_password_change` cuando entregue una contraseña temporal.
+Esto evita mantener dos consultas diferentes para la carga inicial y las actualizaciones del listado. Una personalización de repositorio debe conservar el mismo contrato de paginación para que ambos recorridos sigan funcionando.

@@ -1,8 +1,10 @@
-# Módulos y componentes de interfaz
+# Instalación de módulos
 
 GFrame conserva los módulos reutilizables en `resources/modules`. Cada módulo declara su nombre, tipo, versión cuando se conoce, dependencias, si forma parte de la instalación predeterminada y sus recursos publicables.
 
 Las dependencias se resuelven automáticamente. Por ejemplo, `alerts` incorpora Bootstrap, jQuery, SweetAlert2 y `gframe-icons` antes de publicar `alertToast`.
+
+Los módulos opcionales pueden añadirse después de instalar el proyecto. No es necesario volver a ejecutar el instalador web. Selecciona únicamente la función que necesitas; sus dependencias se incorporan automáticamente.
 
 ## Base instalada automáticamente
 
@@ -11,20 +13,22 @@ Las dependencias se resuelven automáticamente. Por ejemplo, `alerts` incorpora 
 - SweetAlert2.
 - [`gframe-icons`](gframe-icons.md).
 - `alerts`: `alertToast`, `swalAlert`, estados de carga y estilos de toast.
-- `frontend-core`: formularios, errores, paginación y utilidades comunes. Véase [uso y funcionamiento](frontend-core.md). Markdown y GFTable se instalan por separado.
+- `frontend-core`: formularios, errores, paginación y utilidades comunes. Véase [uso y funcionamiento](frontend-core.md). Markdown tiene su propio módulo opcional.
+- [`gfselect`](gfselect.md): selector enriquecido propio, con búsqueda y selección simple o múltiple.
+- [`gf-table`](gf-table.md): búsqueda y ordenación local de tablas.
 - [`error-pages`](errores.md): gestión, plantilla y vistas 403, 404, 500 y 503.
 
 Estos componentes no se presentan como elecciones del instalador. Forman la interfaz mínima de GFrame y sus dependencias se publican automáticamente.
 
-## Módulos internos seleccionables
+## Módulos propios y requisitos del perfil
 
-- [`gf-table`](gf-table.md): búsqueda y ordenación local de tablas, con reinicio y soporte de inserción dinámica.
+No todos estos módulos son opcionales en todos los perfiles. `managed` e `intranet` incluyen Auth, Cuenta y seguridad, Panel administrativo, Gestión de usuarios y Multimedia; `saas` añade Notificaciones y tareas programadas. El instalador muestra únicamente opciones compatibles que no estén ya incluidas. Consulte [los perfiles](instalacion.md).
 
 - [`markdown`](markdown.md): conversión de Markdown y HTML en PHP y JavaScript, sin dependencia de bots.
+- [`lexical-search`](lexical-search.md): búsqueda por relevancia y tolerancia a errores, sin base de datos propia.
 
 - `admin-panel`: estructura visual compartida del panel, con navbar, sidebar, tema y puntos de inserción. Los perfiles administrados lo incluyen automáticamente. Consulte [Panel administrativo](panel-administrativo.md).
 
-- [`gfselect`](gfselect.md): selector enriquecido propio, con búsqueda y selección simple o múltiple.
 - `auth-ui`: flujo MVC de autenticación, recuperación y verificación. Consulte [Interfaz de autenticación](auth-ui.md).
 - `self-account`: pantalla Mi cuenta y acciones sobre la cuenta propia. Consulte [Mi cuenta](self-account.md).
 - [`heartbeat-client`](heartbeat.md): cliente web, sesión, controlador y canales periódicos.
@@ -61,13 +65,30 @@ Owl Carousel y Swiper son opciones independientes. Instalar una no obliga a publ
 
 ## Consulta y publicación
 
+### Consultar desde el repositorio del framework
+
 ```bash
 php bin/modules.php list
 php bin/modules.php publish /ruta/del/proyecto/public
 php bin/modules.php publish /ruta/del/proyecto/public alerts gfselect
 ```
 
-Cuando no se indica ningún módulo, se publica automáticamente la base visual completa. La publicación conserva los archivos existentes por defecto. El instalador utilizará este catálogo y permitirá seleccionar los demás módulos sin exigir que el usuario recuerde estos comandos.
+Cuando no se indica ningún módulo, se publica automáticamente la base visual completa. La publicación conserva los archivos existentes por defecto. Para añadir módulos funcionales a un proyecto instalado, use [el actualizador](actualizaciones.md#añadir-módulos-después-de-instalar); publicar recursos por sí solo no instala tablas ni registra el módulo.
+
+### Añadir módulos a un proyecto instalado
+
+Desde la raíz del proyecto, consulta `storage/gframe-installed.json` y conserva su lista actual. Añade los identificadores nuevos separados por comas:
+
+```bash
+composer gframe:update -- --modules=LISTA_COMPLETA --dry-run
+composer gframe:update -- --modules=LISTA_COMPLETA
+```
+
+`LISTA_COMPLETA` representa todos los módulos que deseas registrar, incluidos los ya instalados, no solo los nuevos. Revisa la simulación antes de ejecutar el segundo comando. El actualizador resuelve dependencias, publica recursos y rutas, crea las carpetas de personalización necesarias y ejecuta las migraciones declaradas para el motor de base de datos del proyecto.
+
+Después, carga los recursos del módulo en la meta de la plantilla, grupo o vista que los utiliza y sigue su guía de inicialización. Instalar una biblioteca como Swiper no crea un carrusel; instalar un módulo MVC aporta sus archivos y rutas según el manifiesto.
+
+`--no-database` omite las operaciones de base de datos: no sirve para completar la instalación de un módulo que necesita tablas. Quitar un nombre de la lista tampoco elimina automáticamente sus archivos ni sus datos. Consulta [Actualizaciones](actualizaciones.md) para opciones y política de archivos administrados.
 
 ## Multimedia
 
@@ -88,3 +109,88 @@ Las aplicaciones con autenticación incorporan `heartbeat-client`. La ruta heart
 ## Esquemas y archivos
 
 Los módulos pueden declarar esquemas MySQL y SQLite, activos públicos y archivos de aplicación. El instalador resuelve dependencias, ejecuta los esquemas y publica los recursos seleccionados.
+
+
+## Contrato del manifiesto `module.php`
+
+Cada módulo vive en `resources/modules/<nombre>/module.php` y debe devolver un arreglo. `ModuleCatalog` valida y normaliza ese manifiesto antes de utilizarlo.
+
+Campos principales:
+
+| Campo | Uso |
+| --- | --- |
+| `name` | Identificador canónico del módulo |
+| `type` | Categoría informativa del módulo |
+| `description` | Descripción para catálogo y herramientas |
+| `dependencies` | Otros módulos requeridos |
+| `default` | Indica si forma parte de la base publicada por defecto |
+| `assets` | Recursos que pueden publicarse |
+| `application` | Archivos de aplicación, rutas u otros elementos administrados |
+| `runtime` | Raíz y namespace cuando el módulo expone clases/vistas runtime |
+| `schema` | Migraciones o esquemas cuando correspondan |
+
+El nombre debe usar minúsculas, números y guiones, empezando y terminando por un segmento alfanumérico. Por ejemplo, `notification-campaigns` es válido; nombres con espacios, mayúsculas o guiones repetidos no lo son.
+
+El catálogo rechaza módulos duplicados y manifiestos que no devuelvan un arreglo.
+
+## Resolución de dependencias
+
+`ModuleCatalog::resolve()` realiza una resolución recursiva y añade primero las dependencias de cada módulo. Por ejemplo:
+
+```text
+mi-modulo
+  -> alerts
+      -> jquery
+      -> sweetalert2
+      -> gframe-icons
+```
+
+La lista final contiene cada módulo una sola vez y respeta el orden necesario para publicar dependencias antes del consumidor.
+
+Si aparece una dependencia inexistente, la resolución falla. Si existe un ciclo, por ejemplo `a -> b -> a`, se lanza una excepción en lugar de continuar con un orden ambiguo.
+
+Esto implica que una dependencia debe declararse en el manifiesto y no confiar en que otro perfil o módulo la instale accidentalmente.
+
+## Módulos predeterminados
+
+`ModuleCatalog::defaults()` toma todos los manifiestos con `default => true` y resuelve también sus dependencias.
+
+La palabra «default» describe el catálogo de publicación base; no significa que el módulo esté habilitado funcionalmente en cualquier proyecto ni reemplaza la selección de perfil. Los perfiles pueden añadir módulos requeridos adicionales.
+
+## Publicación de recursos vs instalación funcional
+
+Hay que distinguir tres operaciones:
+
+```text
+catálogo
+  -> resolver dependencias
+
+publicación
+  -> copiar assets públicos
+
+instalación/actualización
+  -> registrar módulo
+  -> publicar application/assets
+  -> crear carpetas de personalización
+  -> ejecutar esquemas/migraciones
+```
+
+`bin/modules.php publish` trabaja sobre recursos publicables. No convierte por sí solo una aplicación existente en consumidora completa de un módulo MVC o de base de datos.
+
+Para una capacidad funcional use el instalador o `gframe:update -- --modules=...`.
+
+## Añadir un módulo nuevo al framework
+
+Antes de considerar terminado un módulo reutilizable:
+
+1. cree su carpeta y `module.php`;
+2. declare dependencias reales, no implícitas;
+3. añada assets, application, runtime y schema únicamente si existen;
+4. compruebe `composer modules:list`;
+5. pruebe resolución desde una instalación limpia;
+6. pruebe actualización de un proyecto existente;
+7. documente su uso en una guía existente o nueva;
+8. añádalo a `inventario-modulos.md` y al mapa de capacidades cuando exponga una capacidad pública;
+9. cubra publicación y dependencias con tests.
+
+Una instalación que funciona solo porque otro módulo ya había copiado sus dependencias está incompleta.

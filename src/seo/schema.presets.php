@@ -44,12 +44,6 @@ return [
     'blog_article' => [
         'preset' => 'blog',
     ],
-    'news_article' => [
-        'preset' => 'news_article',
-    ],
-    'tech_article' => [
-        'preset' => 'tech_article',
-    ],
     'product_page' => [
         'preset' => 'product',
         'product' => [
@@ -65,6 +59,7 @@ return [
     ],
     'saas_landing' => [
         'presets' => ['software', 'faq'],
+        'type' => 'SoftwareApplication',
         'software' => [
             'name' => null,
             'category' => 'BusinessApplication',

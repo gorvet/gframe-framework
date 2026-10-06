@@ -89,7 +89,7 @@ class AuthModel extends \ORM
     {
         try {
             $user = $this->findByToken(trim($token));
-            if ($user === null) {
+            if ($user === null || !$this->tokens->isValidTimestamp((string)($user['token_updated_at'] ?? ''))) {
                 return $this->error('invalid_token');
             }
             if (in_array((string)($user['status'] ?? ''), [$this->suspendedStatus, 'disabled'], true)) {

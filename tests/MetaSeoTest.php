@@ -94,11 +94,25 @@ final class MetaSeoTest extends TestCase
     public function testRobotsReferencesTheGeneratedSitemap(): void
     {
         if (!defined('site_url')) define('site_url', 'https://example.test/');
+        define('SEO_ENABLE_SITEMAP_XML', true);
         $method = (new ReflectionClass(\Robots::class))->getMethod('render');
         $method->setAccessible(true);
         $content = $method->invoke(new \Robots());
 
         self::assertStringContainsString('Disallow: /api/', $content);
         self::assertStringContainsString('Sitemap: https://example.test/sitemap.xml', $content);
+    }
+
+    #[RunInSeparateProcess]
+    public function testRobotsDoesNotAdvertiseDisabledSitemap(): void
+    {
+        if (!defined('site_url')) define('site_url', 'https://example.test/');
+        define('SEO_ENABLE_SITEMAP_XML', false);
+        $method = (new ReflectionClass(\Robots::class))->getMethod('render');
+        $method->setAccessible(true);
+        $content = $method->invoke(new \Robots());
+
+        self::assertStringContainsString('Disallow: /api/', $content);
+        self::assertStringNotContainsString('Sitemap:', $content);
     }
 }

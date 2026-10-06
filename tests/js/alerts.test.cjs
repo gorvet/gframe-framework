@@ -40,6 +40,23 @@ test('Toast respeta duración, sincroniza progreso y no interpreta HTML del mens
   assert.equal(state.timers[1].ms, 5000);
 });
 
+test('Los ejemplos documentados conservan la confirmación y el feedback de negocio', async () => {
+  const {state, context} = setup();
+  const doc = readFileSync(join(__dirname, '../../docs/alerts.md'), 'utf8');
+  const examples = [...doc.matchAll(/```js\r?\n([\s\S]*?)\r?\n```/g)].map(match => match[1]);
+  runInContext(examples[2], context);
+  assert.equal(await runInContext("confirmarOperacion({message: 'Continuar'})", context), true);
+  context.successError = (message, code) => code === 'forbidden' ? {} : {title: message};
+  runInContext(examples[3], context);
+  await runInContext("mostrarResultado({status: 'success', message: 'Encolado'})", context);
+  assert.equal(state.calls.at(-1).text, 'Encolado');
+  await runInContext("mostrarResultado({status: 'error', message: 'Revisa los datos', code: 'invalid'})", context);
+  assert.equal(state.calls.at(-1).icon, 'error');
+  const count = state.calls.length;
+  runInContext("mostrarResultado({status: 'error', code: 'forbidden'})", context);
+  assert.equal(state.calls.length, count);
+});
+
 test('SweetAlert conserva clases Bootstrap, opciones y callbacks sin mutar el objeto recibido', async () => {
   const {state, context} = setup();
   await runInContext(`

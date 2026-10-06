@@ -1,167 +1,98 @@
-# SEO Schema Guide
+# SEO Schema: nota interna de arquitectura
 
-## Objetivo
-Documentar como se construyen los schemas JSON-LD en el proyecto, que archivos participan, y como usar presets para automatizar al maximo con bajo riesgo de errores manuales.
+> La documentación pública vigente vive en [`docs/json-ld.md`](../../docs/json-ld.md). Para sitemap, robots, `llms.txt` e indexación consulta [`docs/seo.md`](../../docs/seo.md).
 
-## Flujo de Construccion
-1. `core/render/Render.php` carga metadatos globales + `*.group.meta.php` + `*.meta.php` de la vista.
-2. `core/render/Meta.php` fusiona todo en memoria y llama a `renderSchema()`.
-3. `core/seo/SchemaComposer.php`:
-   - Resuelve `preset`/`presets`.
-   - Aplica presets built-in (moldes).
-   - Normaliza bloques legacy (`website`, `webpage`).
-   - Completa defaults (type/lang/title/description/image/search/org).
-4. `core/seo/JsonLD.php` transforma el schema final al `@graph` JSON-LD.
-5. `core/render/Meta.php` inyecta el `<script type="application/ld+json">` en el HTML.
+Este archivo permanece junto al código únicamente para describir **cómo se conectan las piezas internas**. No debe duplicar tutoriales, presets recomendados ni contratos de uso que ya están documentados en `docs/`.
 
-## Archivos Involucrados
-- `core/render/Render.php`: orquesta carga de metas por vista.
-- `core/render/Meta.php`: estado de metas y render final del script JSON-LD.
-- `core/seo/SchemaComposer.php`: composicion, presets y defaults.
-- `core/seo/schema.presets.php`: catalogo de presets-molde.
-- `core/seo/JsonLD.php`: renderer del grafo schema.org.
-- `config/meta/global.meta.php`: datos globales que alimentan los moldes (`preset` base, `org`, `search`, etc.).
-- `app/views/**/**.meta.php`: ajustes schema por vista.
-- `app/views/**/**.group.meta.php`: ajustes schema por grupo de vistas.
+## Ubicación actual
 
-## Regla de Arquitectura Recomendada
-- Mantener en `core/seo/*` la logica reusable y los presets-molde.
-- Mantener en `config/meta/global.meta.php` solo datos globales reales del sitio.
-- En vistas, preferir `preset`/`presets` + pocos overrides, evitando schemas gigantes manuales.
+La implementación relevante vive en:
 
-## Presets Moldes (core)
-Definidos en `core/seo/schema.presets.php` y cargados por `SchemaComposer`:
-
-- `webpage` => `WebPage`
-- `collection` / `listing` => `CollectionPage`
-- `contact` => `ContactPage`
-- `article` => `Article`
-- `blog` / `blog_post` => `BlogPosting`
-- `news` / `news_article` => `NewsArticle`
-- `tech_article` => `TechArticle`
-- `product` => `Product` + bloque `product`
-- `software` / `app` => `SoftwareApplication` + bloque `software`
-- `service` => `Service` + bloque `service`
-- `course` => `Course` + bloque `course`
-- `event` => `Event` + bloque `event`
-- `local_business` => `LocalBusiness` + bloque `business`
-- `job` / `job_posting` => `JobPosting` + bloque `job`
-- `video` => `VideoObject` + bloque `video`
-- `recipe` => `Recipe` + bloque `recipe`
-- `creative_work` => `CreativeWork` + bloque `creativeWork`
-- `faq` => `WebPage` + bloque `faq`
-- `site_base`
-- `marketing_page`
-- `faq_page`
-- `contact_page`
-- `blog_article`
-- `news_article`
-- `tech_article`
-- `product_page`
-- `saas_landing`
-- `service_page`
-- `course_page`
-- `event_page`
-- `local_business_page`
-- `job_posting_page`
-- `video_page`
-- `recipe_page`
-
-## Datos Globales del Sitio (config/meta/global.meta.php)
-En vez de definir presets en `config`, ahora se define un bloque global que alimenta todos los moldes:
-
-```php
-'schema' => [
-  'preset' => 'site_base',
-  'search' => [
-    'target' => rtrim(site_url, '/') . '/buscar?q={search_term_string}',
-  ],
-  'org' => [
-    'name' => 'Mi organización',
-    'logo' => site_url . 'public/img/apple-touch-icon.png',
-    'sameAs' => [
-      'https://www.example.com/red-social',
-    ],
-  ],
-],
+```text
+src/render/Render.php
+src/render/Meta.php
+src/seo/SchemaComposer.php
+src/seo/JsonLD.php
+src/seo/schema.presets.php
 ```
 
-## Mapeo de Autollenado
-| Campo final JSON-LD | Fuente principal | Fallback |
-| --- | --- | --- |
-| `Organization.name` | `schema.org.name` | `schema.siteName` -> `meta.ogsite_name` -> `meta.title` -> host de `site_url` |
-| `Organization.url` | `schema.org.url` | `site_url` |
-| `Organization.logo.url` | `schema.org.logo` | `meta.ogimage` |
-| `Organization.sameAs` | `schema.org.sameAs` | vacio |
-| `WebSite.url` | `site_url` | n/a |
-| `WebSite.name` | `schema.siteName` | `meta.ogsite_name` -> `meta.title` -> host de `site_url` |
-| `WebSite.inLanguage` | `schema.lang` | `route.lang` -> `meta.oglocale` -> `es` |
-| `WebSite.potentialAction.target` | `schema.search.target` | `site_url + /buscar?q={search_term_string}` |
-| `WebPage.url` | `route.currentURL` | `site_url` |
-| `WebPage.name` | `schema.title` | `meta.title` |
-| `WebPage.description` | `schema.description` | `meta.description` |
-| `WebPage.image` | `schema.image` | `schema.webpage.primaryImageOfPage.url` -> `meta.ogimage` |
-| `type` principal | `schema.type` | inferencia por bloque (`product`, `service`, etc.) -> `WebPage` |
-| `Article.author` | `schema.author` | `meta.author` |
+Las rutas históricas `core/render/...` y `core/seo/...` no describen la estructura actual del paquete.
 
-## Uso Recomendado en una Vista
-```php
-'schema' => [
-  'preset' => 'service_page',
-  'service' => [
-    'name' => 'Consultoria IA',
-    'serviceType' => 'Automatizacion de procesos',
-  ],
-]
+## Flujo real
+
+```text
+Render
+  ↓
+metas globales + template/grupo/vista
+  ↓
+Meta
+  ↓
+SchemaComposer
+  ↓
+JsonLD
+  ↓
+<script type="application/ld+json">...</script>
 ```
 
-## Tipos y Bloques Soportados
-`JsonLD.php` soporta nodos para:
+`SchemaComposer`:
 
-- `WebSite`, `WebPage`, `Organization`
-- `Article`/`BlogPosting`/`NewsArticle`/`TechArticle`
-- `Product`
-- `SoftwareApplication`
-- `Service`
-- `LocalBusiness`
-- `Course`
-- `Event`
-- `JobPosting`
-- `VideoObject`
-- `Recipe`
-- `CreativeWork`
-- `FAQPage`
-- `BreadcrumbList`
-- `entities` custom (escape hatch para cualquier `@type` no soportado nativamente)
+- aplica `preset` o `presets` solicitados directamente;
+- normaliza bloques legacy como `website` y `webpage`;
+- infiere el tipo principal cuando falta;
+- completa idioma, nombre del sitio, título, descripción, imagen, organización y target de búsqueda con los fallbacks actuales.
 
-## Convenciones para Evitar Errores de Usuario
-- Definir siempre `schema` global en `config/meta/global.meta.php` con `preset` base + `org` + `search`.
-- Mantener placeholders `null` en los moldes para campos editables.
-- Si necesitas un tipo nuevo poco comun, meterlo primero por `entities` y luego formalizarlo en `JsonLD.php` si se repite.
-- Usar `preset`/`presets` en vez de copiar JSON-LD completo por vista.
+`JsonLD` transforma ese resultado en el grafo Schema.org final.
 
-## Snippets Rapidos
-Preset unico:
-```php
-'schema' => ['preset' => 'product_page']
+## Presets
+
+El catálogo vive en `src/seo/schema.presets.php`.
+
+Para código nuevo, la documentación pública recomienda los **presets directos** cuyo comportamiento está verificado, por ejemplo:
+
+```text
+webpage
+collection
+contact
+article
+blog
+news
+tech_article
+product
+software
+service
+course
+event
+local_business
+job
+video
+recipe
+creative_work
+faq
 ```
 
-Preset encadenado:
-```php
-'schema' => ['presets' => ['site_base', 'faq_page']]
-```
+El catálogo contiene además moldes compuestos como `site_base`, `marketing_page`, `product_page`, `service_page` y otros.
 
-Entidad custom:
-```php
-'schema' => [
-  'entities' => [
-    [
-      '@type' => 'HowTo',
-      'name' => 'Configurar bot',
-      'step' => [
-        ['@type' => 'HowToStep', 'name' => 'Paso 1'],
-      ],
-    ],
-  ],
-]
-```
+### Limitación importante
+
+`SchemaComposer::applyPresetChain()` no resuelve recursivamente un `preset` o `presets` declarado **dentro** de otro preset. Por ello, un molde compuesto no debe documentarse internamente como alias garantizado de su preset anidado.
+
+Algunos moldes producen el tipo esperado por inferencia porque incorporan bloques como `product`, `service` o `software`; otros pueden terminar en `WebPage`.
+
+La referencia exacta y ejemplos actualizados están en [`docs/json-ld.md`](../../docs/json-ld.md).
+
+## Datos globales y de vista
+
+Los datos de schema pueden proceder de la jerarquía de metas que Render combina. La configuración normal de una aplicación se mantiene en sus archivos de meta, no dentro de `src/seo/`.
+
+No mantengas aquí ejemplos rígidos de `config/meta/global.meta.php` como si fueran obligatorios: el contenido global pertenece al proyecto y puede variar.
+
+## Regla de mantenimiento
+
+Cuando cambie JSON-LD:
+
+1. cambia primero el runtime y sus pruebas;
+2. actualiza [`docs/json-ld.md`](../../docs/json-ld.md) como referencia pública;
+3. actualiza [`docs/seo.md`](../../docs/seo.md) si afecta indexación/sitemap/robots/llms;
+4. modifica este archivo solo si cambió la arquitectura interna o la ubicación de las clases.
+
+No añadas aquí tutoriales duplicados ni afirmaciones sobre presets que no estén demostradas por `SchemaComposer` y `JsonLD`.

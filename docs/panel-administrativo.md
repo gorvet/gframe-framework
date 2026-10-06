@@ -1,73 +1,233 @@
 # Panel administrativo
 
-El módulo `admin-panel` proporciona el escritorio, la navegación lateral, la barra superior y el tema claro/oscuro para aplicaciones administradas. Los perfiles `managed`, `intranet` y `saas` lo incluyen; `static` no lo instala.
+`admin-panel` proporciona la plantilla `admin`, el escritorio `/admin`, la barra superior, el menú lateral y el cambio de tema. Se incluye en los perfiles `managed`, `intranet` y `saas`.
 
-El módulo usa runtime: originales en `resources/modules/admin-panel/application/app/`, personalizaciones en `app/controllers/admin-panel/` y `app/views/admin-panel/`. El instalador crea esas carpetas sin copiar el controlador, las vistas ni las partes originales. Para personalizar el escritorio, herede `GFrame\Modules\AdminPanel\Controllers\AdminController` con namespace `App\Controllers\AdminPanel`. `adminIndex` sigue siendo el nombre explícito de vista. El template compartido `admin` se resuelve desde el módulo salvo que exista una personalización en `app/views/templates/adminTemplate.php`. Las rutas, CSS, JS y aportaciones de menú siguen publicándose.
+## Crear una pantalla administrativa
 
-## Implementación en GFrame
-
-El módulo `admin-panel` instala la ruta `/admin`, un escritorio inicial, `adminTemplate.php`, `admin.meta.php`, `navbar.php`, `aside.php`, `menu.php`, CSS y JavaScript propios. Los perfiles `managed`, `intranet` y `saas` lo incluyen. `user-admin` lo requiere y usa `->template('admin')`. El perfil `static` no lo instala.
-
-La plantilla mantiene la disposición actual: sidebar izquierdo, área principal y navbar en la parte superior de esa área. El footer sigue siendo independiente. La ruta `/admin` muestra el escritorio inicial; cada aplicación puede ampliar esa vista con sus datos propios.
-
-El meta de la plantilla carga los recursos del panel incluso en vistas anidadas. La prioridad es global → plantilla → extensiones de módulos → grupo → vista. Los recursos repetidos se deduplican. El módulo `notifications` publica una acción de header y su meta de CSS/JS; si no se instala, el panel funciona sin ese control.
-
-La barra lateral usa `gf-sidebar` para guardar el estado de escritorio. En móvil funciona como cajón temporal y no hereda el estado colapsado. El tema usa `gf-theme`, sigue el sistema cuando no hay elección explícita y sincroniza cambios entre pestañas. Un único script temprano aplica ambos valores antes de cargar los estilos.
-
-## Uso y personalización
-
-Declare una ruta protegida con `->template('admin')` y una vista propia de la aplicación. Por ejemplo:
+Añade una ruta a `config/routes/routes_web.php`:
 
 ```php
-Route::get('admin/reportes', 'admin/reportes/ReportController@index')
+Route::get('admin/reportes', 'reportes/ReportController@index')
     ->template('admin')
     ->view('reportIndex')
     ->middleware(['auth', 'can:reports.view'])
     ->registerFinal();
 ```
 
-Cree `app/views/admin-panel/parts/menu.php` para personalizar las secciones y enlaces propios del proyecto; si no existe, se usa el original. La plantilla imprime ese archivo dentro de `#sidebar-nav`: primero «Escritorio», fuera de cualquier sección, y después el encabezado «Administración». Los módulos pueden publicar archivos en `app/views/admin-panel/parts/menu-items/`; cada archivo comprueba el permiso antes de mostrar su enlace. El módulo `user-admin` aporta «Gestión de usuarios» dentro de Administración. `aside.php` imprime «Mi cuenta» después de todas las aportaciones de módulos, siempre al final.
+Crea el controlador `app/controllers/reportes/ReportController.php` y la vista `app/views/reportes/reportIndex.php`. Por ejemplo:
 
-Biblioteca multimedia (`admin/media`) y Campañas (`admin/notifications/campaigns`) aportan enlaces al menú cuando el usuario tiene, respectivamente, `media.view` y `notifications.campaigns.view`. Notificaciones (`notifications`) aporta un enlace para usuarios autenticados y conserva la campana de la barra superior. Las tres pantallas usan la plantilla `admin`; sus URLs y permisos no cambian. Estos fragmentos se publican tanto al instalar como al actualizar los módulos.
+```php
+<div class="col-12">
+    <div class="pagetitle"><h1>Reportes</h1></div>
+    <div class="card">
+        <div class="card-body pt-3">Contenido del reporte.</div>
+    </div>
+</div>
+```
 
-Cree `app/views/admin-panel/parts/navbar.php` para personalizar el logo, el enlace de inicio o acciones propias; si no existe, se usa el original. Las acciones aportadas por módulos viven en `app/views/admin-panel/parts/header-actions/`. Los archivos meta de esas acciones se colocan en `app/views/templates/meta/admin/`. La identidad del usuario se lee de `$_SESSION['auth']` y se escapa antes de imprimirla.
+La plantilla ya contiene header, sidebar y contenedor principal. No los repitas en la vista. Concede `reports.view` a los roles autorizados, según [roles y permisos](permisos.md).
 
-Los estilos del proyecto van en su CSS administrativo; los de una vista, en su hoja específica. Regístrelos en los meta correspondientes. Las vistas son responsables de su contenido y no duplican el header ni el sidebar. El footer conserva las áreas opcionales de `content`, `copyright` y `credits` descritas en `docs/footer.md`.
+Los recursos específicos se declaran en `reportIndex.meta.php`. La plantilla carga sus propios CSS y JS automáticamente. Consulta [metadatos](meta.md).
 
-Los botones de acciones de los listados usan `btn btn-outline-secondary btn-list-actions btn-sm`, añadiendo `dropdown-toggle` si despliegan un menú. La clase compartida de `admin.css` mantiene un fondo claro, contorno neutro y estados de interacción suaves; respeta el tema oscuro. Reutiliza esta clase en nuevos listados, sin botones secundarios de relleno oscuro ni estilos duplicados por vista.
+## Personalizar el escritorio
 
-## Tema Bootstrap y personalización
+Crea `app/controllers/admin-panel/AdminController.php`:
 
-El selector único del tema es `data-bs-theme` en `<html>`. Bootstrap aporta los estilos de sus componentes y GFrame conserva el controlador propio: `gf-theme` en `localStorage`, preferencia del sistema, sincronización entre pestañas y aplicación temprana mediante `preload.js`. No se necesita otro selector `data-gf-theme` ni otro controlador de Bootstrap.
+```php
+<?php
+namespace App\Controllers\AdminPanel;
 
-`public/css/variables.css` se carga después de Bootstrap y reúne la personalización de variables, incluidas las superficies oscuras. No se añade un archivo de tema separado. Usa `:root` para valores comunes y `:root[data-bs-theme="light"]` o `:root[data-bs-theme="dark"]` para diferencias por modo. La personalización específica de botones permanece en el archivo de botones del proyecto; no requiere otra capa de tema. No dupliques las reglas de componentes que Bootstrap ya resuelve. El esqueleto actual incluye los valores oscuros adaptados, no una copia completa de los estilos de los proyectos de origen.
-
-```css
-:root[data-bs-theme="light"] {
-    --bs-body-bg: #ffffff;
-    --bs-body-bg-rgb: 255, 255, 255;
-}
-:root[data-bs-theme="dark"] {
-    --bs-body-bg: #051321;
-    --bs-body-bg-rgb: 5, 19, 33;
+class AdminController extends \GFrame\Modules\AdminPanel\Controllers\AdminController
+{
+    public function index(): array
+    {
+        return ['data' => ['welcome' => 'Bienvenido al panel']];
+    }
 }
 ```
 
-Mantén sincronizadas las variables de color y sus variantes `-rgb`. Cambiar `--bs-primary` no redefine automáticamente `--bs-primary-rgb`, las variables locales `--bs-btn-*` de los botones ni los colores compilados de todos los componentes. Personaliza esos casos concretos en tu hoja o compila Bootstrap con Sass si necesitas reconstruir toda la paleta. Las variables propias, como sombras adicionales, siguen siendo válidas si nuestro CSS las consume.
+Crea `app/views/admin-panel/adminIndex.php` para mostrar esos datos:
 
-API disponible tras cargar `admin.js`:
+```php
+<div class="col-12">
+    <div class="pagetitle"><h1>Escritorio</h1></div>
+    <p><?= htmlspecialchars($data['data']['welcome'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>
+</div>
+```
+
+El arreglo devuelto por la acción llega completo a `$data`; por eso el ejemplo accede a `$data['data']['welcome']`. El nombre explícito de la vista es `adminIndex`. Las personalizaciones tienen prioridad sobre los originales del módulo. Consulta [estructura runtime](modulos-runtime.md).
+
+## Añadir enlaces al menú
+
+Crea un fragmento propio, por ejemplo `app/views/admin-panel/parts/menu-items/reportes.php`:
+
+```php
+<?php
+$actorID = (int)($_SESSION['auth']['id'] ?? 0);
+$access = (new \GFrame\Auth\RolePermissionService(new \GFrame\Auth\RoleModel()))
+    ->authorize($actorID, 'reports.view');
+if (($access['status'] ?? '') !== 'success') return;
+$url = rtrim((string)site_url, '/') . '/admin/reportes';
+?>
+<li class="nav-item">
+    <a class="nav-link" href="<?= htmlspecialchars($url, ENT_QUOTES, 'UTF-8') ?>">
+        <span>Reportes</span>
+    </a>
+</li>
+```
+
+El panel incluye esos fragmentos en Administración. Para situar un enlace antes de esa sección, declara `$menuSection = 'user';` en el fragmento.
+
+La comprobación del menú solo controla visibilidad; la ruta también debe exigir el permiso. Usa nombres propios para no colisionar con fragmentos publicados por otros módulos.
+
+## Sustituir partes del panel
+
+| Archivo del proyecto | Personalización |
+| --- | --- |
+| `app/views/admin-panel/parts/menu.php` | Enlaces iniciales, incluido Escritorio. |
+| `app/views/admin-panel/parts/navbar.php` | Identidad y estructura de la barra superior. |
+| `app/views/admin-panel/parts/aside.php` | Estructura completa del menú lateral. |
+| `app/views/templates/adminTemplate.php` | Envoltura completa del panel. |
+
+Copia el original correspondiente si necesitas partir de su estructura. Sin personalización, se utiliza el del paquete. El [footer](footer.md) se configura por separado.
+
+Los módulos pueden aportar acciones en `parts/header-actions/` y sus recursos en `app/views/templates/meta/admin/`. La campana de Notificaciones aparece solo cuando se instala ese módulo.
+
+## Estilos y botones
+
+Personaliza colores, tipografía, bordes y sombras en `public/css/variables.css`. Registra el CSS administrativo propio después de los recursos compartidos. No edites los originales dentro de Composer.
+
+Los botones de acciones de listados usan:
+
+```html
+<button type="button" class="btn btn-outline-secondary btn-list-actions btn-sm">
+    Acciones
+</button>
+```
+
+Añade `dropdown-toggle` y los atributos de Bootstrap cuando abran un desplegable. En formularios, coloca Cancelar antes de la acción principal y alinea las acciones a la derecha. Los botones de SweetAlert están centrados.
+
+## Tema y menú móvil
+
+El tema se controla con `data-bs-theme` en `html`. Se guarda en `gf-theme`, sigue el sistema sin preferencia explícita y se sincroniza entre pestañas.
+
+Después de cargar `admin.js`:
 
 ```js
-GFTheme.get();                  // 'light' o 'dark'
-GFTheme.set('dark');            // Aplica y guarda la elección.
-GFTheme.set('light', false);    // Aplica sin cambiar la preferencia guardada.
-GFTheme.resetToSystem();        // Borra la elección y sigue al sistema.
+GFTheme.get();               // 'light' o 'dark'
+GFTheme.set('dark');         // Aplica y guarda.
+GFTheme.set('light', false); // Aplica solo en esta página.
+GFTheme.resetToSystem();     // Vuelve a seguir al sistema.
 ```
 
-La persistencia es local al navegador, no un ajuste guardado en la cuenta. Si el almacenamiento está bloqueado, el cambio funciona en la página pero no se garantiza entre recargas. El panel sigue el sistema cuando no existe una elección guardada; el modo público no incorpora automáticamente este controlador.
+El menú de escritorio guarda su estado en `gf-sidebar`. En móvil abre temporalmente desde la izquierda, con fondo de bloqueo y control de cierre; no reutiliza el estado colapsado de escritorio.
 
-### Visor de variables
+Para consultar los tokens y componentes, abre `public/css/colores.html` por HTTP desde el proyecto. El visor permite buscar y copiar valores, pero no modifica el CSS.
 
-El esqueleto incluye `public/css/colores.html` junto a `variables.css`. Permite consultar las variables globales, tipografía, sombras, bordes, radios y componentes de Bootstrap; alternar claro/oscuro; buscar por nombre o valor y copiar los valores. Ábrelo por HTTP desde una instalación con Bootstrap publicado.
 
-El catálogo presenta los valores calculados de las variables globales; las variables locales de componentes no se enumeran en ese catálogo. Los componentes reales muestran su resultado visual. Al añadir variables globales en `variables.css`, el visor las detecta sin mantener una lista manual. No edita CSS ni modifica la preferencia de tema del panel. Los archivos de personalización de botones adicionales deben incluirse después de `variables.css` para que la muestra los refleje. Las variables `--ui-*` pertenecen únicamente al visor y se excluyen del catálogo.
+## Composición real del template
+
+La plantilla administrativa no es una página completa duplicada en cada módulo. Su estructura runtime es:
+
+```text
+adminTemplate.php
+├── <aside id="sidebar">
+│   └── admin-panel/parts/aside.php
+│       ├── admin-panel/parts/menu.php
+│       └── app/views/admin-panel/parts/menu-items/*.php
+└── <main id="main">
+    ├── admin-panel/parts/navbar.php
+    └── $content
+```
+
+Las piezas se resuelven mediante `ModuleRuntime::file()`: una personalización en `app/views/admin-panel/...` tiene prioridad y, si no existe, se utiliza el original del módulo. Sustituir una pieza significa reemplazar ese archivo completo; no existe mezcla automática entre bloques del original y la copia del proyecto.
+
+El template ya incluye un único `<main>`, el contenedor de navegación y `#toastBox`. Las vistas administrativas deben entregar solo el contenido de la pantalla y no volver a crear esos elementos.
+
+## Recursos de la plantilla
+
+`admin.meta.php` carga la base visual del panel en este orden conceptual:
+
+```text
+Bootstrap
+-> SweetAlert2
+-> variables.css
+-> compatibilidad de botones
+-> common.css
+-> puente SweetAlert2
+-> GFrame Icons
+-> Alerts
+-> admin.css
+-> JavaScript del panel
+```
+
+El preload del panel se carga en cabecera; jQuery, Bootstrap, SweetAlert2, Alerts y `admin.js` se cargan al final. Los módulos pueden aportar recursos adicionales mediante `app/views/templates/meta/admin/*.meta.php`.
+
+No duplique esas dependencias en cada pantalla. Declare en la meta de la vista únicamente lo que esa pantalla necesita.
+
+## Contrato de extensiones del menú
+
+El panel descubre fragmentos PHP en:
+
+```text
+app/views/admin-panel/parts/menu-items/*.php
+```
+
+Cada fragmento se renderiza de forma aislada y su resultado se agrega al menú. Por defecto se coloca en la sección de administración. Para colocarlo antes de esa sección, el fragmento puede establecer `$menuSection = 'user';`.
+
+Los únicos grupos interpretados actualmente son `user` y `admin`. Cualquier otro valor termina en administración.
+
+El fragmento debe decidir si imprime o no su enlace según la autorización del usuario. Aun así, esa comprobación es solo de presentación: la ruta correspondiente debe conservar `auth`, `can:*` u otros middleware necesarios.
+
+Evite efectos secundarios dentro de un fragmento de menú. Su trabajo es decidir visibilidad y producir marcado de navegación; no debe modificar datos ni ejecutar procesos de negocio.
+
+## Sidebar de escritorio y drawer móvil
+
+En escritorio, el botón de colapso cambia `data-gf-sidebar` entre `expanded` y `collapsed`. La preferencia se guarda en `localStorage` bajo `gf-sidebar` y se sincroniza entre pestañas mediante el evento `storage`. El botón actualiza `aria-expanded`, `aria-label` e icono según el estado.
+
+Por debajo de 991.98 px el sidebar funciona como drawer. Al abrirlo se agrega un overlay, se bloquea el scroll del body, se conserva el elemento que tenía el foco y el foco pasa a un control del drawer. Tab y Shift+Tab permanecen dentro del menú, Escape lo cierra y al cerrar se devuelve el foco al control anterior.
+
+Al volver a escritorio, un drawer abierto se cierra automáticamente. El estado móvil no sobrescribe la preferencia de colapso del escritorio.
+
+## Contrato del tema
+
+`GFTheme` es la API pública del controlador visual del panel:
+
+| Método | Efecto |
+| --- | --- |
+| `GFTheme.get()` | Devuelve el tema aplicado |
+| `GFTheme.set('light'|'dark')` | Aplica y persiste |
+| `GFTheme.set(theme, false)` | Aplica sin persistir |
+| `GFTheme.resetToSystem()` | Elimina la preferencia y vuelve al sistema |
+
+La preferencia persistida vive en `gf-theme`. Sin preferencia explícita, el panel sigue `prefers-color-scheme`. Los cambios persistidos se sincronizan entre pestañas.
+
+El tema se expresa mediante `data-bs-theme` y `color-scheme` en el elemento raíz. Los módulos deben integrarse con ese contrato en lugar de crear otro selector de tema.
+
+## Crear una sección administrativa completa
+
+Para una capacidad nueva del proyecto, el recorrido recomendado es:
+
+```text
+permiso
+-> ruta protegida
+-> controlador
+-> vista
+-> meta de vista
+-> fragmento de menú
+```
+
+Ejemplo de archivos:
+
+```text
+config/Permissions.php
+config/routes/routes_web.php
+app/controllers/reportes/ReportController.php
+app/views/reportes/reportIndex.php
+app/views/reportes/reportIndex.meta.php
+app/views/admin-panel/parts/menu-items/reportes.php
+public/css/app/reportes/report-index.css
+public/js/app/reportes/report-index.js
+```
+
+El enlace del sidebar es el último paso, no el mecanismo de seguridad. Pruebe también que un usuario sin permiso reciba el rechazo correcto aunque conozca directamente la URL.
