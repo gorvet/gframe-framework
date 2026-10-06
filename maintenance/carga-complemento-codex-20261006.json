@@ -1,0 +1,89 @@
+{
+  "client": "Codex CLI / app-server",
+  "client_version": "0.159.2",
+  "distribution_version": "0.0.0-review.1",
+  "isolated_configuration": true,
+  "application_booted": false,
+  "model_turn_started": false,
+  "source_head": "d23000db2e6eb5ca6e31ccf648e454afc532667e",
+  "source_snapshot_manifest_sha256": "5aacb4fd6b1e0069c811c4a1cf2119393f5bb8ebbe700777d49fc4d109251129",
+  "artifact_path": "C:\\Users\\JUANKD~1\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\gframe-skills-next",
+  "files_verified": 68,
+  "local_links_verified": 79,
+  "metadata_valid": 14,
+  "discovered_enabled_skills": [
+    {
+      "name": "gframe-skills:gframe-auth-access",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-auth-access\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-backend",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-backend\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-background-jobs",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-background-jobs\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-campaigns",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-campaigns\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-core-architecture",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-core-architecture\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-framework-maintenance",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-framework-maintenance\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-frontend-admin",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-frontend-admin\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-frontend-public",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-frontend-public\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-integrations",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-integrations\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-media-module",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-media-module\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-notifications-mail",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-notifications-mail\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-orchestrator",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-orchestrator\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-orm-models",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-orm-models\\SKILL.md",
+      "enabled": true
+    },
+    {
+      "name": "gframe-skills:gframe-ui-design-clean",
+      "path": "C:\\Users\\Juank de Gorvet\\AppData\\Local\\Temp\\gframe-plugin-load-0ec3c72f7ca446db972b6863a3254f69\\codex-home\\plugins\\cache\\gframe-review\\gframe-skills\\0.0.0-review.1\\skills\\gframe-ui-design-clean\\SKILL.md",
+      "enabled": true
+    }
+  ],
+  "errors": [],
+  "claude_status": "unverified: local CLI points to missing cli.js",
+  "source_content_evidence": "sha256-files-including-uncommitted-changes"
+}

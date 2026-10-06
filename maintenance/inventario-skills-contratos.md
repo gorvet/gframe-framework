@@ -66,7 +66,7 @@ Ejemplo de un mismo dato a través de distintas capas: `data-user-id="7"` en HTM
 
 ## Inventario de las nueve skills existentes
 
-Todas siguen pendientes de revisión semántica completa. Las evidencias siguientes delimitan por dónde empezar; no convierten cada recomendación del auditor en una modificación obligatoria.
+La tabla conserva los objetivos originales. El estado local consolidado se registra debajo de la lista activa, con evidencia y límites distintos para instrucciones, runtime e integración. Revisar los recorridos registrados no certifica cada API ni convierte cada recomendación del auditor en una modificación obligatoria.
 
 | ID | Skill | Trabajo concreto | Comprobación antes de cerrar |
 | --- | --- | --- | --- |
@@ -105,10 +105,10 @@ El catálogo contiene 37 módulos. Las capacidades de `src/` también necesitan 
 | COV-05 | cron-runner, Async, workers, heartbeat | `gframe-background-jobs`, creada en el lote 13; auth/admin para heartbeat de sesión. | Contratos y recetas comprobados; pendientes scheduler del despliegue, coordinación de pestañas y fallos de proceso reales. |
 | COV-06 | API, webhook, SSE, HttpClient, wordpress-headless | `gframe-integrations`, creada en el lote 15. | Contratos y recetas comprobados; pendientes proveedor remoto, TLS real, buffering/reconexión y aislamiento de negocio completo. |
 | COV-07 | Creación, instalación, configuración, módulos y actualización | Maintenance/core existentes; `gframe-project-lifecycle` queda condicionado a una necesidad independiente demostrada. | Completar recetas de proyecto sin duplicar mantenimiento: dry-run, archivos administrados, personalizaciones, migraciones y versión resuelta. |
-| COV-08 | admin-panel, error-pages, frontend-core, alerts, gf-select, gf-table, gframe-icons | Frontend-admin, public y core; referencias por componente. | Configuración, publicación, assets, accesibilidad y contratos PHP/JS. |
-| COV-09 | markdown, rich-text-editor, lexical-search y HtmlSanitizer | Backend, frontend y referencias de contenido. | Datos confiables, sanitización, búsqueda autorizada y ciclo del editor. |
+| COV-08 | admin-panel, error-pages, frontend-core, alerts, gf-select, gf-table, gframe-icons | Frontend-admin/public/core; referencia de componentes en lote 30. | Instrucciones de fuentes, assets, readiness y APIs cubiertas; QA de la pantalla real cuando se integren. |
+| COV-09 | markdown, rich-text-editor, lexical-search y HtmlSanitizer | Receta compartida en lote 29 y paginación posterior. | Snippets y contratos locales comprobados; persistencia/autorización y editor reales dependen de la aplicación. |
 | COV-10 | SEO, JsonLD, sitemap, robots, llms y multilenguaje | Frontend-public y core existentes. | Instrucciones acordes a SeoPolicy, URLs/metas y límites del idioma. |
-| COV-11 | 16 módulos external-ui | Frontend-admin/public con catálogo de integración. | Bootstrap, jquery, sweetalert2, aos, chartjs, coloris, flatpickr, html2canvas, intl-tel-input, jquery-ui, luxon, owl-carousel, purecounter, swiper, tinymce y venobox. Sin una skill por biblioteca. |
+| COV-11 | 16 módulos external-ui | Frontend-admin/public; carga selectiva y guía efectiva en lote 30. | Solo inicializar la biblioteca afectada según manifiesto/guía/versiones distribuidas; no se certifican todas las integraciones visuales por inspección. |
 | COV-12 | Selección de contexto y especialistas | `gframe-orchestrator`, creado en el lote 16. | Matriz y descubrimiento local comprobados; distribución automática por proyecto/versionado sigue en D-02. |
 
 Cada candidato se evalúa con una tarea real antes de crear su carpeta. Empezar por instrucciones ausentes que se repiten; una referencia dentro de una skill existente puede ser suficiente.
@@ -165,10 +165,10 @@ En el lote 11 estos casos solo se contrastaron documentalmente. En el lote 16 un
 | --- | --- | --- |
 | O-01 | Implementado en el lote 16. | Reconoce framework/aplicación, localiza paquete/versión y selecciona por superficie; no replica contratos ni amplía permisos. |
 | O-02 | Selección comprobada en el lote 16. | Seis casos representativos y dos adversariales evaluados por un agente independiente; no equivale a completar implementaciones ni validar descubrimiento automático en otros clientes/versiones. |
-| D-01 | Copia/portabilidad comprobadas en lotes 17–18; carga real pendiente. | Catorce skills, 66 archivos idénticos y 61 enlaces locales resueltos; instalación por ambos destinos verificada en temporales, no su carga en clientes. |
+| D-01 | Copia/portabilidad y descubrimiento Codex comprobados; Claude pendiente. | Snapshot posterior: catorce skills, 68 archivos idénticos en caché, 79 enlaces y metadata válidos. Codex CLI/app-server descubre las catorce habilitadas sin errores; no certifica selección automática por un agente. |
 | D-02 | Instalación por proyecto implementada en lote 18. | Fuente desde metadata instalada de Composer y destino explícito; dos proyectos con metadata/versiones distintas comprobados. Bridges personalizados y carga efectiva requieren comprobación adicional. |
 | D-03 | Vista previa/preservación implementadas en lote 18. | Registro/hashes, personalizaciones, skills ajenas, carpetas no registradas y obsoletos comprobados. No ofrece transacción de todos los archivos ni soporte de junctions/enlaces. |
-| D-04 | Formatos contrastados en lote 17; generador/artefacto de prueba en lote 19; carga real pendiente. | Portable OpenAI y adaptador Claude, solo skills propias; stages/UX externos opcionales. No incluir MCP por obligación. |
+| D-04 | Generador portable probado e instalado en Codex aislado; Claude pendiente. | Portable OpenAI y adaptador Claude, solo skills propias; stages/UX externos opcionales. No incluir MCP por obligación. CLI Claude apunta a cli.js ausente; no se repara el cliente implícitamente. |
 | V-01 | Implementado el alcance acotado del lote 21. | Enlaces locales de todos los Markdown/copia portable y control YAML separado con PyYAML. Fragmentos, Markdown completo, campos desconocidos y carga real no certificados. |
 | V-02 | Verificar semántica y recetas. | Símbolos/APIs existentes, ejemplos ejecutables y tareas representativas; estructura válida no equivale a instrucciones correctas. |
 | V-03 | Cubrir nomenclatura sin falsos positivos. | Excluir vendors, APIs públicas preservadas y excepciones documentadas; distinguir variables de claves y selectores. |
@@ -189,14 +189,28 @@ En el lote 11 estos casos solo se contrastaron documentalmente. En el lote 16 un
 ### Lista activa de pendientes, en orden
 
 1. Terminado: trabajo acumulado guardado en tres commits separados (4a5a4ec, 74e2a2a y 806d264). Ramas históricas retiradas con autorización posterior del usuario y respaldo verificado; quedan main y origin/main. Los commits nuevos de main aún no se han enviado al remoto.
-2. Cerrar la revisión semántica de S-01–S-09 con la evidencia ya obtenida y las comprobaciones concretas que faltan. Próximo recorrido: S-02, backend → servicio/modelo → respuesta → consumidor. No repetir correcciones ya registradas ni crear tareas por recomendaciones sin comprobar.
-3. Completar los huecos de cobertura de módulos registrados en COV y sus recetas, aprovechando las catorce skills existentes antes de proponer otras.
-4. Completar N-02–N-05 y concretar N-06, preservando APIs públicas, claves y selectores existentes. Ningún renombrado masivo.
-5. Revisar carga real del complemento únicamente después de estabilizar las instrucciones; mantener explícitos los límites de los clientes disponibles.
+2. Revisión local consolidada de S-01–S-09 según la matriz de evidencia siguiente. S-02 incorpora el recorrido backend/consumidor en lote 28; las pruebas de entorno y cada flujo no inspeccionado conservan sus límites.
+3. Huecos de instrucciones de contenido/componentes cubiertos en lotes 29–30 y paginación posterior, con las catorce skills existentes. Integraciones externas o pantallas reales no se dan por verificadas.
+4. Firmas públicas catalogadas, referencia común desde las catorce skills y adopción para código nuevo delimitadas. N-03/N-04 conservan límites de transporte/DOM; no se renombra código ni se atribuyen fallos a diferencias de estilo.
+5. Codex CLI/app-server: instalación y descubrimiento reales comprobados en configuración aislada. Claude sigue sin poder verificarse por módulo CLI ausente. Selección automática en una conversación y carga visual desktop no se certifican con esta prueba de lectura.
 
 Fuera de la lista activa: ampliaciones de CI/integraciones, MCP y K-01–K-04. Se conservan como pendientes, sin implementación automática. Cada siguiente lote debe corresponder a un punto de esta lista y registrar qué cierra.
 
-Prioridad retomada por indicación del usuario: revisión semántica de las skills contra código y documentación, cobertura de módulos y nomenclatura. El lote 26 comprueba selección/alcance del orquestador y corrige rutas de backend; el siguiente recorrido es backend → servicio/modelo → respuesta y consumidor. El job Windows queda pospuesto; no se amplían automatizaciones en esta revisión. Carga real del complemento, nomenclatura aún no cubierta y K-01–K-04 conservan sus pendientes.
+### Evidencia local consolidada de las nueve skills originales
+
+| Área | Instrucciones/recorridos comprobados | Evidencia | Límite conservado |
+| --- | --- | --- | --- |
+| S-01 Core | Destino/versión, configuración, tipo/canal de ruta y tenant. | Lotes 02/09/16; bootstrap y rutas reales en pruebas temporales. | Servidor Nginx/CGI y otros despliegues no comprobados. |
+| S-02 Backend | Límites HTTP/modelo, errores/estados, fuentes runtime, Mi cuenta y usuarios. | Lotes 01/02/10/26/28; 27 pruebas dirigidas en el cierre. | No equivale a probar cada endpoint HTTP/CSRF. |
+| S-03 ORM | Estado/clones/conexiones, IN vacío, ordenación y límites transaccionales. | Lotes 01/08, snippets SQLite y pruebas de documentación. | MySQL 8 y todos los consumidores no certificados; K-02 separado. |
+| S-04 Auth | Credenciales, sesión, tenant, revocación y administración protegida. | Lotes 02/10; receta de cambio de contraseña y garantías por driver. | Redis real y todos los formularios HTTP no comprobados. |
+| S-05 Admin | Fuentes/meta/assets, AJAX/parcial, componentes, editor, paginación y nombres. | Lotes 04/29/30 y aclaración de paginación; PHP/JS dirigidos. | Navegador, foco y unicidad global de IDs requieren páginas renderizadas. |
+| S-06 Public | Home, metas/SEO/escaping, assets y contenido/búsqueda autorizada. | Lotes 05/29/30; guías y fuentes runtime contrastadas. | Indexación externa y QA de todas las páginas no comprobadas. |
+| S-07 Media | Scope/autoría, campos/picker, relaciones y límites de privacidad. | Lote 06; snippets y pruebas de servicios. | Flujo completo de uploads/picker en navegador no comprobado. |
+| S-08 UI | Alcance visual, coordinación UX y convenciones técnicas sin duplicarlas. | Lote 07 y referencias canónicas de admin/public. | No se ejecutó un rediseño ni QA visual de todas las pantallas. |
+| S-09 Mantenimiento | Modos, autorizaciones, publicación, integración y distribución de skills. | Lotes 03/16/18/19/21 y carga Codex posterior. | Claude y actualización de una aplicación real no comprobados. |
+
+No se abre otro frente por defecto. Restan verificación de Claude en un cliente funcional, selección real en conversaciones y comprobaciones de navegador/servicios donde un proyecto requiera esos contratos. Los pendientes de despliegue y K-01–K-04 se conservan; no se confunden con defectos de las instrucciones ya corregidas ni con una obligación de reescribir módulos.
 
 ## Verificación de este inventario
 
@@ -568,6 +582,15 @@ El usuario preguntó si estaban documentadas y cómo se usan/crean. Verificadas 
 
 - La referencia admin explica las APIs existentes de PaginationHelper/creaPaginacion, total/página frente a controles, callback, guardas para cero/una página y límites de IDs fijos. Una prueba JS existente correcta.
 - La receta léxica añade cálculo de metadatos y slice después de rank sobre el conjunto autorizado. El tamaño de página debe ser positivo y acotado; no se presenta ese array como un envelope HTTP completo.
+
+## Registro del lote 31: carga real disponible
+
+- Empaquetado posterior con 68 archivos de skills y 79 enlaces, versión de prueba 0.0.0-review.1. Codex CLI 0.159.2 registra el marketplace, instala el plugin portable y lo habilita en CODEX_HOME temporal; sin modificaciones globales, bootstrap de aplicación ni turnos de modelo.
+- App-server consultado mediante initialize/skills/list conforme al esquema generado por ese mismo binario: catorce skills de la caché del complemento, habilitadas, sin errores. Namespace confirmado y documentado en orquestador/guía. No fue necesario añadir otro manifiesto o cambiar el generador.
+- Los 68 hashes de caché coinciden con el artefacto, sus 79 enlaces y catorce archivos YAML son válidos. [Evidencia persistida](carga-complemento-codex-20261006.json). La prueba comprueba descubrimiento, no obediencia automática de todas las instrucciones ni carga de la interfaz desktop.
+- Claude --version falla por falta del módulo cli.js. La comprobación queda pendiente por entorno; no se instala/repara software del usuario para ocultar ese límite.
+- Ejecutado además el snippet de ranking/paginación con página solicitada fuera de rango y resultado vacío; correcto. No se modifica la semántica del ORM o los helpers existentes.
+- Prueba del empaquetado posterior: 225 comprobaciones correctas. Las catorce skills pasan skill-creator, enlaces/metadata de checkout y caché son válidos y la revisión editorial no detecta errores críticos; `git diff --check` correcto. Cambios guardados por bloques sin push de main.
 
 Fuentes locales para contrastar los hallazgos:
 

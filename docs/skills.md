@@ -122,6 +122,8 @@ Después de actualizar el framework en un proyecto, reinstale los skills desde `
 
 Desde el checkout del framework, `bin/build-skills-plugin.ps1` genera una carpeta independiente con las catorce skills propias, `plugin.json` portable, `.claude-plugin/plugin.json` y `gframe-skills-source.json` con procedencia y hashes SHA-256. Las skills se copian intactas; stages y UX permanecen externos. Los manifiestos siguen los formatos oficiales de [OpenAI](https://developers.openai.com/plugins/build/plugins) y [Claude](https://code.claude.com/docs/en/plugins-reference).
 
+Codex expone las skills del complemento con su namespace, por ejemplo `gframe-skills:gframe-backend` y `gframe-skills:gframe-orchestrator`. Utiliza el nombre exacto que muestra el cliente; los nombres de carpetas canónicos siguen siendo `gframe-backend` y `gframe-orchestrator`. Una copia global con nombre parecido no demuestra que proceda del mismo paquete.
+
 Indique una versión de distribución SemVer y una carpeta nueva fuera del repositorio, cuyo padre ya exista. Este ejemplo usa una versión de prueba, no una release publicada:
 
 ```powershell

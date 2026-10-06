@@ -1,6 +1,6 @@
 # Distribución de las skills de GFrame
 
-Revisión del 6 de octubre de 2026. Instalación por proyecto implementada en el lote 18; generador y artefacto de prueba del complemento en el lote 19. La carga real en clientes sigue pendiente.
+Revisión del 6 de octubre de 2026. Instalación por proyecto implementada en el lote 18; generador en el lote 19. Carga y descubrimiento de las catorce skills comprobados en Codex CLI/app-server aislado; Claude pendiente por CLI incompleta. Véase la [evidencia de carga](carga-complemento-codex-20261006.json).
 
 ## Contenido y fuente
 
@@ -50,3 +50,5 @@ Una operación debe poder repetirse sin cambios y detectar rutas que salgan del 
 El lote 18 implementa vista previa, copia por proyecto, registro/preservación y tratamiento de obsoletos. El lote 19 añade `bin/build-skills-plugin.ps1`: versión SemVer explícita, carpeta nueva fuera del checkout, vista previa sin escrituras, catálogo de catorce skills, enlaces portables, copia intacta y procedencia con hashes. Los dos manifiestos comparten identidad/versión y una sola carpeta de skills. No instala ni publica; una operación interrumpida puede dejar contenido parcial.
 
 La prueba PowerShell verifica copias originales, hashes registrados, manifiestos coherentes, reproducibilidad para la misma fuente y rechazo de referencias inválidas, destinos existentes, escritura dentro del checkout, versiones inválidas y junctions. La versión `0.0.0-preview` del artefacto de revisión es solo de prueba. La carga real sigue pendiente: el comando Claude local apunta a un módulo ausente y el CLI de Codex disponible no ofrece un comando de validación de complemento local. No se repararon clientes ni se modificó su configuración.
+
+Comprobación posterior: Codex CLI 0.159.2 sí permite registrar un marketplace local, instalar el paquete portable y consultar su descubrimiento mediante app-server. La prueba aislada instaló y habilitó las catorce skills sin errores; sus nombres se muestran como `gframe-skills:<skill>`. La ausencia de un comando específico de validación no impide esa prueba de carga. No se modificaron plugins/configuración globales ni se probó la selección automática en una conversación nueva. Claude conserva el bloqueo de su CLI ausente.

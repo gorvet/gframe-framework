@@ -17,6 +17,8 @@ For an application, inspect its entry point, `core/Load.php` and Composer config
 
 Read canonical `skills/<name>/SKILL.md` and relevant references from the effective package when present. In this standalone repository, use its own `skills/`. A global skill with the same name may be newer than the target runtime. If the package lacks a specialist, use its local code/docs to establish compatibility before applying external instructions, and record the gap. Do not substitute another checkout, install/sync global skills or update Composer implicitly. Unknown version/path stays unknown; ask only when unresolved target/scope prevents the requested work.
 
+The routing matrix uses canonical folder names. When invoking a skill exposed by a plugin, use its exact client-visible qualified name; Codex exposes this package as `gframe-skills:gframe-backend`, for example. Keep namespaces when invoking and locate the matching package reference when reading; do not assume a bare global skill is the same installed source.
+
 For deeper bootstrap/version investigation, select `gframe-core-architecture` and its `references/bootstrap-configuration-version.md`; do not load all core references for ordinary task selection.
 
 ## Select and Work
