@@ -94,3 +94,83 @@ Auth cambia de `auth/AuthController` a `auth-ui/AuthController`; conserva los no
 El template nativo de Auth queda en `application/app/views/templates/authTemplate.php`; una personalización en `app/views/templates/authTemplate.php` tiene prioridad. El listado inicial y el AJAX de Gestión de usuarios resuelven el mismo parcial, primero personalizado y después nativo. Heartbeat carga el controlador de Auth con esta misma prioridad.
 
 Las fábricas de `config/auth/extensions.php` ya no se consultan. Traslade su construcción de dependencias a los controladores personalizados; no se elimina el archivo del proyecto automáticamente. Campañas también utiliza `notification-campaigns/CampaignController`, sus vistas en `notification-campaigns` y modelos heredables. Su registro de callbacks fue retirado; consulte [la migración de Campañas](notification-campaigns.md#extender-las-reglas-por-herencia). Multimedia también utiliza el runtime. `alerts` es un componente JS/CSS sin MVC PHP: publica sus recursos públicos y no necesita declarar `runtime`.
+
+
+## Instalado no significa runtime MVC
+
+`ModuleRuntime` mantiene dos registros distintos:
+
+- módulos instalados en el proyecto;
+- módulos que además declaran una raíz `runtime` válida.
+
+`ModuleRuntime::isInstalled($name)` comprueba el primer caso. `ModuleRuntime::has($name)` comprueba el segundo.
+
+Esto importa para componentes como bibliotecas frontend o módulos sin MVC: pueden estar instalados y publicar recursos sin exponer controladores, modelos, servicios o vistas runtime.
+
+## Inicialización del runtime
+
+Durante el arranque, `ModuleRuntime::initialize()` recibe el catálogo, la lista instalada y la raíz del proyecto. Para cada módulo resuelve dependencias y, si existe `runtime`, valida:
+
+- que la raíz declarada exista dentro del módulo;
+- que sea un directorio;
+- que el namespace tenga una forma PHP válida;
+- que los templates declarados puedan resolverse sin ambigüedad.
+
+Una estructura runtime inválida produce una excepción durante el arranque en lugar de continuar con rutas parcialmente resolubles.
+
+## Resolución segura de archivos
+
+Las búsquedas de controladores, modelos, servicios y vistas están limitadas a rutas contenidas en las raíces permitidas. Los paths absolutos y segmentos `..` se rechazan.
+
+El orden general es:
+
+```text
+app/<tipo>/<ruta>
+  -> si existe, usar personalización del proyecto
+  -> si no, buscar original del módulo runtime
+```
+
+Los tipos válidos son `controllers`, `models`, `services` y `views`. No utilice `ModuleRuntime::file()` como lector arbitrario de archivos.
+
+## Controladores y namespaces
+
+Para un controlador personalizado, Runtime intenta primero la clase namespaced del proyecto:
+
+```text
+App\Controllers\<ModuloStudly>\MiController
+```
+
+Si el archivo pertenece al módulo original, construye la clase desde el namespace declarado en `module.php`.
+
+El archivo debe declarar la clase esperada. Encontrar un PHP en la ruta correcta no basta: si la clase no coincide, Runtime falla explícitamente.
+
+## Templates compartidos
+
+`ModuleRuntime::template()` busca primero la plantilla del proyecto. Si no existe, revisa qué módulos runtime declaran ese template.
+
+Si más de un módulo declara el mismo nombre de template, lanza una excepción en lugar de elegir uno arbitrariamente. Un template compartido debe tener un único propietario canónico.
+
+## Carpetas de personalización
+
+Durante publicación de proyecto, `createCustomizationDirectories()` crea carpetas bajo `app/` únicamente para las capas que realmente existen y contienen archivos en el módulo.
+
+Por ejemplo, un módulo con vistas y controlador pero sin modelos no necesita crear una carpeta de modelos vacía.
+
+Estas carpetas son puntos de extensión del proyecto. Los archivos originales permanecen dentro del paquete y no se copian automáticamente.
+
+## Autoload de clases de módulos
+
+Runtime registra un autoloader para controladores, modelos y servicios de módulos activos. Reconoce tanto el namespace original del módulo como el namespace `App\...` de sus personalizaciones.
+
+Esto permite heredar clases originales sin `require_once` manual en cada controlador. No sustituye el autoload general de clases ordinarias del proyecto, que se documenta en [Autoload del proyecto](autoload-proyecto.md).
+
+## Errores habituales
+
+- comprobar solo `isInstalled()` cuando se necesita una clase runtime;
+- crear una personalización con namespace distinto al esperado;
+- editar el archivo original dentro de `packages/`;
+- declarar el mismo template desde dos módulos;
+- asumir que instalar un módulo frontend crea una capa MVC;
+- copiar todos los originales a `app/` aunque no se necesite personalizarlos.
+
+El patrón recomendado es personalizar únicamente la capa necesaria y dejar que el fallback del módulo resuelva el resto.
