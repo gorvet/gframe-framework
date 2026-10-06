@@ -548,6 +548,13 @@ El usuario autorizó retirar las ramas históricas después de comprobar su inte
 - Pruebas dirigidas de servicios/UI de ambas áreas: 27 pruebas y 155 aserciones correctas. La comprobación es de contratos locales; no acredita navegador, peticiones CSRF completas ni Redis real.
 - S-02 queda revisada para los contratos y recorridos representativos del inventario, con las limitaciones anteriores. Nuevos endpoints requieren su comprobación concreta; no se certifica cada ruta del framework por extrapolación.
 
+## Registro del lote 29: contenido y búsqueda
+
+- COV-09 dispone ahora de una receta compartida desde backend, admin y public: Markdown por perfil, ciclo de editor antes de serializar/reemplazar, sanitización explícita del servidor y ranking de filas previamente autorizadas. No se crea otra skill ni un almacenamiento de artículos.
+- Contrastados los tres manifiestos, servicios PHP, vista/meta del editor y APIs JS. El primer diagnóstico aislado no registró el módulo lexical-search y no pudo cargar su servicio; se corrigió el montaje de la prueba con ModuleRuntime y se documentó esa precondición, sin atribuir el fallo al framework.
+- Tres snippets ejecutados con fuentes reales, contenido ficticio y selección autorizada vacía; correctos. Pruebas existentes: 23 PHP/89 aserciones y tres JS, sin fallos. Las pruebas JS utilizan entornos simulados y no certifican interacción TinyMCE en navegador.
+- Verificador: catorce skills y 66 enlaces locales. COV-09 queda cubierto en instrucciones y recetas locales; autorización HTTP completa, persistencia del proyecto y QA de navegador se comprueban en el proyecto que integre estas capacidades.
+
 Fuentes locales para contrastar los hallazgos:
 
 - [Skills y su instalación](../docs/skills.md), [instalador](../bin/install-skills.ps1) y [verificador](../bin/validate-skills.php).

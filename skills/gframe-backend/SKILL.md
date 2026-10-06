@@ -14,6 +14,7 @@ If the task is mostly model and ORM work, prefer `gframe-orm-models`.
 
 1. [references/framework-conventions.md](references/framework-conventions.md)
 2. [references/backend-model-boundary.md](references/backend-model-boundary.md)
+3. For Markdown, rich HTML forms or authorized lexical search, [references/content-editor-search.md](references/content-editor-search.md).
 
 For new symbols or a naming review, use the matching-version [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Distinguish code parameters from request keys; preserve existing public contracts.
 

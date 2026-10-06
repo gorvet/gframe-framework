@@ -15,6 +15,7 @@ Use this when creating or modifying GFrame admin views, application overrides, o
 4. [references/list-filter-pagination.md](references/list-filter-pagination.md)
 5. [references/media-components.md](references/media-components.md) only when media picker or media field is involved
 6. [references/user-admin-ajax-recipe.md](references/user-admin-ajax-recipe.md) for a concrete runtime view, field mapping and AJAX list/action flow
+7. For rich-text editor lifecycle, Markdown or lexical search, [the content integration recipe](../gframe-backend/references/content-editor-search.md); locate the companion in the effective package if installed separately.
 
 ## Workflow
 

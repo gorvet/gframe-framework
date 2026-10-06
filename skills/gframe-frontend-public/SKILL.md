@@ -61,6 +61,7 @@ Examples:
 
 ## Use With Other Skills
 
+- For Markdown, sanitized rich content or authorized lexical search, use [the content integration recipe](../gframe-backend/references/content-editor-search.md) from the effective package; frontend preview/filtering does not replace backend authorization.
 - Use `gframe-ui-design-clean` when the task is mainly visual design.
 - Use `gframe-core-architecture` when the task changes route, template, or render conventions.
 - Use `gframe-backend` when the public page also needs controller or data contract changes.
