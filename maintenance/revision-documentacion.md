@@ -73,7 +73,7 @@ Explicar la tarea del desarrollador, los requisitos, las ubicaciones y un ejempl
 ## Correcciones de lectura y cobertura
 
 - JSON-LD: crear una guía propia junto a SEO, con presets disponibles, tipos soportados, parámetros requeridos, composición y ejemplos comprobados. Mantener el tema separado de autenticación.
-- Autenticación: revisión orientada al contrato real. Se detectó que validateAcount no comprueba caducidad del token; documentar el límite y conservar la corrección funcional pendiente, sin modificar el core fuera del alcance de esta revisión documental.
+- Autenticación: el hallazgo histórico de caducidad del token está resuelto. `validateAcount` comprueba `token_updated_at` mediante `TokenManager::isValidTimestamp`; AuthVerificationTokenTest confirma activación con token vigente y rechazo sin escrituras del caducado (6 de octubre de 2026: 2 pruebas, 6 aserciones).
 
 - Orden de primeros pasos actualizado por petición del usuario: Instalación, Apache y Nginx, Configuración. Apache utiliza el .htaccess incluido; Nginx requiere integrar el fragmento del proyecto, sin modificar la configuración PHP nativa del panel.
 
