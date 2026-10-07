@@ -50,6 +50,8 @@ Conserva también el campo honeypot `middle_name` y los IDs que usan los scripts
 
 La página de restablecimiento obtiene el token de `rp` en la URL; la verificación web utiliza `v`. El registro no inicia sesión automáticamente: crea una cuenta pendiente y solicita el envío del enlace. Consulta [Autenticación](autenticacion.md) para estados de cuenta y contratos del modelo.
 
+Los enlaces de verificación y recuperación caducan a las 24 horas por defecto; la duración se configura inyectando `TokenManager` en el modelo. Solicitar otro enlace reemplaza el token anterior de cualquiera de esos dos flujos. Verificar la cuenta o restablecer la contraseña también rota el token y su fecha, por lo que el enlace utilizado deja de funcionar. Un token caducado devuelve `invalid_token`. Consulta [Recuperación y tokens](autenticacion.md#recuperación-y-tokens) para configuración y límites.
+
 ## Configuración
 
 ```php
