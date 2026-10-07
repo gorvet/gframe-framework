@@ -83,3 +83,24 @@ El catálogo representa declaraciones encontradas, no todos los métodos heredad
 La adopción actual se limita a código nuevo: referencia común desde las catorce skills y reglas de IDs/clases nuevos en frontend-admin. Se conservan todos los nombres existentes. Un renombrado futuro se trata como cambio independiente con mapeo de consumidores y compatibilidad; no se crea un verificador que declare errores por cada excepción histórica.
 
 El inventario no encontró evidencia de un fallo de funcionamiento causado únicamente por estas variantes. No evalúa por ese hecho la corrección completa de los módulos.
+
+## Comprobación posterior de transporte y DOM
+
+El recorrido posterior cubre los ocho módulos con controladores MVC propios. Se mantienen las diferencias necesarias entre atributos HTML, claves de transporte, parámetros PHP y columnas; no se aplica una conversión masiva.
+
+| Módulo | Correspondencia comprobada | Resultado |
+| --- | --- | --- |
+| auth-ui | Campos `login_email`/`login_password`, registro y recuperación → AuthController → AuthModel; identidad persistida `user_id` y rol `role_id`. | Se conservan nombres y contratos de autenticación, incluidos métodos históricos. |
+| self-account | Campos de contraseña → SelfAccountController → SelfAccountService; el usuario proviene de la sesión. | No se añade un `user_id` del navegador como autoridad. |
+| user-admin | `data-user-id` → `user_id`, `role_id` → UserAdminController → UserAdministrationService/UserModel/RoleModel. | Mapeo consistente con esquema y servicios. |
+| media-library | `data-media-id` → `media_id`; selección `media_ids` JSON/lista → MediaController → MediaLibraryService/MediaModel. | Identificadores conservados y ámbito resuelto en servidor. |
+| notifications | `data-notification-id` → `notification_id` → controlador/servicio/modelo, con usuario y tenant del servidor. | Mapeo consistente; `id` de la ruta de detalle sigue siendo su contrato de URL. |
+| notification-campaigns | `data-campaign-id`/formulario → `campaign_id`; `user_ids[]` → criterios `user_ids` → CampaignModel/audiencia. | Mapeo consistente; IDs de URL y columnas no se renombran. |
+| heartbeat-client | Claves de canales y payload `visible`/`force` → HeartbeatController/HeartbeatMaster → handler autorizado. | No tiene un nuevo ID persistente que normalizar. |
+| admin-panel | AdminController devuelve el contexto de la vista. | Sin formulario de identidad ni transporte propio que renombrar. |
+
+Nueve conjuntos de vistas nativas se renderizaron con datos ficticios: usuarios con gestión habilitada, Mi cuenta, lista/formulario de campañas, modales multimedia juntos y las cuatro pantallas de autenticación. Sus 83 IDs no presentan duplicados ni destinos ausentes de `label[for]` en esas composiciones. [Resultados del render](nomenclatura-render-20261006.json). Esta comprobación no cubre todos los estados, overrides o plantillas de aplicaciones instaladas.
+
+La comprobación adicional de los dos listados multimedia con el mismo archivo sí detectó IDs vacíos y repetidos. Se corrigió el fragmento del picker con prefijo `mp-`, conservando IDs históricos de la biblioteca y claves de transporte. El cliente envía `fragment=picker` según su modo y los controles de paginación pertenecen a cada instancia. No se encontraron selectores CSS propios que dependieran de los IDs cambiados del picker. `MediaMountIdentifiersTest` cubre el DOM PHP combinado; `media-multiple-mounts.test.cjs` lo verifica en Edge real, sin red, junto con independencia de filtros, paginación e identidad seleccionada.
+
+El catálogo de API actualizado después de los contratos contiene 274 archivos PHP, 152 tipos y 771 declaraciones públicas, con hashes de las fuentes actuales. La nomenclatura queda resuelta para este alcance del framework; consumidores externos y composiciones personalizadas se comprueban al intervenir en el proyecto que los posee.

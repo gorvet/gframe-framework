@@ -59,8 +59,8 @@ Ejemplo de un mismo dato a través de distintas capas: `data-user-id="7"` en HTM
 | --- | --- | --- |
 | N-01 | Terminado para código nuevo: sufijo `ID` en PHP y preferido en JS propio. | Referencia canónica añadida con la autorización del primer lote. No se han renombrado símbolos existentes. |
 | N-02 | Variables y declaraciones públicas catalogadas en lotes 20 y 30. | [Inventario con evidencia](nomenclatura-20261006.md): firmas, parámetros y padres/traits declarados; consumidores externos y herencia efectiva se comprueban antes de cualquier renombrado futuro. Ningún renombrado aplicado. |
-| N-03 | Parcial, lote 20: recorridos de usuarios, campañas, avisos, multimedia y CSRF. | Muestras de nombres entre capas verificadas; no se cerró el transporte/persistencia de todos los módulos. |
-| N-04 | Parcial, lote 20: selectores y atributos representativos inventariados. | Mezcla de estilos comprobada; colisiones en DOM renderizado y revisión completa de CSS pendientes. Reglas en frontend-admin. |
+| N-03 | Recorrido ampliado a los ocho módulos con controladores MVC propios. | Mapeos de transporte/API/persistencia documentados en la revisión posterior de nomenclatura. Sin renombrados masivos ni certificación de consumidores externos. |
+| N-04 | DOM de nueve composiciones nativas y dos listados multimedia comprobado. | Colisión real biblioteca/picker corregida, con prueba PHP y Edge real. Se conservan IDs históricos de la biblioteca; overrides y otros estados de aplicaciones requieren su propia comprobación. |
 | N-05 | Referencia común enlazada desde las catorce skills en lote 30. | [Fuente canónica](../skills/gframe-core-architecture/references/naming-conventions.md); frontend-admin conserva las reglas de IDs/clases nuevos sin duplicarlas en core. |
 | N-06 | Adopción delimitada en lote 30. | Aplicar las reglas a código nuevo y conservar APIs/claves/selectores actuales. Solo un cambio futuro de nombre justifica comprobar y migrar todos sus consumidores; no se impone limpieza estética automática. |
 
@@ -137,8 +137,8 @@ La documentación pública existe para las áreas siguientes. La carencia compro
 
 | Orden | Candidato | Tarea representativa y evidencia de entrada | Límite de responsabilidad |
 | --- | --- | --- | --- |
-| 1 | `gframe-notifications-mail` | Enviar una plantilla desde un formulario y distinguirlo de crear un aviso inbox o encolar email. `MailService::sendTemplate/sendTemplateAsync`, `NotificationService::notify`, `NotificationQueueService::enqueue`, procesadores de inbox/email; `docs/mail.md`, `docs/notificaciones.md`, `docs/notifications-email.md`. | Elegir canal, payload, plantilla, autor/destinatario/tenant y resultado. Envío sync espera al transporte; `mail_queued` confirma lanzamiento Async, no entrega. La reserva `processing` actual no tiene recuperación automática por caída del worker: K-01 sigue pendiente. |
-| 2 | `gframe-background-jobs` | Programar una operación persistente frente a lanzar una Closure puntual. `Async::create`, `CronTaskService`, `CronScheduler`, runners/workers y heartbeat; `docs/async.md`, `docs/cron-runner.md`, `docs/heartbeat.md`. | Ejecución, contexto capturado, CLI, scheduling, errores y operación de workers. No volver a encolar dentro de un worker por defecto; no sustituir cron por polling ni afirmar éxito de negocio por finalización del handler. K-03 conserva el contrato actual separado de su mejora. |
+| 1 | `gframe-notifications-mail` | Enviar una plantilla desde un formulario y distinguirlo de crear un aviso inbox o encolar email. `MailService::sendTemplate/sendTemplateAsync`, `NotificationService::notify`, `NotificationQueueService::enqueue`, procesadores de inbox/email; `docs/mail.md`, `docs/notificaciones.md`, `docs/notifications-email.md`. | Elegir canal, payload, plantilla, autor/destinatario/tenant y resultado. Envío sync espera al transporte; `mail_queued` confirma lanzamiento Async, no entrega. K-01 implementa recuperación de reservas nativas sin garantizar exactamente una vez para envíos externos. |
+| 2 | `gframe-background-jobs` | Programar una operación persistente frente a lanzar una Closure puntual. `Async::create`, `CronTaskService`, `CronScheduler`, runners/workers y heartbeat; `docs/async.md`, `docs/cron-runner.md`, `docs/heartbeat.md`. | Ejecución, contexto capturado, CLI, scheduling, errores y operación de workers. No volver a encolar dentro de un worker por defecto; no sustituir cron por polling ni afirmar éxito de negocio por finalización del handler. K-03 clasifica errores devueltos por handlers, separado del envelope de lote. |
 | 3 | `gframe-campaigns` | Crear campaña con audiencia autorizada y seguir dispatch/estado/recurrencia. `CampaignService`, handlers de cron y `AccountDeactivationLifecycle`; `docs/notification-campaigns.md`. | Audiencia, permisos, ámbito y reglas de campaña/cuenta. Reutiliza entrega de notificaciones y ejecución de trabajos; no duplica esas APIs ni cambia la política de retención. |
 | 4 | `gframe-integrations` | Consumir contenido BridgeFrame y exponer/consumir un canal HTTP con guardas. `WordPressClient`, `HttpClient`, Middleware/Router y acceso API; `docs/wordpress-headless.md`, `docs/http-client.md`, `docs/api-access.md`, `docs/rutas.md`. | Recetas separadas por transporte, contrato `bridgeframe/v2`, credenciales, scopes y errores. No confundir cliente HTTP saliente con autorización de API entrante ni escoger todos los transportes en cada tarea. |
 | Después | `gframe-orchestrator` | Resolver proyecto/paquete y elegir especialistas para las tareas siguientes. | Router de instrucciones, sin implementar APIs ni ejecutar automáticamente todos los especialistas. Validar O-02 antes de empaquetar. |
@@ -175,26 +175,26 @@ En el lote 11 estos casos solo se contrastaron documentalmente. En el lote 16 un
 | V-04 | Inventario en lote 22; jobs JS/YAML en 23–24; lint ampliado en 25. | [Cobertura de comprobaciones](cobertura-checks-20261006.md): CI PHP/JS/YAML, PowerShell aún separado e integraciones opt-in. Runs remotos del cambio pendientes. |
 | M-01 | Evaluar diagnóstico CLI antes de MCP. | Identificar tareas repetidas y datos útiles; decidir si un servidor aporta algo frente a comandos y skills. |
 
-## Contratos que se conservan pendientes
+## Contratos implementados tras autorización posterior
 
-| ID | Propuesta | Decisiones necesarias antes de implementar | Evidencia necesaria |
+| ID | Cambio | Decisión aplicada | Evidencia |
 | --- | --- | --- | --- |
-| K-01 | Recuperación de cola de notificaciones, prioridad alta. | Duración/renovación de reservas, propiedad del worker, intentos, actualización de esquema, transacciones e impacto sobre procesadores extensibles. | Caída del worker, recuperación, rechazo de confirmación antigua, rollback y posibles duplicados de envío externo. |
-| K-02 | Semántica segura de `whereIn([])`. | Nueva regla, adopción gradual, consultas/escrituras afectadas, `orWhereIn` y grupos booleanos. | Lista vacía, coincidencias, AND/OR, update/delete y recorrido de consumidores actuales. |
-| K-03 | Resultado de errores de cron. | Handler con/sin `status`, excepciones, compatibilidad y opción de transición. | Payload de error, éxito, ausencia de status, excepción, reprogramación y recuperación. |
-| K-04 | Registro y reanudación de sentencias MySQL. | Si se necesita; límites de atomicidad y tratamiento de SQL no idempotente. Es una mejora separada del C05 ya corregido. | Fallo entre sentencias y entre ejecución/registro; reintento sin repetir efectos indebidos en motor real. |
+| K-01 | Recuperación y protección de reservas de notificaciones. | Lease configurable (900 s), `available_at` reutilizado y generación `attempts`; extensión opcional del repositorio, renovación antes de enviar y confirmación protegida. Detener workers antiguos antes de actualizar; no prometer exactamente una vez para SMTP. | Expiración/recuperación, canal, generación antigua, reintento diferido, pérdida de reserva y rollback probados en SQLite; repositorio antiguo independiente conserva su contrato. |
+| K-02 | `whereIn([])` y `orWhereIn([])` agregan una condición falsa. | AND/OR y grupos conservan semántica; un filtro opcional se omite explícitamente si vacío significa todos. Revisados consumidores propios; cambio compatible con listas no vacías, transición documentada para aplicaciones. | Lecturas, grupos y update/delete con lista vacía probados en SQLite. |
+| K-03 | Cron clasifica resultados `error`/`failed`. | No reprogramar errores; sin `status` conserva éxito y otros estados no se reclasifican. El envelope de lote sigue independiente de sus fallos individuales. | Handler que devuelve error, excepción, ausencia de status y recurrencia probados con repositorio ficticio y SQLite. |
+| K-04 | Journal por sentencia MySQL y bloqueo por base de datos. | Omitir sentencias confirmadas; bloquear resultado incierto y hash alterado, con resolución administrativa explícita tras revisar efectos. No repetir SQL arbitrario automáticamente. | Cinco pruebas en MariaDB real: actualización histórica/baseline, recuperación entre sentencias y ejecución/registro, hash alterado y bloqueo concurrente. No certifica MySQL 8. |
 
-## Próxima decisión
+## Estado tras resolver los pendientes autorizados
 
-### Lista activa de pendientes, en orden
+### Estado y límites actuales
 
 1. Terminado: trabajo acumulado guardado en tres commits separados (4a5a4ec, 74e2a2a y 806d264). Ramas históricas retiradas con autorización posterior del usuario y respaldo verificado; quedan main y origin/main. Los commits nuevos de main aún no se han enviado al remoto.
 2. Revisión local consolidada de S-01–S-09 según la matriz de evidencia siguiente. S-02 incorpora el recorrido backend/consumidor en lote 28; las pruebas de entorno y cada flujo no inspeccionado conservan sus límites.
 3. Huecos de instrucciones de contenido/componentes cubiertos en lotes 29–30 y paginación posterior, con las catorce skills existentes. Integraciones externas o pantallas reales no se dan por verificadas.
-4. Firmas públicas catalogadas, referencia común desde las catorce skills y adopción para código nuevo delimitadas. N-03/N-04 conservan límites de transporte/DOM; no se renombra código ni se atribuyen fallos a diferencias de estilo.
+4. Firmas públicas catalogadas y referencia común desde las catorce skills. N-03/N-04 ampliados al alcance nativo documentado; colisión de IDs multimedia corregida con evidencia, sin limpieza estética masiva.
 5. Codex CLI/app-server: instalación y descubrimiento reales comprobados en configuración aislada. Selección automática en una conversación y carga visual desktop no se certifican con esta prueba de lectura. Claude queda fuera del alcance por petición del usuario.
 
-Fuera de la lista activa: ampliaciones de CI/integraciones, MCP y K-01–K-04. Se conservan como pendientes, sin implementación automática. Cada siguiente lote debe corresponder a un punto de esta lista y registrar qué cierra.
+Fuera de la lista activa: ampliaciones de CI/integraciones y MCP, conservadas como propuestas pospuestas. K-01–K-04 fueron autorizados posteriormente e implementados según la tabla anterior. No se abren otros frentes por esa autorización.
 
 ### Evidencia local consolidada de las nueve skills originales
 
@@ -202,7 +202,7 @@ Fuera de la lista activa: ampliaciones de CI/integraciones, MCP y K-01–K-04. S
 | --- | --- | --- | --- |
 | S-01 Core | Destino/versión, configuración, tipo/canal de ruta y tenant. | Lotes 02/09/16; bootstrap y rutas reales en pruebas temporales. | Servidor Nginx/CGI y otros despliegues no comprobados. |
 | S-02 Backend | Límites HTTP/modelo, errores/estados, fuentes runtime, Mi cuenta y usuarios. | Lotes 01/02/10/26/28; 27 pruebas dirigidas en el cierre. | No equivale a probar cada endpoint HTTP/CSRF. |
-| S-03 ORM | Estado/clones/conexiones, IN vacío, ordenación y límites transaccionales. | Lotes 01/08, snippets SQLite y pruebas de documentación. | MySQL 8 y todos los consumidores no certificados; K-02 separado. |
+| S-03 ORM | Estado/clones/conexiones, IN vacío, ordenación y límites transaccionales. | Lotes 01/08, snippets SQLite, pruebas de documentación y K-02 posterior. | MySQL 8 y consumidores externos no certificados; listas vacías opcionales requieren transición explícita. |
 | S-04 Auth | Credenciales, sesión, tenant, revocación y administración protegida. | Lotes 02/10; receta de cambio de contraseña y garantías por driver. | Redis real y todos los formularios HTTP no comprobados. |
 | S-05 Admin | Fuentes/meta/assets, AJAX/parcial, componentes, editor, paginación y nombres. | Lotes 04/29/30 y aclaración de paginación; PHP/JS dirigidos. | Navegador, foco y unicidad global de IDs requieren páginas renderizadas. |
 | S-06 Public | Home, metas/SEO/escaping, assets y contenido/búsqueda autorizada. | Lotes 05/29/30; guías y fuentes runtime contrastadas. | Indexación externa y QA de todas las páginas no comprobadas. |
@@ -210,7 +210,7 @@ Fuera de la lista activa: ampliaciones de CI/integraciones, MCP y K-01–K-04. S
 | S-08 UI | Alcance visual, coordinación UX y convenciones técnicas sin duplicarlas. | Lote 07 y referencias canónicas de admin/public. | No se ejecutó un rediseño ni QA visual de todas las pantallas. |
 | S-09 Mantenimiento | Modos, autorizaciones, publicación, integración y distribución de skills. | Lotes 03/16/18/19/21 y carga Codex posterior. | Actualización de una aplicación real no comprobada; Claude fuera del alcance solicitado. |
 
-No se abre otro frente por defecto. Restan selección real en conversaciones y comprobaciones de navegador/servicios donde un proyecto requiera esos contratos. Los pendientes de despliegue y K-01–K-04 se conservan; no se confunden con defectos de las instrucciones ya corregidas ni con una obligación de reescribir módulos. Claude se retira de los pendientes por petición del usuario.
+No se abre otro frente por defecto. Las cuatro propuestas de contrato están implementadas y la revisión nativa de nomenclatura tiene evidencia posterior. Restan selección real en conversaciones, comprobación visual desktop y servicios de despliegue donde un proyecto requiera esos contratos. Esos límites no son defectos demostrados de las skills. Claude se retira de los pendientes por petición del usuario.
 
 ## Verificación de este inventario
 
@@ -593,6 +593,16 @@ El usuario preguntó si estaban documentadas y cómo se usan/crean. Verificadas 
 - Prueba del empaquetado posterior: 225 comprobaciones correctas. Las catorce skills pasan skill-creator, enlaces/metadata de checkout y caché son válidos y la revisión editorial no detecta errores críticos; `git diff --check` correcto. Cambios guardados por bloques sin push de main.
 
 Cambio de alcance posterior: el usuario retira Claude de los pendientes. Se conserva la evidencia histórica y el adaptador existente, sin reparar el cliente ni exigir su validación para continuar.
+
+### Lote 32: resolución de los pendientes autorizados
+
+- K-01–K-04 implementados y documentados, incluidas transiciones de aplicaciones y límites de entrega/reanudación. Commits separados `faaa891`, `ce36e75` y `479db8a`; no se modificaron proyectos instalados.
+- N-03 ampliado al recorrido de los ocho controladores MVC propios. N-04 comprobado en nueve composiciones renderizadas y en biblioteca/picker simultáneos. La colisión multimedia comprobada se corrigió en `c31f221`, conservando IDs de la biblioteca y payloads. Prueba PHP más Edge real sin red; controles de filtros/paginación independientes.
+- Suite PHP con DSN MySQL de pruebas: 444 pruebas, 4437 aserciones, cero fallos y tres omisiones. Las dos omisiones de instalación/preflight MySQL se ejecutaron después con su flag opt-in: dos pruebas y quince aserciones correctas. Queda Nginx/PHP-CGI sin binario Nginx identificado. MariaDB local es 10.4.24; no equivale a MySQL 8.
+- Revisión dirigida de la última protección de hash, recuperación de cola y verificador: quince pruebas y 144 aserciones correctas. El verificador de copias compara ahora contra la fuente canónica, sin fijar un número histórico de enlaces.
+- JavaScript con Edge: ochenta pruebas pasan de ochenta y una. La restante falla al navegar al servidor temporal con `ERR_NETWORK_ACCESS_DENIED`; es un bloqueo del navegador/entorno y se conserva como no verificada. No se cambian políticas del navegador para ocultarlo. La prueba multimedia nueva y el catálogo del instalador sin red sí pasan.
+- Catorce skills pasan skill-creator y metadata; 79 enlaces válidos. Empaquetado con 225 comprobaciones correctas. Snapshot `0.0.0-review.2` instalado únicamente en CODEX_HOME temporal; app-server descubre las catorce skills habilitadas, sin errores, y los 68 hashes coinciden. [Evidencia actualizada](carga-complemento-codex-contratos-20261006.json). Sin turnos de modelo ni modificación de plugins globales.
+- Lint final de 408 archivos correcto, incluida la sintaxis/ejecución de las fuentes añadidas; revisión editorial sin errores críticos y diff sin errores. El cierre local no incluye push, publicación, actualización de aplicaciones, SMTP/Redis reales, MySQL 8 ni certificación de selección automática/visual desktop. Esas comprobaciones dependen del proyecto o cliente efectivo; no queda otro cambio de código demostrado dentro de este inventario.
 
 Fuentes locales para contrastar los hallazgos:
 

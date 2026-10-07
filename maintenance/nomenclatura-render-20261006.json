@@ -1,0 +1,75 @@
+{
+  "users": {
+    "views": [
+      "user-admin/user-adminIndex.php"
+    ],
+    "id_count": 13,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "account": {
+    "views": [
+      "self-account/self-accountIndex.php"
+    ],
+    "id_count": 7,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "campaign-list": {
+    "views": [
+      "notification-campaigns/index.php"
+    ],
+    "id_count": 1,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "campaign-form": {
+    "views": [
+      "notification-campaigns/form.php"
+    ],
+    "id_count": 13,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "media-modals": {
+    "views": [
+      "media-library/mediaPickerModal.php",
+      "media-library/mediaEditModal.php"
+    ],
+    "id_count": 29,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "login": {
+    "views": [
+      "auth-ui/authLogin.php"
+    ],
+    "id_count": 4,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "register": {
+    "views": [
+      "auth-ui/authRegister.php"
+    ],
+    "id_count": 7,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "recovery": {
+    "views": [
+      "auth-ui/authRecovery.php"
+    ],
+    "id_count": 4,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  },
+  "reset": {
+    "views": [
+      "auth-ui/authReset.php"
+    ],
+    "id_count": 5,
+    "duplicate_ids": [],
+    "missing_label_targets": []
+  }
+}

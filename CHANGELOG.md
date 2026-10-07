@@ -2,6 +2,12 @@
 
 ## Sin publicar
 
+- Reservas de notificaciones con vencimiento configurable, recuperación por canal y confirmaciones protegidas por generación; se conservan repositorios personalizados mediante una extensión opcional. Finalice workers anteriores antes de actualizar; los transportes externos pueden duplicar envíos tras una caída.
+- `whereIn([])` y `orWhereIn([])` agregan una condición falsa respetando AND/OR. Las aplicaciones que utilizaban listas vacías para omitir filtros deben omitir explícitamente esa llamada.
+- Cron registra como fallidas las tareas cuyos handlers devuelven `error` o `failed`, sin reprogramarlas; resultados sin estado conservan la compatibilidad anterior.
+- MySQL registra avances por sentencia y bloquea ejecución concurrente. Reanuda sentencias confirmadas y exige comprobar resultados inciertos antes de repetir; SQLite conserva transacciones por migración.
+- Biblioteca multimedia y selector separan los IDs de sus filtros, archivos y paginación; los controles actúan sobre su propia instancia cuando ambos listados están presentes.
+
 - Lint incluye configuración, recursos publicados/skeleton, scripts internos y el ejecutable PHP sin extensión; comprobación aislada por raíz y pruebas de detección de errores sin ejecutar archivos.
 - Job independiente de CI para metadata YAML de skills y sus pruebas con Python 3.12 y PyYAML 6.0.3, sin dependencia adicional de Composer.
 - Job de CI para las pruebas JavaScript existentes con Node 24; conserva explícitas las omisiones de las pruebas optativas de navegador.

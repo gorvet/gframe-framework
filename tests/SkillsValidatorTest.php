@@ -59,7 +59,9 @@ final class SkillsValidatorTest extends TestCase
         [$status, $output] = $this->runValidator();
         self::assertSame(0, $status, $output);
         self::assertStringContainsString('Skills válidos: 14', $output);
-        self::assertStringContainsString('Enlaces locales comprobados: 61', $output);
+        [$sourceStatus, $sourceOutput] = $this->runValidator(['--root', $source]);
+        self::assertSame(0, $sourceStatus, $sourceOutput);
+        self::assertSame($sourceOutput, $output);
     }
 
     public function testBrokenLinkInsideReferenceIsDetected(): void
