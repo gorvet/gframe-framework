@@ -1,5 +1,7 @@
 # Cambios futuros recomendados para BridgeFrame
 
+Estado actualizado el 6 de octubre de 2026: el usuario confirma que la adaptación al contrato v2 ya se realizó en el repositorio de BridgeFrame. Se retira de los pendientes de GFrame; las recomendaciones siguientes se conservan como referencia histórica. Esta actualización no acredita una prueba de integración entre ambos repositorios.
+
 Este documento se basa en la revisión del plugin ubicado en `C:\xampp\htdocs\gorvet\wp-content\plugins\bridgeframe`. El plugin no fue modificado durante la auditoría de GFrame.
 
 ## Contrato que consume GFrame
