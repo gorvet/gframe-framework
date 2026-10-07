@@ -13,6 +13,8 @@ final class RegistrationAdminNotifierTest extends TestCase
     #[RunInSeparateProcess]
     public function testRegistrationTargetsOnlyActiveAdministratorsAndDoesNotRepeatAtVerification(): void
     {
+        // Expected transport failures must not become subprocess stderr errors in CI.
+        ini_set('error_log', PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null');
         define('DB_DEFAULT_CONNECTION', 'registration_notice');
         define('DB_CONNECTIONS', ['registration_notice' => ['driver' => 'sqlite', 'path' => ':memory:']]);
         \ORM::disconnect();
