@@ -39,6 +39,8 @@ Read the following only for installer/updater/distribution development or the sp
 
 Module schema changes must be delivered as ordered MySQL and SQLite migrations in the module manifest. Fresh installations baseline those migrations after installing the current schema.
 
+MySQL migration execution journals statements and holds a connection lock per database. Confirmed statements are skipped; a changed partial migration or an uncertain started statement blocks retry. Inspect actual effects before using MigrationRunner::resolveInterruptedStatement with applied/not-applied confirmation. Never automatically replay an uncertain non-idempotent statement. Older executions have no journal. SQLite retains transaction-per-migration behavior; see the effective package's docs/actualizaciones.md.
+
 Treat framework and published module files as managed code. Applications extend them through external services, adapters, composition, and public contracts; direct edits may be overwritten by the updater.
 
 The managed skeleton update includes `app/views/templates/mail/` (HTML and adjacent metadata), not only web templates and shared CSS. When changing mail templates, test rendering from an updated temporary project, including replacement of old published files, dry-run and `--preserve-custom`; source-only render tests cannot establish installed-project behavior.

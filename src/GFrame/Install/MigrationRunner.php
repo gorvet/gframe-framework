@@ -24,6 +24,20 @@ final class MigrationRunner
     {
         if ($pdo->inTransaction()) throw new RuntimeException('Las migraciones requieren una conexión sin transacción activa.');
         $driver = $this->driver($driver);
+        if ($driver === 'mysql') {
+            $lock = $this->mysqlLock($pdo);
+            try {
+                return $this->migrateUnlocked($pdo, $driver, $moduleNames);
+            } finally {
+                $release = $pdo->prepare('SELECT RELEASE_LOCK(?)');
+                $release->execute([$lock]);
+            }
+        }
+        return $this->migrateUnlocked($pdo, $driver, $moduleNames);
+    }
+
+    private function migrateUnlocked(PDO $pdo, string $driver, array $moduleNames): array
+    {
         $this->createTable($pdo, $driver);
         $applied = $this->applied($pdo);
         $executed = [];
@@ -31,8 +45,18 @@ final class MigrationRunner
             if (isset($applied[$migration['id']])) continue;
             if ($driver === 'sqlite') $pdo->beginTransaction();
             try {
-                foreach ($this->parser->parse((string)file_get_contents($migration['path'])) as $statement) {
-                    if (!$this->existingAddColumn($pdo, $driver, $statement)) $pdo->exec($statement);
+                $statements = $this->parser->parse((string)file_get_contents($migration['path']));
+                $migrationHash = hash('sha256', implode("\n", $statements));
+                if ($driver === 'mysql') {
+                    $hashes = $pdo->prepare('SELECT DISTINCT migration_hash FROM gframe_migration_statements WHERE migration = ?');
+                    $hashes->execute([$migration['id']]);
+                    foreach ($hashes->fetchAll(PDO::FETCH_COLUMN) as $hash) {
+                        if (!hash_equals($hash, $migrationHash)) throw new RuntimeException("La migración {$migration['id']} cambió después de iniciar su ejecución.");
+                    }
+                }
+                foreach ($statements as $index => $statement) {
+                    if ($driver === 'mysql') $this->executeJournaledStatement($pdo, $migration['id'], $index + 1, $migrationHash, $statement);
+                    elseif (!$this->existingAddColumn($pdo, $driver, $statement)) $pdo->exec($statement);
                 }
                 $insert = $pdo->prepare('INSERT INTO gframe_migrations (migration, module, applied_at) VALUES (?, ?, ?)');
                 $insert->execute([$migration['id'], $migration['module'], date('Y-m-d H:i:s')]);
@@ -98,6 +122,63 @@ final class MigrationRunner
         $id = $driver === 'mysql' ? 'VARCHAR(255)' : 'TEXT';
         $module = $driver === 'mysql' ? 'VARCHAR(100)' : 'TEXT';
         $pdo->exec("CREATE TABLE IF NOT EXISTS gframe_migrations (migration {$id} PRIMARY KEY, module {$module} NOT NULL, applied_at " . ($driver === 'mysql' ? 'DATETIME' : 'TEXT') . ' NOT NULL)');
+        if ($driver === 'mysql') $pdo->exec("CREATE TABLE IF NOT EXISTS gframe_migration_statements (migration VARCHAR(255) NOT NULL, statement_no INT UNSIGNED NOT NULL, migration_hash CHAR(64) NOT NULL, status VARCHAR(20) NOT NULL, updated_at DATETIME NOT NULL, PRIMARY KEY (migration, statement_no)) ENGINE=InnoDB");
+    }
+
+    private function mysqlLock(PDO $pdo): string
+    {
+        $database = (string)$pdo->query('SELECT DATABASE()')->fetchColumn();
+        if ($database === '') throw new RuntimeException('Seleccione una base de datos antes de ejecutar migraciones.');
+        $lock = 'gframe.migrate.' . sha1($database);
+        $query = $pdo->prepare('SELECT GET_LOCK(?, 0)');
+        $query->execute([$lock]);
+        if ((int)$query->fetchColumn() !== 1) throw new RuntimeException('Otra conexión está ejecutando migraciones en esta base de datos.');
+        return $lock;
+    }
+
+    private function executeJournaledStatement(PDO $pdo, string $migration, int $number, string $hash, string $statement): void
+    {
+        $query = $pdo->prepare('SELECT migration_hash, status FROM gframe_migration_statements WHERE migration = ? AND statement_no = ?');
+        $query->execute([$migration, $number]);
+        $record = $query->fetch(PDO::FETCH_ASSOC);
+        if ($record !== false) {
+            if (!hash_equals($record['migration_hash'], $hash)) throw new RuntimeException("La migración {$migration} cambió después de iniciar su ejecución.");
+            if ($record['status'] === 'done') return;
+            throw new RuntimeException("Resultado incierto en {$migration}, sentencia {$number}. Compruebe sus efectos y resuelva el registro antes de reintentar.");
+        }
+        // Persist intent before SQL: MySQL DDL cannot share an atomic commit with this journal.
+        $insert = $pdo->prepare("INSERT INTO gframe_migration_statements (migration, statement_no, migration_hash, status, updated_at) VALUES (?, ?, ?, 'started', ?)");
+        $insert->execute([$migration, $number, $hash, date('Y-m-d H:i:s')]);
+        if (!$this->existingAddColumn($pdo, 'mysql', $statement)) $pdo->exec($statement);
+        $update = $pdo->prepare("UPDATE gframe_migration_statements SET status = 'done', updated_at = ? WHERE migration = ? AND statement_no = ?");
+        $update->execute([date('Y-m-d H:i:s'), $migration, $number]);
+    }
+
+    /** Operator confirmation after inspecting the actual database effects, never an automatic guess. */
+    public function resolveInterruptedStatement(PDO $pdo, string $migration, int $statementNumber, bool $wasApplied): void
+    {
+        if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'mysql' || $pdo->inTransaction()) throw new RuntimeException('La resolución requiere MySQL sin transacción activa.');
+        if ($statementNumber < 1) throw new InvalidArgumentException('Número de sentencia inválido.');
+        $files = $this->migrationFiles('mysql', [explode(':', $migration, 2)[0]]);
+        $file = null;
+        foreach ($files as $candidate) if ($candidate['id'] === $migration) $file = $candidate;
+        if ($file === null) throw new InvalidArgumentException('Migración desconocida.');
+        $hash = hash('sha256', implode("\n", $this->parser->parse((string)file_get_contents($file['path']))));
+        $lock = $this->mysqlLock($pdo);
+        try {
+            $query = $pdo->prepare('SELECT migration_hash, status FROM gframe_migration_statements WHERE migration = ? AND statement_no = ?');
+            $query->execute([$migration, $statementNumber]);
+            $record = $query->fetch(PDO::FETCH_ASSOC);
+            if ($record === false || $record['status'] !== 'started' || !hash_equals($record['migration_hash'], $hash)) throw new RuntimeException('El registro no corresponde a una sentencia interrumpida de esta migración.');
+            $sql = $wasApplied
+                ? "UPDATE gframe_migration_statements SET status = 'done', updated_at = CURRENT_TIMESTAMP WHERE migration = ? AND statement_no = ?"
+                : "DELETE FROM gframe_migration_statements WHERE migration = ? AND statement_no = ?";
+            $query = $pdo->prepare($sql);
+            $query->execute([$migration, $statementNumber]);
+        } finally {
+            $release = $pdo->prepare('SELECT RELEASE_LOCK(?)');
+            $release->execute([$lock]);
+        }
     }
 
     /** Additive migrations may resume only when the existing column has the expected definition. */
