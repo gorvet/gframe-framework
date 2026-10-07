@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Comando `bin/gframe-context.php` para obtener metadata del paquete, rutas de skills, módulos registrados y PHP CLI en JSON, sin arrancar la aplicación ni leer `.env`; funciona también sin extensiones adicionales mediante `php -n`.
+
 - Reservas de notificaciones con vencimiento configurable, recuperación por canal y confirmaciones protegidas por generación; se conservan repositorios personalizados mediante una extensión opcional. Finalice workers anteriores antes de actualizar; los transportes externos pueden duplicar envíos tras una caída.
 - `whereIn([])` y `orWhereIn([])` agregan una condición falsa respetando AND/OR. Las aplicaciones que utilizaban listas vacías para omitir filtros deben omitir explícitamente esa llamada.
 - Cron registra como fallidas las tareas cuyos handlers devuelven `error` o `failed`, sin reprogramarlas; resultados sin estado conservan la compatibilidad anterior.

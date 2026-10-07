@@ -22,10 +22,10 @@ Se conservan los cambios de código ya verificados y las tareas pospuestas. Véa
 
 | Etapa | Resultado que se busca | Dependencia | Estado |
 | --- | --- | --- | --- |
-| 01. Convenciones y nueve skills existentes | Reglas compatibles con código y documentación; nomenclatura acordada por contexto. | Inventario actual. | Correcciones y recetas en lotes 01–11 y 26; cierre semántico y nomenclatura restantes pendientes. |
+| 01. Convenciones y nueve skills existentes | Reglas compatibles con código y documentación; nomenclatura acordada por contexto. | Inventario actual. | Correcciones/recetas consolidadas y revisión nativa de nomenclatura cerrada en lote 32; verificaciones de aplicaciones externas conservan su alcance propio. |
 | 02. Cobertura y recetas faltantes | Cada capacidad tiene un responsable y ejemplos comprobables, sin una skill por biblioteca. | Reglas compartidas de 01. | En curso; cuatro especialistas creados en lotes 12–15, comprobaciones restantes abiertas. |
 | 03. Orquestador | Selección de especialistas según proyecto, versión y tarea, sin duplicar sus instrucciones. | Cobertura mínima de 01 y 02. | Implementado en el lote 16; evaluación de selección y límites registrada abajo. |
-| 04. Descubrimiento, instalación y complemento | Instrucciones asociadas a la versión del proyecto y distribución mantenible. | Skills y selección estables. | Instalación por proyecto en lote 18; generador/artefacto de prueba en lote 19; carga real pendiente. |
+| 04. Descubrimiento, instalación y complemento | Instrucciones asociadas a la versión del proyecto y distribución mantenible. | Skills y selección estables. | Instalación por proyecto y generador implementados; carga comprobada y complemento instalado/habilitado en Codex del usuario. No equivale a certificar toda selección automática. |
 | 05. Verificadores y CI | Comprobaciones de ejemplos, enlaces instalados, nomenclatura y entornos reales. | Cada lote define qué debe verificarse; algunos controles se incorporan antes de esta consolidación. | Controles implementados en lotes 21–25; ampliaciones pospuestas para mantener el foco. |
 | 06. Contratos de cola, ORM y cron | Mejoras con compatibilidad, migración y evidencia propia. | Conciliar cada contrato; no depende de terminar todo el paquete de skills. | Pospuesto, conservado. |
 | 07. Diagnóstico CLI y posible MCP | Reducir trabajo repetido con inspección estructurada. | Demostrar una necesidad que los comandos y skills no cubran. | Evaluación futura. |
@@ -173,7 +173,7 @@ En el lote 11 estos casos solo se contrastaron documentalmente. En el lote 16 un
 | V-02 | Verificar semántica y recetas. | Símbolos/APIs existentes, ejemplos ejecutables y tareas representativas; estructura válida no equivale a instrucciones correctas. |
 | V-03 | Cubrir nomenclatura sin falsos positivos. | Excluir vendors, APIs públicas preservadas y excepciones documentadas; distinguir variables de claves y selectores. |
 | V-04 | Inventario en lote 22; jobs JS/YAML en 23–24; lint ampliado en 25. | [Cobertura de comprobaciones](cobertura-checks-20261006.md): CI PHP/JS/YAML, PowerShell aún separado e integraciones opt-in. Runs remotos del cambio pendientes. |
-| M-01 | Evaluar diagnóstico CLI antes de MCP. | Identificar tareas repetidas y datos útiles; decidir si un servidor aporta algo frente a comandos y skills. |
+| M-01 | Resuelto mediante diagnóstico CLI de contexto. | `bin/gframe-context.php` obtiene metadata, paquete efectivo según Composer, skills y módulos en una consulta sin bootstrap. No hay una necesidad demostrada que justifique añadir MCP para estas tareas. |
 
 ## Contratos implementados tras autorización posterior
 
@@ -603,6 +603,14 @@ Cambio de alcance posterior: el usuario retira Claude de los pendientes. Se cons
 - JavaScript con Edge: ochenta pruebas pasan de ochenta y una. La restante falla al navegar al servidor temporal con `ERR_NETWORK_ACCESS_DENIED`; es un bloqueo del navegador/entorno y se conserva como no verificada. No se cambian políticas del navegador para ocultarlo. La prueba multimedia nueva y el catálogo del instalador sin red sí pasan.
 - Catorce skills pasan skill-creator y metadata; 79 enlaces válidos. Empaquetado con 225 comprobaciones correctas. Snapshot `0.0.0-review.2` instalado únicamente en CODEX_HOME temporal; app-server descubre las catorce skills habilitadas, sin errores, y los 68 hashes coinciden. [Evidencia actualizada](carga-complemento-codex-contratos-20261006.json). Sin turnos de modelo ni modificación de plugins globales.
 - Lint final de 408 archivos correcto, incluida la sintaxis/ejecución de las fuentes añadidas; revisión editorial sin errores críticos y diff sin errores. El cierre local no incluye push, publicación, actualización de aplicaciones, SMTP/Redis reales, MySQL 8 ni certificación de selección automática/visual desktop. Esas comprobaciones dependen del proyecto o cliente efectivo; no queda otro cambio de código demostrado dentro de este inventario.
+
+### Lote 33: contexto CLI y reducción de lecturas repetidas
+
+- `bin/gframe-context.php` devuelve contexto JSON desde un framework o aplicación identificada, sin ejecutar autoload/configuración, leer `.env`, instalar skills o conectar servicios. Versión desconocida permanece desconocida; no sustituye un paquete ausente por el checkout actual.
+- Respeta vendor-dir personalizado, install-path de metadata Composer y registro de módulos. El orquestador puede utilizarlo cuando exista en el paquete identificado y continuar únicamente con los datos faltantes relevantes. Las versiones antiguas conservan la receta de inspección.
+- M-01 queda resuelto con CLI; no se implementa un servidor MCP por obligación. El comando no pretende certificar un bridge personalizado, el cliente visual ni servicios externos.
+- Cuatro pruebas dirigidas y 22 aserciones correctas, ejecutando el comando con `php -n`: fuente propia con vendor-dir/ruta con espacios, ausencia de ejecución PHP/secretos, versión desconocida del framework, metadata ausente y lista de paquetes inválida. Sin ejecutar la suite completa.
+- El complemento de revisión instalado conserva su snapshot; las skills canónicas del checkout incorporan la receta nueva, que se incluirá en el siguiente empaquetado. No se reinstala el complemento por cada edición de instrucciones.
 
 Fuentes locales para contrastar los hallazgos:
 

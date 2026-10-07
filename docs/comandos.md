@@ -13,9 +13,18 @@ Ejecuta estos comandos en la raíz de `gframe-framework`, después de `composer 
 | `composer lint` | Comprueba la sintaxis PHP de los archivos incluidos por el script. |
 | `composer test` | Ejecuta la suite PHPUnit del framework. |
 | `composer skills:check` | Valida la estructura y referencias de los skills. |
+| `php bin/gframe-context.php --project=RUTA` | Muestra contexto JSON del framework o aplicación, sin arrancar la aplicación. |
 | `composer check` | Ejecuta lint, pruebas y validación de skills. |
 
 `composer new` es un script propio de GFrame. Consulta [Instalación](instalacion.md) para generar y arrancar la aplicación.
+
+### Obtener contexto de desarrollo
+
+Desde el framework, ejecute `php bin/gframe-context.php`; para una aplicación, utilice el mismo archivo del paquete identificado con `--project=/ruta/al/proyecto`. Si el directorio de dependencias es `packages`, el comando desde la aplicación es `php packages/gorvet/gframe/bin/gframe-context.php --project=.`. No necesita cargar el autoloader y también funciona con `php -n`.
+
+El JSON identifica el ámbito, ruta/versión/referencia del paquete, autoloader disponible, módulos registrados, rutas de las skills canónicas y extensiones del PHP CLI. Respeta `config.vendor-dir` y el `install-path` de Composer. Una versión desconocida se devuelve como `null`; la ausencia de metadata instalada produce un error, sin sustituirla por otro checkout. Los códigos de salida son 0 para contexto obtenido, 1 para contexto no disponible y 2 para argumentos inválidos.
+
+Esta consulta no lee `.env`, ejecuta archivos PHP de Composer/configuración ni se conecta a servicios. Sus datos no prueban la salud del despliegue, el PHP web ni la versión cargada por un bridge personalizado. Utilícela para localizar la fuente y leer solo las instrucciones necesarias para el trabajo.
 
 ### Publicar únicamente recursos
 
