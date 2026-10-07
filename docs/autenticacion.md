@@ -63,6 +63,14 @@ Un token vencido devuelve `invalid_token` y no activa la cuenta. Solicita un nue
 
 El registro y el envío son operaciones diferentes: si falla el encolado del correo, la cuenta puede existir ya aunque la respuesta indique `mail_delivery_failed`. Solicita el reenvío de verificación en lugar de repetir la inserción; consulta [Correo](mail.md).
 
+## Aviso administrativo de registro
+
+`auth.registration_admin_notice` configura el aviso al crear una cuenta mediante `AuthModel::registerAcount`, antes de verificarla. Está desactivado por defecto (`enabled: false`). Para activarlo en `config/app.php`, establece `auth.registration_admin_notice.enabled` en `true`, `channels` en `['email']`, `['inbox']` o ambos, y `user_ids` con los IDs destinatarios. Una lista vacía selecciona todas las cuentas activas con acceso administrativo global: superadministrador o permiso efectivo `admin.access`. Incluso los IDs explícitos deben cumplir esa autorización; no se incluyen administradores solo de tenant ni cuentas bloqueadas.
+
+El canal `inbox` crea una notificación global y requiere el módulo y esquema de notificaciones instalados; `email` utiliza Mail y Async con el SMTP y ejecución CLI del proyecto. El correo se despacha en segundo plano; aceptar el lanzamiento no confirma entrega. El mensaje incluye el correo de la nueva cuenta, sin contraseña ni token. Reenviar la verificación o verificar la cuenta no repite este aviso.
+
+Los fallos administrativos se registran sin cambiar la respuesta ni deshacer la cuenta creada; no hay reintento persistente del aviso. Esto no cambia el envío de verificación al usuario. Para personalizar la entrega, inyecta `RegistrationAdminNotifier` con el argumento `registrationNotifier` del modelo. La rotación de tokens y la revocación de sesiones conservan sus contratos.
+
 ## Inicio de sesión
 
 AuthModel concede acceso únicamente al estado activo, `verify` por defecto. Los estados pendientes, suspendidos o desconocidos no crean una sesión.

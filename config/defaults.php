@@ -31,6 +31,11 @@ return [
         ],
     ],
     'auth' => [
+        'registration_admin_notice' => [
+            'enabled' => false,
+            'user_ids' => [],
+            'channels' => ['inbox'],
+        ],
         'deactivation' => [
             'retention_days' => 60,
             'warning_hours' => 72,

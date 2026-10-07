@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Aviso administrativo opcional al crear una cuenta: destinatarios con autorización global comprobada, campana o correo en segundo plano; desactivado por defecto y sin alterar el registro ante fallos del aviso.
+
 - Comando `bin/gframe-context.php` para obtener metadata del paquete, rutas de skills, módulos registrados y PHP CLI en JSON, sin arrancar la aplicación ni leer `.env`; funciona también sin extensiones adicionales mediante `php -n`.
 
 - Reservas de notificaciones con vencimiento configurable, recuperación por canal y confirmaciones protegidas por generación; se conservan repositorios personalizados mediante una extensión opcional. Finalice workers anteriores antes de actualizar; los transportes externos pueden duplicar envíos tras una caída.

@@ -12,7 +12,7 @@ Esta lista recoge mejoras opcionales de GFrame que no bloquean las correcciones 
 
 ## Auth: aviso administrativo de registro
 
-- [ ] **Avisar de nuevas cuentas a administradores o superadministrador.** Solicitado y aprobado el 2026-10-01; pendiente de implementación. Configuración interna del módulo, sin pantalla nueva, desactivada por defecto, con selección de destinatarios administrativos y canales (correo, campana o ambos). El evento ocurre al crear la cuenta, no al verificarla. Mantener cualquier correo en segundo plano. No enviar contraseñas ni tokens de acceso. Esta mejora no sustituye la investigación del correo de registro que el usuario no recibe.
+- [x] **Avisar de nuevas cuentas a administradores o superadministrador.** Implementado el 2026-10-06 mediante `auth.registration_admin_notice`: desactivado por defecto, IDs opcionales con autorización administrativa global comprobada y canales `email`/`inbox`. El evento ocurre al crear la cuenta, no al verificarla; correo mediante Async, sin contraseñas ni tokens y sin alterar el registro ante fallos del aviso. Prueba dirigida con SQLite, selección de destinatarios, duplicados, reenvíos y fallo de transporte simulado. No acredita entrega SMTP real ni sustituye la investigación del correo de registro que el usuario no recibe.
 
 ## Alcance
 

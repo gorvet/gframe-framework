@@ -44,7 +44,8 @@ class AuthModel extends \ORM
         private readonly string $suspendedStatus = 'suspended',
         ?bool $passwordExpirationEnabled = null,
         ?int $passwordExpirationDays = null,
-        private readonly ?\GFrame\Session\ActiveSessionRegistry $sessions = null
+        private readonly ?\GFrame\Session\ActiveSessionRegistry $sessions = null,
+        private readonly ?RegistrationAdminNotifier $registrationNotifier = null
     ) {
         parent::__construct($attributes);
         $this->passwordExpirationEnabled = $passwordExpirationEnabled
@@ -80,6 +81,11 @@ class AuthModel extends \ORM
                 return $this->error('register_failed');
             }
 
+            try {
+                ($this->registrationNotifier ?? new RegistrationAdminNotifier())->notify($userID, $email);
+            } catch (\Throwable $exception) {
+                error_log('[GFrame Auth] Administrative registration notice failed.');
+            }
             return ['status' => 'success', 'code' => 'account_registered', 'data' => ['user_id' => $userID, 'token' => $token]];
         } catch (Exception $exception) {
             return $this->exception($exception, 'register_failed');

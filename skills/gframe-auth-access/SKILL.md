@@ -22,6 +22,7 @@ Use this for registration, login, verification, recovery, session identity, My A
 - Do not introduce repository layers around the standard GFrame models.
 - Use `auth-ui`, `self-account` and `user-admin` as the reusable base MVC modules. Keep brand-specific view overrides, email copy, redirects, additional roles, profiles, areas and domain policies in the application.
 - Use the MVC model `AuthModel` for registration, verification, recovery, reset, and credential authentication.
+- Administrative registration notices use `auth.registration_admin_notice`, disabled by default. Keep recipient authorization global, use `email`/`inbox`, and preserve registration success if a notice fails. Mail runs through Async; verification and resend do not trigger another notice. Consult the matching package's authentication guide before enabling required transports/modules.
 - Use `SessionManager` to regenerate, normalize, update, and destroy sessions.
 - Use `SelfAccountService` for the current user's base account, password change, and account deactivation.
 - Never expose password hashes or tokens in public profile responses.
