@@ -21,12 +21,12 @@ class RegistrationAdminNotifier
                     try {
                         $result = $this->deliver($channel, $recipient, $email);
                         if (($result['status'] ?? '') !== 'success') error_log('[GFrame Auth] Administrative registration notice failed.');
-                    } catch (\Throwable $exception) {
+                    } catch (\Exception $exception) {
                         error_log('[GFrame Auth] Administrative registration notice failed.');
                     }
                 }
             }
-        } catch (\Throwable $exception) {
+        } catch (\Exception $exception) {
             error_log('[GFrame Auth] Administrative registration recipient lookup failed.');
         }
     }

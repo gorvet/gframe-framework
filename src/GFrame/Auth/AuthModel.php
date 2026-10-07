@@ -83,7 +83,7 @@ class AuthModel extends \ORM
 
             try {
                 ($this->registrationNotifier ?? new RegistrationAdminNotifier())->notify($userID, $email);
-            } catch (\Throwable $exception) {
+            } catch (Exception $exception) {
                 error_log('[GFrame Auth] Administrative registration notice failed.');
             }
             return ['status' => 'success', 'code' => 'account_registered', 'data' => ['user_id' => $userID, 'token' => $token]];

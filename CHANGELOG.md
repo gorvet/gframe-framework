@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 2.0.0 — 6 de octubre de 2026
+
+Actualización mayor por el cambio de comportamiento de listas vacías del ORM. Consulte [la transición a 2.0.0](docs/release-2.0.0.md) antes de actualizar aplicaciones.
 
 - Aviso administrativo opcional al crear una cuenta: destinatarios con autorización global comprobada, campana o correo en segundo plano; desactivado por defecto y sin alterar el registro ante fallos del aviso.
 
