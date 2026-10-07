@@ -38,21 +38,22 @@ final class NotificationQueueService implements NotificationBatchProcessor
     {
         $sent = 0;
         $failed = 0;
+        $lost = 0;
 
         foreach ($this->notifications->reserve(NotificationQueueWorker::normalizeBatch($batch)) as $notification) {
-            $id = (int)($notification['notification_id'] ?? 0);
             try {
+                if (!NotificationQueueLease::renew($this->notifications, $notification)) { $lost++; continue; }
                 $this->transport->send($notification);
-                $this->notifications->markSent($id);
-                $sent++;
+                if (NotificationQueueLease::finish($this->notifications, $notification, 'sent')) $sent++;
+                else $lost++;
             } catch (Exception $exception) {
-                $this->notifications->markFailed($id, $exception->getMessage());
-                $failed++;
+                if (NotificationQueueLease::finish($this->notifications, $notification, 'failed', $exception->getMessage())) $failed++;
+                else $lost++;
             }
         }
 
         return ['status' => 'success', 'code' => 'notification_batch_processed', 'data' => [
-            'processed' => $sent + $failed, 'sent' => $sent, 'failed' => $failed,
+            'processed' => $sent + $failed, 'sent' => $sent, 'failed' => $failed, 'lost' => $lost,
         ]];
     }
 }

@@ -122,7 +122,7 @@ Los parámetros se pueden ajustar en `config/app.php`, dentro de su array de con
 
 El intervalo antes del siguiente intento es `retry_delay_seconds × attempts`: con los valores predeterminados, 5, 10, 15 y 20 minutos antes de los reintentos. Los estados son `pending`, `processing`, `sent` y `failed`; `last_error` conserva el último error y `sent_at` la fecha de envío aceptado por SMTP.
 
-Use `EmailQueueProcessor`, no el procesador genérico `NotificationQueueService::processNotificationBatch()`, para conservar el filtrado por canal y esta política de reintentos. Una interrupción abrupta puede dejar un trabajo en `processing`; no hay recuperación automática de reservas abandonadas. Evite reenviarlo sin comprobar si el servidor SMTP ya aceptó el mensaje.
+Use `EmailQueueProcessor`, no el procesador genérico `NotificationQueueService::processNotificationBatch()`, para conservar el filtrado por canal y esta política de reintentos. El modelo estándar recupera reservas expiradas y rechaza confirmaciones de generaciones anteriores; consulte [reservas y recuperación](notificaciones.md#reservas-y-recuperación-de-la-cola), incluidos duración, actualización de workers y contratos personalizados. `data.lost` indica pérdida de reserva y no confirma envío. Una caída después de que SMTP acepte el mensaje puede provocar un envío duplicado al recuperar el trabajo; esta recuperación no garantiza entrega exactamente una vez.
 
 ## Ampliación e integración
 

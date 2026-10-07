@@ -8,22 +8,26 @@ final class InboxQueueProcessor implements NotificationBatchProcessor
     {
         $queue = new NotificationQueueModel();
         $transport = new InboxNotificationTransport(new NotificationService(new NotificationModel()));
-        $sent = 0; $failed = 0;
-        $currentID = null;
-        \ORM::beginTransaction();
+        $sent = 0; $failed = 0; $lost = 0;
+        $currentJob = null;
+        $transactionStarted = false;
         try {
-            foreach ($queue->reserve(NotificationQueueWorker::normalizeBatch($batch), 'inbox') as $job) {
-                $currentID = (int)$job['notification_id'];
+            $jobs = $queue->reserve(NotificationQueueWorker::normalizeBatch($batch), 'inbox');
+            \ORM::beginTransaction();
+            $transactionStarted = true;
+            foreach ($jobs as $job) {
+                $currentJob = $job;
+                if (!$queue->renewReservation($job)) { $lost++; continue; }
                 $transport->send($job);
-                $queue->markSent($currentID);
+                if (!$queue->finishReservation($job, 'sent')) throw new \RuntimeException('La reserva expiró durante el procesamiento inbox.');
                 $sent++;
             }
             \ORM::commit();
-            return ['status' => 'success', 'code' => 'inbox_batch_processed', 'data' => ['sent' => $sent, 'failed' => $failed]];
+            return ['status' => 'success', 'code' => 'inbox_batch_processed', 'data' => ['sent' => $sent, 'failed' => $failed, 'lost' => $lost]];
         } catch (\Exception $exception) {
-            \ORM::rollBack();
-            if ($currentID !== null) {
-                try { $queue->markFailed($currentID, $exception->getMessage()); }
+            if ($transactionStarted) \ORM::rollBack();
+            if ($currentJob !== null) {
+                try { $queue->finishReservation($currentJob, 'failed', $exception->getMessage()); }
                 catch (\Exception $markException) { error_log('[GFrame Inbox Queue] ' . $markException->getMessage()); }
             }
             error_log('[GFrame Inbox Queue] ' . $exception->getMessage());

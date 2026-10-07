@@ -169,6 +169,16 @@ class NotificationController extends \GFrame\Modules\Notifications\Controllers\N
 
 Al inyectar un servicio, el controlador deja de procesar automáticamente la cola inbox estándar durante las consultas. Mantenga un procesador de cola independiente si usa avisos encolados. Las llamadas directas a `notify()` siguen siendo inmediatas.
 
+## Reservas y recuperación de la cola
+
+El modelo estándar recupera las reservas expiradas antes de reservar otro lote, respetando el canal solicitado. `notifications.queue.lease_seconds` configura su duración (900 segundos por defecto, mínimo 60). Mientras una fila está en `processing`, `available_at` representa el vencimiento de la reserva; en `pending`, representa cuándo puede ejecutarse. No se necesita una migración de esquema para esta mejora.
+
+Cada reserva incrementa `attempts`, que identifica su generación. Los procesadores nativos renuevan antes de cada envío y confirman el resultado únicamente si esa generación sigue activa y no ha expirado. `data.lost` cuenta trabajos cuya reserva se perdió; no se incluyen como enviados. Los envíos deben terminar dentro de la duración configurada. Un transporte prolongado debe renovar durante su ejecución o ajustar la duración; no hay una renovación automática en segundo plano.
+
+Los repositorios personalizados conservan `NotificationQueueRepository`; para ofrecer estas garantías implementan además `LeasedNotificationQueueRepository`, con `renewReservation($job)` y `finishReservation($job, $status, $error, $availableAt)`. Use el trabajo completo devuelto por `reserve()`, no solo su ID. `NotificationQueueLease` ofrece compatibilidad para procesadores que aceptan ambos contratos; un repositorio antiguo no adquiere recuperación automáticamente. Si una subclase de `NotificationQueueModel` reemplaza la reserva o la persistencia, debe adaptar también los métodos de reserva con vencimiento, o implementar directamente el contrato anterior como repositorio independiente. Los métodos anteriores de confirmación del modelo estándar requieren una reserva obtenida por esa misma instancia; el contrato explícito con el trabajo completo evita ambigüedades entre generaciones.
+
+Antes de actualizar, detenga y finalice los workers anteriores: sus filas `processing` no tenían fecha de reserva y podrían recuperarse inmediatamente. Compruebe los envíos que quedaron pendientes de confirmación. SMTP y otros transportes externos no participan en la transacción de base de datos; recuperar tras una caída puede repetir un envío ya aceptado. Use una clave de idempotencia del proveedor cuando esté disponible. El inbox guarda el aviso y su confirmación en la misma transacción; un rollback conserva la reserva para gestionar el fallo o recuperarla al expirar.
+
 ## Caducidad y limpieza
 
 Los avisos expirados desaparecen de las consultas y del contador sin esperar una limpieza. `$notifications->cleanup()` marca lógicamente los expirados de todos los usuarios y tenants; no elimina filas físicamente y no recibe un ámbito. Ejecútelo desde una tarea de mantenimiento, no desde una acción de usuario. Consulte las [operaciones de limpieza](limpieza.md).

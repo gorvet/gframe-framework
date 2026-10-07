@@ -11,7 +11,7 @@ use GFrame\Media\MediaModel;
 use GFrame\Media\MediaScope;
 use GFrame\Media\MediaStorage;
 use GFrame\Notifications\Contracts\NotificationTransport;
-use GFrame\Notifications\NotificationQueueModel;
+use GFrame\Notifications\Contracts\NotificationQueueRepository;
 use GFrame\Notifications\NotificationQueueService;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -104,7 +104,7 @@ final class OptionalModulesTest extends TestCase
 
     public function testNotificationQueueReportsSentAndFailedItems(): void
     {
-        $model = new class extends NotificationQueueModel {
+        $model = new class implements NotificationQueueRepository {
             public array $queued = [];
             public array $sent = [];
             public array $failed = [];
@@ -151,7 +151,7 @@ final class OptionalModulesTest extends TestCase
         $result = $service->processNotificationBatch(10);
 
         self::assertSame('notification_batch_processed', $result['code']);
-        self::assertSame(['processed' => 2, 'sent' => 1, 'failed' => 1], $result['data']);
+        self::assertSame(['processed' => 2, 'sent' => 1, 'failed' => 1, 'lost' => 0], $result['data']);
         self::assertSame([1], $model->sent);
         self::assertArrayHasKey(2, $model->failed);
     }

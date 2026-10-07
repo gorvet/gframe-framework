@@ -73,6 +73,7 @@ return [
         ],
     ],
     'notifications' => [
+        'queue' => ['lease_seconds' => 900],
         'email' => [
             'max_attempts' => 5,
             'retry_delay_seconds' => 300,
