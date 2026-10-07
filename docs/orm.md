@@ -104,7 +104,7 @@ Los métodos de construcción devuelven la instancia para encadenar llamadas. La
 
 También existen `orWhereIn()`, `orWhereNull()`, `orWhereNotNull()`, `orWhereBetween()` y `orWhereRaw()`. Usa grupos cuando combines AND y OR para que la precedencia represente la regla de negocio.
 
-Un array vacío en `whereIn()` u `orWhereIn()` omite esa condición. Si la lista representa los registros autorizados y está vacía, devuelve un resultado vacío antes de consultar; no la uses como barrera de acceso.
+Un array vacío en `whereIn()` u `orWhereIn()` agrega una condición falsa (`1 = 0`), respetando AND/OR y los grupos. Una consulta con solo esa condición no devuelve filas ni modifica registros. Un OR con otra condición verdadera puede devolver filas; agrupa correctamente los filtros de autorización. Antes de esta mejora, la lista vacía omitía el filtro: si tu aplicación utiliza una lista vacía para indicar «sin filtro», omite explícitamente la llamada, por ejemplo con `when($ids !== [], fn($query) => $query->whereIn('product_id', $ids))`.
 
 ### Búsqueda textual
 

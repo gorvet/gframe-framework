@@ -28,6 +28,9 @@ final class CronScheduler extends CronRunner
                     }
                     $payload = json_decode((string)($task['payload_json'] ?? '{}'), true);
                     $handlerResult = $handler->handle(is_array($payload) ? $payload : []);
+                    if (in_array($handlerResult['status'] ?? null, ['error', 'failed'], true)) {
+                        throw new RuntimeException((string)($handlerResult['message'] ?? $handlerResult['code'] ?? 'La tarea devolvió un resultado de error.'));
+                    }
                     $interval = (int)($task['repeat_interval_seconds'] ?? 0);
                     $shouldRepeat = !array_key_exists('reschedule', $handlerResult) || !empty($handlerResult['reschedule']);
                     $nextRunAt = $shouldRepeat && $interval >= 60 ? gmdate('Y-m-d H:i:s', max(time(), strtotime((string)$task['scheduled_at']) ?: time()) + $interval) : null;

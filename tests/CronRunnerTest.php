@@ -56,6 +56,20 @@ final class CronRunnerTest extends TestCase
             self::assertStringNotContainsString('Throwable', (string)file_get_contents($file), $file);
         }
     }
+
+    public function testReturnedErrorsFailWithoutRepeatingAndMissingStatusRemainsCompatible(): void
+    {
+        foreach (['error', 'failed', null] as $status) {
+            ReturnedResultCronHandler::$result = $status === null ? [] : ['status' => $status, 'code' => 'business_failed', 'reschedule' => true];
+            $repository = new InMemoryCronTaskRepository();
+            $repository->createTask(['task_key' => 'returned', 'handler_class' => ReturnedResultCronHandler::class, 'payload_json' => '{}', 'status' => 'pending', 'scheduled_at' => gmdate('Y-m-d H:i:s'), 'repeat_interval_seconds' => 3600, 'is_active' => 1]);
+            $result = (new \CronScheduler($repository))->runDue();
+            self::assertSame($status === null ? 0 : 1, $result['data']['failed']);
+            self::assertSame($status === null ? 1 : 0, $result['data']['processed']);
+            self::assertSame($status === null ? 'pending' : 'error', $repository->tasks[1]['status']);
+            if ($status !== null) self::assertSame('business_failed', $repository->tasks[1]['last_error']);
+        }
+    }
 }
 
 final class InMemoryCronTaskRepository implements \CronTaskRepository
@@ -79,4 +93,10 @@ final class TestCronHandler extends \Cron
 final class FailingCronHandler extends \Cron
 {
     public function handle(array $task = []): array { throw new \RuntimeException('Fallo controlado'); }
+}
+
+final class ReturnedResultCronHandler extends \Cron
+{
+    public static array $result = [];
+    public function handle(array $task = []): array { return self::$result; }
 }

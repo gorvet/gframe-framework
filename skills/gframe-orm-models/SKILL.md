@@ -37,7 +37,7 @@ For new symbols or a naming review, use the matching-version [shared naming refe
 - Call `reset()` before a new query intent on a reused model instance.
 - `newQuery()` clones current state; it is not a reset. Keep identical filters and the same connection when separating count and list queries.
 - Use `queryTable()` only when leaving the model base table.
-- Empty `whereIn()`/`orWhereIn()` lists currently omit the condition. Short-circuit empty authorization/selection lists before reads or writes; do not reinterpret this as a match-nothing contract.
+- Empty `whereIn()`/`orWhereIn()` lists add a false condition with the requested AND/OR. Older package versions omitted it: verify the effective version. Keep authorization correctly grouped and omit optional filters explicitly when an empty list means all records.
 - Choose dynamic sort columns/expressions from a code-owned allowlist. SQL value bindings do not protect identifier or expression arguments.
 - Keep SQL-engine-specific behavior in dialect classes, not inside model methods.
 - Prefer ORM API and model helpers over driver checks or manual DSN branching.

@@ -32,9 +32,9 @@ If the query belongs to a non-default connection, set model connection (or use `
 
 ## Empty IN Lists
 
-The current `whereIn('id', [])` and `orWhereIn('id', [])` are no-ops. They do not add `1 = 0` or throw. Existing conditions still apply; without other conditions a read can return the full table. If an empty list means no authorized or selected records, return the caller's established empty/rejection result before building the query.
+`whereIn('id', [])` and `orWhereIn('id', [])` add `1 = 0` with their respective boolean operator. An isolated empty IN matches nothing; OR can still match another branch. Use nested groups for authorization. Older package versions omitted empty IN conditions, so verify the effective package before relying on the safer behavior.
 
-For update/delete, stop before executing an empty selection. A write's missing-WHERE guard does not help when another filter remains, and preserved model attributes may supply a primary key. Do not rely on an empty IN list as access control. Changing this ORM behavior is a separate compatibility task, not part of using this skill.
+For update/delete, an AND empty IN prevents matching rows. Short-circuit an empty selection when the caller needs an established empty/rejection response. Never assume an OR branch grants no access merely because it contains an empty list. Consumers that used an empty list to mean no filter must now omit that optional condition explicitly.
 
 ## Allowed Ordering
 

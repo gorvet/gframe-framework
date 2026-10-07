@@ -38,7 +38,7 @@ final class CronDocumentationTest extends TestCase
     }
 
     #[RunInSeparateProcess]
-    public function testReturnedErrorStatusDoesNotFailSchedulerButExceptionDoes(): void
+    public function testReturnedErrorAndExceptionBothFailScheduler(): void
     {
         define('DB_DEFAULT_CONNECTION', 'cron_result_docs');
         define('DB_CONNECTIONS', ['cron_result_docs' => ['driver' => 'sqlite', 'path' => ':memory:']]);
@@ -48,8 +48,8 @@ final class CronDocumentationTest extends TestCase
         $service->schedule('docs.thrown-error', ThrownCronError::class, gmdate('Y-m-d H:i:s'));
         $result = (new \CronScheduler())->runDue();
         self::assertSame('success', $result['status']);
-        self::assertSame(1, $result['data']['failed']);
-        self::assertSame('completed', (new \CronDataProvider())->findByKey('docs.returned-error')['status']);
+        self::assertSame(2, $result['data']['failed']);
+        self::assertSame('error', (new \CronDataProvider())->findByKey('docs.returned-error')['status']);
         self::assertSame('error', (new \CronDataProvider())->findByKey('docs.thrown-error')['status']);
     }
 }

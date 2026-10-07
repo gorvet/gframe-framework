@@ -217,7 +217,10 @@ abstract class ORM {
     }
 
     private function whereInWithBoolean($column, array $values, string $boolean) {
-    if (empty($values)) return $this; // no hace nada si no hay valores
+    if ($values === []) {
+        $this->addWhereCondition('1 = 0', [], $boolean);
+        return $this;
+    }
 
     // Si strictCompare está activo y la columna es un string, aplicamos CAST
     $column = $this->applyStrictComparisonToColumn($column);

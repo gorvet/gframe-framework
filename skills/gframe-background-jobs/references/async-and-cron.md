@@ -30,7 +30,7 @@ The module publishes `bin/gframe-cron.php`; that command boots `core/Load.php`, 
 
 ## Results and Recovery
 
-The current scheduler catches `Exception`; it does not classify returned `status => error` as failure or persist handler results. An expected business failure that must mark a cron task failed should be converted to a controlled exception by the owning handler. Do not change existing handlers' contracts incidentally; the proposed runtime change is separate. Do not promise that `TypeError` is converted to a failed row.
+The scheduler catches `Exception` and marks returned `status => error` or `failed` as failure, recording message/code and not rescheduling that task. Missing status retains legacy success; other statuses are not automatically classified. Handler results are not persisted in full. Check older package versions before relying on returned-error classification, and review handlers that previously expected an error result to repeat. Do not promise that `TypeError` is converted to a failed row.
 
 `reschedule => false` ends recurrence; an absent key repeats interval tasks. Next execution is interval plus the later of now/previous due date, not fixed local calendar time or catch-up of every missed turn. Batch success can include `data.failed > 0`, and CLI exit 0 can include handler failures.
 

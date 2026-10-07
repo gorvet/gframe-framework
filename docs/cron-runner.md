@@ -77,7 +77,7 @@ Las fechas se guardan en UTC. Para una tarea única, omita el quinto argumento. 
 
 El scheduler utiliza `reschedule` para decidir si una tarea recurrente continúa. Devuelva `['reschedule' => false]` cuando haya terminado definitivamente. Si falta esa clave, una tarea con intervalo continúa por defecto; una tarea sin intervalo siempre termina.
 
-El scheduler no interpreta `status: error` devuelto por `handle()` como un fallo. Para que registre `error` y `last_error`, lance una excepción, como en el ejemplo. Tampoco persiste el array de resultado del handler: guarde el historial de negocio en su propio modelo si lo necesita.
+El scheduler registra la tarea como fallida cuando `handle()` devuelve `status: error` o `status: failed`, utilizando `message`, luego `code`, como detalle. También acepta excepciones, como en el ejemplo. Un resultado sin `status` conserva el comportamiento anterior de éxito; otros estados no se reclasifican automáticamente. Un fallo no se reprograma aunque incluya `reschedule`. No persiste el array completo del resultado: guarde el historial de negocio en su propio modelo si lo necesita. Revise los handlers antiguos que devolvían errores esperando una reprogramación automática.
 
 ## Control de tareas
 
