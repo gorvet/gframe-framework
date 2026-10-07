@@ -3,6 +3,8 @@
   $paginate = $recent['meta'];
   $sources = $recent['filters']['sources'] ?? [];
   $showSourceFilter = !empty($sources);
+  $pickerFragment = ($fragment ?? 'library') === 'picker';
+  $idPrefix = $pickerFragment ? 'mp-' : '';
   $toPublicUrl = static function (string $path): string {
     $path = trim($path);
     if ($path === '') return '';
@@ -20,7 +22,7 @@
         <!-- Source / Tipo -->
         <div class="input-group">
           <span class="input-group-text">Origen</span>
-          <select id="media-source-filter" class="form-select">
+          <select id="<?= $idPrefix ?>media-source-filter" class="form-select" data-ml-filter="source">
             <option value="all" <?= (($recent['meta']['source'] ?? 'all') === 'all') ? 'selected' : ''; ?>>
               Todos
             </option>
@@ -43,7 +45,7 @@
       <!-- Tipo -->
       <div class="input-group">
         <span class="input-group-text">Tipo</span>
-        <select id="media-kind-filter" class="form-select" data-ml-filter="kind">
+        <select id="<?= $idPrefix ?>media-kind-filter" class="form-select" data-ml-filter="kind">
           <?php
             $kindValue = (string)($recent['meta']['kind'] ?? 'all');
             $kindOptions = [
@@ -66,7 +68,7 @@
       <!-- Fecha -->
       <div class="input-group">
         <span class="input-group-text">Fecha</span>
-        <select id="media-date-filter" class="form-select">
+        <select id="<?= $idPrefix ?>media-date-filter" class="form-select" data-ml-filter="ym">
           <option value="all" <?= (($recent['meta']['ym'] ?? 'all') === 'all') ? 'selected' : ''; ?>>
             Todas
           </option>
@@ -93,18 +95,19 @@
       <div class="input-group">
         <input
           type="search"
-          id="media-search-input"
+          id="<?= $idPrefix ?>media-search-input"
+          data-ml-filter="q"
           class="form-control"
           placeholder="Buscar..."
           value="<?= htmlspecialchars($recent['meta']['q'] ?? ''); ?>"
           autocomplete="off"
         >
-        <button id="media-search-btn" class="btn btn-outline-secondary" type="submit" aria-label="Buscar">
+        <button id="<?= $idPrefix ?>media-search-btn" data-ml-action="search" class="btn btn-outline-secondary" type="submit" aria-label="Buscar">
           <i class="gicon-search"></i>
         </button>
       </div>
       <button
-        id="media-clear-filters-btn"
+        id="<?= $idPrefix ?>media-clear-filters-btn"
         class="btn btn-outline-secondary text-nowrap"
         type="button"
         data-ml-action="clear-filters"
@@ -168,7 +171,7 @@
 
   <div class="col-3 col-md-2 col-lg-2 col-sm-2">
     <a
-      id="<?='mID_' . (int)$mediaId; ?>"
+      id="<?= ($pickerFragment ? 'mp-media-' : 'mID_') . (int)$mediaId; ?>"
       class="m-list-card"
       href="#"
       data-media-id="<?= (int)$mediaId; ?>"
@@ -205,10 +208,10 @@
               >
         
         <!-- Extensión centrada DENTRO del icono -->
-        <div id="" class="badge bg-secondary text-uppercase position-absolute top-50 start-50 translate-middle" style="font-size: .7rem; z-index: 2;"><?php echo htmlspecialchars($ext ?: 'FILE'); ?></div>
+        <div class="badge bg-secondary text-uppercase position-absolute top-50 start-50 translate-middle" style="font-size: .7rem; z-index: 2;"><?php echo htmlspecialchars($ext ?: 'FILE'); ?></div>
         
         <!-- Nombre DEBAJO del icono -->
-        <div id="" class="small text-muted p-1 mt-4  position-absolute top-50 start-50 translate-middle" style="max-width: 120px; font-size: .8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background: var(--bs-body-bg);"><?php echo htmlspecialchars($mediaName ?: basename((string)$mediaURL)); ?></div>
+        <div class="small text-muted p-1 mt-4  position-absolute top-50 start-50 translate-middle" style="max-width: 120px; font-size: .8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background: var(--bs-body-bg);"><?php echo htmlspecialchars($mediaName ?: basename((string)$mediaURL)); ?></div>
     </div>
 </div>
 
@@ -221,10 +224,14 @@
     endforeach;
 
     if (isset($paginate['total_pages']) && $paginate['total_pages'] > 1) {
+      ob_start();
       PaginationHelper::render($paginate['total_pages'], $paginate['page']);
+      $paginationHtml = (string)ob_get_clean();
+      if ($pickerFragment) $paginationHtml = str_replace(['id="pagination"', 'id="all_items_pagination"'], ['id="mp-pagination"', 'id="mp-all-items-pagination"'], $paginationHtml);
+      echo '<div data-ml-pagination>' . $paginationHtml . '</div>';
     }
 }
-  else{ echo '<span id="noM">No hay archivos que mostrar.</span>';}
+  else{ echo '<span id="' . ($pickerFragment ? 'mp-no-media' : 'noM') . '">No hay archivos que mostrar.</span>';}
  
 
  

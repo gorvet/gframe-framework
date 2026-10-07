@@ -7,6 +7,7 @@ For the media subsystem itself, use `gframe-media-module`.
 ## What Frontend Admin Needs To Know
 
 - `MediaLibrary` owns list, filter, search, upload, and pagination UI.
+- Native list fragments separate library/picker IDs (picker uses mp-), filter/action data attributes and instance-owned data-ml-pagination controls. Preserve these in overrides; read data-media-id instead of parsing DOM IDs. Older package versions may duplicate IDs when both mounts coexist. Include one picker modal per page.
 - `MediaPicker` opens the library in a modal and resolves selected items.
 - `MediaField` bridges form fields to picker results and requests backend-rendered thumb fragments.
 

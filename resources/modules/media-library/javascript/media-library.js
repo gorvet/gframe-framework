@@ -309,6 +309,14 @@ MediaLibrary.prototype.setMode = function(mode){
     var self = this;
     var $ui = this._getUiRoot();
 
+    $ui.on('click.mediaLibrary', '[data-ml-pagination] .linkeable, [data-ml-pagination] .next, [data-ml-pagination] .prev', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var $link = $(this);
+      var page = $link.hasClass('next') ? self.state.page + 1 : ($link.hasClass('prev') ? self.state.page - 1 : parseInt($link.text(), 10));
+      if (isFinite(page) && page >= 1) self.load(page, { push: true, makeActive: true });
+    });
+
     // filtros: change (ids clásicos + data-ml-filter)
     $ui.on('change.mediaLibrary', '#media-source-filter, #media-date-filter, #media-kind-filter, [data-ml-filter="source"], [data-ml-filter="ym"], [data-ml-filter="kind"]', function(){
       self.state.page = 1;
@@ -624,6 +632,7 @@ MediaLibrary.prototype.syncUrl = function(push){
 
     var data = base ? (base + '&') : '';
     data += 'page=' + encodeURIComponent(this.state.page);
+    data += '&fragment=' + (this.mode === 'picker' ? 'picker' : 'library');
 
     if (this.state.source && this.state.source !== 'all') data += '&source=' + encodeURIComponent(this.state.source);
     if (this.state.ym && this.state.ym !== 'all')         data += '&ym='     + encodeURIComponent(this.state.ym);
