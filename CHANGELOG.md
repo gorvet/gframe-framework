@@ -1,12 +1,14 @@
 # Registro de cambios
 
-## Sin publicar
+## 2.0.1 — 12 de octubre de 2026
 
 - GFSelect reutiliza los estilos nativos `form-select` y `form-control`, incluidas las variantes de tamaño del select, para mantener la apariencia de los campos de GFrame.
 
 - El ORM convierte los parámetros booleanos a `0` y `1` antes de enviarlos a PDO, evitando el rechazo de `force_password_change = false` por MySQL estricto.
 
 - Skills GFrame por proyecto: activación automática desde Composer en `.agents/skills` y `.claude/skills`, usando la versión instalada o las fuentes del repositorio del framework. Comando PHP portable con vista previa, hashes y conservación de personalizaciones; se retira el modo global de PowerShell. El coordinador cubre correcciones y continuaciones, con evidencia de aplicación de los especialistas.
+
+- Compatibilidad de herramientas: `bin/install-skills.ps1` requiere ahora `-ProjectPath`; las invocaciones globales anteriores se rechazan. Utiliza el modo por proyecto o los comandos Composer documentados.
 
 ## 2.0.0 — 6 de octubre de 2026
 
