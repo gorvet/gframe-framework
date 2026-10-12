@@ -75,7 +75,7 @@ abstract class ORM {
     $sql = "SELECT * FROM {$instance->table} WHERE {$instance->primaryKey} = :id LIMIT 1";
     $pdo = $instance->pdo();
     $stmt = $pdo->prepare($sql);
-    $stmt->execute(['id' => $id]);
+    $stmt->execute(self::normalizeBindings(['id' => $id]));
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
     return $data ? new static($data) : null;
     }
@@ -345,7 +345,7 @@ abstract class ORM {
     /*propagacion de cualquier error sql al controlaor*/
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $ok = $stmt->execute($params);
+    $ok = $stmt->execute(self::normalizeBindings($params));
     if (!$ok) {
     $info = $stmt->errorInfo(); // [SQLSTATE, driver_code, driver_message]
     throw new Exception("SQL error: {$info[2]} | SQLSTATE: {$info[0]} | SQL: $sql");
@@ -468,7 +468,7 @@ abstract class ORM {
     public static function raw($sql, $params = [], $fetchMode = 'all', ?string $connectionName = null) {
     $pdo = self::checkPDO($connectionName);
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    $stmt->execute(self::normalizeBindings($params));
     switch ($fetchMode) {
         case 'one': return $stmt->fetch(PDO::FETCH_ASSOC);
         case 'column': return $stmt->fetchColumn();
@@ -497,7 +497,7 @@ abstract class ORM {
     if ($this->debug) error_log("[SQL] $sql");
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    $stmt->execute(self::normalizeBindings($params));
 
     $this->attributes[$this->primaryKey] = $pdo->lastInsertId();
     return $this->attributes[$this->primaryKey];
@@ -535,7 +535,7 @@ abstract class ORM {
     // 1) matched por PK
     $pdo = $this->pdo();
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM {$this->table} WHERE {$this->primaryKey} = ?");
-    $stmt->execute([$pkVal]);
+    $stmt->execute(self::normalizeBindings([$pkVal]));
     $matched = (int) $stmt->fetchColumn();
 
     // 2) UPDATE
@@ -544,7 +544,7 @@ abstract class ORM {
 
     if ($this->debug) error_log("[SQL] $sql");
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    $stmt->execute(self::normalizeBindings($params));
 
     $affected = (int) $stmt->rowCount();
 
@@ -572,7 +572,7 @@ abstract class ORM {
     // 1) ¿Cuántas filas matchea el WHERE?
     $pdo = $this->pdo();
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM {$this->table}{$whereSql}");
-    $stmt->execute($paramsWhere);
+    $stmt->execute(self::normalizeBindings($paramsWhere));
     $matched = (int) $stmt->fetchColumn();
 
     // 2) Ejecuta el UPDATE
@@ -587,7 +587,7 @@ abstract class ORM {
     }
 
     $stmt = $pdo->prepare($sql);
-    $ok = $stmt->execute(array_merge($params, $paramsWhere));
+    $ok = $stmt->execute(self::normalizeBindings(array_merge($params, $paramsWhere)));
     if (!$ok) {
         $info = $stmt->errorInfo();
     // Status de error
@@ -701,7 +701,7 @@ abstract class ORM {
     if ($this->debug) error_log("[SQL] $sql");
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    $stmt->execute(self::normalizeBindings($params));
 
     $firstId = (int) $pdo->lastInsertId();
     $insertedCount = $stmt->rowCount();
@@ -778,7 +778,7 @@ abstract class ORM {
 
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $ok = $stmt->execute($params);
+    $ok = $stmt->execute(self::normalizeBindings($params));
     if (!$ok) {
         $info = $stmt->errorInfo();
         $this->lastWrite = ['status' => 'error', 'matched' => null, 'affected' => 0];
@@ -816,7 +816,7 @@ abstract class ORM {
     if ($this->debug) error_log("[SQL] $sql");
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    return $stmt->execute([$this->attributes[$this->primaryKey]]);
+    return $stmt->execute(self::normalizeBindings([$this->attributes[$this->primaryKey]]));
     }
 
     public function deleteWhere(): array {
@@ -831,7 +831,7 @@ abstract class ORM {
 
     $pdo = $this->pdo();
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM {$this->table}{$whereSql}");
-    $stmt->execute($paramsWhere);
+    $stmt->execute(self::normalizeBindings($paramsWhere));
     $matched = (int)$stmt->fetchColumn();
 
     $sql = "DELETE FROM {$this->table}{$whereSql}";
@@ -843,7 +843,7 @@ abstract class ORM {
     }
 
     $stmt = $pdo->prepare($sql);
-    $ok = $stmt->execute($paramsWhere);
+    $ok = $stmt->execute(self::normalizeBindings($paramsWhere));
     if (!$ok) {
         $info = $stmt->errorInfo();
         $this->lastWrite = ['status'=>'error', 'matched'=>$matched, 'affected'=>0];
@@ -878,7 +878,7 @@ abstract class ORM {
     WHERE p.{$foreignKey} = ?";
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$this->{$this->primaryKey}]);
+    $stmt->execute(self::normalizeBindings([$this->{$this->primaryKey}]));
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -888,7 +888,7 @@ abstract class ORM {
     $sql = "SELECT * FROM {$relatedInstance->table} WHERE {$ownerKey} = ? LIMIT 1";
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$this->attributes[$foreignKey]]);
+    $stmt->execute(self::normalizeBindings([$this->attributes[$foreignKey]]));
     return $stmt->fetch(PDO::FETCH_ASSOC); // ← aquí el cambio
     }
 
@@ -911,7 +911,7 @@ abstract class ORM {
     $sql = "SELECT * FROM {$relatedInstance->table} WHERE {$foreignKey} = ? LIMIT 1";
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$this->attributes[$localKey]]);
+    $stmt->execute(self::normalizeBindings([$this->attributes[$localKey]]));
     return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     public function groupBy($column) {
@@ -1080,7 +1080,7 @@ abstract class ORM {
 
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $ok = $stmt->execute($params);
+    $ok = $stmt->execute(self::normalizeBindings($params));
     if (!$ok) {
     $info = $stmt->errorInfo(); // [SQLSTATE, driver_code, driver_message]
     throw new Exception("SQL error: {$info[2]} | SQLSTATE: {$info[0]} | SQL: $sql");
@@ -1138,7 +1138,7 @@ abstract class ORM {
     $sql .= " LIMIT 1";
     $pdo = $this->pdo();
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    $stmt->execute(self::normalizeBindings($params));
     return (bool) $stmt->fetchColumn();
     }
 
@@ -1453,6 +1453,15 @@ abstract class ORM {
     }
 
     return DatabaseManager::defaultConnectionName();
+    }
+
+    private static function normalizeBindings(array $params): array {
+    foreach ($params as $key => $value) {
+        if (is_bool($value)) {
+            $params[$key] = (int)$value;
+        }
+    }
+    return $params;
     }
 
     protected static function checkPDO(?string $connectionName = null): PDO {

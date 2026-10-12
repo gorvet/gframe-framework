@@ -193,6 +193,8 @@ $result = (new ProductModel())->reset()
 
 `insert()` devuelve la clave generada. `update($array)` utiliza el modo de actualización por filtros; `update()` sin argumentos utiliza los atributos y la clave primaria del modelo. Comprueba el resultado de escritura según su contrato: no todos los métodos devuelven un booleano.
 
+El ORM convierte los parámetros PHP `false` y `true` a `0` y `1` al ejecutar las consultas, incluidas las escrituras, los filtros y `raw()`. Así pueden guardarse en columnas numéricas con MySQL estricto. Los booleanos dentro de campos con cast `json` conservan su representación JSON.
+
 `delete()` borra la instancia por su clave primaria y devuelve el resultado de ejecución; sin clave devuelve `false`. `deleteWhere()` utiliza filtros y devuelve `status`, `matched` y `affected`, con estados como `deleted`, `not_found` o `no_change`.
 
 `deleteWhere()` rechaza una operación sin WHERE ni clave primaria disponible. Un WHERE demasiado amplio sigue siendo peligroso: la protección no comprueba que hayas autorizado todos los registros coincidentes.
