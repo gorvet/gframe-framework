@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 2.0.3 — 12 de octubre de 2026
+
+- El campo de medios coloca las miniaturas encima de Elegir imagen/archivo y Quitar, con controles Bootstrap. Las miniaturas muestran el puntero de mano y abren el selector también mediante Enter o espacio; las galerías conservan la retirada individual.
+
+- Auth hereda el color y la tipografía comunes de los labels, elimina el borde de la tarjeta y utiliza “Ir al inicio” con los colores primary y primary-hover. Auth y errores adaptan su altura al viewport dinámico y mantienen el fondo de la página visible detrás del footer.
+
 ## 2.0.2 — 12 de octubre de 2026
 
 - Rutas públicas GET con `noSession()`: el router puede omitir el arranque de sesión para recursos sin middleware, evitando que una respuesta pública concurrente reemplace la cookie del login. El punto de entrada estándar delega el arranque al router; los personalizados requieren adaptar esa llamada.

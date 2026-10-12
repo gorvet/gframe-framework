@@ -162,6 +162,10 @@ include ABSPATH . 'app/views/components/media/mediaPicker.php';
 
 Un campo simple guarda un ID entero o una cadena vacía. Un campo múltiple guarda un arreglo JSON de IDs en su input; al recibirlo, el controlador de la aplicación debe validarlo y aplicar sus reglas de relación con el contenido. `max` admite de 1 a 50. `behavior` admite `append` o `replace`. `fragment` solo admite `sthumb` y `gthumb`. El ámbito `tenant` o `user` se toma de la sesión normalizada, no de un ID enviado por el navegador.
 
+El campo nativo presenta las miniaturas encima de los botones Elegir imagen (o Elegir archivo) y Quitar. Las miniaturas muestran el puntero de mano y abren el selector mediante clic, Enter o espacio. En una galería, Quitar bajo cada miniatura retira solo ese elemento y el botón general vacía la selección. Estas acciones no borran archivos de la biblioteca.
+
+Si no se especifica `fragment`, el campo simple utiliza `sthumb` y la galería utiliza `gthumb`, que incluye el control de retirada individual cuando `remove_one` está habilitado.
+
 Para contenido insertado después de cargar la página, llama a `MediaField.bindAll(contenedor)`. Si se integra el selector directamente, `MediaPicker.open({selected, multiple, max, kind, saveSource})` devuelve una promesa con `{ids, items}` o `null` cuando se cancela. El componente necesita las rutas AJAX del módulo y el formulario global `#tokens`.
 
 La biblioteca expone `window.MediaLibrary`. La pantalla administrativa la inicia mediante `media-admin.js`; otras integraciones pueden usar `new MediaLibrary({mount, uiRoot, mode, syncUrlEnabled, saveSource, kind, uploadMaxMB, endpoints})`. El fragmento PHP reemplaza el contenido del contenedor asignado; no se construyen tarjetas en JavaScript.

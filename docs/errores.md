@@ -7,6 +7,8 @@ GFrame separa la gestión de errores en dos partes:
 
 El módulo se instala automáticamente en todos los perfiles. No requiere rutas ni un controlador propio.
 
+La plantilla de error dispone el contenido y el footer en una columna que ocupa al menos la altura del viewport dinámico. El footer mantiene visible el mismo fondo de la página. Si el contenido excede el alto disponible, la página permite desplazamiento; no recorta mensajes ni acciones. La estructura no impone la imagen de fondo ni los colores de una aplicación concreta.
+
 El router acepta también errores 403/404/500/503 originados por el servidor: `GFRAME_SERVER_ERROR` de FastCGI en Nginx y `REDIRECT_STATUS` en Apache. No interpreta `error_code` de la URL ni cabeceras HTTP como códigos de error del servidor. Las peticiones web usan estas mismas vistas; los otros canales conservan su contrato. Véase [configuración de servidores web](servidores-web.md).
 
 ## Errores web disponibles

@@ -1,5 +1,6 @@
 body.tpl-error {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--bs-gray-100);
@@ -8,6 +9,7 @@ body.tpl-error {
 .error-page {
   display: flex;
   flex: 1 1 auto;
+  flex-shrink: 0;
   align-items: center;
   min-height: 0;
   width: 100%;
@@ -16,7 +18,7 @@ body.tpl-error {
 body.tpl-error #footer {
   flex: 0 0 auto;
   color: var(--bs-body-color);
-  background: var(--bs-gray-100);
+  background: transparent;
 }
 
 body.tpl-error #footer a {

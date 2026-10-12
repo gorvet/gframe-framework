@@ -30,7 +30,7 @@
              alt="<?= $altE ?>"
              title="<?= $name ?>"
              class="img-thumbnail  media-field-thumb"
-              data-ml-media-pick>
+              data-ml-media-pick role="button" tabindex="0" aria-label="Abrir selector de medios">
 
     <?php else: ?>
       
@@ -42,7 +42,7 @@
              alt="<?= $altE ?>"
              title="<?= $name ?>"
              class=" img-thumbnail media-field-thumb"
-              data-ml-media-pick>
+              data-ml-media-pick role="button" tabindex="0" aria-label="Abrir selector de medios">
                
 
                 <!-- Extensión centrada DENTRO del icono -->

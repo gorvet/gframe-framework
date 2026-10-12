@@ -94,6 +94,8 @@ Los servicios registran internamente las excepciones y devuelven `status` y `cod
 
 ## Personalización y extensión
 
+Los labels de Auth heredan el tamaño, peso y color de `common.css`. La tarjeta utiliza la cabecera de color sin borde exterior; el enlace “Ir al inicio” utiliza `--bs-primary` y `--bs-primary-hover`. El formulario y el footer comparten la altura disponible del viewport, con fondo continuo. En pantallas bajas o cuando el contenido crece, se permite desplazamiento para conservar el acceso a todos los controles. Estos estilos no controlan el menú de credenciales guardadas del navegador.
+
 Declare una subclase en `app/controllers/auth-ui/AuthController.php`, con namespace `App\Controllers\AuthUi`, que extienda `GFrame\Modules\AuthUi\Controllers\AuthController`. Inyecte su modelo propio en el constructor mediante `parent::__construct(...)`. Consulte [herencia y migración](modulos-runtime.md) y [extensión desde proyectos](extensibilidad.md#herencia-de-controladores-de-módulos). Las URLs y el contrato MVC no cambian.
 
 Los originales permanecen en el módulo. Cree solo las personalizaciones que necesite:

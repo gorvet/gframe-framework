@@ -113,7 +113,17 @@ margin-bottom: 0;
 .media-field .media-field-preview,
 .gframe-media-field .media-field-preview{
 margin-bottom: 15px;
-cursor: pointer;
+}
+
+.media-field [data-ml-media-pick],
+.gframe-media-field [data-ml-media-pick] {
+  cursor: pointer;
+}
+
+.media-field [data-ml-media-pick][role="button"]:focus-visible,
+.gframe-media-field [data-ml-media-pick][role="button"]:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
 }
 
 .media-field-grid{display:flex;gap:10px;flex-wrap:wrap;}

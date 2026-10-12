@@ -28,6 +28,8 @@ The native controller uses `ABSPATH . 'public'` as `MediaStorage` root. Authoriz
 
 ## Trace a Gallery Field
 
+The native field places previews before its Bootstrap choose/clear buttons. Unspecified fragment defaults to sthumb for single fields and gthumb for multiple fields. Native thumbnails open the picker by click, Enter or space and show pointer/focus affordances. Per-thumbnail removal only changes the field selection; clearing all does not delete library records. Preserve these behavior and presentation contracts in wrappers and preview overrides.
+
 1. The consumer sets `$mediaField` with its business `name`, current `value`, `multiple`, `accept`, `max`, `behavior`, `save_source` and `fragment`, then includes the published mediaField wrapper. Include the picker modal once.
 2. Register the module CSS and `media-library.js`, `media-picker.js`, `media-field.js` in that order through the consuming view/group meta, with the existing jQuery, alerts and token dependencies. `media-admin.js` initializes the library screen; it is not required merely to consume a field.
 3. The PHP field normalizes its initial IDs. A single field stores an ID string or empty string; a multiple field stores a JSON array of IDs. Its input `name` is the business request key, not a scope declaration.

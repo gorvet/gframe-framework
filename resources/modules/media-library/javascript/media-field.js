@@ -506,6 +506,12 @@ if (attrExists(el, "insert-text")) insertText = String(getDataOrAttr($field, "in
       openPicker();
     });
 
+    $field.on("keydown", "[data-ml-media-pick][role='button']", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      openPicker();
+    });
+
     $field.on("click", "[data-ml-media-clear]", function (e) {
       e.preventDefault();
       if (multiple) {

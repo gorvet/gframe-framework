@@ -1,5 +1,6 @@
 body.tpl-auth {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--bs-gray-100);
@@ -8,6 +9,7 @@ body.tpl-auth {
 .auth-page {
   display: flex;
   flex: 1 1 auto;
+  flex-shrink: 0;
   align-items: center;
   min-height: 0;
   width: 100%;
@@ -27,9 +29,7 @@ body.tpl-auth {
 }
 
 .auth-brand:hover,
-.auth-brand:focus-visible,
-.auth-home-link:hover,
-.auth-home-link:focus-visible {
+.auth-brand:focus-visible {
   color: var(--bs-primary);
 }
 
@@ -48,6 +48,7 @@ body.tpl-auth {
 }
 
 .login-card {
+  border: 0;
   overflow: hidden;
   background: var(--bs-body-bg);
   box-shadow: var(--bs-navbar-shadow);
@@ -66,11 +67,6 @@ body.tpl-auth {
   line-height: 1.25;
 }
 
-.login-card .form-label {
-  color: var(--bs-heading-color);
-  font-weight: 600;
-}
-
 .login-card a {
   color: var(--bs-primary-text);
   text-underline-offset: 0.16em;
@@ -87,15 +83,20 @@ body.tpl-auth {
 }
 
 .auth-home-link {
-  color: var(--bs-dark);
+  color: var(--bs-primary);
   font-weight: 500;
   text-decoration: none;
+}
+
+.auth-home-link:hover,
+.auth-home-link:focus-visible {
+  color: var(--bs-primary-hover);
 }
 
 body.tpl-auth #footer {
   flex: 0 0 auto;
   color: var(--bs-body-color);
-  background: var(--bs-gray-100);
+  background: transparent;
 }
 
 body.tpl-auth #footer a {
