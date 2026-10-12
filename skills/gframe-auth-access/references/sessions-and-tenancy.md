@@ -8,6 +8,7 @@ Use this when changing login state, password recovery, roles, memberships or a t
 - `SessionManager::login()` regenerates the PHP session ID, sets CSRF state and registers the authenticated device when an `ActiveSessionRegistry` is available. Updating an identity is not a new login.
 - Project session values are supplied separately through the `$projectSession` argument. The normalized auth identity does not automatically retain arbitrary profile or tenant keys. Do not assume login creates a tenant or membership.
 - Initialize `SessionRuntime` through the application's existing bootstrap. For CLI operations, explicitly initialize the applicable runtime or inject an `ActiveSessionRegistry`; selecting a driver in configuration alone does not create an active registry.
+- The standard HTTP entry point now delegates startup to `new Router($render, ABSPATH)`. Ordinary routes start sessions before middleware/controllers. Explicit `noSession()` routes are limited to public GET web/system declarations executed as web without middleware and must not use identity/CSRF/session APIs. Custom entry points must remove their previous eager SessionRuntime start before using this option. It prevents the late public response from emitting an anonymous session cookie after login rotation; it is not a general concurrency guarantee for session-dependent requests.
 
 | Driver | Actual guarantee and requirement |
 | --- | --- |

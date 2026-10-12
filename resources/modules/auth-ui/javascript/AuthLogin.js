@@ -16,10 +16,14 @@ if (validateToken) {
 }
 
 //Login
-$('#submit_login').on('click', function(event) {
+let loginPending = false;
+$('#login').on('submit', function(event) {
+  event.preventDefault();
+  if (loginPending) return;
   const form = $('#login');
 
   if (form[0].checkValidity()) {
+    loginPending = true;
     login();
   } 
   else {
@@ -50,6 +54,9 @@ function login(){
     url: site_url+'ajax/login',
     data: formData,
     dataType: 'json',
+    complete: function() {
+      loginPending = false;
+    },
     success: function(response) {
       if(response.status === 'success' || response.code === 'already_logged') {
         localStorage.removeItem('session_closed');

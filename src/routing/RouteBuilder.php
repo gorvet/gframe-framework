@@ -18,6 +18,7 @@ class RouteBuilder {
     protected bool $useAutoSlug = false;
     protected bool $skipAction = false;
     protected bool $refreshSession = true;
+    protected bool $sessionEnabled = true;
 
 
 
@@ -128,8 +129,18 @@ class RouteBuilder {
         return $this;
     }
 
+    public function noSession(): static {
+        $this->sessionEnabled = false;
+        return $this;
+    }
+
 
     public function registerFinal(): void {
+        if (!$this->sessionEnabled && ($this->method !== 'GET'
+            || !in_array($this->type, ['web', 'system'], true)
+            || !empty($this->middleware))) {
+            throw new InvalidArgumentException('noSession solo admite rutas GET públicas web o system sin middleware.');
+        }
         // Prepara context local para no mutar el original accidentalmente
     $context = $this->context;
 
@@ -145,6 +156,7 @@ class RouteBuilder {
             'action'       => $this->skipAction ? null : $this->action,
             'skipAction'   => $this->skipAction,
             'refreshSession' => $this->refreshSession,
+            'sessionEnabled' => $this->sessionEnabled,
             'middleware' => $this->middleware,
             'excludedMiddleware' => $this->excludedMiddleware,
             'templateName' => $this->templateName, // <-- nuevo

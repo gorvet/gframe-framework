@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## 2.0.2 — 12 de octubre de 2026
+
+- Rutas públicas GET con `noSession()`: el router puede omitir el arranque de sesión para recursos sin middleware, evitando que una respuesta pública concurrente reemplace la cookie del login. El punto de entrada estándar delega el arranque al router; los personalizados requieren adaptar esa llamada.
+
+- Apache y Nginx permiten rutas virtuales bajo `/app`, conservando el bloqueo de scripts internos y sin publicar los archivos físicos de esa carpeta.
+
+- El login de `auth-ui` admite Enter y el botón Acceder mediante el envío del formulario, valida antes de enviar y evita solicitudes simultáneas.
+
 ## 2.0.1 — 12 de octubre de 2026
 
 - GFSelect reutiliza los estilos nativos `form-select` y `form-control`, incluidas las variantes de tamaño del select, para mantener la apariencia de los campos de GFrame.

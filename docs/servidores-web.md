@@ -6,6 +6,8 @@ Configura la raíz del sitio en el directorio del proyecto, donde están `index.
 
 En Apache, el proyecto ya incluye `.htaccess`: no necesitas editarlo para instalar o declarar rutas. El servidor debe permitir sus reglas. En Nginx, que no interpreta `.htaccess`, integra el fragmento `nginx.conf` de GFrame en la configuración del sitio siguiendo el apartado siguiente.
 
+`/app` puede utilizarse como prefijo de rutas virtuales, por ejemplo `/app/recordatorios`, conservando la carpeta interna `app/`. Los scripts PHP internos siguen bloqueados. Apache también deniega los demás archivos físicos internos; Nginx dirige esas peticiones al router y no entrega su contenido. Una URL sin ruta registrada devuelve 404.
+
 ## Apache
 
 El proyecto incluye `.htaccess`. Para una instalación habitual no necesitas modificarlo ni añadir reglas por cada ruta del framework.
@@ -114,6 +116,8 @@ Después de configurar Apache o Nginx, comprueba de forma explícita:
 | Petición | Resultado esperado |
 | --- | --- |
 | Ruta válida de la aplicación | Respuesta del controlador correspondiente |
+| Ruta registrada bajo `/app/` | Respuesta del controlador correspondiente |
+| PHP, JSON o texto físico dentro de `app/` | Nunca se entrega directamente su contenido |
 | Archivo existente bajo `public/` | Entrega directa, sin pasar por Router |
 | URL inexistente | Vista de error GFrame con HTTP 404 |
 | Recurso inexistente bajo `public/` | HTTP 404, sin revelar rutas internas |

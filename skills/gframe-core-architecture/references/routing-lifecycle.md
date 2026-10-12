@@ -35,6 +35,9 @@ Useful route modifiers include:
 - `context([...])`
 - `noAction()`
 - `noRefreshSession()`
+- `noSession()`
+
+The standard front controller passes the project root as Router's second constructor argument instead of starting SessionRuntime beforehand. Router starts the session after resolving an ordinary route and before middleware/action execution. `noSession()` is explicit and restricted to GET web/system declarations executed through the web channel without middleware. Reject incompatible declarations and effective channels; do not treat public routes as session-free automatically. Custom entry points must remove their earlier SessionRuntime start and pass the project root to Router. A matched noSession route rejects an already active session. Its controller/template must not read identity/CSRF or start sessions itself. `noRefreshSession()` retains its existing activity-only meaning.
 
 ## Transport Type Inference
 

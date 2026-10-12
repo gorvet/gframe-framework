@@ -24,7 +24,7 @@
         </div>
       </form>
       <div class="mb-3">
-        <button id="submit_login" class="btn btn-primary d-block w-100 mt-3" type="button">Acceder</button>
+        <button id="submit_login" class="btn btn-primary d-block w-100 mt-3" type="submit" form="login">Acceder</button>
       </div>
       <div class="col-auto text-center">
         <span class="mb-0">¿No tienes cuenta?</span> 

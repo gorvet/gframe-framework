@@ -136,6 +136,7 @@ El asunto identifica la operación y el proyecto; el cuerpo saluda al destinatar
 
 ## Comportamiento de la interfaz
 
+El login utiliza el evento `submit` del formulario: pulsar Enter o Acceder ejecuta la misma validación y petición AJAX. Mientras una petición está en curso, los nuevos envíos se ignoran; al finalizar, se permite reintentar.
 
 GFrame publica los cuatro archivos JS originales de las pantallas de Auth. El cierre/inactividad está en `heartbeat-client/session.js`; el panel aporta el control de cierre, pero no duplica su envío.
 

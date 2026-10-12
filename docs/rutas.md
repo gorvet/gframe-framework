@@ -322,11 +322,26 @@ Este ejemplo emite un evento y termina. El navegador puede reconectar; la aplica
 
 ## Otras opciones
 
+### Recursos públicos sin sesión
+
+Para un worker, manifiesto u otro recurso público servido por un controlador, declara `noSession()`:
+
+```php
+Route::get('worker.js', 'resources/WorkerController@index')
+    ->noSession()
+    ->registerFinal();
+```
+
+Solo se admite en rutas GET declaradas en los archivos web o system, ejecutadas por el canal web y sin middleware. El controlador debe entregar el recurso sin consultar identidad, generar CSRF, abrir una sesión ni renderizar una plantilla que dependa de ella. La declaración no elimina controles de una ruta protegida: las combinaciones incompatibles se rechazan.
+
+El `index.php` estándar deja el arranque de sesión al router mediante `(new Router($render, ABSPATH))->route()`. Si conservas un punto de entrada personalizado, elimina su llamada previa a `SessionRuntime::start(ABSPATH)` y pasa `ABSPATH` como segundo argumento del constructor de Router. Las rutas normales siguen abriendo su sesión antes de ejecutar middleware y controladores. Una ruta `noSession()` con una sesión ya abierta produce un error de configuración, en lugar de cerrar silenciosamente esa sesión.
+
 | Opción | Uso |
 | --- | --- |
 | `autoSlug()` | Copia la URI declarada en `context['slug']` cuando no hay placeholders ni un slug explícito |
 | `noAction()` | Omite el método de acción; en web permite renderizar sin lógica de controlador |
 | `noRefreshSession()` | Marca que la petición no debe renovar la actividad de sesión |
+| `noSession()` | Omite el arranque de sesión en un recurso público GET sin middleware |
 | `RouteBuilder::all()` | Consulta el registro de declaraciones; no ejecuta peticiones |
 
 `noAction()` no suprime la resolución del controlador ni los middleware. En canales directos, produce una respuesta mínima del canal; no es una forma de permitir acceso sin controles.

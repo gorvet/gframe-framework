@@ -4,10 +4,12 @@ const {readFileSync} = require('node:fs');
 const {join} = require('node:path');
 
 test('GFSelect conserva las dimensiones y los estados de los campos nativos', {
-  skip: process.env.GFRAME_TEST_BROWSER !== '1'
+  skip: !process.env.GFRAME_TEST_BROWSER
 }, async () => {
   const {chromium} = require('playwright');
-  const browser = await chromium.launch({headless: true, ...(process.env.GFRAME_TEST_BROWSER_CHANNEL ? {channel: process.env.GFRAME_TEST_BROWSER_CHANNEL} : {})});
+  const browser = await chromium.launch({headless: true,
+    ...(process.env.GFRAME_TEST_BROWSER !== '1' ? {executablePath: process.env.GFRAME_TEST_BROWSER} : {}),
+    ...(process.env.GFRAME_TEST_BROWSER_CHANNEL ? {channel: process.env.GFRAME_TEST_BROWSER_CHANNEL} : {})});
   try {
     const page = await browser.newPage();
     const root = join(__dirname, '../..');

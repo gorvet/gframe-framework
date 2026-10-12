@@ -40,6 +40,10 @@ La vista previa no modifica archivos, la base de datos ni el registro de instala
 
 ## Proyectos anteriores
 
+### Actualización a 2.0.2
+
+Sincroniza los archivos administrados después de descargar el paquete: esta versión cambia `index.php`, `.htaccess`, `nginx.conf` y el JavaScript de login. Si preservas un `index.php` personalizado, adapta su arranque antes de utilizar `noSession()`, siguiendo [recursos públicos sin sesión](rutas.md#recursos-públicos-sin-sesión). Una vista personalizada de login debe asociar el botón Acceder al formulario `login` mediante `type="submit" form="login"`, porque el script escucha ahora el envío del formulario. Las rutas existentes conservan sus sesiones; ninguna se convierte automáticamente en una ruta sin sesión.
+
 Un proyecto sin `storage/gframe-installed.json` debe indicar una vez sus módulos:
 
 ```bash

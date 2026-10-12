@@ -6,13 +6,34 @@ class Router {
    
   private $renderController;
   private $intendedType;
+  private ?string $sessionProjectRoot;
 
  
-  public function __construct(?Render $renderController = null) {
+  public function __construct(?Render $renderController = null, ?string $sessionProjectRoot = null) {
     $this->renderController = $renderController;
+    $this->sessionProjectRoot = $sessionProjectRoot;
   }
 
   // Determinamos que vista y acción se pide por url
+  private function startSession(): void {
+    if ($this->sessionProjectRoot !== null) {
+        \GFrame\Session\SessionRuntime::start($this->sessionProjectRoot);
+    }
+  }
+
+  private function startRouteSession(array $routeParams): void {
+    if ($routeParams['sessionEnabled'] ?? true) {
+        $this->startSession();
+        return;
+    }
+    if ($this->intendedType !== 'web' || !empty($routeParams['middleware'])) {
+        throw new LogicException('Una ruta sin sesión debe ser pública y no utilizar middleware.');
+    }
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        throw new LogicException('La ruta noSession requiere que el router gestione el arranque de sesión.');
+    }
+  }
+
   public function route() {
 
     // Detectamos el "origen de la ruta"
@@ -20,6 +41,7 @@ class Router {
 
     $serverError = (new ErrorResponder())->serverErrorStatus($_SERVER);
     if ($serverError !== null) {
+        $this->startSession();
         $this->getLanguageAndUri();
         if ($this->intendedType !== 'web') {
             $this->sendErrorResponse((string)$serverError, 'Error del servidor HTTP.');
@@ -38,12 +60,14 @@ class Router {
 
     // Render de error forzado desde frontend (toErrorView)
     if ($this->shouldRenderPostedError()) {
+      $this->startSession();
       $this->renderPostedError();
       exit();
     }
 
     // 3. Aplica rutas
     $routeParams = $this->getRouteParamsFromDeclarative($uri);
+    $this->startRouteSession($routeParams);
     $routeParams['currentURL'] = $this->getCurrentURL(); 
 
 /*echo "<pre>";
@@ -160,6 +184,7 @@ echo "</pre>";*/
             'actionName'  => $actionName,
             'skipAction'  => $skipAction,
             'refreshSession' => (bool)($route['refreshSession'] ?? true),
+            'sessionEnabled' => (bool)($route['sessionEnabled'] ?? true),
             'module'       => $module,
             'lang'         => APP_LANG,
             'params'       => $params,
@@ -313,6 +338,7 @@ private function respondSkipAction(): void {
     exit();
 }
 private function sendErrorResponse($code, $message) {
+    $this->startSession();
     $errorController = new ErrorResponder();
     $normalizedCode = $errorController->normalizeErrorCode($code);
     $httpCode = $errorController->resolveHttpCode($normalizedCode, 400);
@@ -404,6 +430,14 @@ private function getCurrentURL() {
   }
 
   private function redirectToCleanUrl(array $uriSegments): void {
+    $path = (string)parse_url('/' . implode('/', $uriSegments), PHP_URL_PATH);
+    $segments = explode('/', trim($path, '/'));
+    $lang = SUPPORTED_LANGS[0];
+    if (in_array($segments[0] ?? '', SUPPORTED_LANGS, true)) {
+        $lang = array_shift($segments);
+    }
+    if (!defined('APP_LANG')) define('APP_LANG', $lang);
+    $this->startRouteSession($this->getRouteParamsFromDeclarative($segments));
     $fixedUrl = site_url . implode('/', $uriSegments);
     header("Location: " . $fixedUrl, true, 301);
     exit();
@@ -796,7 +830,4 @@ private function resolveControllerPath(string $controller): ?string {
 // fin de la clase 
 }
  
-
-
-
 

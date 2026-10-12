@@ -10,6 +10,8 @@ Las rutas privadas declaran el middleware `auth`; este comprueba la sesión ante
 
 Una cookie identifica la sesión; no contiene por sí misma una autorización válida. El servidor puede revocarla, por ejemplo al suspender la cuenta. Una misma sesión se comparte entre pestañas del navegador, mientras que otro dispositivo utiliza una sesión independiente.
 
+El punto de entrada estándar permite que Router resuelva la ruta antes de abrir la sesión. Las rutas existentes mantienen su sesión; un recurso público GET puede declararse explícitamente con `noSession()` para evitar que su respuesta genere una cookie anónima durante una petición concurrente con el login. Ser pública no desactiva automáticamente la sesión. Consulta [recursos públicos sin sesión](rutas.md#recursos-públicos-sin-sesión) para las restricciones y la adaptación de un punto de entrada personalizado. `noRefreshSession()` solo controla la renovación de actividad y no sustituye esta declaración.
+
 ### Consultar al usuario actual
 
 En una acción protegida, consulta la identidad normalizada:

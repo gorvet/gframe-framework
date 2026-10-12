@@ -46,7 +46,7 @@ for (const [script, button, path] of [
 ]) {
   test(`${script} conecta el botón con su ruta original`, () => {
     const state = setup(script, '?rp=token');
-    state.handlers.get(`${button}:click`)({ preventDefault() {}, stopPropagation() {} });
+    state.handlers.get(script === 'AuthLogin.js' ? '#login:submit' : `${button}:click`)({ preventDefault() {}, stopPropagation() {} });
     assert.equal(state.requests.length, 1);
     assert.equal(state.requests[0].url, `https://example.test/app/${path}`);
     if (script === 'AuthResetpassword.js') assert.equal(state.fields.get('#rpuser_token'), 'token');
@@ -58,7 +58,7 @@ for (const [script, button] of [['AuthLogin.js', '#submit_login'], ['AuthRegiste
   test(`${script} valida antes de enviar`, () => {
     const state = setup(script);
     state.invalidate();
-    state.handlers.get(`${button}:click`)({ preventDefault() {} });
+    state.handlers.get(script === 'AuthLogin.js' ? '#login:submit' : `${button}:click`)({ preventDefault() {} });
     assert.equal(state.requests.length, 0);
     assert.equal(state.feedback(), 1);
   });
@@ -66,7 +66,7 @@ for (const [script, button] of [['AuthLogin.js', '#submit_login'], ['AuthRegiste
 
 test('login transmite rd y respeta el destino del servidor incluso si exige cambiar contraseña', () => {
   const state = setup('AuthLogin.js', '?rd=admin%2Fitems');
-  state.handlers.get('#submit_login:click')({ preventDefault() {} });
+  state.handlers.get('#login:submit')({ preventDefault() {} });
   assert.equal(new URLSearchParams(state.requests[0].data).get('rd'), 'admin/items');
   for (const redirect of ['account', 'admin']) {
     state.requests[0].success({ status: 'success', redirect, must_change_password: true });
@@ -84,7 +84,21 @@ test('login valida el token y reenvía la verificación con las rutas originales
 
 test('login conserva el destino web cuando otra pestaña ya inició sesión', () => {
   const state = setup('AuthLogin.js');
-  state.handlers.get('#submit_login:click')({ preventDefault() {} });
+  state.handlers.get('#login:submit')({ preventDefault() {} });
   state.requests[0].error({ responseJSON: { code: 'already_logged' } }, 'error', '');
   assert.equal(state.window.location.href, 'https://example.test/app/login/');
+});
+
+test('login cancela el envío nativo, evita solicitudes simultáneas y permite reintentar', () => {
+  const state = setup('AuthLogin.js');
+  let prevented = 0;
+  const submit = state.handlers.get('#login:submit');
+  assert.equal(state.handlers.has('#submit_login:click'), false);
+  submit({preventDefault() {prevented++;}});
+  submit({preventDefault() {prevented++;}});
+  assert.equal(prevented, 2);
+  assert.equal(state.requests.length, 1);
+  state.requests[0].complete();
+  submit({preventDefault() {prevented++;}});
+  assert.equal(state.requests.length, 2);
 });
