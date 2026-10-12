@@ -68,10 +68,10 @@ test('GFSelect cierra el desplegable cuando el select pasa a disabled', () => {
 
 test('GFSelect mantiene un puente de variables y estados sin borde más grueso', () => {
   const css = readFileSync(join(__dirname, '../../resources/modules/gf-select/public/gf-select.css'), 'utf8');
-  for (const name of ['--bs-body-font-size', '--bs-form-control-bg', '--bs-border-color', '--bs-primary-bg-subtle', '--bs-danger', '--bs-form-control-disabled-bg']) {
+  for (const name of ['--bs-body-bg', '--bs-border-color', '--bs-primary-bg-subtle', '--bs-danger']) {
     assert.ok(css.includes(name), name);
   }
-  assert.match(css, /:not\(:disabled\):hover/);
+  assert.match(css, /\.gf-select-list-item:not\(:disabled\):hover/);
   assert.match(css, /border-right: \.12rem solid currentColor/);
   assert.match(css, /rotate\(225deg\)/);
   assert.doesNotMatch(css, /\.tpl-app|\.gf-select--app/);
@@ -80,7 +80,7 @@ test('GFSelect mantiene un puente de variables y estados sin borde más grueso',
 
 test('La personalización nativa de Dane reside en common, sin depender de su plantilla', () => {
   const css = readFileSync(join(__dirname, '../../resources/skeleton/public/css/common.css'), 'utf8');
-  assert.match(css, /\.form-select \{\s*min-height: 2\.75rem;/);
+  assert.match(css, /\.form-select \{[^}]*border-radius: var\(--bs-border-radius\);/);
   assert.match(css, /\.form-select\[multiple\] \{/);
   assert.match(css, /\.form-select:not\(:disabled\):hover/);
 });

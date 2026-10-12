@@ -631,11 +631,10 @@ font-size: .8rem;
 font-size: .85rem!important;
 }
 
-/* Selects nativos: personalización compartida procedente de Dane. */
+/* Selects nativos: mismas dimensiones y bordes que los campos de texto. */
 .form-select {
-    min-height: 2.75rem;
     border-color: var(--bs-border-color);
-    border-radius: var(--bs-border-radius-pill);
+    border-radius: var(--bs-border-radius);
     background-color: var(--bs-form-control-bg);
     box-shadow: none;
     cursor: pointer;

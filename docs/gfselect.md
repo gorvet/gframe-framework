@@ -147,7 +147,7 @@ La instancia ofrece `openMenu()`, `closeMenu()` e `isOpen()` para controlar la a
 
 El CSS del proyecto puede cambiar las clases `gf-select-*` y las variables de Bootstrap. La lógica no impone estilos del panel ni de una aplicación concreta. Si el proyecto aplica un tema propio, incluya su CSS después de `gf-select.css` y use `loadStyles: false`.
 
-El puente visual utiliza las variables de GFrame/Bootstrap para tipografía, fondo del campo, bordes, selección, foco y estado deshabilitado. Respeta `data-bs-theme` sin otro selector de tema; las flechas y marcas de selección heredan el color del texto. La validación utiliza `--bs-danger` sin cambiar el grosor del borde. Al deshabilitar un campo abierto, su menú se cierra.
+El control visible reutiliza `form-select` y el buscador reutiliza `form-control`, con las dimensiones, bordes y estados definidos por Bootstrap y el CSS común de GFrame. Las variantes `form-select-sm` y `form-select-lg` del select original se trasladan al control al inicializarlo. El menú, las etiquetas múltiples y las marcas de selección utilizan las variables de GFrame/Bootstrap. Respeta `data-bs-theme` sin otro selector de tema. La validación utiliza `--bs-danger` sin cambiar el grosor del borde. Al deshabilitar un campo abierto, su menú se cierra.
 
 El módulo incluye controles redondeados, flecha giratoria, menú con espacios interiores y selección múltiple resaltada. Los estilos de los selects nativos se distribuyen en `public/css/common.css`, sin depender de una vista concreta. No hace falta añadir `wrapperClass: 'gf-select--app'` ni cargar otra hoja para aplicar el estilo predeterminado.
 
@@ -155,6 +155,8 @@ La API JavaScript conserva el nombre `GFSelect`. Para reutilizar una configuraci
 
 
 ## Prueba visual aislada
+
+La prueba de navegador `tests/js/gfselect.browser.test.cjs` compara dimensiones, colores, bordes y foco con un select nativo en ambos temas y tres tamaños, además de verificar la búsqueda. Requiere Playwright y `GFRAME_TEST_BROWSER=1`; `GFRAME_TEST_BROWSER_CHANNEL=msedge` permite utilizar Edge instalado. Sin esa activación, la prueba se omite.
 
 El repositorio incluye `tests/fixtures/gfselect-preview.php` para comprobar el componente fuera de una pantalla de negocio. La fixture cubre selección simple y múltiple, validación, reemplazo de opciones y uso dentro de un modal.
 

@@ -3,7 +3,7 @@
     width: 100%;
     min-width: 0;
     font-family: var(--bs-body-font-family);
-    font-size: var(--bs-body-font-size);
+    font-size: .85rem;
     line-height: var(--bs-body-line-height);
 }
 
@@ -30,14 +30,8 @@
     display: flex;
     align-items: center;
     width: 100%;
-    min-height: 2.75rem;
     gap: .75rem;
-    padding: .55rem 2.5rem .55rem .85rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-pill);
-    color: var(--bs-body-color);
-    background: var(--bs-form-control-bg);
-    font: inherit;
+    background-image: none;
     text-align: left;
     cursor: pointer;
 }
@@ -55,12 +49,6 @@
     transition: transform .2s ease;
 }
 
-.gf-select-wrapper .gf-select-toggle:not(:disabled):hover {
-    border-color: var(--bs-primary-border-subtle);
-    background: var(--bs-tertiary-bg);
-}
-
-.gf-select-wrapper .gf-select-toggle:focus-visible,
 .gf-select-wrapper.is-open .gf-select-toggle {
     border-color: var(--bs-primary);
     outline: 0;
@@ -70,12 +58,6 @@
 
 .gf-select-wrapper.is-open .gf-select-toggle::after {
     transform: translateY(-30%) rotate(225deg);
-}
-
-.gf-select-wrapper .gf-select-toggle:disabled {
-    color: var(--bs-secondary-color);
-    background: var(--bs-form-control-disabled-bg);
-    cursor: not-allowed;
 }
 
 .gf-select-wrapper.is-invalid .gf-select-toggle {
@@ -149,23 +131,8 @@
     background: var(--bs-body-bg);
 }
 
-.gf-select-wrapper .gf-select-search-input {
+.gf-select-wrapper.is-open .gf-select-menu {
     display: block;
-    width: 100%;
-    min-height: 2.5rem;
-    padding: .5rem .75rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-pill);
-    color: var(--bs-body-color);
-    background: var(--bs-form-control-bg);
-    font: inherit;
-}
-
-.gf-select-wrapper .gf-select-search-input:focus,
-.gf-select-wrapper .gf-select-search-input:focus-visible {
-    border-color: var(--bs-primary);
-    outline: 0;
-    box-shadow: 0 0 0 .2rem var(--bs-primary-bg-subtle);
 }
 
 .gf-select-wrapper .gf-select-list {

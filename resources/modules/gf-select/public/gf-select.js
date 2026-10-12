@@ -114,7 +114,10 @@
 
       this.toggle = document.createElement("button");
       this.toggle.type = "button";
-      this.toggle.className = "gf-select-toggle";
+      this.toggle.className = "gf-select-toggle form-select";
+      ["form-select-sm", "form-select-lg"].forEach((className) => {
+        if (this.select.classList.contains(className)) this.toggle.classList.add(className);
+      });
       this.toggle.id = this.uid + "-toggle";
       this.toggle.setAttribute("aria-haspopup", "listbox");
       this.toggle.setAttribute("aria-expanded", "false");
@@ -142,7 +145,7 @@
 
         this.searchInput = document.createElement("input");
         this.searchInput.type = "search";
-        this.searchInput.className = "gf-select-search-input";
+        this.searchInput.className = "gf-select-search-input form-control";
         this.searchInput.placeholder = this.settings.searchLabel;
         this.searchInput.setAttribute("aria-label", this.settings.searchLabel);
         this.addCleanedClasses(this.searchInput, this.settings.searchInputClass);
@@ -153,7 +156,6 @@
       this.list = document.createElement("div");
       this.list.className = "gf-select-list";
       this.list.style.maxHeight = this.settings.maxHeight + "px";
-      this.list.style.overflowY = "auto";
       this.menu.appendChild(this.list);
 
       this.ul = document.createElement("ul");
@@ -267,7 +269,6 @@
       this.wrapper.classList.add("is-open");
       this.toggle.classList.add("active");
       this.toggle.setAttribute("aria-expanded", "true");
-      this.menu.style.display = "block";
       this.menu.style.visibility = "hidden";
       this.positionMenu();
       this.menu.style.visibility = "visible";
@@ -318,7 +319,6 @@
       this.wrapper.classList.remove("is-open");
       this.toggle.classList.remove("active");
       this.toggle.setAttribute("aria-expanded", "false");
-      this.menu.style.display = "none";
       document.removeEventListener("pointerdown", this.boundDocumentPointer);
       window.removeEventListener("resize", this.boundViewportChange);
       window.removeEventListener("scroll", this.boundViewportChange, true);
