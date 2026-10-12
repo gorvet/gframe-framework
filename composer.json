@@ -53,6 +53,8 @@
         "bin/gframe-update"
     ],
     "scripts": {
+        "post-autoload-dump": "@php bin/install-project-skills.php --project=.",
+        "skills:install": "@php bin/install-project-skills.php --project=.",
         "lint": "@php bin/lint.php",
         "test": "phpunit",
         "skills:check": "@php bin/validate-skills.php",

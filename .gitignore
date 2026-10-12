@@ -4,6 +4,10 @@
 /.playwright-mcp/
 /.idea/
 /.vscode/
+/.agents/skills/gframe-*/
+/.agents/gframe-skills.json
+/.claude/skills/gframe-*/
+/.claude/gframe-skills.json
 /.env
 /.env.*
 !/\.env.example

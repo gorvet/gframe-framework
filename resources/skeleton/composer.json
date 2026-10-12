@@ -5,7 +5,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1.9",
-        "gorvet/gframe": "^1.0"
+        "gorvet/gframe": "^2.0.1"
     },
     "config": {
         "vendor-dir": "packages",
@@ -14,6 +14,8 @@
         "optimize-autoloader": true
     },
     "scripts": {
+        "post-autoload-dump": "@php packages/gorvet/gframe/bin/install-project-skills.php --project=.",
+        "gframe:skills": "@php packages/gorvet/gframe/bin/install-project-skills.php --project=.",
         "gframe:update": "@php packages/gorvet/gframe/bin/gframe-update"
     }
 }

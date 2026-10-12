@@ -1,13 +1,13 @@
 ---
 name: gframe-orchestrator
-description: Select the GFrame skills needed for a development or review task, resolve framework versus application scope and the effective package version, and coordinate work across relevant specialists without expanding the request.
+description: Use for every GFrame development task, fix, continuation or review in this project. Select version-matched specialists and apply their conventions and checks.
 ---
 
 # GFrame Orchestrator
 
 For new symbols or a naming review, use the matching-package [shared naming reference](../gframe-core-architecture/references/naming-conventions.md). Preserve existing APIs, keys and selectors; locate the companion in the effective package if installed separately.
 
-Use this when a GFrame task crosses responsibilities or needs specialist selection. Use the relevant specialist directly when the task is already confined to it. This skill routes instructions; it does not schedule agents, replace specialist contracts or require loading every GFrame skill.
+Start here for every GFrame development task, fix, continuation or review, including a small change in an existing application. Select only the relevant specialists; a focused task may need just one. This skill routes instructions; it does not schedule agents, replace specialist contracts or require loading every GFrame skill.
 
 ## Resolve the Target
 
@@ -32,5 +32,9 @@ Resolve shared boundaries before editing: source versus published asset/override
 For work across layers, trace the real producer/consumer and implement in dependency order. A typical request runs route/controller → service/model → response/view/JS; a queued flow separates scheduling, preparation and transport. Do not invent those layers if the task only changes one. Keep the implementation in the user's authorized scope, including already authorized follow-up work.
 
 Verify the affected behavior with the selected specialists' checks. Documentation-only edits need structural/link/recipe evidence, not automatic releases or a full runtime suite. Record skipped integration checks and material limits. Expected business errors, outer success envelopes, queue persistence and transport completion are distinct; do not broaden a contract based on its name.
+
+Before editing, identify the selected skill paths, the active task/baseline when present, and the checks required by those specialists in a concise working note or existing task artifact. Do not duplicate the conventions or require the user to repeat them. Follow-up requests retain applicable instructions; changes to agreed product decisions use the active conciliation workflow before implementation. Never persist an inferred decision as user-approved.
+
+Before delivery, check the changed files against those instructions and record actual verification evidence. Reading a skill or passing syntax checks alone does not establish compliance. Correct violations within the authorized scope; leave unavailable checks explicitly unverified.
 
 This router does not require delegation, stage documents, UI redesign, plugin installation, MCP, commits, releases or synchronization. Apply such workflows only when the actual request and available project instructions call for them. When blocked, name the missing target, evidence or authorization without repeating a permission already granted.

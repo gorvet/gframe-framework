@@ -183,7 +183,7 @@ final class ProjectUpdateServiceTest extends TestCase
     {
         $root = dirname(__DIR__) . '/resources/skeleton';
         $projectOwned = [
-            '.env.example', '.gitignore', 'composer.json', 'README.md',
+            '.env.example', '.gitignore', 'composer.json', 'README.md', 'AGENTS.md', 'CLAUDE.md',
             'app/controllers/home/HomeController.php',
             'app/views/templates/footer/copyright.php', 'app/views/templates/footer/credits.php',
             'config/Permissions.php', 'config/routes/routes_system.php', 'config/routes/routes_web.php',

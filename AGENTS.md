@@ -7,3 +7,5 @@
 - Si solo hay que trasladar o reproducir un archivo, copia o mueve el original intacto; no lo transcribas ni lo reinterpretes. Después aplica únicamente los cambios puntuales necesarios. No vuelques archivos completos en los parches para cambiar unas pocas líneas.
 
 Las convenciones técnicas de vistas y sus comprobaciones se mantienen en la skill canónica `skills/gframe-frontend-admin/`, no se duplican aquí.
+
+Para cada tarea de desarrollo, corrección o revisión de GFrame, aplica `skills/gframe-orchestrator/SKILL.md` y los especialistas que seleccione antes de editar. Las skills canónicas están en `skills/`; Composer las activa localmente en `.agents/skills` y `.claude/skills`. No uses copias globales de otra versión.

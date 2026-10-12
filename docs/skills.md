@@ -29,7 +29,29 @@ Cada carpeta contiene `SKILL.md` y, cuando corresponde, referencias con contrato
 
 ### Por proyecto
 
-Para mantener las instrucciones del paquete instalado en cada aplicación, indica su raíz y revisa primero la vista previa:
+Los proyectos nuevos generados con esta versión activan las skills locales durante `composer install`, `composer update` y `composer dump-autoload`, mediante el evento `post-autoload-dump`. El repositorio de desarrollo del framework utiliza el mismo mecanismo, con sus propias skills como fuente. No interviene el instalador visual ni se escribe en directorios globales.
+
+El esqueleto requiere `gorvet/gframe:^2.0.1`, la primera versión prevista con el instalador PHP. Esta funcionalidad está pendiente de publicación: no debe generarse un proyecto desde el checkout de desarrollo y resolver un paquete 1.x o 2.0.0, que carece de ese comando. Una vez publicada la versión aprobada, Composer descargará el paquete oficial y ejecutará la activación local.
+
+Codex descubre las skills en `.agents/skills`; Claude Code, en `.claude/skills`. Las fuentes originales permanecen en `skills/` del framework o en `skills/` del paquete Composer instalado. Los catorce especialistas se conservan. `AGENTS.md` dirige el trabajo al coordinador sin repetir sus reglas; `CLAUDE.md` importa esa instrucción.
+
+Para revisar o repetir la operación desde la raíz de una aplicación:
+
+```bash
+composer gframe:skills -- --dry-run --json
+composer gframe:skills
+```
+
+En el repositorio de GFrame, utiliza `composer skills:install`. También puedes configurar un proyecto existente sin modificar sus scripts de Composer:
+
+```bash
+php /ruta/a/gframe/bin/install-project-skills.php --project=/ruta/al/proyecto --target=Codex --dry-run --json
+php /ruta/a/gframe/bin/install-project-skills.php --project=/ruta/al/proyecto --target=Codex
+```
+
+Para que una aplicación existente lo ejecute automáticamente, añade a sus scripts Composer `post-autoload-dump` y `gframe:skills` el valor `@php packages/gorvet/gframe/bin/install-project-skills.php --project=.`. Ajusta `packages` si utiliza otro vendor-dir. Esta receta requiere una versión del paquete que incluya ese comando; las versiones anteriores conservan el instalador PowerShell por proyecto. Conserva cualquier hook preexistente utilizando una lista de comandos.
+
+El adaptador PowerShell sigue disponible con raíz explícita:
 
 ```powershell
 .\bin\install-skills.ps1 -ProjectPath 'C:/ruta/al/proyecto' -Target All -DryRun
@@ -38,29 +60,15 @@ Para mantener las instrucciones del paquete instalado en cada aplicación, indic
 
 `-Target Codex` escribe en `.agents/skills`; `-Target Claude`, en `.claude/skills`. `All` procesa ambos. `-Json` devuelve el informe estructurado, también junto con `-DryRun`. La vista previa no crea carpetas ni registros ni modifica archivos; la ejecución vuelve a calcular el plan con la fuente actual.
 
-La fuente se obtiene de `composer.json`, su `config.vendor-dir` y la metadata `composer/installed.json` de `gorvet/gframe`, incluida su ruta instalada. No utiliza automáticamente la versión del checkout desde el que ejecutas el script ni el lock como prueba de instalación. Si el destino es el propio paquete standalone, utiliza sus skills y deja la versión desconocida cuando no está declarada. No ejecuta PHP, autoload ni bootstrap: una aplicación con un bridge personalizado debe contrastar además qué paquete carga realmente.
+La fuente se obtiene de `composer.json`, su `config.vendor-dir` y la metadata `composer/installed.json` de `gorvet/gframe`, incluida su ruta instalada. No utiliza automáticamente la versión del checkout desde el que ejecutas el script ni el lock como prueba de instalación. Si el destino es el propio paquete standalone, utiliza sus skills y deja la versión desconocida cuando no está declarada. No ejecuta autoload ni bootstrap: una aplicación con un bridge personalizado debe contrastar además qué paquete carga realmente.
 
 Cada cliente guarda el registro `gframe-skills.json` junto a su carpeta `skills`, con fuente, versión/referencia disponibles y hashes SHA-256. El plan distingue `create`, `update`, `unchanged`, `remove`, `forget` y `conflict`. Solo actualiza archivos administrados intactos y retira archivos obsoletos cuyo hash coincide con el registro. Conserva personalizaciones y skills ajenas; una carpeta preexistente sin registro no se adopta ni se completa automáticamente. Los conflictos requieren revisión y no significan que todas las instrucciones quedaron sincronizadas.
 
 El modo rechaza registros/rutas inválidos y enlaces simbólicos o junctions en fuente/destino; no escribe fuera del destino a través de ellos. Una operación interrumpida puede dejar cambios parciales y exige revisar el informe, los archivos y el registro antes de repetirla; no ofrece una transacción de todos los archivos. Los directorios vacíos pueden conservarse. No modifica ni desactiva skills globales: revisa posibles duplicados sin asumir que una copia local oculta otra.
 
-### Global, por compatibilidad
+### Copias globales anteriores
 
-Desde PowerShell, situado en la raíz del repositorio del framework o en `packages/gorvet/gframe` de un proyecto instalado:
-
-```powershell
-.\bin\install-skills.ps1 -Target Codex
-.\bin\install-skills.ps1 -Target Claude
-.\bin\install-skills.ps1 -Target All
-```
-
-El instalador copia los directorios `gframe-*` incluidos en la versión elegida a los skills del usuario. Para Codex utiliza `CODEX_HOME/skills` si esa variable está definida, o `.codex/skills` en el perfil del usuario. Para Claude Code utiliza `.claude/skills` en ese perfil.
-
-Sobrescribe los archivos de los skills de GFrame con los de la versión seleccionada y conserva los demás skills. Si modificaste una copia instalada, guarda esos cambios antes de ejecutar el script. El script no instala el framework en un proyecto ni cambia su configuración.
-
-Después de actualizar GFrame, vuelve a ejecutarlo desde la versión que utilice tu proyecto para mantener alineados los contratos. En otros sistemas puedes copiar las carpetas `skills/gframe-*` completas al directorio de skills de tu asistente, conservando sus referencias.
-
-Sin `-ProjectPath` se conserva el modo global anterior, que sobrescribe copias de GFrame. `-DryRun` y `-Json` requieren el modo por proyecto. Ninguno de los modos genera o publica un complemento.
+La instalación global se retiró. Las copias antiguas y los complementos globales que dupliquen GFrame deben desactivarse en el cliente una vez comprobada la instalación local; una skill local no oculta automáticamente otra global. El instalador de proyecto no modifica la configuración personal del asistente.
 
 ## Utilizarlos en una tarea
 
@@ -164,4 +172,4 @@ El control YAML rechaza sintaxis inválida, claves duplicadas, secciones/tipos i
 
 ## Skills de proyecto
 
-Las reglas específicas de una aplicación —estructura propia, tenant, identidad visual, convenciones internas o endpoints del negocio— no deben añadirse a los skills globales del framework salvo que se conviertan en un contrato reutilizable de GFrame. Manténgalas en las instrucciones del proyecto y deje que los skills oficiales describan únicamente el framework.
+Las reglas específicas de una aplicación —estructura propia, tenant, identidad visual, convenciones internas o endpoints del negocio— no deben añadirse a las skills canónicas del framework salvo que se conviertan en un contrato reutilizable de GFrame. Manténgalas en las instrucciones del proyecto y deje que los skills oficiales describan únicamente el framework.

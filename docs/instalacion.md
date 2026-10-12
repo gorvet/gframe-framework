@@ -22,6 +22,8 @@ composer install
 
 `composer new` es un script del repositorio de GFrame, no un comando nativo de Composer. El destino debe ser nuevo o estar vacío. El proyecto generado descarga `gorvet/gframe` mediante Composer; no depende de la copia del repositorio utilizada para crearlo.
 
+Los proyectos generados con esta versión activan las [skills locales de desarrollo](skills.md) al ejecutar Composer, sin configuración adicional en el asistente visual. El repositorio del framework también activa sus propias skills localmente. Los comandos Composer deben ejecutarse con scripts habilitados.
+
 Apunta la raíz del servidor al directorio `mi-proyecto`, no a `public/`. Configura [Apache o Nginx](servidores-web.md) y abre la URL del proyecto. Antes de instalar, las peticiones de aplicación redirigen al asistente `install.php`.
 
 ## Elegir el tipo de proyecto

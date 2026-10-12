@@ -128,10 +128,10 @@ try {
         $canonicalCount++
     }
     Check ($canonicalCount -gt 0) 'Canonical files verified'
-    # Backward-compatible global Codex mode is confined to the temporary CODEX_HOME.
+    # A forgotten ProjectPath must never recreate global copies.
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -Target Codex | Out-Null
-    Check ($LASTEXITCODE -eq 0) 'Legacy Codex mode'
-    Check (Test-Path -LiteralPath (Join-Path $env:CODEX_HOME 'skills/gframe-orchestrator/SKILL.md')) 'Legacy temporary destination'
+    Check ($LASTEXITCODE -ne 0) 'Global mode rejected'
+    Check (!(Test-Path -LiteralPath (Join-Path $env:CODEX_HOME 'skills/gframe-orchestrator/SKILL.md'))) 'No global skills recreated'
     Write-Output ("OK: {0} checks; two versions, preview, both clients, repeat, conflicts, obsolete files, path rejection and missing metadata." -f $checks)
 } finally {
     [Environment]::SetEnvironmentVariable('CODEX_HOME', $globalBefore)
