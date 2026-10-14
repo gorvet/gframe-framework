@@ -86,54 +86,6 @@ class MediaModel extends \ORM implements MediaRepository
         )));
     }
 
-    public function attach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content', int $sortOrder = 0): void
-    {
-        $query = self::queryTable('media_relations')
-            ->where('media_id', '=', $mediaID)
-            ->where('related_type', '=', $relatedType)
-            ->where('related_id', '=', $relatedID)
-            ->where('field', '=', $field);
-        if ($query->exists()) {
-            $query->update(['sort_order' => max(0, $sortOrder)]);
-            return;
-        }
-
-        (new static([
-            'media_id' => $mediaID,
-            'related_type' => $relatedType,
-            'related_id' => $relatedID,
-            'field' => $field,
-            'sort_order' => max(0, $sortOrder),
-        ]))->fromTable('media_relations')->insert();
-    }
-
-    public function detach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content'): void
-    {
-        self::queryTable('media_relations')
-            ->where('media_id', '=', $mediaID)
-            ->where('related_type', '=', $relatedType)
-            ->where('related_id', '=', $relatedID)
-            ->where('field', '=', $field)
-            ->deleteWhere();
-    }
-
-    /** @return list<array<string, mixed>> */
-    public function related(string $relatedType, int $relatedID, string $field, MediaScope $scope): array
-    {
-        $query = $this->reset()
-            ->select('media.*', 'media_relations.field', 'media_relations.sort_order')
-            ->join('media_relations', 'media_relations.media_id', '=', 'media.media_id')
-            ->where('media_relations.related_type', '=', $relatedType)
-            ->where('media_relations.related_id', '=', $relatedID)
-            ->where('media_relations.field', '=', $field);
-        $this->applyScope($query, $scope);
-
-        return array_map(
-            static fn(array $row): array => $row,
-            $query->orderBy('media_relations.sort_order', 'ASC')->get()
-        );
-    }
-
     public function filterOptions(MediaScope $scope): array
     {
         $sources = $this->applyScope($this->reset(), $scope)

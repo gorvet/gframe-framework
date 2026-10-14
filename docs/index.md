@@ -141,6 +141,7 @@ GFrame integra estas bibliotecas, pero no es su autor. Cada guía identifica la 
 - [Skills oficiales](skills.md).
 - [Política de dependencias](dependencias.md).
 - [Versionado](versionado.md).
+- [Transición a 3.0.0](release-3.0.0.md).
 - [Migración del nombre Composer](migracion-nombre-composer.md).
 - [Alcance de la primera versión](release-1.0.0.md).
 - [Historial de versiones](../CHANGELOG.md).

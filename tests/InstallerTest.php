@@ -73,7 +73,7 @@ final class InstallerTest extends TestCase
         self::assertContains('users', $tables);
         self::assertContains('roles', $tables);
         self::assertContains('media', $tables);
-        self::assertContains('media_relations', $tables);
+        self::assertNotContains('media_relations', $tables);
         self::assertContains('notification_queue', $tables);
         self::assertGreaterThan(0, $result['statements']);
     }
@@ -299,7 +299,7 @@ final class InstallerTest extends TestCase
             self::assertContains('users', $tables);
             self::assertContains('media', $tables);
             self::assertContains('gframe_migrations', $tables);
-            self::assertSame(2, (int)$pdo->query("SELECT COUNT(*) FROM gframe_migrations WHERE module = 'media-library'")->fetchColumn());
+            self::assertSame(3, (int)$pdo->query("SELECT COUNT(*) FROM gframe_migrations WHERE module = 'media-library'")->fetchColumn());
             self::assertContains('remote_url', $pdo->query('PRAGMA table_info(media)')->fetchAll(PDO::FETCH_COLUMN, 1));
             $lock = json_decode((string)file_get_contents($project . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'gframe-installed.json'), true);
             self::assertNotEmpty($lock['framework_version'] ?? '');

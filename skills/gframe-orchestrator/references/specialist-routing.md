@@ -11,7 +11,7 @@ Use responsibility and changed surface, not a keyword count. Names below identif
 | Admin views, meta/assets, AJAX forms/listings | `gframe-frontend-admin` | Backend/ORM when their consumers or persistence change |
 | Public pages, content rendering, view meta and SEO | `gframe-frontend-public` | Backend for an action; integrations for remote content |
 | Requested visual/UX decisions | `gframe-ui-design-clean` | Matching admin/public technical skill; available design specialists only when relevant |
-| Media library, picker/field, uploads, scopes and relations | `gframe-media-module` | Admin/public for the integration; auth for changed membership/session policy |
+| Media library, picker/field, uploads, scopes and content selections | `gframe-media-module` | Admin/public for the integration; auth for changed membership/session policy |
 | Mail templates, inbox and delivery queues/transports | `gframe-notifications-mail` | Frontend/backend for a screen/action; jobs when worker execution/scheduling changes |
 | Async, cron task, runner/worker operation or heartbeat channel | `gframe-background-jobs` | Domain specialist for business payload; auth for changed session policy |
 | Campaign audience, dispatch, recurrence, automatic rules/lifecycle | `gframe-campaigns` | Jobs for changed task registration/execution; mail for changed delivery; admin/backend for a screen/action |
@@ -23,7 +23,7 @@ Use responsibility and changed surface, not a keyword count. Names below identif
 - **Admin CRUD with persistence:** admin + backend + ORM. Add auth only if changing permissions/identity logic; preserving existing route permissions does not require a new auth architecture.
 - **Public contact form using existing Mail:** public + backend + mail. Mail's Async recipe is already covered there; jobs is needed if generic scheduling/execution itself changes. A contact email does not imply a campaign.
 - **Render a WordPress article:** integrations + public. Add backend only for controller/service work beyond the existing remote-content recipe. The WordPress credential is not the application's user identity.
-- **Insert an existing picker into a tenant admin form:** media + admin. Preserve verified server tenant; add auth if changing membership/session resolution. Add backend when adapting validation/saving of IDs, even for an existing field; add ORM when persistence/query logic changes. A new media relation is not required to trigger those responsibilities.
+- **Insert an existing picker into a tenant admin form:** media + admin. Preserve verified server tenant; add auth if changing membership/session resolution. Add backend when adapting validation/saving of IDs, even for an existing field; add ORM when persistence/query logic changes. Saving media IDs in a content field also reaches those responsibilities.
 - **Create a scheduled campaign through the existing service:** campaigns. Add admin/backend for a new endpoint/screen, jobs for a new/custom cron handler or registrar, and mail for a changed transport/template. Inspect queue/dispatch outcomes without automatically editing all three subsystems.
 - **Update an identified application:** maintenance's project-integration recipe + core's effective-package/config reference. Respect dry-run and personalized files. Do not edit the application's installed core, publish the standalone framework or synchronize global skills implicitly.
 

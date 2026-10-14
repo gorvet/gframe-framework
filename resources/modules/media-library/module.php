@@ -11,8 +11,8 @@ return [
         'sqlite' => 'database/sqlite.sql',
     ],
     'migrations' => [
-        'mysql' => ['database/migrations/mysql/202609280001_media_metadata.sql', 'database/migrations/mysql/202609290001_media_remote_url.sql'],
-        'sqlite' => ['database/migrations/sqlite/202609280001_media_metadata.sql', 'database/migrations/sqlite/202609290001_media_remote_url.sql'],
+        'mysql' => ['database/migrations/mysql/202609280001_media_metadata.sql', 'database/migrations/mysql/202609290001_media_remote_url.sql', 'database/migrations/mysql/202610140001_remove_media_relations.sql'],
+        'sqlite' => ['database/migrations/sqlite/202609280001_media_metadata.sql', 'database/migrations/sqlite/202609290001_media_remote_url.sql', 'database/migrations/sqlite/202610140001_remove_media_relations.sql'],
     ],
     'assets' => [
         ['source' => 'public', 'target' => 'css/modules/media-library'],

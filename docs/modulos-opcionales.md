@@ -98,7 +98,7 @@ El mismo módulo funciona en tres ámbitos:
 - `MediaScope::tenant($tenantID)` para aislar empresas o clientes;
 - `MediaScope::user($userID)` para bibliotecas personales.
 
-Las asociaciones con artículos, productos o procedimientos se almacenan en `media_relations`; no crean ámbitos artificiales.
+Cada CRUD almacena el ID del archivo o el JSON ordenado de IDs de su galería en su propia tabla; no se crean tablas de relaciones genéricas ni ámbitos por tipo de contenido.
 
 El ámbito predeterminado se define con `media.scope`: `global`, `tenant` o `user`.
 

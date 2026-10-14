@@ -245,51 +245,6 @@ class MediaLibraryService
         }
     }
 
-    public function attach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content', int $sortOrder = 0, ?MediaScope $scope = null): array
-    {
-        $scope ??= MediaScope::global();
-        $relatedType = trim($relatedType);
-        $field = trim($field);
-        try {
-            if ($relatedType === '' || $relatedID <= 0 || $field === '' || $this->media->findMedia($mediaID, $scope) === null) {
-                return $this->error('invalid_media_relation');
-            }
-            $this->media->attach($mediaID, $relatedType, $relatedID, $field, $sortOrder);
-            return ['status' => 'success', 'code' => 'media_attached'];
-        } catch (Exception $exception) {
-            return $this->failure($exception, 'media_attach_failed');
-        }
-    }
-
-    public function detach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content', ?MediaScope $scope = null): array
-    {
-        $scope ??= MediaScope::global();
-        try {
-            if ($this->media->findMedia($mediaID, $scope) === null) {
-                return $this->error('media_not_found');
-            }
-            $this->media->detach($mediaID, trim($relatedType), $relatedID, trim($field));
-            return ['status' => 'success', 'code' => 'media_detached'];
-        } catch (Exception $exception) {
-            return $this->failure($exception, 'media_detach_failed');
-        }
-    }
-
-    public function related(string $relatedType, int $relatedID, string $field = 'content', ?MediaScope $scope = null): array
-    {
-        $scope ??= MediaScope::global();
-        try {
-            return ['status' => 'success', 'code' => 'media_related_loaded', 'data' => $this->media->related(
-                trim($relatedType),
-                $relatedID,
-                trim($field),
-                $scope
-            )];
-        } catch (Exception $exception) {
-            return $this->failure($exception, 'media_related_failed');
-        }
-    }
-
     protected function uploaderMetadata(array $uploader): array
     {
         $id = (int)($uploader['id'] ?? 0);

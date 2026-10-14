@@ -40,6 +40,10 @@ La vista previa no modifica archivos, la base de datos ni el registro de instala
 
 ## Proyectos anteriores
 
+### Actualización a 3.0.0
+
+Consulta [la transición a 3.0.0](release-3.0.0.md) antes de cambiar la restricción Composer a `^3.0`. Esta versión retira la API de relaciones genéricas de medios y aplica una migración que elimina su tabla auxiliar. Los IDs de imagen y los JSON de galerías guardados por cada CRUD se conservan.
+
 ### Actualización a 2.0.3
 
 Sincroniza los assets administrados de Auth, errores y medios después de descargar el paquete. Las vistas originales se actualizan con Composer; las personalizaciones en `app/` se conservan y requieren revisión manual si deben adoptar el nuevo enlace o los controles del campo de medios. Los labels de Auth vuelven a los estilos comunes y el footer comparte el fondo de la página. En medios, la vista previa aparece encima de los botones y las galerías sin `fragment` explícito utilizan `gthumb`; un valor explícito conserva su variante.

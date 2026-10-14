@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## 3.0.0 — 14 de octubre de 2026
+
+- Retirada la tabla auxiliar `media_relations` y los métodos públicos `attach()`, `detach()` y `related()` de medios. Cada CRUD conserva el ID de imagen o el JSON de IDs de galería en su propia tabla. Migraciones MySQL y SQLite eliminan únicamente la tabla auxiliar. Consulte [la transición a 3.0.0](docs/release-3.0.0.md).
+- Actualizadas la documentación, la skill de medios y las pruebas de instalación y ámbito.
+
 ## 2.0.3 — 12 de octubre de 2026
 
 - El campo de medios coloca las miniaturas encima de Elegir imagen/archivo y Quitar, con controles Bootstrap. Las miniaturas muestran el puntero de mano y abren el selector también mediante Enter o espacio; las galerías conservan la retirada individual.

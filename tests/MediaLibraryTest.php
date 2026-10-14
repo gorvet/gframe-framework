@@ -37,6 +37,27 @@ final class MediaLibraryTest extends TestCase
         self::assertContains(MediaRepository::class, class_implements(MediaModel::class));
     }
 
+    public function testRelationsMigrationPreservesMediaAndContentSelections(): void
+    {
+        $pdo = new \PDO('sqlite::memory:');
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        \GFrame\Install\SchemaInstaller::frameworkDefault()->install($pdo, 'sqlite', true, ['media-library']);
+        $pdo->exec("INSERT INTO media (media_id, kind, name, original_name, path, mime_type, created_at) VALUES (1, 'images', 'cover', 'cover.jpg', 'uploads/cover.jpg', 'image/jpeg', '2026-10-14')");
+        $pdo->exec('CREATE TABLE media_relations (media_id INTEGER, related_type TEXT, related_id INTEGER)');
+        $pdo->exec("INSERT INTO media_relations VALUES (1, 'event', 7)");
+        $pdo->exec('CREATE TABLE events (event_id INTEGER PRIMARY KEY, image_id INTEGER, gallery_json TEXT)');
+        $pdo->exec("INSERT INTO events VALUES (7, 1, '[1]')");
+
+        $runner = \GFrame\Install\MigrationRunner::frameworkDefault();
+        $runner->baseline($pdo, 'sqlite', ['media-library']);
+        $pdo->exec("DELETE FROM gframe_migrations WHERE migration LIKE '%202610140001_remove_media_relations%'");
+        self::assertGreaterThan(0, $runner->migrate($pdo, 'sqlite', ['media-library'])['count']);
+        self::assertSame(0, $runner->migrate($pdo, 'sqlite', ['media-library'])['count']);
+        self::assertSame(0, (int)$pdo->query("SELECT COUNT(*) FROM sqlite_master WHERE name = 'media_relations'")->fetchColumn());
+        self::assertSame('uploads/cover.jpg', $pdo->query('SELECT path FROM media WHERE media_id = 1')->fetchColumn());
+        self::assertSame(['event_id' => 7, 'image_id' => 1, 'gallery_json' => '[1]'], $pdo->query('SELECT * FROM events')->fetch(\PDO::FETCH_ASSOC));
+    }
+
     public function testUploadRejectsOversizedAndFalseImageFiles(): void
     {
         $repository = new InMemoryMediaRepository();
@@ -54,7 +75,7 @@ final class MediaLibraryTest extends TestCase
         self::assertSame([], $repository->records);
     }
 
-    public function testFiltersAndRelationsRemainInsideTheirScope(): void
+    public function testFiltersRemainInsideTheirScope(): void
     {
         $repository = new InMemoryMediaRepository();
         $repository->records[1] = ['media_id' => 1, 'scope_type' => 'tenant', 'scope_id' => 7, 'path' => 'uploads/tenant/7/a.txt'];
@@ -68,10 +89,6 @@ final class MediaLibraryTest extends TestCase
         self::assertSame(1, $repository->lastPage);
         self::assertSame(100, $repository->lastPerPage);
 
-        self::assertSame('media_not_found', $service->detach(1, 'post', 10, 'cover', MediaScope::tenant(8))['code']);
-        self::assertSame('success', $service->attach(1, 'post', 10, 'cover', 0, MediaScope::tenant(7))['status']);
-        self::assertSame('success', $service->detach(1, 'post', 10, 'cover', MediaScope::tenant(7))['status']);
-        self::assertSame([], $service->related('post', 10, 'cover', MediaScope::tenant(8))['data']);
     }
 
     public function testModuleUsesPermissionsAndExceptionContracts(): void
@@ -295,7 +312,6 @@ final class MediaLibraryTest extends TestCase
 final class InMemoryMediaRepository implements MediaRepository
 {
     public array $records = [];
-    public array $relations = [];
     public array $lastFilters = [];
     public int $lastPage = 0;
     public int $lastPerPage = 0;
@@ -345,20 +361,5 @@ final class InMemoryMediaRepository implements MediaRepository
             $this->records,
             static fn(array $record): bool => $record['scope_type'] === $scope->type() && $record['scope_id'] === $scope->id()
         )));
-    }
-
-    public function attach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content', int $sortOrder = 0): void
-    {
-        $this->relations[] = compact('mediaID', 'relatedType', 'relatedID', 'field', 'sortOrder');
-    }
-
-    public function detach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content'): void
-    {
-        $this->relations = [];
-    }
-
-    public function related(string $relatedType, int $relatedID, string $field, MediaScope $scope): array
-    {
-        return [];
     }
 }

@@ -88,7 +88,7 @@ public/uploads/user/<id>/<source>/<año>/<mes>/        usuario
 public/uploads/tenant/<id>/<source>/<año>/<mes>/      tenant
 ```
 
-`source` identifica el origen funcional, como `library` o `articles`; no crea otro ámbito de seguridad. Las relaciones con publicaciones se guardan por separado.
+`source` identifica el origen funcional, como `library` o `articles`; no crea otro ámbito de seguridad. Cada publicación guarda sus selecciones en su propia tabla.
 
 El aislamiento del listado no convierte los archivos en privados: están en `public` y pueden servirse directamente por URL. Para documentos confidenciales utiliza almacenamiento protegido y una descarga autorizada del proyecto; un enlace difícil de adivinar no sustituye esa protección.
 
@@ -218,23 +218,17 @@ if (($result['status'] ?? 'error') === 'success') {
 }
 ```
 
-## Relaciones con contenido
+## Guardar imágenes y galerías
 
-```php
-$media->attach($mediaID, 'post', $postID, 'cover', 0, $scope);
-$items = $media->related('post', $postID, 'gallery', $scope);
-$media->detach($mediaID, 'post', $postID, 'cover', $scope);
-```
+Cada CRUD guarda el ID de la imagen en su propia tabla. Para una galería, guarda un arreglo JSON de IDs cuyo orden determina el orden de las imágenes. Las variantes disponibles pertenecen al registro del archivo; la vista elige el tamaño que necesita.
 
-El ámbito debe acompañar todas las operaciones. El servicio impide relacionar o separar un archivo que no pertenezca al ámbito solicitado.
+Sustituir o quitar una selección modifica únicamente el campo del contenido y conserva el archivo en la biblioteca. No hace falta una tabla auxiliar de relaciones. Antes de guardar, valida cada ID con `details($id, $scope)` y comprueba los permisos sobre el contenido.
 
-`relatedType` identifica una entidad del proyecto y `relatedID` su registro. `field` distingue portada, galería u otro uso; `sortOrder` conserva el orden. El proyecto debe comprobar que ese contenido exista y que el actor pueda modificarlo: el servicio valida el archivo, no la entidad de negocio relacionada.
-
-Guardar el JSON del campo no crea relaciones automáticamente. Al retirar una imagen de una galería, utiliza `detach()` si debe conservarse en la biblioteca. `delete()` elimina el registro y sus archivos locales y variantes; no es una simple desvinculación. Los enlaces remotos se retiran de la biblioteca sin borrar el recurso del servidor externo.
+`delete()` elimina el registro y sus archivos locales y variantes. El módulo no rastrea dónde se usa cada archivo ni bloquea el borrado de archivos seleccionados por un CRUD. Los enlaces remotos se retiran de la biblioteca sin borrar el recurso del servidor externo.
 
 ## Extensión
 
-Para usar otro origen de datos, implementa `GFrame\Media\Contracts\MediaRepository` e inyéctalo en `MediaLibraryService`. El adaptador debe aplicar siempre `MediaScope` al buscar, listar, eliminar y consultar relaciones.
+Para usar otro origen de datos, implementa `GFrame\Media\Contracts\MediaRepository` e inyéctalo en `MediaLibraryService`. El adaptador debe aplicar siempre `MediaScope` al buscar, listar y eliminar archivos.
 
 Los orígenes se normalizan a un identificador seguro y forman parte de la ruta de almacenamiento. No deben usarse rutas proporcionadas directamente por el usuario.
 
@@ -255,11 +249,11 @@ Los orígenes se normalizan a un identificador seguro y forman parte de la ruta 
 
 ## Códigos principales
 
-Éxito: `media_created`, `media_loaded`, `media_deleted`, `media_updated`, `media_details_loaded`, `media_quota_loaded`, `media_synchronized`, `media_attached`, `media_detached` y `media_related_loaded`.
+Éxito: `media_created`, `media_loaded`, `media_deleted`, `media_updated`, `media_details_loaded`, `media_quota_loaded` y `media_synchronized`.
 
-Errores esperados: `file_not_found`, `file_size_not_allowed`, `media_quota_exceeded`, `extension_not_allowed`, `media_not_allowed`, `mime_not_allowed`, `not_image`, `extension_mime_mismatch`, `invalid_base64_media`, `media_not_found`, `invalid_media_relation` y `media_scope_invalid`.
+Errores esperados: `file_not_found`, `file_size_not_allowed`, `media_quota_exceeded`, `extension_not_allowed`, `media_not_allowed`, `mime_not_allowed`, `not_image`, `extension_mime_mismatch`, `invalid_base64_media`, `media_not_found` y `media_scope_invalid`.
 
-Fallos internos: `media_create_failed`, `media_list_failed`, `media_details_failed`, `media_update_failed`, `media_delete_failed`, `media_quota_failed`, `media_sync_failed`, `media_attach_failed`, `media_detach_failed` y `media_related_failed`.
+Fallos internos: `media_create_failed`, `media_list_failed`, `media_details_failed`, `media_update_failed`, `media_delete_failed`, `media_quota_failed` y `media_sync_failed`.
 
 Los fragmentos rechazan variantes fuera de la lista permitida con `invalid_media_fragment` y selecciones excesivas con `invalid_media_selection`. Cada vista previa se obtiene por ID bajo el ámbito activo; los archivos de otro tenant o usuario no se devuelven.
 
@@ -271,7 +265,7 @@ Las instalaciones antiguas pueden conservar vistas o controladores publicados en
 
 ## Actualización del esquema
 
-Las instalaciones nuevas reciben todas las columnas desde los esquemas del módulo. Las actualizaciones aplican las migraciones de metadatos y de `remote_url` mediante el actualizador del proyecto. Revisa los cambios con `composer gframe:update -- --dry-run` y verifica la aplicación después de aplicarlos.
+Las instalaciones nuevas reciben todas las columnas desde los esquemas del módulo. Las actualizaciones aplican las migraciones de metadatos y de `remote_url` mediante el actualizador del proyecto. Desde 3.0.0, una migración elimina la tabla auxiliar `media_relations`, sin eliminar archivos ni modificar los IDs guardados en las tablas de contenido. Antes de actualizar, consulta [la transición a 3.0.0](release-3.0.0.md). Revisa los cambios con `composer gframe:update -- --dry-run` y verifica la aplicación después de aplicarlos.
 
 ## Validar el campo al guardar un formulario
 
@@ -290,7 +284,7 @@ foreach ($ids as $id) {
     }
 }
 $ids = array_values(array_unique($ids));
-// Recupera cada archivo con details($id, $scope) antes de relacionarlo.
+// Valida cada archivo con details($id, $scope) antes de guardar sus IDs.
 return ['status' => 'success', 'data' => ['ids' => $ids]];
 ```
 
@@ -301,6 +295,6 @@ La aceptación del selector en el navegador no autoriza esos IDs. En el backend 
 1. Prueba búsqueda por nombre y título descriptivo y los filtros del listado.
 2. Sube archivos permitidos y rechazados; comprueba límite, variantes y autor.
 3. Prueba campos simples y múltiples fuera de la biblioteca, incluyendo paginación, cancelación y contenido añadido por AJAX.
-4. Valida los IDs antes de crear relaciones con el contenido.
+4. Valida los IDs antes de guardarlos en la tabla del contenido.
 5. En ámbitos user o tenant, comprueba que otro ámbito no obtiene detalles ni acciones sobre esos IDs.
 6. Comprueba por separado si las URLs físicas deben ser públicas o necesitan una descarga privada.

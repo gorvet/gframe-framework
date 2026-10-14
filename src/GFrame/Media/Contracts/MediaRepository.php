@@ -13,7 +13,4 @@ interface MediaRepository
     public function updateMedia(int $mediaID, MediaScope $scope, array $data): void;
     public function usedBytes(MediaScope $scope): int;
     public function paths(MediaScope $scope): array;
-    public function attach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content', int $sortOrder = 0): void;
-    public function detach(int $mediaID, string $relatedType, int $relatedID, string $field = 'content'): void;
-    public function related(string $relatedType, int $relatedID, string $field, MediaScope $scope): array;
 }

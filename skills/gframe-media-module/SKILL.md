@@ -1,6 +1,6 @@
 ---
 name: gframe-media-module
-description: Implement and maintain GFrame media libraries, uploads, scopes, reusable selectors, media fields, and content relations in standalone framework modules or GFrame applications.
+description: Implement and maintain GFrame media libraries, uploads, scopes, reusable selectors, media fields, and content selections in standalone framework modules or GFrame applications.
 ---
 
 # GFrame Media Module
@@ -15,7 +15,7 @@ Read [references/scopes-and-field-integration.md](references/scopes-and-field-in
 
 - Use `MediaScopeResolver` for application requests.
 - Keep `global`, `tenant`, and `user` as the only storage scopes.
-- Store content ownership in `media_relations`; do not invent a scope per content type.
+- Each content CRUD stores its own single media ID or ordered JSON array of gallery IDs. Do not add generic relation tables or a scope per content type.
 - A tenant or user scope must fail when its identity cannot be resolved.
 - Scope identifies the library owner; it does not check tenant membership or replace route/business permissions. Tenant scope requires the active session identity and rejects contradictory request/session identities through `TenantContextResolver`.
 - PHP service calls that omit their optional scope default to `global`, regardless of `media.scope`. Resolve and pass it explicitly in application integrations; background jobs use an explicitly authorized scope rather than a browser session.
