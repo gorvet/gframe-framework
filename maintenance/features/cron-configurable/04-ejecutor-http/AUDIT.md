@@ -60,3 +60,23 @@ Baseline sin cambios. Snapshot 6abcc24; prueba nueva con Nginx 1.24, PHP-FPM 8.3
 E-08: job 116710599386 de la ejecución https://github.com/gorvet/gframe-framework/actions/runs/38818977151; `php packages/phpunit/phpunit/phpunit --filter CronHttpsFpmTest`, salida 1, 1 prueba y 27 aserciones. POST real autenticado, rechazos de autenticación, certificados y tickets correctos. POST virtual interno termina en HTTP 499 en Nginx y el handler nunca empieza. La configuración documentada carece de `fastcgi_ignore_client_abort on`; cerrar el socket puede cancelar el envío a PHP-FPM antes de que ignore_user_abort de PHP tenga efecto.
 
 CA-01, CA-03 y CA-04: cumple según E-04/E-08. CA-02: no cumple en este entorno. CA-05: parcial, falta requisito de despliegue. El pase 2 permanece como resultado histórico local, con su exclusión ambiental original. Nuevo trabajo: [delta 02](TAREAS-delta-02.md), sin alterar el baseline.
+
+## Pase 4 — cierre tras delta 02, 2026-10-15
+
+Mismo baseline. Snapshot 6fbd1a0; delta 02 implementado. Inspección de configuración, guías, skill y logs remotos posteriores a la corrección; no se modifica el runtime en esta auditoría.
+
+| ID | CA | Procedimiento | Esperado | Observado/exit | Entorno y fecha | Artefacto | Limitación |
+|---|---|---|---|---|---|---|---|
+| E-09 | CA-01–04 | `php packages/phpunit/phpunit/phpunit --filter CronHttpsFpmTest` en job 116711877136 | TLS, FPM y ejecución independiente reales | Salida 0, 1 prueba/33 aserciones; sin omisiones | Ubuntu 24.04, Nginx 1.24, PHP-FPM 8.3.6; 2026-10-15T22:46:48Z | [CI](https://github.com/gorvet/gframe-framework/actions/runs/38819363756) y HTTPS-FPM.md | Fixture aislado, sin producción |
+| E-10 | CA-01–05 | Consultar jobs y conclusión de CI 38819363756 | Todas las regresiones aprobadas | Nueve jobs success: PHP 8.1–8.4, MySQL, Windows cron/CSRF, HTTPS/FPM, JS, metadata | GitHub Actions; 2026-10-15 | Misma ejecución de CI | Pruebas opcionales ajenas pueden omitirse en las suites generales; el job FPM no se omite |
+| E-11 | CA-05 | `php packages/phpunit/phpunit/phpunit --filter 'DocumentationLinks\|ServerRoutingTest::testNginxFragment'`; `php bin/validate-skills.php` | Documentación y fragmento consistentes | Salida 0, 5 pruebas/143 aserciones; 14 skills/79 enlaces | Windows PHP 8.3.35; 2026-10-15 | Salida CLI | No sustituye E-09 |
+
+| CA | Resultado | Fundamento |
+|---|---|---|
+| CA-01 | cumple | E-09: visita real sin lanzamiento persistido ni handler; se confirma entorno fpm-fcgi y función de finalización. E-04/E-10 mantienen la regresión del registro. |
+| CA-02 | cumple | E-09: virtual HTTP entrega respuesta con handler retenido por barrera, mantiene sesión disponible y termina solo al liberar; límite de una tarea y otra pendiente. TLS del lanzador verificado. E-10 conserva CLI, bloqueo compartido y recuperación. La sensibilidad se acredita con el fallo E-08 frente al éxito E-09. |
+| CA-03 | cumple | E-09: ejecución real autenticada, 403/405 preservados, ticket virtual ausente rechazado y ticket inventado omitido sin efectos. E-04/E-10 mantienen endpoint deshabilitado. |
+| CA-04 | cumple | E-09: certificado no confiable y hostname incorrecto rechazados antes de enviar; endpoint sin sesión. E-04/E-10 conservan destinos confiables, límites y handlers no seleccionables, diagnóstico sin secretos. |
+| CA-05 | cumple | E-11 y comparación de configuración real con ejemplo: directiva de protección documentada y fragmento sin socket ni manejador PHP. E-10 conserva publicación y actualización con personalizaciones. |
+
+**Veredicto: coincide.** Delta 02 y métodos principales cubiertos; etapa cerrada. Sin desviaciones ni aplicaciones modificadas. La comprobación ambiental ya está realizada en el entorno Linux indicado; no certifica la configuración de un sitio concreto. Los pases anteriores se conservan íntegros. No implica publicación de una etiqueta.
