@@ -22,6 +22,8 @@ Apache comunica los errores internos a PHP mediante `REDIRECT_STATUS`; el router
 
 `.htaccess` bloquea archivos internos, ocultos y scripts PHP distintos de los puntos de entrada. Una cabecera AJAX o de webhook no autoriza su acceso. Las ubicaciones públicas y las descargas protegidas deben conservar sus reglas de autorización.
 
+El módulo `cron-runner` puede publicar otro punto de entrada exacto, `/gframe-cron.php`, para [cron por HTTP](cron-runner.md#cuatro-caminos-de-ejecución). Las reglas distribuidas permiten ese nombre, pero el propio endpoint devuelve 404 si no se habilita HTTP con un secreto válido. En Nginx debe existir un manejador PHP que procese ese archivo con la configuración real del sitio y preserve Authorization; no basta con retirar el bloqueo del fragmento. Mantenga `fastcgi_intercept_errors off` para sus respuestas de diagnóstico y autenticación.
+
 ## Nginx
 
 El instalador y `composer gframe:update` publican `nginx.conf`. Es un fragmento para incluir dentro del bloque `server` del sitio, no un virtual host completo. No instala ni recarga Nginx automáticamente.

@@ -242,6 +242,7 @@ final class ProjectUpdateServiceTest extends TestCase
         self::assertSame(1, (int)$database->query('SELECT COUNT(*) FROM cron_runtime')->fetchColumn());
         $updater->update($project, [], $database, 'sqlite');
         self::assertStringContainsString('CronExecutor::run', file_get_contents($project . '/bin/gframe-cron.php'));
+        self::assertStringContainsString('CronHttpEndpoint::handle', file_get_contents($project . '/gframe-cron.php'));
         self::assertStringContainsString('CsrfToken::fields()', file_get_contents($project . '/app/views/templates/header.php'));
         self::assertSame(1, (int)$database->query('SELECT COUNT(*) FROM cron_tasks')->fetchColumn());
         self::assertSame('GFRAME_CRON_MODE=real', file_get_contents($project . '/.env'));

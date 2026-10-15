@@ -33,7 +33,9 @@ final class CronRuntime
     {
         $mode = (string)Environment::get('GFRAME_CRON_MODE', ConfigRepository::get('cron.mode', 'real'));
         if (!in_array($mode, ['real', 'virtual'], true)) throw new RuntimeException('GFRAME_CRON_MODE debe ser real o virtual.');
-        $values = ['mode' => $mode];
+        $executor = (string)Environment::get('GFRAME_CRON_EXECUTOR', ConfigRepository::get('cron.executor', 'cli'));
+        if (!in_array($executor, ['cli', 'http'], true)) throw new RuntimeException('GFRAME_CRON_EXECUTOR debe ser cli o http.');
+        $values = ['mode' => $mode, 'executor' => $executor];
         foreach (['min_interval' => ['GFRAME_CRON_MIN_INTERVAL', 60, 1, 86400], 'batch_limit' => ['GFRAME_CRON_BATCH_LIMIT', 10, 1, 100]] as $key => [$environment, $default, $min, $max]) {
             $value = Environment::get($environment, ConfigRepository::get('cron.' . $key, $default));
             $validated = filter_var($value, FILTER_VALIDATE_INT);

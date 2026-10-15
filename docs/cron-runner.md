@@ -8,6 +8,8 @@ La selección real/virtual y la coordinación compartida están disponibles desd
 
 El módulo publica `bin/gframe-cron.php` y crea las tablas `cron_tasks` y `cron_runtime`. En modo real, configure el cron del servidor para ejecutar periódicamente:
 
+También publica `gframe-cron.php` en la raíz para ejecución HTTP autenticada, cuando se selecciona ese ejecutor. Este archivo no abre sesiones ni pasa por Router.
+
 ```bash
 php bin/gframe-cron.php 50
 ```
@@ -152,6 +154,7 @@ Las variables siguientes se leen directamente desde `.env`, sin necesidad de añ
 
 ```dotenv
 GFRAME_CRON_MODE=virtual
+GFRAME_CRON_EXECUTOR=cli
 GFRAME_CRON_MIN_INTERVAL=60
 GFRAME_CRON_BATCH_LIMIT=10
 # Si PHP CLI no se detecta automáticamente:
@@ -160,7 +163,37 @@ GFRAME_PHP_BINARY=/usr/bin/php
 
 `GFRAME_CRON_MODE` admite `real` (valor predeterminado) o `virtual`. El intervalo admite enteros de 1 a 86400 segundos y el límite de 1 a 100 tareas; sus valores predeterminados son 60 y 10. Un valor inválido impide lanzar trabajo y queda en el diagnóstico; no se convierte en ejecución ilimitada. Las claves internas equivalentes son `cron.mode`, `cron.min_interval` y `cron.batch_limit`; `.env` tiene prioridad. El argumento del CLI puede sobrescribir el límite de esa pasada.
 
-En modo virtual, Router registra un disparador al cierre de las peticiones web y AJAX, públicas o administrativas. Se cierra la escritura de sesión y, con PHP-FPM, se finaliza la respuesta mediante `fastcgi_finish_request` antes de comprobar/lanzar trabajo. En otros servidores, el lanzamiento tiene un coste breve, pero la petición no espera a los handlers. No se activan peticiones API, webhook, SSE ni procesos CLI. El worker usa `Async`, vuelve a cargar el proyecto y ejecuta los mismos registradores del CLI. No requiere polling JavaScript ni un endpoint público que permita elegir clases o tareas.
+En modo virtual, Router registra un disparador al cierre de las peticiones web y AJAX, públicas o administrativas. En modo real no registra ese callback ni consulta el almacenamiento del cron desde las visitas. Se cierra la escritura de sesión y, con PHP-FPM, se finaliza la respuesta mediante `fastcgi_finish_request` antes de comprobar/lanzar trabajo. En otros servidores, el lanzamiento tiene un coste, pero la petición no espera a los handlers. No se activan peticiones API, webhook, SSE ni procesos CLI. Con ejecutor `cli` el worker usa `Async`; con `http` envía una petición interna al endpoint autenticado. Ambos cargan el mismo proyecto y registradores. No requieren polling JavaScript ni permiten elegir clases o tareas desde la petición.
+
+### Cuatro caminos de ejecución
+
+| Modo | Ejecutor | Activación |
+|---|---|---|
+| real | cli | El programador del servidor ejecuta `php bin/gframe-cron.php`. |
+| real | http | El programador envía un POST autenticado a `gframe-cron.php`. No hay disparador por visitas. |
+| virtual | cli | Una visita lanza Async; requiere PHP CLI y exec desde PHP web. |
+| virtual | http | Una visita envía un POST interno sin esperar los handlers; no usa exec. |
+
+`GFRAME_CRON_EXECUTOR` admite `cli` (predeterminado) o `http`. En modo real describe la vía configurada en el programador externo y determina si se habilita el endpoint; GFrame no instala el cron del sistema. El comando CLI manual permanece disponible en ambos casos para diagnóstico y recuperación.
+
+Para HTTP configure un secreto aleatorio de al menos 32 caracteres ASCII sin espacios, compartido por las instancias, y una URL absoluta confiable:
+
+```dotenv
+GFRAME_CRON_MODE=real
+GFRAME_CRON_EXECUTOR=http
+GFRAME_CRON_HTTP_SECRET=REEMPLAZAR_POR_UN_SECRETO_ALEATORIO_DE_64_CARACTERES
+APP_URL=https://ejemplo.test
+```
+
+Genere el secreto mediante `php -r "echo bin2hex(random_bytes(32));"`. No lo incluya en URLs, HTML ni archivos versionados. El endpoint acepta exclusivamente POST con cabecera `Authorization: Bearer SECRETO`; configure el proxy para preservar Authorization. Sin secreto válido o con executor=cli, devuelve 404. Un método incorrecto devuelve 405 y una credencial incorrecta 403. El POST no acepta handlers, payloads de negocio ni límites: estos se obtienen del servidor. En modo virtual también exige un ticket interno vigente que no se configura en el programador externo.
+
+Para cron real HTTP, guarde la cabecera en un archivo privado fuera de la raíz pública, con permisos restrictivos, y programe por ejemplo `curl --fail --silent --show-error --request POST --header @/ruta/privada/cron.headers https://ejemplo.test/gframe-cron.php`. Ese archivo contiene una línea `Authorization: Bearer SECRETO`. No se siguen redirecciones. La llamada real espera el resultado y puede usar su estado HTTP; una pasada ocupada u omitida devuelve `cron_skipped` sin ejecutar trabajo.
+
+El lanzador virtual HTTP usa sockets con TLS verificado, plazo de conexión/escritura de dos segundos y sin leer la respuesta. Solo obtiene el destino de APP_URL, incluido su subdirectorio; no usa Host enviado por visitantes. En producción use HTTPS. El envío correcto no demuestra que el endpoint aceptase o terminase la tarea: revise `--status`; si el servidor rechaza o redirige, el ticket caduca. No se cambia silenciosamente a CLI ante fallo. El endpoint usa `ignore_user_abort` para poder continuar al cerrar el socket del lanzador.
+
+Sincronice también `.htaccess` o `nginx.conf`: las reglas distribuidas permiten exclusivamente este nombre PHP adicional. En Nginx, el bloque PHP de su servidor debe procesar `/gframe-cron.php` con el mismo PHP-FPM y parámetros que index.php, conservar Authorization y usar `fastcgi_intercept_errors off` para mantener las respuestas del endpoint. El fragmento del framework no instala sockets ni handlers PHP. Si su servidor solo tiene un `location = /index.php`, añada el equivalente exacto para `/gframe-cron.php` con sus valores reales de despliegue; no abra todos los PHP de la aplicación. Compruebe un POST sin credencial: debe devolver 403 cuando está habilitado, nunca HTML del Router.
+
+HTTP sigue consumiendo un proceso PHP web mientras ejecuta, y necesita conectividad interna y capacidad libre del servidor. PHP CLI evita ocupar ese grupo de procesos, pero necesita permisos de ejecución. No confunda HTTP asíncrono con ausencia de consumo de recursos; una instalación sin loopback funcional debe usar CLI o corregir su conectividad.
 
 El intervalo se aplica globalmente por almacenamiento. MySQL utiliza el reloj del servidor de base de datos para esta coordinación. Antes de lanzar se reserva un ticket interno que caduca a los 120 segundos si el worker no llega a arrancar. Un worker retrasado no ejecuta con un ticket vencido o sustituido. Si falla el lanzamiento, se libera solo su ticket, se conserva el intervalo mínimo y se registra el error. Mientras otro runner mantiene el bloqueo, no se lanza otro. El cron real puede seguir ejecutándose en modo virtual y comparte la exclusión; normalmente conviene elegir una sola fuente de activación.
 

@@ -14,5 +14,6 @@ return [
     ],
     'application' => [
         ['source' => 'application/bin/gframe-cron.php', 'target' => 'bin/gframe-cron.php'],
+        ['source' => 'application/gframe-cron.php', 'target' => 'gframe-cron.php'],
     ],
 ];

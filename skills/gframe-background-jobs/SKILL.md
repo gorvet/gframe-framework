@@ -19,7 +19,7 @@ Choose execution by the requested lifetime and observable result:
 
 Read [Async and persistent cron](references/async-and-cron.md) for jobs/workers. Read [heartbeat channels](references/heartbeat-channels.md) only for browser polling. Campaign and mail specialists own their business payloads and delivery policy; do not recreate them here.
 
-General scheduled work supports `.env` selection of real or virtual cron. Use the shared CronExecutor/CronRuntime path; do not build a domain heartbeat or public execution endpoint. Virtual activation and CSRF/session policy are independent. Include the cron_runtime migration and published CLI in upgrade checks.
+General scheduled work supports `.env` selection of real or virtual cron and cli/http executor. Use the shared CronExecutor/CronRuntime path; do not build a domain heartbeat or arbitrary execution endpoint. The distributed POST HTTP endpoint requires a configured server bearer and, in virtual mode, a valid launch ticket; it accepts no handler/payload selection and starts no session. Real mode never registers the traffic callback. Include the cron_runtime migration and published CLI/HTTP entries in upgrade checks.
 
 Identify the loaded package/version and project bootstrap. Full guides live in that package at `docs/async.md`, `docs/cron-runner.md`, `docs/procesos-segundo-plano.md` and `docs/heartbeat.md`. Implement application handlers/overrides for project needs; modify standalone originals only for an authorized framework task.
 

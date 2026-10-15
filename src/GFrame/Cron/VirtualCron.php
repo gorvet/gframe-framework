@@ -11,6 +11,12 @@ final class VirtualCron
     public static function register(string $channel): void
     {
         if (self::$registered || PHP_SAPI === 'cli' || !in_array($channel, ['web', 'ajax'], true)) return;
+        try {
+            if (CronRuntime::settings()['mode'] !== 'virtual') return;
+        } catch (Throwable $exception) {
+            self::logFailure($exception->getMessage());
+            return;
+        }
         self::$registered = true;
         register_shutdown_function(static function (): void {
             $error = error_get_last();
@@ -34,6 +40,7 @@ final class VirtualCron
             $limit = $settings['batch_limit'];
             $job = static function () use ($limit, $token): void { CronExecutor::run($limit, $token); };
             if ($launcher !== null) $launcher($job);
+            elseif ($settings['executor'] === 'http') (new CronHttpLauncher())->launch($token);
             else (new \Async())->create($job);
             return ['status' => 'success', 'code' => 'cron_launched'];
         } catch (Throwable $exception) {

@@ -17,6 +17,7 @@ return [
     ],
     'cron' => [
         'mode' => 'real',
+        'executor' => 'cli',
         'min_interval' => 60,
         'batch_limit' => 10,
     ],

@@ -11,10 +11,10 @@ Options -Indexes
     RewriteRule ^(?:bin|config|core|deployment|packages|storage)(?:/|$) - [F,NC]
     RewriteRule ^(?:\.env(?:\..*)?|composer\.(?:json|lock)|README\.md)$ - [F,NC]
     RewriteRule (^|/)\. - [F,NC]
-    RewriteRule ^(?!index\.php$|install\.php$).*\.(?:php[0-9]*|phtml|phar|sql|sqlite|sqlite3|log|bak)(?:/|$) - [F,NC]
+    RewriteRule ^(?!index\.php$|install\.php$|gframe-cron\.php$).*\.(?:php[0-9]*|phtml|phar|sql|sqlite|sqlite3|log|bak)(?:/|$) - [F,NC]
 
     # Solo estas ubicaciones entregan archivos físicos directamente.
-    RewriteRule ^(?:index|install)\.php$ - [END]
+    RewriteRule ^(?:index|install|gframe-cron)\.php$ - [END]
     RewriteRule ^public/ - [END]
     # Biblioteca pública estándar; no concede permisos sobre otras fuentes.
     RewriteRule ^uploads/(?:library|(?:user|tenant)/[1-9][0-9]*/library)/ - [END]

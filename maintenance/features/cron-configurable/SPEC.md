@@ -23,8 +23,8 @@
 ## Requisitos
 
 - **R-01 — Modos:** `.env` selecciona cron real o virtual. En modo real el tráfico HTTP no lanza workers; el administrador configura el cron del servidor por separado. Deshabilitar el disparador virtual no elimina tareas ni desactiva el CLI.
-- **R-02 — Activación:** peticiones públicas y administrativas atendidas por GFrame pueden provocar una pasada virtual. No depende de polling, formularios, sesión ni un endpoint público de ejecución. Excluir procesos CLI, workers y canales persistentes del disparador para evitar recursión y alterar respuestas de streaming.
-- **R-03 — Segundo plano:** usar `Async` para ejecutar handlers fuera de la petición. La comprobación y el lanzamiento tienen un coste acotado; no se promete coste HTTP nulo. El fallo del cron no convierte en error la operación HTTP principal.
+- **R-02 — Activación:** peticiones públicas y administrativas atendidas por GFrame pueden provocar una pasada virtual. No depende de polling, formularios ni sesión. La ampliación 04 permite un endpoint HTTP autenticado sin selección de código. Excluir procesos CLI, workers y canales persistentes del disparador para evitar recursión y alterar respuestas de streaming.
+- **R-03 — Segundo plano:** usar `Async` para CLI o un POST interno sin esperar handlers para HTTP, según GFRAME_CRON_EXECUTOR. La comprobación y el lanzamiento tienen un coste acotado; no se promete coste HTTP nulo. El fallo del cron no convierte en error la operación HTTP principal.
 - **R-04 — Configuración:** intervalo mínimo y máximo de tareas por pasada configurables desde `.env`, con validación, valores internos por defecto y documentación. Las variables, valores y límites definitivos se fijan en la etapa 02.
 - **R-05 — Concurrencia:** coordinación atómica compartida por instancias de una misma instalación y por ambos mecanismos. Un archivo local o una variable PHP no satisfacen este requisito. Separar la reserva de lanzamiento de la propiedad de ejecución.
 - **R-06 — Recuperación:** recuperar lanzamientos abandonados y procesos fallidos; un trabajador antiguo no puede liberar el bloqueo ni finalizar la reserva de un sucesor. No recuperar una ejecución viva únicamente porque su handler superó un tiempo fijo. Definir cómo se comprueba la vitalidad durante handlers largos y qué ocurre cuando se pierde la propiedad.
@@ -55,3 +55,7 @@
 - [Cron actual](../../../docs/cron-runner.md).
 - [Async](../../../docs/async.md).
 - [WP-Cron, referencia conceptual](https://developer.wordpress.org/plugins/cron/): la actividad del sitio ofrece oportunidades de ejecución; no constituye un reloj del sistema.
+
+## Ampliación aprobada — etapa 04
+
+Cron real/virtual y vía cli/http son combinaciones autorizadas. Real no registra el callback virtual; HTTP solo se habilita con executor=http y secreto del servidor. El cron real sigue configurándose externamente. Ver [conciliación 04](04-ejecutor-http/CONCILIACION.md).

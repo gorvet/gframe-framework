@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## Sin publicar
+
+- Ejecutor HTTP autenticado para cron real o virtual, seleccionable mediante GFRAME_CRON_EXECUTOR; el modo real ya no registra callbacks por visitas. Publicación del endpoint sin sesión y transporte virtual sin exec.
+
 ## 4.0.0 — 15 de octubre de 2026
 
 - Cron real o virtual configurable desde `.env`, disparador web/AJAX mediante Async, coordinación compartida con el CLI, recuperación tras caídas y diagnóstico `--status`. Incluye migraciones MySQL/SQLite y guía de actualización.

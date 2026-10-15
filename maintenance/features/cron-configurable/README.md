@@ -37,3 +37,7 @@
 | R-11 | 01, 02; integración y regresión en 03 | Concurrencia y proceso externo | MySQL/SQLite, Windows/Linux | ambiental |
 
 Los esquemas y migraciones necesarios para 01 están implementados. Las conciliaciones están cerradas y sus archivos son el estado canónico. La etapa 03 conserva pendiente la validación Linux; no hay auditoría ni cierre de etapas. Ver VERIFICACION.md. Bloqueo: acceso a Linux o ejecución de CI; revisión prevista 2026-10-16.
+
+## Ampliación del ejecutor
+
+[Etapa 04: CLI y HTTP](04-ejecutor-http/CONCILIACION.md). Estado: cerrada. [Tareas principales auditadas](04-ejecutor-http/TAREAS.md); [delta 01 implementado](04-ejecutor-http/TAREAS-delta-01.md). [Auditoría](04-ejecutor-http/AUDIT.md), pase 2: coincide, 33 pruebas y 1040 aserciones, dos pruebas de servidores reales omitidas. Sin trabajo activo de esta etapa. No se reabren ni se cierran auditorías anteriores; no implica publicación ni validación del servidor de producción.

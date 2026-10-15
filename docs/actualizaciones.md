@@ -40,6 +40,10 @@ La vista previa no modifica archivos, la base de datos ni el registro de instala
 
 ## Proyectos anteriores
 
+### Ejecutor HTTP del cron
+
+Después de instalar la versión que incluya el ejecutor HTTP, sincronice `cron-runner` con la vista previa y `--preserve-custom`: ahora publica también `gframe-cron.php` en la raíz. No requiere una migración nueva sobre el esquema cron de 4.0.0. `.env` se conserva: añada `GFRAME_CRON_EXECUTOR=cli|http` y, solo para HTTP, `GFRAME_CRON_HTTP_SECRET` y APP_URL absoluta. Sin executor explícito se conserva CLI. Consulte [los cuatro caminos](cron-runner.md#cuatro-caminos-de-ejecución), su autenticación y requisitos de hosting. Verifique la propagación de Authorization, un rechazo sin credencial y una tarea inocua. En real, las visitas no registran el disparador virtual. El comando CLI sigue disponible; el programador del servidor debe adoptar explícitamente la llamada PHP o HTTP elegida.
+
 ### Actualización a 4.0.0: cron configurable y CSRF de visitantes
 
 La etiqueta `v4.0.0` corresponde a Composer `4.0.0`. Es una versión mayor porque habilita CSRF en las operaciones públicas de Auth, requiere la coordinación persistente del scheduler y cambia el código de salida del CLI cuando falla un handler. Prepare primero la actualización de cada aplicación en desarrollo o staging, ajuste la restricción a `^4.0` y conserve su `composer.lock` validado. Si su restricción actual está en 2.x, revise también [la transición a 3.0.0](release-3.0.0.md), especialmente si utilizaba las relaciones genéricas de medios.
