@@ -2,6 +2,8 @@
 
 `cron-runner` registra y ejecuta tareas programadas mediante cron real del servidor o cron virtual activado por actividad HTTP. Ambos mecanismos utilizan el mismo scheduler y la misma protección contra concurrencia. Puede usarse para campañas, mantenimiento, limpieza y otros procesos generales.
 
+La selección real/virtual y la coordinación compartida están disponibles desde GFrame 4.0.0. Antes de actualizar un runner anterior, revise [la migración y sus cambios de contrato](actualizaciones.md#actualización-a-400-cron-configurable-y-csrf-de-visitantes).
+
 ## Instalación
 
 El módulo publica `bin/gframe-cron.php` y crea las tablas `cron_tasks` y `cron_runtime`. En modo real, configure el cron del servidor para ejecutar periódicamente:

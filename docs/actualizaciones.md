@@ -40,9 +40,9 @@ La vista previa no modifica archivos, la base de datos ni el registro de instala
 
 ## Proyectos anteriores
 
-### Cron configurable y CSRF de visitantes
+### Actualización a 4.0.0: cron configurable y CSRF de visitantes
 
-Estas capacidades requieren una versión publicada que incluya sus cambios; un commit local no está disponible automáticamente para los sitios. Prepare primero la actualización de cada aplicación en desarrollo o staging, fije la versión y conserve su `composer.lock` validado. Si su restricción actual está en 2.x, revise también [la transición a 3.0.0](release-3.0.0.md), especialmente si utilizaba las relaciones genéricas de medios.
+La etiqueta `v4.0.0` corresponde a Composer `4.0.0`. Es una versión mayor porque habilita CSRF en las operaciones públicas de Auth, requiere la coordinación persistente del scheduler y cambia el código de salida del CLI cuando falla un handler. Prepare primero la actualización de cada aplicación en desarrollo o staging, ajuste la restricción a `^4.0` y conserve su `composer.lock` validado. Si su restricción actual está en 2.x, revise también [la transición a 3.0.0](release-3.0.0.md), especialmente si utilizaba las relaciones genéricas de medios.
 
 1. Detenga los disparadores antiguos y el cron del servidor durante la migración y espere a que terminen los workers existentes. Los ejecutores antiguos no conocen el bloqueo nuevo.
 2. Ajuste la restricción de `gorvet/gframe` a la versión publicada elegida y ejecute `composer update gorvet/gframe` en desarrollo/staging.
