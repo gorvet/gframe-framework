@@ -21,6 +21,10 @@ final class ServerRoutingTest extends TestCase
     public function testNginxFragmentDoesNotContainProjectOrPanelConfiguration(): void
     {
         $config = (string)file_get_contents(dirname(__DIR__) . '/resources/skeleton/nginx.conf');
+        self::assertStringContainsString('# location = /gframe-cron.php {', $config);
+        self::assertStringContainsString('#     fastcgi_pass unix:/run/php/php8.3-fpm.sock;', $config);
+        self::assertStringContainsString('#     fastcgi_ignore_client_abort on;', $config);
+        $config = preg_replace('/^\s*#.*$/m', '', $config);
         foreach (['server_name ', 'listen ', 'ssl_certificate', 'enable-php-81', 'codice.', 'botzy.', 'Access-Control-Allow-Origin', 'http_x_requested_with', 'http_x_webhook_wapi', 'index.php/$1', 'error_code='] as $projectSpecific) self::assertStringNotContainsString($projectSpecific, $config);
         foreach (['fastcgi_pass ', 'fastcgi_param ', '$gframe_php', 'location = /index.php', 'location = /install.php'] as $phpHandler) self::assertStringNotContainsString($phpHandler, $config);
         self::assertStringContainsString('nginx\\.conf|composer', $config);

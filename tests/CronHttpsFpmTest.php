@@ -26,7 +26,11 @@ final class CronHttpsFpmTest extends TestCase
             $autoload = var_export(dirname(__DIR__) . '/packages/autoload.php', true);
             file_put_contents($root . '/core/Load.php', '<?php require_once ' . $autoload . '; GFrame\Foundation\Bootstrap::boot(dirname(__DIR__));');
             copy(dirname(__DIR__) . '/resources/modules/cron-runner/application/gframe-cron.php', $root . '/gframe-cron.php');
-            copy(dirname(__DIR__) . '/resources/skeleton/nginx.conf', $root . '/nginx-routes.conf');
+            $routes = file_get_contents(dirname(__DIR__) . '/resources/skeleton/nginx.conf');
+            $routes = preg_replace_callback('/^# location = \/gframe-cron\.php \{.*?^# \}/ms', static fn(array $match): string => preg_replace('/^# ?/m', '', $match[0]), $routes);
+            $routes = str_replace('fastcgi_pass unix:/run/php/php8.3-fpm.sock;', 'fastcgi_pass 127.0.0.1:' . $fpmPort . ';', $routes);
+            $routes = str_replace('include fastcgi_params;', 'include /etc/nginx/fastcgi_params;', $routes);
+            file_put_contents($root . '/nginx-routes.conf', $routes);
             file_put_contents($root . '/config/app.php', '<?php return ' . var_export(['app' => ['url' => $base], 'database' => ['default' => 'main', 'connections' => ['main' => ['driver' => 'sqlite', 'path' => $root . '/tasks.sqlite']]]], true) . ';');
             file_put_contents($root . '/storage/gframe-installed.json', '{"modules":["cron-runner"]}');
             $environment = "GFRAME_CRON_EXECUTOR=http\nGFRAME_CRON_HTTP_SECRET={$secret}\nAPP_URL={$base}\nGFRAME_CRON_BATCH_LIMIT=1\nGFRAME_CRON_MIN_INTERVAL=60\n";
@@ -60,7 +64,7 @@ PHP);
             $database->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/cron-runner/database/sqlite.sql'));
             $database->exec("INSERT INTO cron_tasks(task_key,handler_class,payload_json,scheduled_at) VALUES ('https','HttpsCronHandler','{}','2000-01-01 00:00:00')");
             file_put_contents($root . '/fpm.conf', "[global]\ndaemonize = no\npid = {$root}/fpm.pid\nerror_log = {$root}/logs/fpm.log\n[cron-test]\nuser = nobody\ngroup = nogroup\nlisten = 127.0.0.1:{$fpmPort}\npm = static\npm.max_children = 3\nclear_env = yes\ncatch_workers_output = yes\nphp_admin_value[openssl.cafile] = {$root}/cert.pem\nphp_admin_value[opcache.enable] = 0\nphp_admin_value[error_log] = {$root}/logs/php.log\nphp_admin_flag[log_errors] = on\n");
-            file_put_contents($root . '/nginx.conf', "worker_processes 1; daemon off; master_process off; pid {$root}/nginx.pid; error_log {$root}/logs/nginx.log; events { worker_connections 64; } http { access_log {$root}/logs/access.log; client_body_temp_path {$root}/body; fastcgi_temp_path {$root}/fastcgi; server { listen 127.0.0.1:{$httpPort} ssl; server_name localhost; ssl_certificate {$root}/cert.pem; ssl_certificate_key {$root}/key.pem; root {$root}; include {$root}/nginx-routes.conf; location ~ \\.php$ { try_files \$uri =404; include /etc/nginx/fastcgi_params; fastcgi_pass 127.0.0.1:{$fpmPort}; fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name; fastcgi_param HTTP_AUTHORIZATION \$http_authorization; fastcgi_intercept_errors off; fastcgi_ignore_client_abort on; } } }");
+            file_put_contents($root . '/nginx.conf', "worker_processes 1; daemon off; master_process off; pid {$root}/nginx.pid; error_log {$root}/logs/nginx.log; events { worker_connections 64; } http { access_log {$root}/logs/access.log; client_body_temp_path {$root}/body; fastcgi_temp_path {$root}/fastcgi; server { listen 127.0.0.1:{$httpPort} ssl; server_name localhost; ssl_certificate {$root}/cert.pem; ssl_certificate_key {$root}/key.pem; root {$root}; include {$root}/nginx-routes.conf; location ~ \\.php$ { try_files \$uri =404; include /etc/nginx/fastcgi_params; fastcgi_pass 127.0.0.1:{$fpmPort}; fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name; fastcgi_param HTTP_AUTHORIZATION \$http_authorization; fastcgi_intercept_errors off; } } }");
             foreach ([[$fpm, '-F', '-y', $root . '/fpm.conf'], [$nginx, '-p', $root . '/', '-c', $root . '/nginx.conf']] as $command) {
                 $process = proc_open($command, [0 => ['pipe', 'r'], 1 => ['file', $root . '/logs/process.log', 'a'], 2 => ['file', $root . '/logs/process.log', 'a']], $pipes, $root);
                 self::assertIsResource($process);

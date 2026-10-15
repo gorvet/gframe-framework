@@ -72,7 +72,7 @@ Solo tras una validación satisfactoria, recarga Nginx mediante el mecanismo del
 ### Enrutamiento y protección
 
 - Solo las ubicaciones públicas autorizadas entregan archivos existentes; las demás peticiones pasan por `/index.php`, sin añadir segmentos a `SCRIPT_NAME` ni a la URL.
-- Solo `/index.php` e `/install.php` se ejecutan como PHP. El instalador se bloquea al completar la instalación; puede denegarse explícitamente en producción.
+- Los puntos de entrada PHP son `/index.php`, `/install.php` y, si se instala cron-runner, `/gframe-cron.php`. El instalador se bloquea al completar la instalación; puede denegarse explícitamente en producción.
 - Los directorios internos, archivos ocultos, Composer, bases de datos, logs, copias de seguridad y otros scripts PHP no son públicos.
 - Una cabecera AJAX o de webhook no elimina esos bloqueos.
 - Los tokens ACME se permiten únicamente bajo `/.well-known/acme-challenge/`, con nombres de token válidos.
@@ -88,7 +88,7 @@ El módulo `cron-runner` puede publicar otro punto de entrada exacto, `/gframe-c
 
 ### Endpoint HTTP del cron
 
-Añada dentro del `server` de Nginx un manejador exacto con el destino PHP-FPM real del sitio. Ejemplo para un socket habitual de Ubuntu con PHP 8.3:
+El `nginx.conf` publicado por GFrame ya incluye este bloque de ejemplo, completamente comentado. Para habilitar cron HTTP, copie en su línea `fastcgi_pass` la misma dirección que utiliza la configuración PHP actual del proyecto y descomente el bloque completo. La dirección mostrada es solo un ejemplo para Ubuntu con PHP 8.3:
 
 ```nginx
 location = /gframe-cron.php {
@@ -102,7 +102,13 @@ location = /gframe-cron.php {
 }
 ```
 
-Adapte el socket y la ruta del archivo `fastcgi_params` al servidor. `fastcgi_ignore_client_abort on` permite entregar y procesar el POST interno aunque el lanzador virtual cierre la conexión. Sin esta directiva Nginx puede registrar 499 y cancelar la petición antes de que PHP ejecute `ignore_user_abort`. Aplíquela a este endpoint; el fragmento reutilizable no instala manejadores ni cambia la política de desconexión de otras rutas. Compruebe la configuración con `nginx -t` antes de recargar el servicio.
+No cree una conexión PHP distinta para el cron: copie el valor completo de `fastcgi_pass`, sea un socket o una dirección con puerto, que ya usa el sitio. Adapte también la ruta de `fastcgi_params` si el servidor lo requiere. Al cambiar la versión o la configuración de PHP, compruebe si cambia esa dirección y actualícela también en este bloque. Si utiliza una dirección estable, no necesita cambiarla solo por actualizar PHP.
+
+Mantenga todo el bloque comentado hasta completar la dirección; no active un bloque PHP dejando únicamente `fastcgi_pass` comentado, porque Nginx podría entregar el código como un archivo estático. No duplique otro `location = /gframe-cron.php` ya configurado. Para cron CLI no es necesario activar este bloque.
+
+`fastcgi_ignore_client_abort on` permite entregar y procesar el POST interno aunque el lanzador virtual cierre la conexión. Sin esta directiva Nginx puede registrar 499 y cancelar la petición antes de que PHP ejecute `ignore_user_abort`. La opción queda limitada al cron, sin cambiar la desconexión de otras rutas. Compruebe la configuración con `nginx -t` antes de recargar el servicio.
+
+Este bloque corresponde exclusivamente a Nginx. Apache no utiliza este archivo ni necesita estas directivas: el endpoint PHP ya llama a `ignore_user_abort(true)`. Si hay Nginx u otro proxy delante de Apache, compruebe también que ese proxy no cancele la petición cuando el lanzador cierre la conexión.
 
 ### Errores del servidor y errores de la aplicación
 
