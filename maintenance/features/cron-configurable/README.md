@@ -41,3 +41,5 @@ Los esquemas y migraciones necesarios para 01 están implementados. Las concilia
 ## Ampliación del ejecutor
 
 [Etapa 04: CLI y HTTP](04-ejecutor-http/CONCILIACION.md). Estado: cerrada. [Tareas principales auditadas](04-ejecutor-http/TAREAS.md); [delta 01 implementado](04-ejecutor-http/TAREAS-delta-01.md). [Auditoría](04-ejecutor-http/AUDIT.md), pase 2: coincide, 33 pruebas y 1040 aserciones, dos pruebas de servidores reales omitidas. Sin trabajo activo de esta etapa. No se reabren ni se cierran auditorías anteriores; no implica publicación ni validación del servidor de producción.
+
+Validación ambiental posterior: pase 3 no coincide; estado actual implementando, trabajo activo [delta 02](04-ejecutor-http/TAREAS-delta-02.md). La prueba real HTTPS/FPM detectó cancelación del POST por Nginx; se conserva el cierre local anterior como histórico.

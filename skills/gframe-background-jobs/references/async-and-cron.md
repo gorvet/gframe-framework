@@ -30,6 +30,8 @@ The module publishes `bin/gframe-cron.php`; `GFrame\Cron\CronExecutor` prepares 
 
 ## Results and Recovery
 
+For virtual HTTP behind Nginx/PHP-FPM, the deployment's exact `/gframe-cron.php` FastCGI handler must preserve Authorization, disable interception of PHP errors, and set `fastcgi_ignore_client_abort on`. Otherwise closing the launch socket can cancel forwarding before PHP starts; PHP's ignore_user_abort cannot protect a request that never reaches it. Keep this setting scoped to the cron endpoint. Other proxies must also allow processing after client disconnect. See the package's `docs/servidores-web.md` for the handler example; the reusable Nginx fragment intentionally defines no PHP handler.
+
 The scheduler owns an explicit worker error boundary and catches `Throwable`, including `TypeError`. It marks returned `status => error` or `failed` as failure, recording message/code and not rescheduling that task. Missing status retains legacy success; other statuses are not automatically classified. Handler results are not persisted in full. Check older package versions before relying on these contracts, and review handlers that previously expected an error result to repeat.
 
 `reschedule => false` ends recurrence; an absent key repeats interval tasks. Next execution is interval plus the later of now/previous due date, not fixed local calendar time or catch-up of every missed turn. Batch success can include `data.failed > 0`; the published CLI exits 1 on batch or handler failure. A busy runner can exit 0 without doing work.

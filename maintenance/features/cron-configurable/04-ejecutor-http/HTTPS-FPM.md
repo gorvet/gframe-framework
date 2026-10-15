@@ -15,3 +15,5 @@ Skills canónicas aplicadas: gframe-orchestrator, gframe-framework-maintenance, 
 Comprueba POST autenticado, errores 403/405 preservados por FastCGI, endpoint sin cookie de sesión, rechazo de certificado no confiable y nombre incorrecto desde CronHttpLauncher, ticket virtual inválido sin efectos, envío virtual con TLS confiable, respuesta anterior a finalización del handler y disponibilidad de la misma sesión mientras el handler espera. Verifica límite de una tarea y estado persistido tras liberar la barrera. No utiliza cron ni sitios de producción.
 
 Estado: preparado para ejecución ambiental en CI. En Windows se omite explícitamente porque no hay PHP-FPM disponible. No se declara validado hasta obtener el resultado del job Linux.
+
+Primera ejecución ambiental (6abcc24): fallo reproducible, POST virtual cancelado con 499 antes de llegar al handler. Véanse pase 3 de AUDIT.md y delta 02. Corrección en verificación: fastcgi_ignore_client_abort on en el manejador Nginx; guía de despliegue y ejemplo exacto actualizados. Certificados, autenticación y ejecución real HTTP ya superaron sus aserciones antes del fallo.

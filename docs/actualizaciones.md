@@ -157,6 +157,8 @@ Una instalación limpia y una actualización desde una versión anterior son rec
 
 ## Migraciones y recuperación
 
+Si habilita cron virtual HTTP con Nginx/PHP-FPM, configure también `fastcgi_ignore_client_abort on` en el manejador del endpoint. Sin esa opción el cierre del socket interno puede cancelar el lanzamiento. Consulte el [manejador exacto de cron](servidores-web.md#endpoint-http-del-cron).
+
 SQLite ejecuta cada migración en una transacción. MySQL aplica DDL con commits implícitos, por lo que GFrame no lo envuelve en una transacción y registra la migración únicamente cuando terminan todas sus sentencias. No cambie una migración publicada o parcialmente aplicada.
 
 Las adiciones simples de columnas ya presentes se omiten solo cuando tipo, nulabilidad y valor predeterminado coinciden. Esto permite actualizar los esquemas históricos de autenticación sin duplicar `authorization_version`. Una definición incompatible detiene la actualización. No ejecute migraciones dentro de una transacción de la aplicación ni lance dos actualizaciones simultáneas.

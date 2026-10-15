@@ -52,3 +52,11 @@ Mismo baseline y entorno que el pase 1; delta 01 implementado, sin cambios al co
 Verificaciones globales y métodos de T1–T3 y delta cubiertos. Trazabilidad inversa revisada: cambios de runtime, módulo, esqueleto, documentación, skills y filtro CI pertenecen a T1–T3. Sin desviaciones de alcance. No se certifica HTTPS, PHP-FPM/proxy ni despliegue de producción: están expresamente fuera de la validación ambiental local acordada. No se cierran las etapas anteriores ni se publica una versión con este veredicto.
 
 Durante la implementación del delta una ejecución intermedia mostró que el diagnóstico puede pertenecer a una pasada vacía posterior; se corrigió la expectativa del test, manteniendo la comprobación de completed y attempts=1. La ejecución final E-04 no contiene fallos ni avisos PHP. La suite completa anterior queda como evidencia histórica en VERIFICACION.md, no como ejecución nueva de esta auditoría.
+
+## Pase 3 — validación ambiental posterior, 2026-10-15
+
+Baseline sin cambios. Snapshot 6abcc24; prueba nueva con Nginx 1.24, PHP-FPM 8.3 y TLS local en Ubuntu 24.04. **Veredicto: no coincide.**
+
+E-08: job 116710599386 de la ejecución https://github.com/gorvet/gframe-framework/actions/runs/38818977151; `php packages/phpunit/phpunit/phpunit --filter CronHttpsFpmTest`, salida 1, 1 prueba y 27 aserciones. POST real autenticado, rechazos de autenticación, certificados y tickets correctos. POST virtual interno termina en HTTP 499 en Nginx y el handler nunca empieza. La configuración documentada carece de `fastcgi_ignore_client_abort on`; cerrar el socket puede cancelar el envío a PHP-FPM antes de que ignore_user_abort de PHP tenga efecto.
+
+CA-01, CA-03 y CA-04: cumple según E-04/E-08. CA-02: no cumple en este entorno. CA-05: parcial, falta requisito de despliegue. El pase 2 permanece como resultado histórico local, con su exclusión ambiental original. Nuevo trabajo: [delta 02](TAREAS-delta-02.md), sin alterar el baseline.

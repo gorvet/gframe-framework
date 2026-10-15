@@ -24,6 +24,24 @@ Apache comunica los errores internos a PHP mediante `REDIRECT_STATUS`; el router
 
 El módulo `cron-runner` puede publicar otro punto de entrada exacto, `/gframe-cron.php`, para [cron por HTTP](cron-runner.md#cuatro-caminos-de-ejecución). Las reglas distribuidas permiten ese nombre, pero el propio endpoint devuelve 404 si no se habilita HTTP con un secreto válido. En Nginx debe existir un manejador PHP que procese ese archivo con la configuración real del sitio y preserve Authorization; no basta con retirar el bloqueo del fragmento. Mantenga `fastcgi_intercept_errors off` para sus respuestas de diagnóstico y autenticación.
 
+### Endpoint HTTP del cron
+
+Añada dentro del `server` de Nginx un manejador exacto con el destino PHP-FPM real del sitio. Ejemplo para un socket habitual de Ubuntu con PHP 8.3:
+
+```nginx
+location = /gframe-cron.php {
+    try_files $uri =404;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTP_AUTHORIZATION $http_authorization;
+    fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    fastcgi_intercept_errors off;
+    fastcgi_ignore_client_abort on;
+}
+```
+
+Adapte el socket y la ruta del archivo `fastcgi_params` al servidor. `fastcgi_ignore_client_abort on` permite entregar y procesar el POST interno aunque el lanzador virtual cierre la conexión. Sin esta directiva Nginx puede registrar 499 y cancelar la petición antes de que PHP ejecute `ignore_user_abort`. Aplíquela a este endpoint; el fragmento reutilizable no instala manejadores ni cambia la política de desconexión de otras rutas. Compruebe la configuración con `nginx -t` antes de recargar el servicio.
+
 ## Nginx
 
 El instalador y `composer gframe:update` publican `nginx.conf`. Es un fragmento para incluir dentro del bloque `server` del sitio, no un virtual host completo. No instala ni recarga Nginx automáticamente.
