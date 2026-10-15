@@ -217,6 +217,36 @@ final class ProjectUpdateServiceTest extends TestCase
         foreach ($expected as $path) self::assertContains($path, $preview['unchanged'], $path);
     }
 
+    public function testCronUpgradePreviewsMigrationPreservesCustomFilesAndPublishesNewExecutor(): void
+    {
+        $project = $this->temporaryPath . '/cron-project';
+        foreach (['bin', 'app/views/templates', 'storage'] as $directory) mkdir($project . '/' . $directory, 0775, true);
+        $database = new PDO('sqlite::memory:');
+        $database->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/cron-runner/database/sqlite.sql'));
+        MigrationRunner::frameworkDefault()->baseline($database, 'sqlite', ['cron-runner']);
+        $database->exec("DELETE FROM gframe_migrations WHERE migration LIKE '%202610150001_cron_runtime.sql'");
+        $database->exec('DROP TABLE cron_runtime');
+        $database->exec("INSERT INTO cron_tasks (task_key, handler_class, scheduled_at) VALUES ('preserved', 'ExistingHandler', '2030-01-01 00:00:00')");
+        file_put_contents($project . '/storage/gframe-installed.json', json_encode(['modules' => ['cron-runner']]));
+        file_put_contents($project . '/bin/gframe-cron.php', '<?php // ejecutor personalizado');
+        file_put_contents($project . '/app/views/templates/header.php', '<?php // cabecera personalizada');
+        file_put_contents($project . '/.env', 'GFRAME_CRON_MODE=real');
+        $updater = ProjectUpdateService::frameworkDefault();
+        $preview = $updater->update($project, [], $database, 'sqlite', true, true);
+        self::assertSame(1, $preview['migrations']['count']);
+        self::assertContains('bin/gframe-cron.php', $preview['conflicts']);
+        self::assertSame(0, (int)$database->query("SELECT COUNT(*) FROM sqlite_master WHERE name = 'cron_runtime'")->fetchColumn());
+        $preserved = $updater->update($project, [], $database, 'sqlite', true);
+        self::assertContains('app/views/templates/header.php', $preserved['conflicts']);
+        self::assertSame('<?php // ejecutor personalizado', file_get_contents($project . '/bin/gframe-cron.php'));
+        self::assertSame(1, (int)$database->query('SELECT COUNT(*) FROM cron_runtime')->fetchColumn());
+        $updater->update($project, [], $database, 'sqlite');
+        self::assertStringContainsString('CronExecutor::run', file_get_contents($project . '/bin/gframe-cron.php'));
+        self::assertStringContainsString('CsrfToken::fields()', file_get_contents($project . '/app/views/templates/header.php'));
+        self::assertSame(1, (int)$database->query('SELECT COUNT(*) FROM cron_tasks')->fetchColumn());
+        self::assertSame('GFRAME_CRON_MODE=real', file_get_contents($project . '/.env'));
+    }
+
     private function removeDirectory(string $path): void
     {
         if (!is_dir($path)) return;

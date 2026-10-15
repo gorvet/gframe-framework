@@ -45,7 +45,7 @@ final class AuthUiTest extends TestCase
         self::assertStringContainsString("Route::post('ajax/logout'", $ajax);
         self::assertStringContainsString("->middleware(['auth'])", $ajax);
         self::assertSame(9, substr_count($ajax, "->middleware(['honeypot', 'guest'])"));
-        self::assertSame(9, substr_count($ajax, "->excludeMiddleware(['CSRF'])"));
+        self::assertStringNotContainsString("->excludeMiddleware(['CSRF'])", $ajax);
         foreach (['ajax/verifyacount', 'ajax/validateacount', 'ajax/lostpassword', 'ajax/resetpassword'] as $route) {
             self::assertStringContainsString("Route::post('" . $route . "'", $ajax);
         }

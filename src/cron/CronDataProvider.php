@@ -99,9 +99,11 @@ class CronDataProvider extends ORM implements CronTaskRepository {
   }
 
   public function recoverStale(int $seconds): int {
-    $threshold = gmdate('Y-m-d H:i:s', time() - max(60, $seconds));
-    $result = $this->reset()->where('status', '=', 'processing')->where('locked_at', '<=', $threshold)->update([
-      'status' => 'pending', 'locked_at' => null, 'last_error' => 'La tarea fue recuperada después de superar el tiempo de bloqueo.',
+    $threshold = gmdate('Y-m-d H:i:s', time() - max(0, $seconds));
+    $query = $this->reset()->where('status', '=', 'processing');
+    if ($seconds > 0) $query->where('locked_at', '<=', $threshold);
+    $result = $query->update([
+      'status' => 'pending', 'locked_at' => null, 'last_error' => 'La tarea fue recuperada después de una interrupción del ejecutor.',
     ]);
     return (int)($result['affected'] ?? 0);
   }

@@ -20,6 +20,9 @@ El estado canónico de la reconstrucción documental y su backlog cerrado/abiert
 
 ## Otros documentos internos e históricos
 
+- [Feature de cron real o virtual configurable](features/cron-configurable/README.md).
+- [Feature de CSRF para visitantes](features/csrf-visitantes/README.md).
+
 - [Mejoras pendientes no urgentes](mejoras-pendientes.md).
 - [Hoja de ruta](roadmap.md).
 - [Plan de extracción](plan-extraccion.md).

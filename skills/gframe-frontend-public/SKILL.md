@@ -39,6 +39,7 @@ Examples:
 - Keep repeated public-view patterns in the application's shared CSS instead of duplicating them across page stylesheets.
 - If public route, render, or tenancy behavior does not fit the framework, stop and surface the mismatch before taking action.
 - Keep public pages out of admin paths and admin templates.
+- Public mutation forms need CSRF even for anonymous visitors. Include `GFrame\Security\CsrfToken::fields()` inside the form or send the common `#tokens` fields through AJAX; validate server-side (automatic for ajax, explicit CSRF middleware for web mutations). Keep honeypot as a separate antispam control. Respect noSession resources and private/no-store responses; do not share token-bearing HTML through external caches.
 - Use group meta and view meta to load public assets and SEO data.
 - Keep schema definitions in meta files, not scattered through the view body.
 - Preserve template resolution through `ModuleRuntime::template`, with application templates under `app/views/templates/*Template.php` and runtime providers when declared. Keep the standard shared header/footer layering.

@@ -13,7 +13,7 @@ class CronRunner {
         'finished_at' => gmdate('Y-m-d H:i:s'),
         'data' => is_array($data) ? $data : ['result' => $data],
       ];
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
       return [
         'status' => 'error',
         'cron' => trim($name),

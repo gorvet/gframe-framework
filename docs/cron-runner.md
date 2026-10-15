@@ -1,18 +1,18 @@
 # Cron runner
 
-`cron-runner` registra y ejecuta tareas programadas desde la consola. Puede usarse para campañas, mantenimiento, limpieza y otros procesos que no deben depender de una petición web.
+`cron-runner` registra y ejecuta tareas programadas mediante cron real del servidor o cron virtual activado por actividad HTTP. Ambos mecanismos utilizan el mismo scheduler y la misma protección contra concurrencia. Puede usarse para campañas, mantenimiento, limpieza y otros procesos generales.
 
 ## Instalación
 
-El módulo publica `bin/gframe-cron.php` y crea la tabla `cron_tasks`. Configure el cron del servidor para ejecutar periódicamente:
+El módulo publica `bin/gframe-cron.php` y crea las tablas `cron_tasks` y `cron_runtime`. En modo real, configure el cron del servidor para ejecutar periódicamente:
 
 ```bash
 php bin/gframe-cron.php 50
 ```
 
-El argumento opcional indica cuántas tareas puede reservar cada ejecución: 10 por defecto, entre 1 y 100. Es un límite de tareas, no de registros de negocio procesados por cada tarea.
+El argumento opcional indica cuántas tareas puede reservar cada ejecución: el límite configurado (10 por defecto), entre 1 y 100. Es un límite de tareas, no de registros de negocio procesados por cada tarea.
 
-El comando carga `core/Load.php`, incluye los registradores `config/cron/*.php`, reserva tareas vencidas y las ejecuta en ese mismo proceso CLI. Instalar el módulo o registrar una tarea no pone en marcha un servicio permanente.
+El comando carga `core/Load.php`, adquiere el bloqueo compartido, incluye los registradores `config/cron/*.php`, reserva tareas vencidas y las ejecuta en ese mismo proceso CLI. La preparación común de `GFrame\Cron\CronExecutor` se utiliza también en el worker virtual. Instalar el módulo o registrar una tarea no pone en marcha un servicio permanente.
 
 En Linux, puede programar una ejecución cada minuto con rutas absolutas del despliegue:
 
@@ -103,13 +103,15 @@ Los métodos devuelven `cron_task_not_found` si no existe la clave. `schedule()`
 
 ## Concurrencia y recuperación
 
-El ejecutor cambia cada tarea de `pending` a `processing` mediante una actualización condicionada. Solo procesa las filas que pudo reservar. Antes de cada lote recupera tareas que hayan permanecido bloqueadas durante más de 15 minutos.
+El scheduler adquiere primero un bloqueo exclusivo y no espera si otro runner lo posee: devuelve `data.busy=true`. MySQL utiliza `GET_LOCK` por conexión, compartido por las instancias que utilizan la misma base en el mismo servidor primario. SQLite mantiene una transacción en una base auxiliar junto al archivo de datos, con sufijo `.gframe-cron-lock.sqlite`; requiere permisos de escritura en ese directorio y almacenamiento local con bloqueos SQLite fiables. No elimine ni sustituya ese archivo mientras haya procesos activos. Para instancias en hosts distintos, utilice MySQL compartido; las copias independientes de SQLite no se coordinan.
+
+El bloqueo permanece durante registradores y handlers y no vence por antigüedad. La salida o caída del proceso libera la conexión/bloqueo. Solo después de adquirirlo se recuperan las filas `processing` que dejó un ejecutor interrumpido. No se usa un umbral fijo de 15 minutos para declarar muerto a un handler vivo. Las reservas individuales siguen siendo actualizaciones condicionales y se comprueba la propiedad antes de persistir el resultado.
 
 Las tareas únicas terminan en `completed`. Las recurrentes vuelven a `pending` con una nueva fecha. Los errores quedan en `error`, con el detalle interno en `last_error`.
 
 Las tareas se ejecutan secuencialmente, sin un límite de tiempo impuesto por el módulo. El próximo turno recurrente se calcula sumando el intervalo al mayor valor entre la hora actual y la fecha anterior; no recupera todos los períodos perdidos ni mantiene una hora fija de calendario. Una ejecución larga puede desplazar el horario.
 
-La recuperación de bloqueos permite reintentos después de una interrupción. Un handler que tarde más de 15 minutos puede solaparse con otra ejecución del runner; diseñe operaciones idempotentes o añada su propia protección de negocio. La reserva no garantiza que un efecto externo ocurra exactamente una vez.
+La recuperación permite repetir tareas después de una interrupción. Si un proceso pierde su conexión a MySQL, el servidor puede liberar el bloqueo mientras el handler todavía realiza una operación externa; la comprobación de propiedad impide que finalice la reserva después de perderla, pero no revierte ese efecto externo. Diseñe handlers idempotentes y use claves de idempotencia del proveedor cuando estén disponibles. Los reintentos no garantizan efectos externos exactamente una vez.
 
 Un fallo queda en `error`, sin reintento genérico automático. Tras corregirlo, reprograme la tarea; algunos módulos incorporan registradores con su propia política de recuperación. `attempts` cuenta reservas, no solo errores, y no se reinicia al completar una ejecución recurrente.
 
@@ -122,7 +124,7 @@ $task = (new \CronDataProvider())->findByKey('maintenance.notifications.cleanup'
 $result = (new \CronScheduler())->runDue(50);
 ```
 
-La fila permite consultar `status`, `is_active`, `scheduled_at`, `locked_at`, `last_run_at`, `last_error` y `attempts`. `runDue()` devuelve `status`, nombre del cron, fechas UTC de inicio/fin y `data.processed`, `data.failed`, `data.recovered`. Los fallos individuales pueden coexistir con `status: success`; revise `data.failed`. Por la misma razón, el comando CLI puede terminar con código 0 aunque una tarea haya fallado.
+La fila permite consultar `status`, `is_active`, `scheduled_at`, `locked_at`, `last_run_at`, `last_error` y `attempts`. `runDue()` devuelve `status`, nombre del cron, fechas UTC de inicio/fin y `data.processed`, `data.failed`, `data.recovered`. Los fallos individuales pueden coexistir con `status: success`; revise `data.failed`. El comando CLI termina con código 1 si falla la pasada o algún handler; código 0 también puede indicar que otro runner estaba ocupado y no se ejecutó trabajo.
 
 `runDue()` no incluye los registradores automáticamente: eso lo hace `bin/gframe-cron.php`. Ejecútelo desde un comando o worker; llamarlo desde una petición web bloquearía la respuesta hasta terminar los handlers.
 
@@ -141,3 +143,35 @@ cron del servidor -> cron-runner -> procesador -> notification_queue -> transpor
 ```
 
 Los addons pueden publicar registradores PHP en `config/cron/`; el punto de entrada CLI los carga antes de reservar tareas. `notifications-email` utiliza este mecanismo para mantener activa su tarea recurrente de consumo de la cola de correo.
+
+## Seleccionar cron real o virtual
+
+Las variables siguientes se leen directamente desde `.env`, sin necesidad de añadir claves al `config/app.php` existente:
+
+```dotenv
+GFRAME_CRON_MODE=virtual
+GFRAME_CRON_MIN_INTERVAL=60
+GFRAME_CRON_BATCH_LIMIT=10
+# Si PHP CLI no se detecta automáticamente:
+GFRAME_PHP_BINARY=/usr/bin/php
+```
+
+`GFRAME_CRON_MODE` admite `real` (valor predeterminado) o `virtual`. El intervalo admite enteros de 1 a 86400 segundos y el límite de 1 a 100 tareas; sus valores predeterminados son 60 y 10. Un valor inválido impide lanzar trabajo y queda en el diagnóstico; no se convierte en ejecución ilimitada. Las claves internas equivalentes son `cron.mode`, `cron.min_interval` y `cron.batch_limit`; `.env` tiene prioridad. El argumento del CLI puede sobrescribir el límite de esa pasada.
+
+En modo virtual, Router registra un disparador al cierre de las peticiones web y AJAX, públicas o administrativas. Se cierra la escritura de sesión y, con PHP-FPM, se finaliza la respuesta mediante `fastcgi_finish_request` antes de comprobar/lanzar trabajo. En otros servidores, el lanzamiento tiene un coste breve, pero la petición no espera a los handlers. No se activan peticiones API, webhook, SSE ni procesos CLI. El worker usa `Async`, vuelve a cargar el proyecto y ejecuta los mismos registradores del CLI. No requiere polling JavaScript ni un endpoint público que permita elegir clases o tareas.
+
+El intervalo se aplica globalmente por almacenamiento. MySQL utiliza el reloj del servidor de base de datos para esta coordinación. Antes de lanzar se reserva un ticket interno que caduca a los 120 segundos si el worker no llega a arrancar. Un worker retrasado no ejecuta con un ticket vencido o sustituido. Si falla el lanzamiento, se libera solo su ticket, se conserva el intervalo mínimo y se registra el error. Mientras otro runner mantiene el bloqueo, no se lanza otro. El cron real puede seguir ejecutándose en modo virtual y comparte la exclusión; normalmente conviene elegir una sola fuente de activación.
+
+**Sin tráfico que ejecute PHP no hay ejecución puntual garantizada.** Una caché o CDN que sirva la página sin llegar a GFrame tampoco activa el cron. Una pestaña abierta sin peticiones no produce actividad. Use el modo real cuando el horario deba ser independiente de las visitas. Cambiar a `real` no instala automáticamente un cron del servidor ni cancela un worker ya iniciado.
+
+## Diagnóstico y actualización
+
+```bash
+php bin/gframe-cron.php --status
+```
+
+El diagnóstico no ejecuta registradores ni handlers. Muestra configuración efectiva, si el bloqueo está ocupado, lanzamiento pendiente, último inicio/final, contadores y último error; las fechas de coordinación son timestamps Unix. El ticket secreto no se imprime. Un lanzamiento no prueba finalización: compruebe `finished_at`, los contadores y las filas de tareas. `last_error=cron_handlers_failed` remite al `last_error` de cada tarea. Los fallos que impiden acceder al esquema se registran con prefijo `[gframe.cron]`, como máximo una vez por minuto y host/instalación; el limitador de logs no participa en la coordinación de ejecución.
+
+Para actualizar, detenga primero los runners de la versión antigua y espere a que terminen: no conocen el bloqueo nuevo. Después de instalar la versión validada, revise `composer gframe:update -- --dry-run --preserve-custom` y aplique `composer gframe:update -- --preserve-custom`. La migración `202610150001_cron_runtime.sql` conserva las tareas existentes. Resuelva los conflictos del ejecutor publicado y del header antes de activar el modo virtual. `.env` no se sobrescribe: añada sus variables manualmente. Compruebe el estado, ejecute una tarea de prueba sin efectos externos y reactive el cron elegido. Un sitio sin necesidad de tareas puede mantener `real` sin instalar ni programar cron.
+
+Una implementación personalizada de `CronTaskRepository` conserva su interfaz, pero `CronScheduler` requiere ahora coordinación. Por defecto usa la base del framework; si el repositorio utiliza otro almacenamiento, inyecte un `GFrame\Cron\CronRuntime` construido con la conexión compartida adecuada y su esquema `cron_runtime`. No llame `recoverStale(0)` fuera de la ejecución coordinada.

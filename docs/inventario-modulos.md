@@ -99,7 +99,7 @@ Estos módulos forman la base común resuelta por el catálogo. No significa que
 | `notifications` | inbox por usuario/tenant + transportes/cola base | [Notificaciones](notificaciones.md) |
 | `notifications-email` | transporte de correo sobre Mail/colas | [Notifications Email](notifications-email.md) |
 | `notification-campaigns` | audiencias y campañas masivas/programables | [Campañas](notification-campaigns.md) |
-| `cron-runner` | persistencia y ejecución CLI de tareas programadas | [Cron](cron-runner.md) |
+| `cron-runner` | tareas persistentes con cron real o virtual configurable y diagnóstico CLI | [Cron](cron-runner.md) |
 
 ### Integración
 

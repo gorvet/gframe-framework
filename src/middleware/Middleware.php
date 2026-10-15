@@ -420,35 +420,7 @@ if ($hasHeaders && !$this->is_same_origin()) {
     return ['status'=>'unauthorized','code'=>'fail_csrf','message'=>'Origen inválido'];
 }
 
-    $inCsrfToken = $_POST['csrfToken'] ?? null; 
-    $inCsrfTimestamp = $_POST['csrfTimestamp'] ?? null;
-
-    if ($inCsrfToken !== null && $inCsrfTimestamp !== null) {
-      $csrf_token = $inCsrfToken;
-      $csrf_timestamp = $inCsrfTimestamp;
-
-       // Verifica si el token CSRF y la marca de tiempo coinciden con los valores almacenados en la sesión
-      if (!isset($_SESSION['csrfToken']) || !isset($_SESSION['csrfTimestamp'])) {
-        return ['status' => 'unauthorized', 'code' => 'login_required'];
-      }
-
-      if ($csrf_token === $_SESSION['csrfToken'] && (int)$csrf_timestamp === (int)$_SESSION['csrfTimestamp']) {
-        return ['status' => 'success']; 
-      }
-      else {// El token CSRF y/o la marca de tiempo no son válidos
-      // Verifica si la marca de tiempo es anterior a la marca de tiempo almacenada en la sesión
-        if ($csrf_timestamp < $_SESSION['csrfTimestamp']) {
-           // La marca de tiempo es anterior, esto significa que la sesión se cerró y abrió en otra pestaña
-          return  ['status' => 'unauthorized','code' => 'to_reload']; 
-        }
-        else {
-          // La marca de tiempo es posterior, esto significa que el token CSRF no coincide debido a un ataque CSRF
-          return  ['status' => 'unauthorized','code' => 'fail_csrf','message' => 'Falta el token CSRF'];
-        }
-      }
-    }
-
-    return ['status' => 'unauthorized','code' => 'fail_csrf','message' => 'Falta el token CSRF'];
+    return \GFrame\Security\CsrfToken::validate($_POST['csrfToken'] ?? null, $_POST['csrfTimestamp'] ?? null);
   }
 
 

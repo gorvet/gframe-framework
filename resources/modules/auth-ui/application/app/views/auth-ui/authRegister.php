@@ -5,6 +5,7 @@
     </div>
     <div class="card-body p-4 mt-0">
       <form method="post" id="register" class="needs-validation " novalidate>
+        <?= \GFrame\Security\CsrfToken::fields() ?>
         <input type="hidden" id="middle_name" class="middle_name" name="middle_name">
         <div class="mb-3">
           <label class="form-label" for="register_email">Correo electrónico</label>

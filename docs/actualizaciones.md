@@ -40,6 +40,30 @@ La vista previa no modifica archivos, la base de datos ni el registro de instala
 
 ## Proyectos anteriores
 
+### Cron configurable y CSRF de visitantes
+
+Estas capacidades requieren una versión publicada que incluya sus cambios; un commit local no está disponible automáticamente para los sitios. Prepare primero la actualización de cada aplicación en desarrollo o staging, fije la versión y conserve su `composer.lock` validado. Si su restricción actual está en 2.x, revise también [la transición a 3.0.0](release-3.0.0.md), especialmente si utilizaba las relaciones genéricas de medios.
+
+1. Detenga los disparadores antiguos y el cron del servidor durante la migración y espere a que terminen los workers existentes. Los ejecutores antiguos no conocen el bloqueo nuevo.
+2. Ajuste la restricción de `gorvet/gframe` a la versión publicada elegida y ejecute `composer update gorvet/gframe` en desarrollo/staging.
+3. Revise `composer gframe:update -- --dry-run --preserve-custom` y aplique `composer gframe:update -- --preserve-custom`. Los conflictos se conservan, no se fusionan: adapte el ejecutor, las rutas Auth y los templates personalizados que aparezcan.
+4. Si necesita cron y no está registrado, añada `cron-runner` a la lista completa actual de módulos mediante `--modules=LISTA_COMPLETA_CON_CRON_RUNNER`, primero con `--dry-run --preserve-custom`. No sustituya la lista por un único módulo. Sus migraciones crean el almacenamiento si falta; si hay tablas creadas manualmente sin historial de migraciones, revise su esquema e historial antes de aplicar el cambio.
+5. Añada manualmente a `.env` `GFRAME_CRON_MODE=real` o `virtual`, `GFRAME_CRON_MIN_INTERVAL=60` y `GFRAME_CRON_BATCH_LIMIT=10`. Configure `GFRAME_PHP_BINARY` si no se detecta PHP CLI. Compruebe `php bin/gframe-cron.php --status`, una tarea inocua y los formularios públicos antes de reactivar el modo elegido.
+
+Las sesiones anónimas reciben tokens CSRF. Las rutas Auth distribuidas dejan de excluir CSRF y sus vistas originales incluyen los campos. En vistas propias, utilice `GFrame\Security\CsrfToken::fields()` dentro del formulario o envíe los campos de `#tokens` por AJAX. Conserve `honeypot`, revise las exclusiones CSRF propias y excluya de caché compartida las páginas con tokens. Un header personalizado que ya publica `csrfToken`/`csrfTimestamp` desde sesión sigue siendo compatible.
+
+La actualización no retira automáticamente disparadores particulares de una aplicación. Sustitúyalos en un cambio de esa aplicación, preservando handlers y reglas de negocio. Evite dejar un ejecutor antiguo que llame al scheduler de otra versión.
+
+#### Sitio de documentación en producción
+
+En el sitio `gframe-docs` inspeccionado, producción lee los Markdown desde el paquete instalado `gorvet/gframe`; `DOCS_REPOSITORY` solo se utiliza en modo local. Actualizar una copia externa del repositorio no cambia por sí solo la documentación publicada en producción. Actualice la dependencia del sitio y despliegue su lock comprobado.
+
+Es un sitio sin base de datos: no necesita instalar `cron-runner` ni activar `virtual` para mostrar documentación o utilizar el CSRF anónimo. Puede mantener `GFRAME_CRON_MODE=real` sin programar un cron. Para este perfil, revise y aplique la sincronización con `--no-database --preserve-custom`. No utilice `--no-database` en una aplicación cuyas tareas sí requieren la migración.
+
+Su catálogo de guías es propio del sitio. Los cambios en `cron-runner`, `middleware`, `sesiones`, `auth-ui` y `actualizaciones` aparecen al instalar el paquete nuevo; cualquier guía completamente nueva requiere además revisar su catálogo y rutas. Compruebe navegación, búsqueda, formulario de contacto, assets y caché de PHP/servidor después de desplegar. No se ha modificado ese sitio desde el framework.
+
+En producción, despliegue el código y lock ya probados, haga copia de seguridad y ejecute `composer install --no-dev --prefer-dist --optimize-autoloader`, después la vista previa y sincronización correspondientes. No ejecute un `composer update` abierto directamente en producción. Recargue PHP-FPM u OPcache si la política del despliegue lo requiere y reactive el cron elegido tras verificar el resultado.
+
 ### Actualización a 3.0.0
 
 Consulta [la transición a 3.0.0](release-3.0.0.md) antes de cambiar la restricción Composer a `^3.0`. Esta versión retira la API de relaciones genéricas de medios y aplica una migración que elimina su tabla auxiliar. Los IDs de imagen y los JSON de galerías guardados por cada CRUD se conservan.

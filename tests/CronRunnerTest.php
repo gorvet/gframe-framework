@@ -6,6 +6,13 @@ use PHPUnit\Framework\TestCase;
 
 final class CronRunnerTest extends TestCase
 {
+    private function runtime(): \GFrame\Cron\CronRuntime
+    {
+        $database = new \PDO('sqlite::memory:');
+        $database->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/cron-runner/database/sqlite.sql'));
+        return new \GFrame\Cron\CronRuntime($database);
+    }
+
     public function testTaskLifecycleUsesStableContracts(): void
     {
         $repository = new InMemoryCronTaskRepository();
@@ -32,7 +39,7 @@ final class CronRunnerTest extends TestCase
             'repeat_interval_seconds' => 3600, 'attempts' => 0, 'is_active' => 1,
         ]);
         TestCronHandler::$handled = [];
-        $result = (new \CronScheduler($repository))->runDue(10);
+        $result = (new \CronScheduler($repository, $this->runtime()))->runDue(10);
 
         self::assertSame('success', $result['status']);
         self::assertSame(1, $result['data']['processed']);
@@ -45,16 +52,18 @@ final class CronRunnerTest extends TestCase
     {
         $repository = new InMemoryCronTaskRepository();
         $repository->createTask(['task_key' => 'test.failure', 'handler_class' => FailingCronHandler::class, 'payload_json' => '{}', 'status' => 'pending', 'scheduled_at' => gmdate('Y-m-d H:i:s'), 'is_active' => 1]);
-        $result = (new \CronScheduler($repository))->runDue();
+        $result = (new \CronScheduler($repository, $this->runtime()))->runDue();
         self::assertSame(1, $result['data']['failed']);
         self::assertSame('error', $repository->tasks[1]['status']);
     }
 
-    public function testCronCoreDoesNotUseThrowable(): void
+    public function testSchedulerContainsProgrammingErrorsAtTheWorkerBoundary(): void
     {
-        foreach (glob(dirname(__DIR__) . '/src/cron/*.php') ?: [] as $file) {
-            self::assertStringNotContainsString('Throwable', (string)file_get_contents($file), $file);
-        }
+        $repository = new InMemoryCronTaskRepository();
+        $repository->createTask(['task_key' => 'test.type-error', 'handler_class' => TypeErrorCronHandler::class, 'payload_json' => '{}', 'status' => 'pending', 'scheduled_at' => gmdate('Y-m-d H:i:s'), 'is_active' => 1]);
+        $result = (new \CronScheduler($repository, $this->runtime()))->runDue();
+        self::assertSame(1, $result['data']['failed']);
+        self::assertSame('error', $repository->tasks[1]['status']);
     }
 
     public function testReturnedErrorsFailWithoutRepeatingAndMissingStatusRemainsCompatible(): void
@@ -63,12 +72,33 @@ final class CronRunnerTest extends TestCase
             ReturnedResultCronHandler::$result = $status === null ? [] : ['status' => $status, 'code' => 'business_failed', 'reschedule' => true];
             $repository = new InMemoryCronTaskRepository();
             $repository->createTask(['task_key' => 'returned', 'handler_class' => ReturnedResultCronHandler::class, 'payload_json' => '{}', 'status' => 'pending', 'scheduled_at' => gmdate('Y-m-d H:i:s'), 'repeat_interval_seconds' => 3600, 'is_active' => 1]);
-            $result = (new \CronScheduler($repository))->runDue();
+            $result = (new \CronScheduler($repository, $this->runtime()))->runDue();
             self::assertSame($status === null ? 0 : 1, $result['data']['failed']);
             self::assertSame($status === null ? 1 : 0, $result['data']['processed']);
             self::assertSame($status === null ? 'pending' : 'error', $repository->tasks[1]['status']);
             if ($status !== null) self::assertSame('business_failed', $repository->tasks[1]['last_error']);
         }
+    }
+
+    public function testLostOwnershipCannotFinalizeTaskOrOverwriteSuccessorState(): void
+    {
+        $database = new \PDO('sqlite::memory:');
+        $database->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/cron-runner/database/sqlite.sql'));
+        $lock = new class implements \GFrame\Cron\ExecutionLock {
+            public bool $owned = false;
+            public function acquire(): bool { return $this->owned = true; }
+            public function assertOwned(): void { if (!$this->owned) throw new \RuntimeException('ownership_lost'); }
+            public function release(): void { $this->owned = false; }
+            public function now(): int { return time(); }
+        };
+        OwnershipLossCronHandler::$lose = static function () use ($lock): void { $lock->owned = false; };
+        $repository = new InMemoryCronTaskRepository();
+        $repository->createTask(['task_key' => 'lost', 'handler_class' => OwnershipLossCronHandler::class, 'payload_json' => '{}', 'status' => 'pending', 'scheduled_at' => gmdate('Y-m-d H:i:s'), 'is_active' => 1]);
+        $result = (new \CronScheduler($repository, new \GFrame\Cron\CronRuntime($database, $lock)))->runDue();
+        self::assertSame('error', $result['status']);
+        self::assertSame('ownership_lost', $result['message']);
+        self::assertSame('processing', $repository->tasks[1]['status']);
+        self::assertNull($database->query('SELECT finished_at FROM cron_runtime')->fetchColumn());
     }
 }
 
@@ -99,4 +129,15 @@ final class ReturnedResultCronHandler extends \Cron
 {
     public static array $result = [];
     public function handle(array $task = []): array { return self::$result; }
+}
+
+final class TypeErrorCronHandler extends \Cron
+{
+    public function handle(array $task = []): array { throw new \TypeError('controlled_type_error'); }
+}
+
+final class OwnershipLossCronHandler extends \Cron
+{
+    public static \Closure $lose;
+    public function handle(array $task = []): array { (self::$lose)(); return ['status' => 'success']; }
 }

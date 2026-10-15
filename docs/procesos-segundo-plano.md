@@ -21,6 +21,8 @@ La decisión principal es:
 
 ## 1. Ejecución directa
 
+Para tareas programadas, [cron-runner](cron-runner.md) admite cron real y virtual mediante `GFRAME_CRON_MODE`. El modo virtual usa actividad web/AJAX para lanzar `Async`; ambos comparten preparación y bloqueo. Sin tráfico que llegue a PHP no hay puntualidad garantizada.
+
 Utiliza ejecución normal cuando el resultado forma parte de la respuesta.
 
 ```text

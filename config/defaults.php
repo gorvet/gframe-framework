@@ -15,6 +15,11 @@ return [
         'default' => 'main',
         'connections' => [],
     ],
+    'cron' => [
+        'mode' => 'real',
+        'min_interval' => 60,
+        'batch_limit' => 10,
+    ],
     'session' => [
         'name' => null,
         'driver' => 'native',

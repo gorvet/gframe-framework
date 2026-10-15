@@ -5,6 +5,7 @@
     </div>
     <div class="card-body p-4 mt-0">
       <form method="post" id="reset" class="needs-validation " novalidate>
+        <?= \GFrame\Security\CsrfToken::fields() ?>
         <input type="hidden" class="middle_name" name="middle_name" value="">
         <input type="hidden" id="rpuser_token" name="rpuser_token" value="">
         <div class="mb-3 col-sm-12">

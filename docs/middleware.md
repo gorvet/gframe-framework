@@ -99,6 +99,14 @@ CSRF comprueba POST, PUT, PATCH y DELETE. Que el guarda reconozca PATCH no impli
 
 El contrato actual lee `csrfToken` y `csrfTimestamp` de `$_POST` y los compara con la sesión. No extrae esos campos de una cabecera ni de un cuerpo JSON automáticamente. Si hay Origin o Referer, también comprueba el origen del sitio. Un timestamp anterior al de sesión puede producir `to_reload`, por ejemplo tras iniciar otra sesión en una pestaña.
 
+### Formularios de visitantes
+
+Una sesión anónima iniciada por Router/`SessionRuntime` recibe token sin exigir login. Dentro del formulario incluya `<?= \GFrame\Security\CsrfToken::fields() ?>` y envíelo con el formulario o su `serialize()` de AJAX. El helper no abre sesiones; devuelve vacío en rutas `noSession()`. El puente `#tokens` del header común permanece disponible para consumidores AJAX existentes. Una ruta web pública que modifica datos debe declarar `CSRF` y, cuando corresponda, `honeypot`; en AJAX el token ya es automático. El honeypot no sustituye CSRF ni limita por sí solo la frecuencia de solicitudes.
+
+Los tokens permanecen estables entre pestañas hasta renovar la sesión o autenticar. Un token ausente, mal formado o de otra sesión devuelve `fail_csrf`; no implica que el visitante deba iniciar sesión. Después de expirar la sesión o autenticar en otra pestaña, recargue el formulario. La comparación del token utiliza `hash_equals`.
+
+Las respuestas con sesión/token indican `Cache-Control: private, no-store`. Excluya estos formularios de cualquier caché externa que ignore esas cabeceras; nunca comparta HTML con un token de sesión entre visitantes. Reserve `noSession()` para recursos GET sin formularios de acciones ni identidad. Revise las vistas y rutas personalizadas al actualizar: retirar una exclusión sin añadir el envío del token rompe ese formulario.
+
 Utiliza las utilidades de [Frontend core](frontend-core.md) y el puente de tokens del header; no sustituyas este contrato con una validación propia en JavaScript. En PUT o DELETE, comprueba cómo entrega el cliente los campos: PHP no llena `$_POST` de todos los cuerpos automáticamente.
 
 El honeypot estándar espera `middle_name`. Un formulario con un campo antispam distinto no queda cubierto por ese middleware. El honeypot no sustituye validación, límites de frecuencia ni autorización.

@@ -135,6 +135,15 @@ final class MySqlMigrationIntegrationTest extends TestCase
         self::assertSame(1, (int)$this->pdo->query('SELECT COUNT(*) FROM journal_values')->fetchColumn());
     }
 
+    public function testCronMigrationRejectsIncompatibleExistingIntegerDefault(): void
+    {
+        $this->pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/cron-runner/database/mysql.sql'));
+        $this->pdo->exec('ALTER TABLE cron_tasks ALTER COLUMN attempts SET DEFAULT 7');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('cron_tasks.attempts existe con una definición incompatible');
+        MigrationRunner::frameworkDefault()->migrate($this->pdo, 'mysql', ['cron-runner']);
+    }
+
     private function journalRunner(): MigrationRunner
     {
         $this->fixture = sys_get_temp_dir() . '/gframe-journal-' . bin2hex(random_bytes(8));

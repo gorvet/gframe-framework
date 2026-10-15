@@ -19,6 +19,8 @@ Choose execution by the requested lifetime and observable result:
 
 Read [Async and persistent cron](references/async-and-cron.md) for jobs/workers. Read [heartbeat channels](references/heartbeat-channels.md) only for browser polling. Campaign and mail specialists own their business payloads and delivery policy; do not recreate them here.
 
+General scheduled work supports `.env` selection of real or virtual cron. Use the shared CronExecutor/CronRuntime path; do not build a domain heartbeat or public execution endpoint. Virtual activation and CSRF/session policy are independent. Include the cron_runtime migration and published CLI in upgrade checks.
+
 Identify the loaded package/version and project bootstrap. Full guides live in that package at `docs/async.md`, `docs/cron-runner.md`, `docs/procesos-segundo-plano.md` and `docs/heartbeat.md`. Implement application handlers/overrides for project needs; modify standalone originals only for an authorized framework task.
 
 Authorize and resolve IDs/tenant before dispatch, then recheck mutable business state inside delayed work. Workers do not run route middleware or inherit a browser session. Commit dependent database writes before launching another process. Scheduling, queueing and an outer success envelope do not establish completion or exactly-once external effects.

@@ -184,7 +184,7 @@ final class MigrationRunner
     /** Additive migrations may resume only when the existing column has the expected definition. */
     private function existingAddColumn(PDO $pdo, string $driver, string $statement): bool
     {
-        if (!preg_match('/^\s*ALTER\s+TABLE\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+ADD\s+COLUMN\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+((?:BIGINT(?:\s+UNSIGNED)?|INTEGER|TEXT|JSON|VARCHAR\(\d+\)))\s+(NOT\s+NULL|NULL)(?:\s+DEFAULT\s+(\d+|\x27[^\x27]*\x27))?(?:\s+AFTER\s+`?[a-zA-Z_][a-zA-Z0-9_]*`?)?\s*;?\s*$/i', $statement, $match)) return false;
+        if (!preg_match('/^\s*ALTER\s+TABLE\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+ADD\s+COLUMN\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s+((?:BIGINT(?:\s+UNSIGNED)?|INT(?:\s+UNSIGNED)?|INTEGER|TEXT|JSON|VARCHAR\(\d+\)))\s+(NOT\s+NULL|NULL)(?:\s+DEFAULT\s+(\d+|\x27[^\x27]*\x27))?(?:\s+AFTER\s+`?[a-zA-Z_][a-zA-Z0-9_]*`?)?\s*;?\s*$/i', $statement, $match)) return false;
         if ($driver === 'sqlite') {
             $columns = $pdo->query('PRAGMA table_info("' . $match[1] . '")')->fetchAll(PDO::FETCH_ASSOC);
             $column = null;
@@ -199,6 +199,8 @@ final class MigrationRunner
             if ($column === false) return false;
             $type = preg_replace('/\b(bigint|int)\(\d+\)/i', '$1', $column['COLUMN_TYPE']);
             $nullable = $column['IS_NULLABLE'] === 'YES'; $default = $column['COLUMN_DEFAULT'];
+            // MariaDB puede representar DEFAULT NULL numérico como la cadena NULL.
+            if ($default === 'NULL' && preg_match('/^(BIGINT|INT|INTEGER)\b/i', $type)) $default = null;
             if (is_string($default)) $default = trim($default, "'");
         }
         $expectedDefault = isset($match[5]) && $match[5] !== '' ? trim($match[5], "'") : null;

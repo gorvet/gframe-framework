@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## Sin publicar
+
+- Cron real o virtual configurable desde `.env`, disparador web/AJAX mediante Async, coordinación compartida con el CLI, recuperación tras caídas y diagnóstico `--status`. Incluye migraciones MySQL/SQLite y guía de actualización.
+- CSRF para sesiones anónimas y formularios públicos de autenticación, con helper reutilizable, comparación constante y respuestas privadas sin caché compartida. Las vistas y rutas personalizadas requieren revisar el envío de tokens.
+
 ## 3.0.0 — 14 de octubre de 2026
 
 - Retirada la tabla auxiliar `media_relations` y los métodos públicos `attach()`, `detach()` y `related()` de medios. Cada CRUD conserva el ID de imagen o el JSON de IDs de galería en su propia tabla. Migraciones MySQL y SQLite eliminan únicamente la tabla auxiliar. Consulte [la transición a 3.0.0](docs/release-3.0.0.md).

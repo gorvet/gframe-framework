@@ -32,17 +32,16 @@ if (!is_array($payload) || empty($payload['root']) || empty($payload['closure'])
     exit(1);
 }
 
-\GFrame\Foundation\Bootstrap::boot((string)$payload['root']);
-
 $serializedClosure = base64_decode((string)$payload['closure'], true);
 if (!is_string($serializedClosure) || $serializedClosure === '') {
     exit(1);
 }
 
 try {
+    \GFrame\Foundation\Bootstrap::boot((string)$payload['root']);
     $closure = ClosureWrapper::unserialize($serializedClosure);
+    $closure();
 } catch (Throwable $exception) {
+    error_log('[gframe.async] ' . $exception->getMessage());
     exit(1);
 }
-
-$closure();

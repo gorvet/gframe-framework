@@ -40,9 +40,8 @@ final class SessionManager
             }
         }
 
-        $_SESSION['csrfToken'] = bin2hex(random_bytes(32));
+        \GFrame\Security\CsrfToken::rotate();
         $_SESSION['lastActivity'] = time();
-        $_SESSION['csrfTimestamp'] = time();
 
         $userID = (int)($_SESSION['auth']['id'] ?? 0);
         if ($this->sessions !== null && $userID > 0) {

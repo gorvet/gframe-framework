@@ -141,6 +141,7 @@ También puedes usar `onConnection('catalog')` en una consulta o solicitar `Data
 ```
 
 - [Sesiones](sesiones.md): tiempo de inactividad y almacenamiento.
+- [Cron real o virtual](cron-runner.md#seleccionar-cron-real-o-virtual): selección directa desde `.env`, intervalo y límite por pasada.
 - [Multimedia](media-library.md): ámbito `global`, `tenant` o `user` y cuota.
 - [Autenticación](auth-ui.md): redirecciones y caducidad opcional de contraseñas.
 - [Correo](mail.md): credenciales SMTP y envío asíncrono.

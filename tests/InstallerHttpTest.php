@@ -101,6 +101,10 @@ PHP);
                     self::assertStringContainsString('gframe-footer', $loginBody);
                     self::assertStringContainsString('public/img/logo.png', $loginBody);
                     self::assertStringContainsString('id="toastBox"', $loginBody);
+                    preg_match('/Set-Cookie: ([^;]+)/i', implode("\n", $loginHeaders), $anonymousCookie);
+                    preg_match('/name="csrfToken" value="([^"]+)"/', $loginBody, $anonymousToken);
+                    preg_match('/name="csrfTimestamp" value="([^"]+)"/', $loginBody, $anonymousTimestamp);
+                    $anonymousFields = ['csrfToken' => $anonymousToken[1], 'csrfTimestamp' => $anonymousTimestamp[1]];
                     $headEnd = strpos($loginBody, '</head>');
                     $siteUrlDeclaration = strpos($loginBody, 'window.site_url =');
                     $jqueryScript = strpos($loginBody, 'public/vendors/external/jquery/jquery.min.js');
@@ -128,7 +132,7 @@ PHP);
                         '/ajax/verifyacount' => ['login_email' => 'unknown@example.test'],
                         '/ajax/validateacount' => ['vtoken' => 'prueba'],
                     ] as $path => $fields) {
-                        [$endpointStatus, $endpointBody] = $this->request($base . $path, 'POST', http_build_query($fields + ['middle_name' => '']));
+                        [$endpointStatus, $endpointBody] = $this->request($base . $path, 'POST', http_build_query($fields + $anonymousFields + ['middle_name' => '']), $anonymousCookie[1]);
                         self::assertSame(200, $endpointStatus, $profile . ': ' . $path . ': ' . substr($endpointBody, 0, 200));
                         self::assertIsArray(json_decode($endpointBody, true), $profile . ': ' . $path . ': ' . substr($endpointBody, 0, 1000));
                         self::assertArrayHasKey('code', json_decode($endpointBody, true));
@@ -151,7 +155,7 @@ PHP);
                         'login_email' => $profile . '@example.test',
                         'login_password' => 'Password-123',
                         'middle_name' => '',
-                    ]), $cookie);
+                    ] + $anonymousFields), $cookie);
                     self::assertSame(200, $authStatus, $profile . ': autenticación ' . substr($authBody, 0, 200));
                     $auth = json_decode($authBody, true);
                     self::assertSame('success', $auth['status'] ?? null, $profile . ': autenticación');
@@ -162,10 +166,12 @@ PHP);
                             break;
                         }
                     }
-                    [$repeatStatus, $repeatBody] = $this->request($base . '/ajax/login', 'POST', http_build_query(['middle_name' => '']), $cookie);
+                    [$adminStatus, $adminBody] = $this->request($base . '/admin', 'GET', null, $cookie);
+                    preg_match('/name="csrfToken" value="([^"]+)"/', $adminBody, $authenticatedToken);
+                    preg_match('/name="csrfTimestamp" value="([^"]+)"/', $adminBody, $authenticatedTimestamp);
+                    [$repeatStatus, $repeatBody] = $this->request($base . '/ajax/login', 'POST', http_build_query(['middle_name' => '', 'csrfToken' => $authenticatedToken[1], 'csrfTimestamp' => $authenticatedTimestamp[1]]), $cookie);
                     self::assertSame(200, $repeatStatus);
                     self::assertSame('already_logged', json_decode($repeatBody, true)['code'] ?? null, $repeatBody);
-                    [$adminStatus, $adminBody] = $this->request($base . '/admin', 'GET', null, $cookie);
                     self::assertSame(200, $adminStatus, $profile . ': panel');
                     self::assertStringContainsString('Escritorio', $adminBody, $profile . ': panel');
                     self::assertSame(1, substr_count($adminBody, 'src="' . $base . '/public/js/core/heartbeat.js'), $profile . ': heartbeat único');

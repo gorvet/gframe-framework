@@ -11,7 +11,10 @@ final class SessionRuntime
 
     public static function start(string $projectRoot): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) return;
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            \GFrame\Security\CsrfToken::ensure();
+            return;
+        }
         $driver = mb_strtolower(trim((string)ConfigRepository::get('session.driver', 'native')), 'UTF-8');
         $handler = match ($driver) {
             'database' => self::databaseHandler(),
@@ -30,6 +33,7 @@ final class SessionRuntime
         }
         if ($name !== '') session_name($name);
         session_start();
+        \GFrame\Security\CsrfToken::ensure();
     }
 
     public static function registry(): ?ActiveSessionRegistry

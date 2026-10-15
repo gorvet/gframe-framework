@@ -145,7 +145,7 @@ $revoked = $registry->revokeUser($userID);
 
 El ejemplo requiere `database` o `redis` y un ID obtenido del servidor. Para suspender una cuenta usa los servicios de usuarios existentes: además del estado persistido, aplican la revocación con bloqueo. `allowUser()` retira el bloqueo del registro, pero no cambia por sí mismo `users.status` ni recupera sesiones anteriores.
 
-CSRF utiliza `csrfToken` y `csrfTimestamp` guardados en la sesión. Envía esos valores mediante los contratos del [frontend](frontend-core.md) en las acciones protegidas; no inventes otra cookie de autenticación o un segundo mecanismo CSRF. Las excepciones para rutas públicas pertenecen a la declaración de middleware.
+CSRF utiliza `csrfToken` y `csrfTimestamp` guardados en la sesión. `SessionRuntime` los genera también para visitantes anónimos, los conserva entre peticiones y `SessionManager::login()` los renueva al autenticar. Envía esos valores mediante los contratos del [frontend](frontend-core.md) en las acciones protegidas; no inventes otra cookie de autenticación o un segundo mecanismo CSRF. Consulte [CSRF en formularios públicos](middleware.md#formularios-de-visitantes).
 
 ## Creación, actualización y revocación
 

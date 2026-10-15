@@ -32,7 +32,7 @@ La instalación agrega las rutas web y AJAX y los activos de autenticación. El 
 
 Las rutas `verifyacount`, `validateacount`, `lostpassword` y `resetpassword` son parte del contrato del módulo. Las rutas con nombres nuevos quedan como alias de compatibilidad. Si se cambia el nombre de una ruta o de un parámetro, hay que documentar la equivalencia, actualizar todas las llamadas del JavaScript y las vistas, y comprobar el flujo completo antes de publicar el módulo. No basta con renombrar la ruta del servidor.
 
-Las operaciones públicas usan `guest`, protección de mismo origen para AJAX y `honeypot`. Se excluye CSRF porque el token se genera al iniciar sesión. El cierre de sesión exige autenticación y conserva el CSRF automático.
+Las operaciones públicas usan `guest`, protección de mismo origen para AJAX, `honeypot` y el CSRF automático. La sesión anónima ya dispone de token antes de iniciar sesión; los formularios originales lo incluyen mediante `GFrame\Security\CsrfToken::fields()`. El cierre de sesión exige autenticación y conserva CSRF. Al actualizar, revise rutas y vistas personalizadas que aún excluyan CSRF o no envíen esos campos.
 
 ### Campos de los formularios
 

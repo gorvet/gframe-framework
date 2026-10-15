@@ -172,7 +172,7 @@ Personaliza el controlador en `app/controllers/auth-ui/AuthController.php`, con 
 
 Una subclase no sustituye por sí misma los `new AuthModel()` existentes: el controlador debe utilizarla explícitamente. Conserva contratos de sesión, permisos, respuestas y eliminación de tokens. Consulta [Módulos runtime](modulos-runtime.md).
 
-Las rutas públicas del módulo usan `guest`, honeypot y sus exclusiones CSRF declaradas; no copies esas exclusiones a acciones privadas. Las vistas, perfiles y reglas del negocio se mantienen en el proyecto.
+Las rutas públicas del módulo usan `guest`, honeypot y CSRF con tokens de sesión anónima. Las vistas originales incluyen sus campos antes del login; al personalizarlas conserve ese envío y la validación. Las vistas, perfiles y reglas del negocio se mantienen en el proyecto.
 
 ## Verificación
 

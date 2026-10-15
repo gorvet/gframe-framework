@@ -84,7 +84,7 @@ Empieza por [Identidad, autenticación, permisos y sesiones](identidad-autorizac
 
 - [Elegir entre ejecución directa, Async, Cron y colas](procesos-segundo-plano.md): guía de decisión práctica.
 - [Tareas en segundo plano con Async](async.md): lanza una operación en otro proceso, sin cola persistente ni reintentos automáticos.
-- [Cron runner](cron-runner.md): tareas persistentes, futuras o recurrentes.
+- [Cron runner](cron-runner.md): tareas persistentes, futuras o recurrentes; cron real o virtual configurable desde `.env`.
 - [Heartbeat](heartbeat.md): actualización periódica del cliente y estado de sesión.
 - [Cliente Heartbeat](heartbeat-client.md): módulo frontend, coordinación entre pestañas y personalización del controlador.
 

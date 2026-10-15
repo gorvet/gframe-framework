@@ -38,6 +38,7 @@ class Router {
 
     // Detectamos el "origen de la ruta"
     $this->intendedType = $this->detectIntendedType();
+    \GFrame\Cron\VirtualCron::register($this->intendedType);
 
     $serverError = (new ErrorResponder())->serverErrorStatus($_SERVER);
     if ($serverError !== null) {
