@@ -23,7 +23,11 @@ final class VirtualCronHttpTest extends TestCase
 final class DetachedCronHandler extends Cron {
     public function handle(array $task = []): array {
         file_put_contents(ABSPATH . 'storage/started', 'started');
-        usleep(1800000);
+        $deadline = microtime(true) + 15;
+        while (!is_file(ABSPATH . 'storage/release')) {
+            if (microtime(true) >= $deadline) throw new RuntimeException('test_release_timeout');
+            usleep(10000);
+        }
         file_put_contents(ABSPATH . 'storage/finished', 'finished');
         return ['status' => 'success'];
     }
@@ -64,11 +68,8 @@ PHP);
                 if ($connection) { fclose($connection); break; }
                 usleep(50000);
             } while (microtime(true) < $deadline);
-            $started = microtime(true);
-            $html = file_get_contents('http://' . $address . '/');
-            $elapsed = microtime(true) - $started;
+            $html = file_get_contents('http://' . $address . '/', false, stream_context_create(['http' => ['timeout' => 8]]));
             self::assertFileDoesNotExist($root . '/storage/finished', 'La respuesta no debe esperar al handler.');
-            self::assertLessThan(1.8, $elapsed);
             self::assertContains('Cache-Control: private, no-store', $http_response_header);
             preg_match('/Set-Cookie: ([^;]+)/i', implode("\n", $http_response_header), $cookie);
             preg_match('/name="csrfToken" value="([^"]+)"/', $html, $token);
@@ -85,6 +86,8 @@ PHP);
             self::assertSame('is_bot', $post($data + ['middle_name' => 'bot'])['code']);
             self::assertSame('', file_get_contents('http://' . $address . '/resource'));
             self::assertSame([], array_values(array_filter($http_response_header, static fn(string $value): bool => str_starts_with($value, 'Set-Cookie:'))));
+            // El handler solo puede terminar después de que el cliente reciba la respuesta.
+            touch($root . '/storage/release');
             $deadline = microtime(true) + 12;
             while (!is_file($root . '/storage/finished') && microtime(true) < $deadline) usleep(50000);
             self::assertFileExists($root . '/storage/finished', file_get_contents($root . '/server.log'));
@@ -113,6 +116,7 @@ PHP);
             self::assertSame(1, $cli('10', 1)['data']['failed']);
         } finally {
             proc_terminate($server); proc_close($server);
+            touch($root . '/storage/release');
             // Esperar a un worker que ya arrancó antes de retirar su proyecto temporal.
             $deadline = microtime(true) + 4;
             while (is_file($root . '/storage/started') && !is_file($root . '/storage/finished') && microtime(true) < $deadline) usleep(50000);
