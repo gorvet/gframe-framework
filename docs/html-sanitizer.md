@@ -14,6 +14,8 @@ El HTML devuelto solo debe usarse como contenido HTML del cuerpo, no dentro de a
 
 La sanitización no certifica la ausencia de todas las variantes de XSS. Mantenga pruebas de regresión al modificar etiquetas o atributos permitidos.
 
+Para la [biblioteca dentro del editor](rich-text-media.md), conserva `figure`, `data-media-gallery="1"` en figuras y un `data-media-id` decimal positivo de hasta 18 dígitos en imágenes. Cualquier otro valor del marcador se elimina. Se siguen rechazando eventos, estilos y URLs peligrosas. Estos atributos describen composición; no autorizan medios ni verifican que una URL corresponda al ID. La aplicación debe comprobar los IDs bajo su ámbito autorizado y contrastar las URLs con sus registros al guardar contenido.
+
 ## Integración al guardar contenido
 
 Valida el tamaño y los permisos antes de persistir contenido de un editor:

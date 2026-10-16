@@ -1,0 +1,4 @@
+/* Puede cargarse también en la vista pública del contenido, sin CSS administrativo. */
+figure[data-media-gallery="1"] { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; }
+figure[data-media-gallery="1"] > figure { flex: 1 1 12rem; min-width: 0; margin: 0; }
+figure[data-media-gallery="1"] img { display: block; max-width: 100%; height: auto; }

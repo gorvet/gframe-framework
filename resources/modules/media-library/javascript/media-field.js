@@ -466,7 +466,7 @@ if (attrExists(el, "insert-text")) insertText = String(getDataOrAttr($field, "in
         }
         // append|replace behavior
         var currentIds = uniqInt(parseStoredValue($input.val(), store, true));
-        if (behavior === "append") {
+        if (behavior === "append" && !res.replaceSelection) {
           // En append: si no seleccionaste nada nuevo, no toques el estado actual
           if (!nextIds.length) return;
           nextIds = uniqInt(currentIds.concat(nextIds));

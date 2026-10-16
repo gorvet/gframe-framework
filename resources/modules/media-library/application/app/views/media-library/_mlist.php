@@ -12,8 +12,9 @@
     return site_url . ltrim($path, '/');
   };
 ?>
+<span hidden data-ml-page="<?= (int)($paginate['page'] ?? 1) ?>" data-ml-total-pages="<?= (int)($paginate['total_pages'] ?? 1) ?>"></span>
 <div class="container mb-3">
-  <div class="d-flex flex-column flex-md-row align-items-md-center gap-2">
+  <div class="d-flex flex-column <?= $pickerFragment ? '' : 'flex-md-row align-items-md-center' ?> gap-2">
 
     <!-- Left: filters -->
     <div class="d-flex flex-column flex-sm-row gap-2 flex-grow-1">
@@ -22,7 +23,7 @@
         <!-- Source / Tipo -->
         <div class="input-group">
           <span class="input-group-text">Origen</span>
-          <select id="<?= $idPrefix ?>media-source-filter" class="form-select" data-ml-filter="source">
+          <select id="<?= $idPrefix ?>media-source-filter" class="form-select" data-ml-filter="source" aria-label="Origen de los archivos">
             <option value="all" <?= (($recent['meta']['source'] ?? 'all') === 'all') ? 'selected' : ''; ?>>
               Todos
             </option>
@@ -45,12 +46,12 @@
       <!-- Tipo -->
       <div class="input-group">
         <span class="input-group-text">Tipo</span>
-        <select id="<?= $idPrefix ?>media-kind-filter" class="form-select" data-ml-filter="kind">
+        <select id="<?= $idPrefix ?>media-kind-filter" class="form-select" data-ml-filter="kind" aria-label="Tipo de archivo">
           <?php
             $kindValue = (string)($recent['meta']['kind'] ?? 'all');
             $kindOptions = [
               ['value' => 'all', 'label' => 'Todos'],
-              ['value' => 'images', 'label' => 'Imagenes'],
+              ['value' => 'images', 'label' => 'Imágenes'],
               ['value' => 'docs', 'label' => 'Documentos'],
               ['value' => 'audios', 'label' => 'Audios'],
               ['value' => 'videos', 'label' => 'Videos'],
@@ -68,7 +69,7 @@
       <!-- Fecha -->
       <div class="input-group">
         <span class="input-group-text">Fecha</span>
-        <select id="<?= $idPrefix ?>media-date-filter" class="form-select" data-ml-filter="ym">
+        <select id="<?= $idPrefix ?>media-date-filter" class="form-select" data-ml-filter="ym" aria-label="Fecha de subida">
           <option value="all" <?= (($recent['meta']['ym'] ?? 'all') === 'all') ? 'selected' : ''; ?>>
             Todas
           </option>
@@ -99,6 +100,7 @@
           data-ml-filter="q"
           class="form-control"
           placeholder="Buscar..."
+          aria-label="Buscar archivos"
           value="<?= htmlspecialchars($recent['meta']['q'] ?? ''); ?>"
           autocomplete="off"
         >
@@ -119,8 +121,33 @@
   </div>
 </div>
 
+<?php if (!$pickerFragment): ?>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <div class="input-group w-auto">
+    <label class="input-group-text" for="media-view">Vista</label>
+    <select id="media-view" class="form-select" data-ml-filter="view">
+      <option value="grid" <?= ($paginate['view'] ?? 'grid') === 'grid' ? 'selected' : '' ?>>Cuadrícula</option>
+      <option value="list" <?= ($paginate['view'] ?? 'grid') === 'list' ? 'selected' : '' ?>>Lista</option>
+    </select>
+  </div>
+  <div class="input-group w-auto">
+    <label class="input-group-text" for="media-sort">Orden</label>
+    <select id="media-sort" class="form-select" data-ml-filter="sort">
+      <?php foreach (['newest' => 'Más recientes', 'oldest' => 'Más antiguos', 'name_asc' => 'Nombre: A–Z', 'name_desc' => 'Nombre: Z–A', 'size_asc' => 'Menor tamaño', 'size_desc' => 'Mayor tamaño'] as $value => $label): ?>
+      <option value="<?= $value ?>" <?= ($paginate['sort'] ?? 'newest') === $value ? 'selected' : '' ?>><?= $label ?></option>
+      <?php endforeach; ?>
+    </select>
+  </div>
+</div>
+<?php endif; ?>
+
 <?php
+  $tableView = !$pickerFragment && ($paginate['view'] ?? 'grid') === 'list';
+  if ($tableView && !empty($files)) {
+    include \GFrame\Modules\ModuleRuntime::file('views', 'media-library/_table.php', 'media-library');
+  }
   if (!empty($files)) {
+    if (!$tableView) {
     foreach ($files as $f):
 
       $mediaId = $f['media_id'];
@@ -174,6 +201,8 @@
       id="<?= ($pickerFragment ? 'mp-media-' : 'mID_') . (int)$mediaId; ?>"
       class="m-list-card"
       href="#"
+      role="button"
+      aria-label="<?= htmlspecialchars('Seleccionar o consultar: ' . (string)($f['original_name'] ?? $mediaName), ENT_QUOTES, 'UTF-8'); ?>"
       data-media-id="<?= (int)$mediaId; ?>"
       data-media-url="<?= htmlspecialchars($mediaURL, ENT_QUOTES, 'UTF-8'); ?>"
       data-media-thumb-small="<?= $smallURL ? htmlspecialchars($toPublicUrl($smallURL), ENT_QUOTES, 'UTF-8') : ''; ?>"
@@ -185,7 +214,8 @@
       data-media-type="<?= htmlspecialchars((string)($f['type'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
       data-media-ext="<?= htmlspecialchars((string)($f['ext'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
     >
-      <div class="card mb-3">
+      <div class="card mb-3 position-relative">
+        <?php if ($pickerFragment): ?><span class="badge text-bg-success position-absolute top-0 end-0 m-1 d-none" data-mp-selected aria-hidden="true">✓</span><?php endif; ?>
         <?php if ($isImage): ?>
           <img class="card-img-top" src="<?= htmlspecialchars($toPublicUrl($smallURL), ENT_QUOTES, 'UTF-8'); ?>" alt="">
         <?php else: ?>
@@ -222,6 +252,7 @@
 
 <?php
     endforeach;
+    }
 
     if (isset($paginate['total_pages']) && $paginate['total_pages'] > 1) {
       ob_start();

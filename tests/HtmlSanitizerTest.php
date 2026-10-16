@@ -51,4 +51,19 @@ final class HtmlSanitizerTest extends TestCase
         self::assertSame(0, proc_close($process), $error);
         self::assertSame('closed', $out);
     }
+
+    public function testMediaGalleryRoundTripPreservesOnlyBoundedMarkersAndSafeImages(): void
+    {
+        $input = '<figure data-media-gallery="1" class="evil" onclick="evil()"><figure><img data-media-id="27" src="/public/uploads/a.png" alt="Descripción"></figure><figure><img data-media-id="28" src="https://example.test/b.png"></figure></figure>';
+        $safe = HtmlSanitizer::sanitize($input);
+        self::assertStringContainsString('data-media-gallery="1"', $safe);
+        self::assertStringContainsString('data-media-id="27"', $safe);
+        self::assertStringContainsString('data-media-id="28"', $safe);
+        self::assertStringNotContainsString('onclick', $safe);
+        self::assertStringNotContainsString('class=', $safe);
+        self::assertSame($safe, HtmlSanitizer::sanitize($safe));
+        $invalid = HtmlSanitizer::sanitize('<figure data-media-gallery="evil"><img data-media-id="-1" src="/safe"><img data-media-id="9999999999999999999999" src="/safe"><img data-media-id="1" src="javascript:evil()"></figure>');
+        self::assertStringNotContainsString('data-media-', $invalid);
+        self::assertStringNotContainsString('javascript', $invalid);
+    }
 }

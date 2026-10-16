@@ -19,6 +19,7 @@
         <button type="button" class="btn btn-primary" id="knowledgeMediaSelect" data-ml-uploadbtn>Seleccionar archivos</button>
         <div class="small text-muted mt-3">Tamaño máximo por archivo: <span data-ml-max-mb-value><?= $maxUploadMB ?></span> MB.</div>
     </div>
+    <?php include \GFrame\Modules\ModuleRuntime::file('views', 'media-library/_uploadProgress.php', 'media-library'); ?>
 </div>
 
 <div id="knowledgeMediaList"

@@ -159,7 +159,7 @@ function _normYm(v){
       ym: 'all',
       q: '',
       page: 1,
-      kind: 'all'
+      kind: 'all', view: 'grid', sort: 'newest'
     };
 
     // kind: options.kind > data-ml-kind > URL(kind) (si no está 'locked') > all
@@ -318,7 +318,7 @@ MediaLibrary.prototype.setMode = function(mode){
     });
 
     // filtros: change (ids clásicos + data-ml-filter)
-    $ui.on('change.mediaLibrary', '#media-source-filter, #media-date-filter, #media-kind-filter, [data-ml-filter="source"], [data-ml-filter="ym"], [data-ml-filter="kind"]', function(){
+    $ui.on('change.mediaLibrary', '#media-source-filter, #media-date-filter, #media-kind-filter, [data-ml-filter="source"], [data-ml-filter="ym"], [data-ml-filter="kind"], [data-ml-filter="view"], [data-ml-filter="sort"]', function(){
       self.state.page = 1;
       self.load(1, { push: true, makeActive: true });
     });
@@ -368,6 +368,9 @@ MediaLibrary.prototype.setMode = function(mode){
       if (typeof self.onItemClick === 'function') {
         self.onItemClick(item, e, self);
       }
+    });
+    this.$mount.on('keydown.mediaLibrary', '.m-list-card', function(e) {
+      if (this.tagName !== 'BUTTON' && (e.key === ' ' || e.key === 'Spacebar')) { e.preventDefault(); $(this).trigger('click'); }
     });
   };
 
@@ -472,6 +475,10 @@ MediaLibrary.prototype.normalizeItem = function($el){
     if ($ym.length)  this.state.ym     = _normYm($ym.val());
     if ($q.length)   this.state.q      = ($q.val() || '').toString().trim();
     if (!this._kindLocked && $k.length) this.state.kind = _normKind($k.val());
+    var view = $ui.find('[data-ml-filter="view"]').val();
+    var sort = $ui.find('[data-ml-filter="sort"]').val();
+    if (view) this.state.view = view === 'list' ? 'list' : 'grid';
+    if (sort) this.state.sort = /^(newest|oldest|name_asc|name_desc|size_asc|size_desc)$/.test(sort) ? sort : 'newest';
   };
 
   MediaLibrary.prototype.applyStateToUi = function(){
@@ -491,6 +498,8 @@ MediaLibrary.prototype.normalizeItem = function($el){
     if ($src.length) $src.val(this.state.source || 'all');
     if ($ym.length)  $ym.val(this.state.ym || 'all');
     if ($k.length && !this._kindLocked) $k.val(this.state.kind || 'all');
+    $ui.find('[data-ml-filter="view"]').val(this.state.view);
+    $ui.find('[data-ml-filter="sort"]').val(this.state.sort);
 
     // si el usuario está escribiendo ahora mismo, no le pelees el foco
     if ($q.length) {
@@ -513,6 +522,8 @@ MediaLibrary.prototype.normalizeItem = function($el){
     this.state.source = _normSource(params.get('source'));
     this.state.ym     = _normYm(params.get('ym'));
     this.state.q      = (params.get('q') || '').toString().trim();
+    this.state.view = params.get('view') === 'list' ? 'list' : 'grid';
+    this.state.sort = /^(newest|oldest|name_asc|name_desc|size_asc|size_desc)$/.test(params.get('sort') || '') ? params.get('sort') : 'newest';
 
     var p = parseInt(params.get('page') || '1', 10) || 1;
     this.state.page = (p < 1) ? 1 : p;
@@ -560,10 +571,14 @@ MediaLibrary.prototype.syncUrl = function(push){
 
     if (this.state.kind && this.state.kind !== 'all') u.searchParams.set('kind', this.state.kind);
     else u.searchParams.delete('kind');
+    if (this.state.view === 'list') u.searchParams.set('view', 'list');
+    else u.searchParams.delete('view');
+    if (this.state.sort !== 'newest') u.searchParams.set('sort', this.state.sort);
+    else u.searchParams.delete('sort');
 
     var newUrl = u.pathname + (u.search ? u.search : '');
 
-    var st = { source: this.state.source, ym: this.state.ym, q: this.state.q, page: this.state.page, kind: this.state.kind };
+    var st = { source: this.state.source, ym: this.state.ym, q: this.state.q, page: this.state.page, kind: this.state.kind, view: this.state.view, sort: this.state.sort };
     if (push) history.pushState(st, '', newUrl);
     else history.replaceState(st, '', newUrl);
   };
@@ -576,7 +591,7 @@ MediaLibrary.prototype.syncUrl = function(push){
     }
 
     var params = new URLSearchParams(window.location.search);
-    var hasAny = params.has('source') || params.has('ym') || params.has('q') || params.has('page') || params.has('kind');
+    var hasAny = params.has('source') || params.has('ym') || params.has('q') || params.has('page') || params.has('kind') || params.has('view') || params.has('sort');
 
     // si URL trae kind y no está locked, lo aplicamos aquí también
     if (!this._kindLocked && params.has('kind')) {
@@ -592,6 +607,7 @@ MediaLibrary.prototype.syncUrl = function(push){
   };
 
   MediaLibrary.prototype.resetFilters = function(){
+    this.state.sort = 'newest';
     this.state.source = 'all';
     this.state.ym = 'all';
     this.state.q = '';
@@ -613,6 +629,7 @@ MediaLibrary.prototype.syncUrl = function(push){
     if ($src.length) $src.val('all');
     if ($ym.length)  $ym.val('all');
     if ($q.length)   $q.val('');
+    $ui.find('[data-ml-filter="sort"]').val('newest');
     if ($k.length && !this._kindLocked) $k.val('all');
     if (!this._kindLocked) this.state.kind = 'all';
   };
@@ -639,6 +656,8 @@ MediaLibrary.prototype.syncUrl = function(push){
     if (this.state.q)                                     data += '&q='      + encodeURIComponent(this.state.q);
     if (this.state.kind && this.state.kind !== 'all')      data += '&kind='   + encodeURIComponent(this.state.kind);
     if (this.tenantID > 0)                                 data += '&tenant_id=' + encodeURIComponent(this.tenantID);
+    data += '&view=' + encodeURIComponent(this.mode === 'picker' ? 'grid' : this.state.view);
+    data += '&sort=' + encodeURIComponent(this.state.sort);
 
     return data;
   };
@@ -652,6 +671,7 @@ MediaLibrary.prototype.syncUrl = function(push){
 
     // construye data (esto lee la UI y actualiza state)
     var data = this._buildListData(page);
+    var sequence = self._loadSequence = (self._loadSequence || 0) + 1;
 
     // url sync (después de leer UI/state)
     var push = (opts.push === undefined) ? true : !!opts.push;
@@ -663,6 +683,7 @@ MediaLibrary.prototype.syncUrl = function(push){
       data: data,
       dataType: 'json',
       success: function(response){
+        if (sequence !== self._loadSequence) return;
         if (response && response.status === 'success') {
           self.$mount.html(response.html || '');
           if (response.meta && response.meta.max_upload_bytes) {
@@ -693,6 +714,7 @@ MediaLibrary.prototype.syncUrl = function(push){
         }
       },
       error: function(xhr, status, error){
+        if (sequence !== self._loadSequence) return;
         var title = (typeof ajaxError === 'function') ? ajaxError(status, error).title : ('Error: ' + status);
         _safeToastError(title);
       }
@@ -806,18 +828,46 @@ MediaLibrary.prototype.syncUrl = function(push){
 
       var anyOk = false;
       var pending = 0;
+      var scheduled = false;
+      var finished = false;
+      var uploaded = [];
+      var context = self.uploadContext;
+      var $progressRoot = cfg.resultsRoot ? $(cfg.resultsRoot) : $root;
+      var $results = $progressRoot.find('[data-ml-upload-results]').first();
+      var template = $progressRoot.find('template[data-ml-upload-row]').get(0);
+      function progressText(key) { return template ? template.getAttribute('data-' + key) || '' : ''; }
+
+      function finishBatch() {
+        if (!scheduled || pending !== 0 || finished) return;
+        finished = true;
+        uploaded.sort(function(a, b) { return a.index - b.index; });
+        self.$mount.trigger('ml:uploadComplete', [uploaded, context]);
+        if (anyOk && self.uploadContext === context) {
+          self.resetFilters();
+          if (self.syncUrlEnabled) self.syncUrl(false);
+          self.load(1, { push: false, makeActive: true });
+        }
+      }
 
       if (!files || !files.length) return;
 
       for (var i = 0; i < files.length; i++) {
         var file = files[i];
         if (!file) continue;
+        var $row = $();
+        if (template && $results.length) {
+          $row = $(template.content.firstElementChild.cloneNode(true));
+          $row.find('[data-ml-upload-name]').text(file.name);
+          $row.find('progress').attr('aria-label', progressText('label').replace('{name}', file.name));
+          $results.append($row);
+        }
 
         // Límite de tamaño por archivo (cliente). Backend valida igual.
         var maxMB = parseFloat(self.uploadMaxMB) || 0;
         if (maxMB > 0) {
           var maxBytes = maxMB * 1024 * 1024;
           if (file.size && file.size > maxBytes) {
+            $row.find('[data-ml-upload-status]').text(progressText('too-large'));
             if (typeof alertToast === 'function') {
               alertToast({ icon: 'error', title: file.name + ' excede ' + (maxMB % 1 === 0 ? String(parseInt(maxMB,10)) : String(maxMB)) + ' MB' });
             } else {
@@ -853,7 +903,7 @@ MediaLibrary.prototype.syncUrl = function(push){
 
 
 
-        (function(fileName){
+        (function(fileName, fileIndex, $fileRow){
 
         $.ajax({
           url: self.endpoints.upload,
@@ -862,6 +912,16 @@ MediaLibrary.prototype.syncUrl = function(push){
           contentType: false,
           processData: false,
           dataType: 'json',
+          xhr: function() {
+            var xhr = $.ajaxSettings.xhr();
+            if (xhr.upload) xhr.upload.addEventListener('progress', function(event) {
+              if (!event.lengthComputable) return;
+              var percent = Math.round(event.loaded / event.total * 100);
+              $fileRow.find('progress').val(percent);
+              $fileRow.find('[data-ml-upload-status]').text(progressText(percent === 100 ? 'processing' : 'uploading'));
+            });
+            return xhr;
+          },
           success: function(resp){
             pending--;
             if (typeof showSpinner === 'function' && $uploadBtn.length) {
@@ -870,8 +930,12 @@ MediaLibrary.prototype.syncUrl = function(push){
 
             if (resp && resp.status === 'success') {
               anyOk = true;
-              _safeToastSuccess('El archivo <strong>' + fileName + '</strong> se ha guardado.');
+              uploaded.push({index: fileIndex, response: resp});
+              $fileRow.find('progress').val(100);
+              $fileRow.find('[data-ml-upload-status]').text(progressText('saved'));
+              _safeToastSuccess('El archivo ' + fileName + ' se ha guardado.');
             } else {
+              $fileRow.find('[data-ml-upload-status]').text((resp && resp.message) || progressText('failed'));
               if (resp && resp.code === 'disk_quota_exceeded') {
                 var usedMb = parseFloat((resp.data && resp.data.used_mb) ? resp.data.used_mb : 0) || 0;
                 var limitMb = parseFloat((resp.data && resp.data.limit_mb) ? resp.data.limit_mb : 0) || 0;
@@ -896,32 +960,28 @@ MediaLibrary.prototype.syncUrl = function(push){
               _safeToastError(title);
             }
 
-            if (pending === 0 && anyOk) {
-              self.resetFilters();
-              if (self.syncUrlEnabled) self.syncUrl(false);
-              self.load(1, { push: false, makeActive: true });
-            }
+            finishBatch();
           },
           error: function(xhr, status, error){
             pending--;
+            $fileRow.find('[data-ml-upload-status]').text(progressText('failed'));
             if (typeof showSpinner === 'function' && $uploadBtn.length) {
               showSpinner($uploadBtn, (self._uploader && self._uploader.buttonText) ? self._uploader.buttonText : ($uploadBtn.text() || 'Subir'), pending > 0);
             }
             var title = (typeof ajaxError === 'function') ? ajaxError(status, error).title : ('Error: ' + status);
             _safeToastError(title);
 
-            if (pending === 0 && anyOk) {
-              self.resetFilters();
-              if (self.syncUrlEnabled) self.syncUrl(false);
-              self.load(1, { push: false, makeActive: true });
-            }
+            finishBatch();
           }
         });
-        })(file.name);
+        })(file.name, i, $row);
       }
+      scheduled = true;
+      finishBatch();
     }
 
     function _addFromUrl(){
+      var context = self.uploadContext;
       var rawUrl = $urlInput.length ? (($urlInput.val() || '') + '').trim() : '';
       var customName = $urlName.length ? (($urlName.val() || '') + '').trim() : '';
       if (!rawUrl) {
@@ -970,6 +1030,8 @@ MediaLibrary.prototype.syncUrl = function(push){
 
           if (resp && resp.status === 'success') {
             _safeToastSuccess('El medio externo se ha guardado.');
+            if (self.uploadContext !== context) return;
+            self.$mount.trigger('ml:uploadComplete', [[{index: 0, response: resp}], context]);
             if ($urlInput.length) $urlInput.val('');
             if ($urlName.length) $urlName.val('');
 

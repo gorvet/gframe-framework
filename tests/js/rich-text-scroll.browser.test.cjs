@@ -1,0 +1,126 @@
+const {test} = require('node:test');
+const assert = require('node:assert/strict');
+const {execFileSync} = require('node:child_process');
+const {readFileSync} = require('node:fs');
+const {join} = require('node:path');
+
+test('Artículo largo: scroll del editor, aside, teclado y opciones por instancia', {skip: !process.env.GFRAME_TEST_BROWSER, timeout: 60000}, async () => {
+  const root = join(__dirname, '../..').replaceAll('\\', '/');
+  const view = JSON.stringify(root + '/resources/modules/rich-text-editor/application/app/views/rich-text-editor/richTextEditor.php');
+  const field = execFileSync(process.env.GFRAME_TEST_PHP || 'C:/xampp/php/php.exe', ['-r', `$richTextEditor=['id'=>'article-content','name'=>'content','label'=>'Contenido']; include ${view};`], {encoding: 'utf8'});
+  const html = `<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/bootstrap.css"><link rel="stylesheet" href="/public/vendors/external/tinymce/gframe-tinymce.css"><body><main class="container-fluid p-3"><h1 class="h4">Artículo</h1><form class="row g-3"><div class="col-lg-8">${field}</div><aside class="col-lg-4"><div class="card"><div class="card-body"><h2 class="h5">Publicación</h2><button type="button" id="publish" class="btn btn-primary">Guardar artículo</button></div></div></aside></form><div style="height:800px" aria-hidden="true"></div></main><script>var site_url='http://editor-scroll.test/';</script><script src="/jquery.js"></script><script src="/public/vendors/external/tinymce/tinymce.min.js"></script><script src="/editor.js"></script></body></html>`;
+  const {chromium} = require('playwright');
+  const browser = await chromium.launch({headless: true, executablePath: process.env.GFRAME_TEST_BROWSER});
+  try {
+    const page = await browser.newPage({viewport: {width: 1440, height: 1000}});
+    const errors = []; page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/*', async route => {
+      const path = new URL(route.request().url()).pathname;
+      if (path === '/') return route.fulfill({status: 200, contentType: 'text/html', body: html});
+      const mappings = {'/bootstrap.css': 'bootstrap/public/css/bootstrap.min.css', '/jquery.js': 'jquery/public/jquery.min.js', '/editor.js': 'rich-text-editor/public/rich-text-editor.js'};
+      const relative = mappings[path] || (path.startsWith('/public/vendors/external/tinymce/') && !path.includes('..') ? 'tinymce/public/' + path.slice('/public/vendors/external/tinymce/'.length) : null);
+      if (!relative) return route.fulfill({status: 404, body: ''});
+      await route.fulfill({status: 200, contentType: path.endsWith('.js') ? 'application/javascript' : path.endsWith('.css') ? 'text/css' : 'application/octet-stream', body: readFileSync(join(root, 'resources/modules', relative))});
+    });
+    await page.goto('http://editor-scroll.test/');
+    await page.waitForFunction(() => window.tinymce?.get('article-content')?.initialized);
+    const metrics = () => page.evaluate(() => {
+      const e = tinymce.get('article-content'), doc = e.getDoc(), body = doc.scrollingElement;
+      return {height: e.getContainer().getBoundingClientRect().height, scroll: body.scrollTop, full: body.scrollHeight, visible: body.clientHeight, outer: window.scrollY};
+    });
+    const initial = await metrics();
+    const body = page.frameLocator('#article-content_ifr').locator('body');
+    await body.click(); await body.pressSequentially('/titulo', {delay: 60});
+    await page.getByText('Título 2', {exact: true}).waitFor({state: 'visible'});
+    await body.press('Enter'); await body.pressSequentially('Un título');
+    assert.equal(await page.evaluate(() => tinymce.get('article-content').getBody().querySelector('h2')?.textContent), 'Un título');
+    await page.evaluate(() => { const e = tinymce.get('article-content'); e.setContent('<p></p>'); e.focus(); e.selection.setCursorLocation(e.getBody().firstChild, 0); });
+    await body.pressSequentially('/lista', {delay: 60});
+    await page.getByText('Lista con viñetas', {exact: true}).waitFor({state: 'visible'});
+    await body.press('Enter');
+    assert.match(await page.evaluate(() => tinymce.get('article-content').getContent()), /<ul>/);
+    await page.evaluate(() => tinymce.get('article-content').undoManager.undo());
+    assert.doesNotMatch(await page.evaluate(() => tinymce.get('article-content').getContent()), /<ul>/);
+    await page.evaluate(() => tinymce.get('article-content').undoManager.redo());
+    await body.pressSequentially('Primer elemento');
+    assert.match(await page.evaluate(() => tinymce.get('article-content').getContent()), /<ul>[\s\S]*Primer elemento/);
+    await page.evaluate(() => { const e = tinymce.get('article-content'); e.setContent('<p></p>'); e.focus(); e.selection.setCursorLocation(e.getBody().firstChild, 0); });
+    await body.pressSequentially('/cita', {delay: 60});
+    await page.getByText('Cita', {exact: true}).last().waitFor({state: 'visible'});
+    await body.press('Escape');
+    assert.match(await page.evaluate(() => tinymce.get('article-content').getContent()), /\/cita/);
+    await page.evaluate(() => { const e = tinymce.get('article-content'); e.setContent('<p>Ruta </p>'); e.focus(); e.selection.setCursorLocation(e.getBody().firstChild, 1); });
+    await body.pressSequentially('/titulo', {delay: 60});
+    assert.equal(await page.getByText('Título 2', {exact: true}).isVisible(), false);
+    assert.ok(await page.evaluate(() => tinymce.get('article-content').plugins.wordcount.body.getWordCount()) > 0);
+    await page.evaluate(() => {
+      const e = tinymce.get('article-content'); e.setContent('<p>Texto seleccionado</p>'); e.focus();
+      e.selection.select(e.getBody().firstChild, true); e.dispatch('mouseup');
+    });
+    await page.locator('.tox-pop .tox-toolbar').waitFor({state: 'visible'});
+    await page.locator('.tox-pop').getByRole('button', {name: 'Cita en bloque', exact: true}).waitFor({state: 'visible'});
+    if (process.env.GFRAME_TEST_SCREENSHOTS) await page.screenshot({path: join(process.env.GFRAME_TEST_SCREENSHOTS, 'rich-text-selection.png')});
+    await body.press('ArrowRight');
+    await page.evaluate(() => tinymce.get('article-content').setContent(Array.from({length: 180}, (_, i) => `<p>Párrafo ${i + 1}. Contenido de un artículo largo para comprobar el desplazamiento y el acceso a publicación.</p>`).join('')));
+    await page.waitForTimeout(700);
+    const long = await metrics();
+    assert.ok(Math.abs(long.height - initial.height) <= 2, JSON.stringify({initial, long}));
+    assert.ok(long.full > long.visible * 5, JSON.stringify(long));
+    const iframe = page.locator('#article-content_ifr'), box = await iframe.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 700); await page.waitForTimeout(250);
+    const wheel = await metrics(); assert.ok(wheel.scroll > 0); assert.equal(wheel.outer, 0);
+    const publishBox = await page.locator('#publish').boundingBox();
+    assert.ok(publishBox.y >= 0 && publishBox.y + publishBox.height <= 1000);
+    await page.locator('#publish').click(); assert.equal((await metrics()).outer, 0);
+    await page.evaluate(() => { const e = tinymce.get('article-content'); e.focus(); e.selection.setCursorLocation(e.getBody().querySelector('p'), 0); });
+    await page.frameLocator('#article-content_ifr').locator('body').press('Control+End'); await page.waitForTimeout(200);
+    const bottom = await metrics(); assert.ok(bottom.scroll > wheel.scroll);
+    const bottomBox = await iframe.boundingBox();
+    await page.mouse.move(bottomBox.x + bottomBox.width / 2, bottomBox.y + bottomBox.height / 2);
+    await page.mouse.wheel(0, 1400); await page.waitForTimeout(250);
+    assert.equal((await metrics()).outer, 0, 'La rueda al final del artículo no debe arrastrar el formulario.');
+    if (process.env.GFRAME_TEST_SCREENSHOTS) await page.screenshot({path: join(process.env.GFRAME_TEST_SCREENSHOTS, 'rich-text-scroll-desktop.png')});
+    await page.evaluate(() => { AdminRichTextEditor.saveAll(); window.synced = document.getElementById('article-content').value.includes('180'); });
+    assert.equal(await page.evaluate(() => window.synced), true);
+    await page.evaluate(() => tinymce.get('article-content').setContent('<p>Documento breve</p>'));
+    await page.waitForTimeout(200);
+    assert.ok(Math.abs((await metrics()).height - initial.height) <= 2);
+    const handle = page.locator('.tox-statusbar__resize-handle');
+    const handleBox = await handle.boundingBox();
+    await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2);
+    await page.mouse.down(); await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2 + 80, {steps: 5}); await page.mouse.up();
+    assert.ok((await metrics()).height > initial.height + 40, 'El usuario puede aumentar manualmente el espacio de escritura.');
+    await page.setViewportSize({width: 390, height: 844});
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    if (process.env.GFRAME_TEST_SCREENSHOTS) await page.screenshot({path: join(process.env.GFRAME_TEST_SCREENSHOTS, 'rich-text-scroll-mobile.png')});
+    // La personalización explícita sigue pudiendo elegir otro tamaño.
+    await page.evaluate(() => {
+      AdminRichTextEditor.destroy('article-content');
+      AdminRichTextEditor.register('article-content', {height: 420, min_height: 320});
+      AdminRichTextEditor.init(document.getElementById('article-content'));
+    });
+    await page.waitForFunction(() => tinymce.get('article-content')?.initialized);
+    assert.ok(Math.abs((await metrics()).height - 420) <= 2);
+    await page.setViewportSize({width: 1440, height: 1000});
+    await page.evaluate(() => {
+      AdminRichTextEditor.destroy('article-content');
+      AdminRichTextEditor.register('article-content', {height: 420, min_height: 320, toolbar_mode: 'sliding'});
+      AdminRichTextEditor.init(document.getElementById('article-content'));
+    });
+    await page.waitForFunction(() => tinymce.get('article-content')?.initialized);
+    await page.getByRole('button', {name: 'Subrayado', exact: false}).first().waitFor({state: 'visible'});
+    assert.equal(await page.evaluate(() => tinymce.get('article-content').options.get('toolbar_mode')), 'sliding');
+    await page.evaluate(() => {
+      const plugins = tinymce.get('article-content').options.get('plugins');
+      AdminRichTextEditor.destroy('article-content');
+      AdminRichTextEditor.register('article-content', {min_height: 320, height: 420, plugins: [].concat(plugins, 'autoresize').join(' ')});
+      AdminRichTextEditor.init(document.getElementById('article-content'));
+    });
+    await page.waitForFunction(() => tinymce.get('article-content')?.initialized);
+    await page.evaluate(() => tinymce.get('article-content').setContent('<p>Texto largo</p>'.repeat(120)));
+    await page.waitForFunction(() => tinymce.get('article-content').getContainer().getBoundingClientRect().height > 1000);
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});

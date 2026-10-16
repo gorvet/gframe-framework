@@ -65,7 +65,7 @@ class MediaController
     public function field(): array
     {
         $variant = trim((string)($_POST['variant'] ?? 'sthumb'));
-        if (!in_array($variant, ['sthumb', 'gthumb'], true)) {
+        if (!in_array($variant, ['sthumb', 'gthumb', 'selection', 'editor_image', 'editor_gallery'], true)) {
             return ['status' => 'error', 'code' => 'invalid_media_fragment', 'message' => 'La vista previa solicitada no está disponible.'];
         }
         $raw = $_POST['media_ids'] ?? [];
@@ -91,10 +91,21 @@ class MediaController
                     $mediaItems[] = $this->viewItem($result['data']);
                 }
             }
+            $editorFragment = in_array($variant, ['editor_image', 'editor_gallery'], true);
+            if ($editorFragment && (count($mediaItems) !== count($ids) || $ids === []
+                || count(array_filter($raw, static fn($value): bool => (int)$value <= 0)) > 0
+                || ($variant === 'editor_image' && count($ids) !== 1)
+                || count(array_filter($mediaItems, static fn(array $item): bool => $item['type'] !== 'images')) > 0)) {
+                return ['status' => 'error', 'code' => 'invalid_media_selection', 'message' => 'Selecciona imágenes disponibles en esta biblioteca.'];
+            }
             $allowRemoveOne = (string)($_POST['allow_remove_one'] ?? '1') === '1';
             ob_start();
-            foreach ($mediaItems as $ctx) {
-                include $this->viewPath('_' . $variant);
+            if ($editorFragment) {
+                include $this->viewPath('_editor');
+            } else {
+                foreach ($mediaItems as $ctx) {
+                    include $this->viewPath('_' . $variant);
+                }
             }
             return ['status' => 'success', 'code' => 'media_field_loaded', 'data' => $mediaItems, 'html' => (string)ob_get_clean()];
         } catch (Exception $exception) {
@@ -161,7 +172,12 @@ class MediaController
                 if (($existing['status'] ?? '') !== 'success') return $this->withMessage($existing);
                 $input['original_name'] = $existing['data']['original_name'];
             }
-            return $this->withMessage($this->media->updateMetadata($id, $input, $scope));
+            $response = $this->media->updateMetadata($id, $input, $scope);
+            if (($response['status'] ?? '') === 'success') {
+                $saved = $this->media->details($id, $scope);
+                if (($saved['status'] ?? '') === 'success') $response['data'] = $this->viewItem($saved['data']);
+            }
+            return $this->withMessage($response);
         } catch (Exception $exception) {
             return $this->scopeFailure($exception);
         }
@@ -204,6 +220,8 @@ class MediaController
                 'kind' => trim((string)($_REQUEST['kind'] ?? 'all')),
                 'ym' => trim((string)($_REQUEST['ym'] ?? '')),
                 'source' => trim((string)($_REQUEST['source'] ?? 'all')),
+                'sort' => trim((string)($_REQUEST['sort'] ?? 'newest')),
+                'view' => trim((string)($_REQUEST['view'] ?? 'grid')),
             ], $this->scopes->resolve()));
         } catch (Exception $exception) {
             return $this->scopeFailure($exception);

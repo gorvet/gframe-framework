@@ -21,7 +21,7 @@ test('La personalización documentada registra un botón visible y conserva el c
   const context = {window: {}, document: {querySelectorAll: () => [element]}, jQuery: jquery, tinymce, site_url: 'https://example.test/'};
   runInNewContext(readFileSync(join(root, 'resources/modules/rich-text-editor/public/rich-text-editor.js'), 'utf8'), context);
   const doc = readFileSync(join(root, 'docs/rich-text-editor.md'), 'utf8');
-  const example = [...doc.matchAll(/```javascript\r?\n([\s\S]*?)\r?\n```/g)][0][1];
+  const example = [...doc.matchAll(/```javascript\r?\n([\s\S]*?)\r?\n```/g)].find(match => match[1].includes("addButton('customAction'"))[1];
   runInNewContext(example, context);
   context.window.AdminRichTextEditor.init(element);
   assert.ok(options.toolbar.includes('customAction'));
@@ -35,4 +35,27 @@ test('La personalización documentada registra un botón visible y conserva el c
   context.window.AdminRichTextEditor.destroyAll(context.document);
   assert.equal(saved, 1);
   assert.equal(removed, 1);
+});
+
+test('El ejemplo de protección confirma únicamente el snapshot enviado tras éxito de negocio', () => {
+  const doc = readFileSync(join(__dirname, '../../docs/rich-text-editor.md'), 'utf8');
+  const example = [...doc.matchAll(/```javascript\r?\n([\s\S]*?)\r?\n```/g)].find(match => match[1].includes('function saveArticle(form)'))[1];
+  const snapshot = Object.freeze({editorID: 'articleContent', content: '<p>Enviado</p>'});
+  const acknowledgements = [];
+  let done, request, valid = false;
+  const fields = new Map();
+  const jquery = () => ({serializeArray: () => [{name: 'csrfToken', value: 'fixture-token'}]});
+  jquery.ajax = options => { request = options; return {done: callback => { done = callback; }}; };
+  const form = {action: '/save-fixture', checkValidity: () => valid, classList: {add: () => {}}};
+  const context = {
+    window: {AdminRichTextEditor: {saveAll() {}, getSaveSnapshot: () => snapshot, markSaved: value => acknowledgements.push(value)}},
+    $: jquery, FormData: class {set(key, value) {fields.set(key, value);}}
+  };
+  runInNewContext(example, context);
+  context.saveArticle(form); assert.equal(request, undefined, 'No envía un formulario inválido.');
+  valid = true; context.saveArticle(form);
+  assert.equal(request.url, form.action); assert.equal(fields.get('content'), snapshot.content);
+  assert.equal(fields.get('csrfToken'), 'fixture-token');
+  done({status: 'error'}); assert.equal(acknowledgements.length, 0);
+  done({status: 'success'}); assert.equal(acknowledgements[0], snapshot);
 });

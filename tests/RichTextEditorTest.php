@@ -82,6 +82,27 @@ final class RichTextEditorTest extends TestCase
         self::assertStringContainsString('paste_preprocess: pastePreprocess', $javascript);
     }
 
+    public function testDraftOptionsRenderEscapedScopeAndOptionalRecoveryControls(): void
+    {
+        $richTextEditor = ['id' => 'article-content', 'draft_key' => 'tenant:7:user:23:article:"42"', 'protect_changes' => false];
+        ob_start();
+        include $this->modulePath . '/application/app/views/rich-text-editor/richTextEditor.php';
+        $html = (string)ob_get_clean();
+        $document = new \DOMDocument();
+        @$document->loadHTML('<?xml encoding="UTF-8">' . $html);
+        $field = $document->getElementById('article-content');
+        self::assertSame($richTextEditor['draft_key'], $field->getAttribute('data-editor-draft-key'));
+        self::assertSame('0', $field->getAttribute('data-editor-protect'));
+        self::assertNotNull($document->getElementById('article-content-recovery'));
+        self::assertNotNull($document->getElementById('article-content-draft-status'));
+        self::assertIsArray(json_decode($field->getAttribute('data-editor-draft-messages'), true, 512, JSON_THROW_ON_ERROR));
+        $richTextEditor = ['id' => 'plain-content'];
+        ob_start(); include $this->modulePath . '/application/app/views/rich-text-editor/richTextEditor.php'; $plain = ob_get_clean();
+        self::assertStringContainsString('data-editor-protect="1"', $plain);
+        self::assertStringNotContainsString('data-editor-draft-key=', $plain);
+        self::assertStringNotContainsString('data-editor-draft-restore', $plain);
+    }
+
     public function testNativeComponentAndProjectOverrideArePreservedByUpdate(): void
     {
         $root = sys_get_temp_dir() . '/gframe-rich-editor-' . bin2hex(random_bytes(6));
@@ -98,6 +119,20 @@ final class RichTextEditorTest extends TestCase
             $html = ob_get_clean();
             self::assertStringContainsString('id="editor-2-test"', $html);
             self::assertStringContainsString('&lt;script&gt;evil()&lt;/script&gt;', $html);
+            self::assertStringNotContainsString('data-editor-media="1"', $html);
+            $richTextEditor['media_library'] = true;
+            ob_start(); include $native; $withMedia = ob_get_clean();
+            self::assertStringContainsString('data-editor-media="1"', $withMedia);
+            self::assertStringContainsString('data-editor-media-image=', $withMedia);
+            $recoveryMeta = \GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditorRecovery.meta.php', 'rich-text-editor');
+            self::assertNotNull($recoveryMeta);
+            $recoveryAssets = require $recoveryMeta;
+            self::assertContains('public/vendors/internal/gframe-alerts/alertToast.js', $recoveryAssets['js']);
+            self::assertContains('public/vendors/external/sweetalert2/sweetalert2.all.min.js', $recoveryAssets['js']);
+            (new \GFrame\Modules\ModuleAssetPublisher($catalog))->publishProject(['media-library', 'rich-text-editor'], $root);
+            self::assertFileExists($root . '/public/css/modules/media-library/media-content.css');
+            self::assertFileExists($root . '/public/js/app/admin/components/rich-text-editor.js');
+            self::assertFileDoesNotExist($root . '/app/views/rich-text-editor/richTextEditorMedia.meta.php');
             file_put_contents($root . '/app/views/rich-text-editor/richTextEditor.php', '<p>custom-editor</p>');
             file_put_contents($root . '/app/views/rich-text-editor/richTextEditor.meta.php', '<?php return ["js"=>["public/custom.js"]];');
             \GFrame\Install\ProjectUpdateService::frameworkDefault()->update($root, ['rich-text-editor']);
@@ -105,6 +140,7 @@ final class RichTextEditorTest extends TestCase
             include \GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditor.php', 'rich-text-editor');
             self::assertSame('<p>custom-editor</p>', ob_get_clean());
             self::assertSame(['js'=>['public/custom.js']], require \GFrame\Modules\ModuleRuntime::file('views', 'rich-text-editor/richTextEditor.meta.php', 'rich-text-editor'));
+            self::assertContains('public/custom.js', (require $recoveryMeta)['js']);
             self::assertFileDoesNotExist($root . '/app/views/admin/components/richTextEditor.php');
         } finally {
             $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);

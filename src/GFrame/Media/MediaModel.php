@@ -50,9 +50,15 @@ class MediaModel extends \ORM implements MediaRepository
         $total = (int)$apply($this->reset())->count('*');
         $lastPage = max(1, (int)ceil($total / $perPage));
         $page = min(max(1, $page), $lastPage);
-        $data = $apply($this->reset())
-            ->orderBy('media_id', 'DESC')
-            ->paginate($page, $perPage);
+        $orders = [
+            'newest' => ['media_id', 'DESC'], 'oldest' => ['media_id', 'ASC'],
+            'name_asc' => ['original_name', 'ASC'], 'name_desc' => ['original_name', 'DESC'],
+            'size_asc' => ['size_bytes', 'ASC'], 'size_desc' => ['size_bytes', 'DESC'],
+        ];
+        [$column, $direction] = $orders[$filters['sort'] ?? 'newest'] ?? $orders['newest'];
+        $query = $apply($this->reset())->orderBy($column, $direction);
+        if ($column !== 'media_id') $query->orderBy('media_id', 'DESC');
+        $data = $query->paginate($page, $perPage);
 
         return [
             'data' => array_map(static fn(array $row): array => $row, $data),

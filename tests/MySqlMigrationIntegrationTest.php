@@ -144,6 +144,24 @@ final class MySqlMigrationIntegrationTest extends TestCase
         MigrationRunner::frameworkDefault()->migrate($this->pdo, 'mysql', ['cron-runner']);
     }
 
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testContentAutosaveSchemaAndConditionalWrites(): void
+    {
+        $this->pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/content-autosave/database/mysql.sql'));
+        $parts = []; parse_str(str_replace(';', '&', substr(getenv('GFRAME_TEST_MYSQL_DSN'), 6)), $parts);
+        define('DB_CONNECTIONS', ['autosave_mysql' => ['driver' => 'mysql', 'host' => $parts['host'] ?? '127.0.0.1', 'port' => (int)($parts['port'] ?? 3306),
+            'database' => $this->schema, 'username' => getenv('GFRAME_TEST_MYSQL_USER') ?: 'root', 'password' => getenv('GFRAME_TEST_MYSQL_PASSWORD') ?: '']]);
+        $service = new \GFrame\Content\ContentDraftService((new \GFrame\Content\ContentDraftModel())->onConnection('autosave_mysql'));
+        $first = $service->save(7, 9, 'article:42:content', '<p>Privado</p>', null, 'r1', 'r1');
+        self::assertSame('success', $first['status']);
+        self::assertSame('autosave_conflict', $service->save(7, 9, 'article:42:content', 'stale', null, 'r1', 'r1')['code']);
+        $next = $service->save(7, 9, 'article:42:content', '<p>Nuevo</p>', $first['data']['version'], 'r1', 'r1');
+        self::assertSame('success', $next['status']);
+        self::assertSame('autosave_conflict', $service->discard(7, 9, 'article:42:content', $first['data']['version'], 'r1', 'r1')['code']);
+        self::assertFalse($service->load(8, 9, 'article:42:content')['data']['available']);
+        self::assertSame('<p>Nuevo</p>', $service->load(7, 9, 'article:42:content')['data']['content']);
+    }
+
     private function journalRunner(): MigrationRunner
     {
         $this->fixture = sys_get_temp_dir() . '/gframe-journal-' . bin2hex(random_bytes(8));

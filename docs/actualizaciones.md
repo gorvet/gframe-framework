@@ -22,6 +22,12 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 4.1.0: biblioteca, escritura y autoguardado privado
+
+Actualice el paquete y aplique los archivos administrados con la vista previa y su política de personalizaciones. La biblioteca amplía selección, galerías, atributos existentes y gestión; TinyMCE incorpora scroll propio, herramientas contextuales, concentración, esquema y protección ante pérdidas. Los overrides del campo y de sus metadatos deben adoptar los atributos/recursos nuevos o usar las vistas originales.
+
+El aviso de salida se basa en contenido confirmado: integre `getSaveSnapshot` antes del envío y `markSaved` tras éxito real, según [el editor](rich-text-editor.md#protección-y-recuperación). Las copias locales necesitan una `draft_key` por ámbito/contenido. Para autoguardado remoto, añada `content-autosave` a la lista completa de módulos, ejecute su instalación/migración y conecte una ruta de la aplicación que autorice el registro. No activa publicación automática ni modifica artículos existentes. Al publicar devuelva la nueva revisión a `markSaved(snapshot, revision)`. Consulte [la guía de autoguardado](content-autosave.md).
+
 | Comando | Resultado |
 | --- | --- |
 | `composer install` | Con un lock existente, instala sus versiones exactas. No selecciona automáticamente la última publicación. |

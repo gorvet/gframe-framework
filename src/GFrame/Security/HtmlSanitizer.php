@@ -12,14 +12,15 @@ final class HtmlSanitizer
     private const ALLOWED_TAGS = [
         'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li', 'a',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'table', 'thead', 'tbody', 'tr',
-        'td', 'th', 'img', 'hr',
+        'td', 'th', 'img', 'hr', 'figure',
     ];
 
     private const ALLOWED_ATTRIBUTES = [
         'a' => ['href', 'target', 'rel'],
         'ol' => ['start', 'type'],
         'li' => ['value'],
-        'img' => ['src', 'alt', 'title', 'width', 'height'],
+        'img' => ['src', 'alt', 'title', 'width', 'height', 'data-media-id'],
+        'figure' => ['data-media-gallery'],
         'td' => ['colspan', 'rowspan'],
         'th' => ['colspan', 'rowspan'],
     ];
@@ -98,12 +99,18 @@ final class HtmlSanitizer
             }
 
             if ($tag === 'img') {
+                if (preg_match('/^[1-9][0-9]{0,17}$/D', $node->getAttribute('data-media-id')) !== 1) {
+                    $node->removeAttribute('data-media-id');
+                }
                 $src = self::safeUrl($node->getAttribute('src'), false);
                 if ($src === '') {
                     $parent->removeChild($node);
                     continue;
                 }
                 $node->setAttribute('src', $src);
+            }
+            if ($tag === 'figure' && $node->getAttribute('data-media-gallery') !== '1') {
+                $node->removeAttribute('data-media-gallery');
             }
 
             self::sanitizeChildren($node);

@@ -143,6 +143,9 @@ class MediaLibraryService
             $source = trim((string)($filters['source'] ?? ''));
             $filters['source'] = $source === '' || $source === 'all' ? '' : $this->normalizeSource($source);
             $filters['kind'] = $this->normalizeKind((string)($filters['kind'] ?? 'all'));
+            $filters['sort'] = in_array($filters['sort'] ?? '', ['newest', 'oldest', 'name_asc', 'name_desc', 'size_asc', 'size_desc'], true)
+                ? $filters['sort'] : 'newest';
+            $view = ($filters['view'] ?? '') === 'list' ? 'list' : 'grid';
             $filters['ym'] = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string)($filters['ym'] ?? '')) === 1
                 ? (string)$filters['ym'] : '';
             $response = ['status' => 'success', 'code' => 'media_loaded'] + $this->media->paginateMedia(
@@ -155,6 +158,7 @@ class MediaLibraryService
                 'max_upload_bytes' => $this->processor->getMaxUploadBytes(),
                 'source' => $filters['source'] ?: 'all', 'kind' => $filters['kind'],
                 'ym' => $filters['ym'] ?: 'all', 'q' => $filters['search'],
+                'sort' => $filters['sort'], 'view' => $view,
             ];
             $response['filters'] = method_exists($this->media, 'filterOptions')
                 ? $this->media->filterOptions($scope) : ['sources' => [], 'dates' => []];

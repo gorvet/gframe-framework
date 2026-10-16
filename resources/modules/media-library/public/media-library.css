@@ -83,6 +83,10 @@ width: auto;
 
 }
 
+.media-list-file { max-width: 22rem; overflow-wrap: anywhere; }
+.mediasList table td:first-child { min-width: 12rem; }
+#media-details-video { max-height: 18rem; }
+
 #editMediaModal #editMediaPrev,
 #editMediaModal #editMediaNext{
   width: 36px;
@@ -151,3 +155,8 @@ body:has(#mediaPickerModal.modal.show) .modal-backdrop.show {
   z-index: 1061 !important;
 }
  
+/* La vista previa no desplaza los atributos fuera de la zona de edición. */
+.media-picker-details-preview {
+  max-height: 12rem;
+  object-fit: contain;
+}

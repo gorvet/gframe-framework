@@ -1,8 +1,23 @@
 # Registro de cambios
 
-## Sin publicar
+## 4.1.0 — 2026-10-15
+
+- Autoguardado privado optativo en servidor: módulo content-autosave con MySQL/SQLite, control de versión, recuperación explícita y coordinación con publicación; no crea artículos ni cambia contenido público automáticamente.
+- Escritura: protección de salida independiente del estado dirty, borradores locales optativos por ámbito con recuperación explícita y aislamiento entre pestañas, snapshots para confirmar guardados sin perder cambios posteriores, concentración y esquema por títulos. Documentados límites del navegador e integración del guardado.
+
+- Escritura: formatos de texto contextuales, menú «/» para párrafos, títulos, listas, citas y separadores, contador de palabras, herramientas secundarias agrupadas, acciones contextuales de imágenes/galerías y acceso opcional al botón de guardar del formulario mediante toolbar y Ctrl/Cmd+S. Conserva validación, permisos y flujo de envío de la aplicación; quitar del texto no borra medios de la biblioteca.
+
+- Escritura: TinyMCE mantiene una altura inicial estable y desplaza los artículos largos dentro del editor, sin expandir todo el formulario ni arrastrar su scroll con la rueda en los extremos. Conserva redimensionado manual y personalización por instancia; `autoresize` pasa a ser una elección explícita.
+
+- Biblioteca en escritura: integración opcional de TinyMCE para insertar/sustituir imágenes y componer/reeditar galerías ordenadas mediante el selector existente. Fragmentos PHP estrictos por ámbito y tipo, conservación del cursor y undo/redo, y marcadores HTML acotados en el sanitizador. Sin cambios de esquema ni almacenamiento de artículos.
+
+- Biblioteca multimedia: vista de lista, ordenación con filtros y URL, navegación de detalles entre páginas, nombre visible y texto alternativo separados, y reproductores nativos de audio/vídeo sin reproducción automática. Sin cambios de esquema.
+
+- Biblioteca multimedia: progreso por archivo, selección de nuevas subidas, atributos dentro del selector y composición ordenada mediante fragmentos PHP. Conserva permisos, ámbitos y modos de campos existentes; descarta resultados antiguos de consultas y reaperturas.
 
 - Ejecutor HTTP autenticado para cron real o virtual, seleccionable mediante GFRAME_CRON_EXECUTOR; el modo real ya no registra callbacks por visitas. Publicación del endpoint sin sesión y transporte virtual sin exec.
+
+- El aviso de subida de medios utiliza texto sin etiquetas HTML, conforme al contrato de `alertToast`, para no mostrar `<strong>` literalmente.
 
 ## 4.0.0 — 15 de octubre de 2026
 

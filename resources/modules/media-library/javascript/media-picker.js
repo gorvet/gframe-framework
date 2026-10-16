@@ -100,7 +100,12 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   } else {
     lib.setMode("picker");
   }
-  var defaultEndpoints = $.extend({}, lib.endpoints || {});
+  var endpointBase = typeof site_url === 'string' ? site_url : '';
+  var defaultEndpoints = $.extend({
+    details: endpointBase + 'ajax/admin/media/details',
+    save: endpointBase + 'ajax/admin/media/save',
+    field: endpointBase + 'ajax/admin/media/field'
+  }, lib.endpoints || {});
 
   // Estado picker
   var state = {
@@ -112,8 +117,193 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     title: null,
     insertText: null,
     allowEmpty: false,
-    kind: 'all'
+    kind: 'all',
+    session: 0,
+    active: null,
+    dirty: false,
+    saving: false,
+    selectionPending: false,
+    uploadHydrating: false,
+    closing: false,
+    replaceSelection: false
   };
+  var detailSequence = 0;
+  var selectionSequence = 0;
+  var $details = $modal.find('[data-mp-details-form]');
+  var $status = $modal.find('[data-mp-details-status]');
+  var messages = {};
+  try { messages = JSON.parse($modal.find('[data-mp-messages]').text() || '{}'); } catch (error) {}
+  function message(key) { return String(messages[key] || ''); }
+
+  function request(action, data) {
+    var payload = {};
+    resolveTokensForm(tokensForm).serializeArray().forEach(function(token) { payload[token.name] = token.value; });
+    return $.ajax({url: lib.endpoints[action], type: 'POST', dataType: 'json', data: $.extend(payload, data)});
+  }
+
+  function normalize(item) {
+    return $.extend({}, item, {
+      id: toInt(item.media_id || item.id),
+      url: item.media_url || item.url || '',
+      is_image: (item.type || item.kind) === 'images'
+    });
+  }
+
+  function mayLeaveDetails() {
+    if (state.saving) { $status.text(message('wait_save')).trigger('focus'); return false; }
+    if (state.dirty) { $status.text(message('dirty')).trigger('focus'); return false; }
+    return true;
+  }
+
+  function fillDetails(item) {
+    state.active = item;
+    state.dirty = false;
+    $details.find(':input').prop('disabled', false);
+    $modal.find('[data-mp-details-empty]').addClass('d-none');
+    $details.removeClass('d-none');
+    $details.find('[data-mp-name]').val(item.original_name || item.name || '');
+    $details.find('[data-mp-alt]').val(item.alt_text || '').prop('disabled', item.type !== 'images');
+    $modal.find('#mp-file-url').val(item.media_url || '');
+    $details.find('[data-mp-preview]').toggleClass('d-none', item.type !== 'images').attr('src', item.type === 'images' ? item.media_url : '').attr('alt', item.alt_text || '');
+    var meta = item.metadata || {};
+    if (!Object.keys(meta).length) { try { meta = JSON.parse(item.meta_json || '{}'); } catch (error) {} }
+    var original = meta.original || meta;
+    var dimensions = original.width && original.height ? ' · ' + original.width + ' × ' + original.height : '';
+    $details.find('[data-mp-file-info]').text((item.name || '') + ' · ' + (item.mime_type || '') + ' · ' + (item.size_bytes || 0) + ' bytes' + dimensions);
+    $status.text('');
+  }
+
+  function showDetails(id) {
+    var session = state.session;
+    var sequence = ++detailSequence;
+    state.active = null;
+    $details.find(':input').prop('disabled', true);
+    $details.addClass('d-none');
+    $status.text(message('loading_details'));
+    request('details', {media_id: id}).done(function(response) {
+      if (session !== state.session || sequence !== detailSequence) return;
+      if (response.status !== 'success') { $status.text(response.message || message('details_failed')); return; }
+      fillDetails(normalize(response.data));
+    }).fail(function() {
+      if (session === state.session && sequence === detailSequence) $status.text(message('details_failed'));
+    });
+  }
+
+  function renderSelection(focusID, direction) {
+    var ids = Array.from(state.selected.keys());
+    var session = state.session;
+    var sequence = ++selectionSequence;
+    state.selectionPending = false;
+    $modal.find('[data-mp-selection]').toggleClass('d-none', !state.multiple || !ids.length);
+    if (!state.multiple || !ids.length) {
+      $modal.find('[data-mp-selection-list]').empty();
+      setFooter();
+      return;
+    }
+    state.selectionPending = true;
+    $modal.find('#mp-insert').prop('disabled', true);
+    request('field', {media_ids: JSON.stringify(ids), variant: 'selection'}).done(function(response) {
+      if (session !== state.session || sequence !== selectionSequence) return;
+      if (response.status !== 'success') { $status.text(response.message || message('selection_failed')); return; }
+      var $list = $modal.find('[data-mp-selection-list]').html(response.html || '');
+      if ((response.data || []).length !== ids.length) { $status.text(message('selection_unavailable')); return; }
+      (response.data || []).forEach(function(item) { item = normalize(item); if (state.selected.has(item.id)) state.selected.set(item.id, item); });
+      $list.find('li').first().find('[data-mp-move="-1"]').prop('disabled', true);
+      $list.find('li').last().find('[data-mp-move="1"]').prop('disabled', true);
+      state.selectionPending = false;
+      setFooter();
+      if (focusID) {
+        var $item = $list.find('[data-mp-selection-id="' + focusID + '"]');
+        var $focus = direction ? $item.find('[data-mp-move="' + direction + '"]:enabled') : $item.find('[data-mp-detail]');
+        ($focus.length ? $focus : $item.find('[data-mp-detail]')).trigger('focus');
+      }
+    }).fail(function() {
+      if (session === state.session && sequence === selectionSequence) $status.text(message('selection_retry'));
+    });
+  }
+
+  function syncSelection(focusID, direction) {
+    highlightSelected();
+    setFooter();
+    renderSelection(focusID, direction);
+  }
+
+  $details.on('input', '[data-mp-name], [data-mp-alt]', function() { state.dirty = true; $status.text(message('unsaved')); });
+  $details.on('keydown', '[data-mp-name]', function(event) {
+    if (event.key === 'Enter') { event.preventDefault(); $details.find('[data-mp-save]').trigger('click'); }
+  });
+  $modal.on('click.mediaPickerDetails', '[data-mp-discard]', function() { if (!state.saving && state.active) fillDetails(state.active); });
+  $details.on('click', '[data-mp-save]', function(event) {
+    event.preventDefault();
+    if (!state.active || state.saving || !$details.find('[data-mp-name]')[0].reportValidity()) return;
+    state.saving = true;
+    $details.find(':input').prop('disabled', true);
+    $status.text(message('saving'));
+    var item = state.active;
+    var data = {media_id: item.id, original_name: $details.find('[data-mp-name]').val(), alt_text: $details.find('[data-mp-alt]').val()};
+    request('save', data).done(function(response) {
+      if (response.status !== 'success') { $status.text(response.message || message('save_denied')); return; }
+      item = response.data ? normalize(response.data) : $.extend({}, item, {original_name: data.original_name, alt_text: data.alt_text});
+      fillDetails(item);
+      if (state.selected.has(item.id)) state.selected.set(item.id, item);
+      $status.text(message('saved'));
+      renderSelection();
+      lib.load(lib.state.page || 1, {push: false, makeActive: true});
+    }).fail(function() { $status.text(message('save_failed')); })
+      .always(function() {
+        state.saving = false;
+        $details.find(':input').prop('disabled', false);
+        $details.find('[data-mp-alt]').prop('disabled', !state.active || state.active.type !== 'images');
+      });
+  });
+
+  $modal.on('click.mediaPickerComposition', '[data-mp-detail]', function() {
+    if (mayLeaveDetails()) showDetails(toInt($(this).attr('data-mp-detail')));
+  });
+  $modal.on('click.mediaPickerComposition', '[data-mp-remove]', function() {
+    if (!mayLeaveDetails()) return;
+    state.selected.delete(toInt($(this).attr('data-mp-remove')));
+    state.replaceSelection = true;
+    syncSelection();
+  });
+  $modal.on('click.mediaPickerComposition', '[data-mp-move]', function() {
+    if (!mayLeaveDetails()) return;
+    var id = toInt($(this).closest('[data-mp-selection-id]').attr('data-mp-selection-id'));
+    var direction = toInt($(this).attr('data-mp-move'));
+    var items = Array.from(state.selected.values());
+    var index = items.findIndex(function(item) { return item.id === id; });
+    var target = index + direction;
+    if (index < 0 || target < 0 || target >= items.length) return;
+    var temporary = items[index]; items[index] = items[target]; items[target] = temporary;
+    state.selected = new Map(items.map(function(item) { return [item.id, item]; }));
+    state.replaceSelection = true;
+    syncSelection(id, direction);
+  });
+
+  $mount.on('ml:uploadComplete.mediaPicker', function(event, uploaded, context) {
+    if (!state.resolve || context !== state.session || !uploaded.length) return;
+    var session = state.session;
+    state.uploadHydrating = true;
+    setFooter();
+    Promise.all(uploaded.map(function(entry) {
+      var data = entry.response.data || {};
+      return new Promise(function(resolve) {
+        request('details', {media_id: data.media_id || data.id}).done(function(response) { resolve(response.status === 'success' ? normalize(response.data) : null); }).fail(function() { resolve(null); });
+      });
+    })).then(function(items) {
+      if (session !== state.session || !state.resolve) return;
+      state.uploadHydrating = false;
+      items = items.filter(function(item) { return item && (state.kind === 'all' || state.kind === item.type); });
+      if (!state.multiple && items.length) state.selected = new Map([[items[items.length - 1].id, items[items.length - 1]]]);
+      else items.forEach(function(item) { if (state.selected.has(item.id) || state.selected.size < state.max) state.selected.set(item.id, item); });
+      bootstrap.Tab.getOrCreateInstance($modal.find('[data-bs-target="#mp-library"]')[0]).show();
+      syncSelection();
+      if (items.length && mayLeaveDetails()) showDetails(items[items.length - 1].id);
+      $modal.find('[data-mp-notice]').text(state.multiple && items.some(function(item) { return !state.selected.has(item.id); })
+        ? message('limit')
+        : (items.length !== uploaded.length ? message('incompatible') : ''));
+    });
+  });
 
   function toInt(n) {
     var x = parseInt(n, 10);
@@ -177,21 +367,21 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     if (!count) {
       if ($label.length) $label.text("Ninguna selección");
       // Permite "guardar vacío" (útil para limpiar galerías)
-      if ($insert.length) $insert.prop("disabled", !state.allowEmpty);
+      if ($insert.length) $insert.prop("disabled", !state.allowEmpty || state.selectionPending || state.uploadHydrating);
       return;
     }
 
     if (!state.multiple) {
       var first = state.selected.values().next().value || {};
       if ($label.length) $label.text("Seleccionado: #" + (first.id || "?"));
-      if ($insert.length) $insert.prop("disabled", false);
+      if ($insert.length) $insert.prop("disabled", state.selectionPending || state.uploadHydrating);
       return;
     }
 
     var n = kindNouns(state.kind);
     var selWord = (n.gender === "f") ? "Seleccionadas" : "Seleccionados";
     if ($label.length) $label.text(selWord + ": " + count);
-    if ($insert.length) $insert.prop("disabled", false);
+    if ($insert.length) $insert.prop("disabled", state.selectionPending || state.uploadHydrating);
   }
 
   function highlightSelected() {
@@ -210,6 +400,8 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
       }
 
       $card.toggleClass("is-selected", state.selected.has(id));
+      $card.attr('aria-pressed', state.selected.has(id) ? 'true' : 'false');
+      $card.find('[data-mp-selected]').toggleClass('d-none', !state.selected.has(id));
     });
   }
 
@@ -220,16 +412,15 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     if (!state.multiple) {
       state.selected.clear();
       state.selected.set(item.id, item);
-      highlightSelected();
-      setFooter();
+      syncSelection();
       return;
     }
 
     // multiple toggle
     if (state.selected.has(item.id)) {
       state.selected.delete(item.id);
-      highlightSelected();
-      setFooter();
+      state.replaceSelection = true;
+      syncSelection();
       return;
     }
 
@@ -242,14 +433,15 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     }
 
     state.selected.set(item.id, item);
-    highlightSelected();
-    setFooter();
+    syncSelection();
   }
 
   // Eventos del MediaLibrary: click item / render
   $mount.off("ml:itemClick.mediaPicker").on("ml:itemClick.mediaPicker", function (e, item) {
+    if (!mayLeaveDetails()) return;
     // picker siempre captura selección
     toggleSelect(item);
+    showDetails(item.id);
   });
 
   $mount.off("ml:render.mediaPicker").on("ml:render.mediaPicker", function () {
@@ -260,6 +452,7 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   // Insertar
   $modal.off("click.mediaPickerInsert", "#mp-insert").on("click.mediaPickerInsert", "#mp-insert", function (e) {
     e.preventDefault();
+    if (!mayLeaveDetails() || state.selectionPending || state.uploadHydrating) return;
     if (!state.selected.size && !state.allowEmpty) return;
 
     state.didInsert = true;
@@ -267,7 +460,7 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     var items = Array.from(state.selected.values());
     var ids = items.map(function (x) { return toInt(x.id); }).filter(Boolean);
 
-    var result = { multiple: state.multiple, ids: ids, items: items };
+    var result = { multiple: state.multiple, ids: ids, items: items, replaceSelection: state.replaceSelection };
     if (!state.multiple) result.item = items[0];
 
     bsModal.hide();
@@ -280,12 +473,23 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   });
 
   // Cierre/cancel: resolve(null) solo si no insertó
+  $modal.on('hide.bs.modal.mediaPickerDetails', function(event) {
+    if (!mayLeaveDetails()) { event.preventDefault(); return; }
+    state.closing = true;
+    $details.find(':input').prop('disabled', true);
+    state.session++;
+    lib.uploadContext = state.session;
+    detailSequence++;
+    selectionSequence++;
+    lib._loadSequence = (lib._loadSequence || 0) + 1;
+  });
   $modal.off("hidden.bs.modal.mediaPicker").on("hidden.bs.modal.mediaPicker", function () {
     if (!state.didInsert && typeof state.resolve === "function") {
       state.resolve(null);
     }
     state.resolve = null;
     state.didInsert = false;
+    state.closing = false;
 
     // limpia selección visual
     state.selected.clear();
@@ -310,16 +514,33 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   window.MediaPicker = {
     open: function (opts) {
       opts = opts || {};
+      if (state.closing) return new Promise(function(resolve) {
+        $modal.one('hidden.bs.modal.mediaPickerReopen', function() { resolve(window.MediaPicker.open(opts)); });
+      });
+      if (state.resolve) return Promise.resolve(null);
+      state.session++;
+      lib.uploadContext = state.session;
+      state.replaceSelection = false;
+      state.selectionPending = false;
+      state.uploadHydrating = false;
+      state.active = null;
+      state.dirty = false;
+      $details.addClass('d-none');
+      $modal.find('[data-mp-details-empty]').removeClass('d-none');
+      $status.text('');
+      $modal.find('[data-mp-notice]').text('');
+      $modal.find('[data-ml-upload-results]').empty();
+      bootstrap.Tab.getOrCreateInstance($modal.find('[data-bs-target="#mp-library"]')[0]).show();
 
       state.multiple = !!opts.multiple;
-      state.max = (opts.max !== undefined) ? (toInt(opts.max) || 20) : 20;
+      state.max = Math.max(1, Math.min(50, (opts.max !== undefined) ? (toInt(opts.max) || 20) : 20));
       state.allowEmpty = (opts.allowEmpty !== undefined)
         ? !!opts.allowEmpty
         : (state.multiple ? true : false);
 
       // Preselección (ids)
       state.selected.clear();
-      var pre = uniqInt(opts.selected || opts.selectedIds || []);
+      var pre = uniqInt(opts.selected || opts.selectedIds || []).slice(0, state.multiple ? state.max : 1);
       pre.forEach(function (id) {
         state.selected.set(id, { id: id }); // placeholder hasta que aparezca en el DOM
       });
@@ -368,8 +589,7 @@ try {
       return new Promise(function (resolve) {
         state.resolve = resolve;
         // cuando renderice, aplicará highlightSelected() via ml:render
-        highlightSelected();
-        setFooter();
+        syncSelection();
       });
     }
   };

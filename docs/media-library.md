@@ -10,6 +10,18 @@ Las rutas declaran `->module('media-library')`. Primero se busca en `app` y desp
 
 El módulo depende de `self-account`, `alerts` y `frontend-core`.
 
+## Consultar y editar archivos
+
+En `admin/media`, elige **Cuadrícula** o **Lista**. La lista muestra nombre visible, nombre físico, MIME, tamaño, autor registrado y fecha. Ambas vistas conservan búsqueda, origen, tipo y mes. El orden admite incorporación reciente o antigua, nombre visible A–Z/Z–A y tamaño; por defecto se mantiene la incorporación más reciente. «Limpiar filtros» restablece filtros y orden, conservando la vista elegida.
+
+La URL conserva `view=list`, `sort`, filtros y página, por lo que puede copiarse o recuperarse con Atrás/Adelante. Valores de `sort`: `newest`, `oldest`, `name_asc`, `name_desc`, `size_asc`, `size_desc`. Un valor desconocido vuelve a `newest`; los empates por nombre o tamaño se resuelven por ID descendente. El servicio `paginate()` acepta estas claves en su arreglo de filtros y devuelve el estado normalizado en `meta`. Los adaptadores de `MediaRepository` personalizados deben implementar ese orden para ofrecer el mismo comportamiento.
+
+Abre un archivo para consultar sus detalles. **Anterior** y **Siguiente** recorren el resultado filtrado, también entre páginas; se desactivan en los extremos. **Nombre visible** modifica `original_name`, sin renombrar el archivo físico ni cambiar enlaces. **Texto alternativo** modifica `alt_text`. Guardar mantiene los detalles abiertos; para abandonar una edición pendiente debes guardar o descartar sus cambios. Un fallo conserva los valores para poder reintentar.
+
+Los audios y vídeos usan controles nativos del navegador, sin reproducción automática; al cambiar de archivo o cerrar se libera el reproductor. **Abrir archivo** abre su URL en otra pestaña. La reproducción depende del formato y los códecs del navegador y del servidor remoto, si corresponde. No se implementa un proxy ni se garantiza descarga forzada de recursos externos. Las URLs locales siguen siendo públicas según el almacenamiento del módulo.
+
+Estas mejoras no requieren migración de base de datos ni nuevos permisos. Al actualizar, publica los recursos del módulo mediante el actualizador y revisa overrides de `_mlist.php`, `mediaEditModal.php` y controladores personalizados: los overrides del proyecto tienen prioridad sobre las vistas nativas. La lista usa el nuevo fragmento `_table.php`. El selector conserva su cuadrícula y sus modos simple/múltiple.
+
 ## Configuración
 
 ```php
@@ -129,6 +141,32 @@ La página `admin/media` incluye biblioteca, filtros por origen, tipo y mes, bú
 
 El campo reutilizable se incluye desde `app/views/components/media/mediaField.php`. El selector requiere también `mediaPicker.php` una sola vez en la vista o plantilla que aloje el modal. Admite selección simple o múltiple, filtro por tipo, búsqueda, paginación, carga desde el modal y conservación de la selección entre páginas. Las vistas previas se obtienen como HTML del servidor; nunca se construyen con rutas enviadas por el navegador.
 
+### Subir y preparar la selección
+
+La subida muestra progreso y resultado por archivo tanto en la biblioteca principal como en el selector. El porcentaje mide la transferencia: al terminar puede aparecer «Procesando…» hasta que el servidor confirme el guardado. Un error de un archivo no descarta los demás.
+
+En el selector, las subidas correctas quedan seleccionadas sin cerrar el modal. En selección simple se elige el último archivo válido del lote, según el orden de entrada; en selección múltiple se añaden en ese orden, conservando la selección anterior y respetando el máximo. Los archivos que excedan el máximo pueden quedar guardados en la biblioteca, pero no seleccionados; el modal lo indica. «Desde URL» conserva su significado de enlace externo y usa el mismo flujo de selección tras el registro.
+
+Cerrar y reabrir el selector no incorpora las selecciones de una subida anterior que termine tarde. Los archivos que ya se subieron no se borran al cancelar la selección. Una subida correcta no guarda por sí sola el formulario que utiliza el campo: confirme con «Usar» y guarde el formulario.
+
+### Consultar y editar atributos desde el selector
+
+Al seleccionar un archivo se consultan sus detalles en el mismo modal. El nombre visible y el texto alternativo de una imagen pueden guardarse mediante las rutas existentes; se mantienen `media.edit`, CSRF y el ámbito del servidor. Un permiso de consulta no concede permiso de edición y el rechazo de guardado se informa sin aplicar cambios locales como si se hubieran guardado.
+
+«Nombre visible» no renombra el archivo físico ni cambia su URL. El texto alternativo describe la imagen y puede quedar vacío si es decorativa. Las leyendas y descripciones ampliadas no se incorporan en esta entrega.
+
+Guarde o descarte los cambios de atributos antes de cambiar de archivo, confirmar o cerrar el modal. Guardar atributos modifica los datos de la biblioteca; cancelar después la selección no revierte ese guardado. El panel no añade campos a la serialización del formulario consumidor ni impide su validación cuando el modal está cerrado.
+
+Una respuesta nativa de guardado correcto conserva `status`, `code` y `message` y añade `data` con el archivo guardado, sus atributos normalizados y sus URL del servidor. El selector utiliza esos datos para actualizar la selección y las vistas sin tratar el texto del navegador como resultado definitivo del guardado.
+
+### Revisar y ordenar imágenes seleccionadas
+
+En selección múltiple, «Archivos seleccionados» muestra la composición completa, incluidos archivos elegidos en otras páginas. Los botones anterior/siguiente cambian su orden; «Quitar» retira el archivo de esta selección y no lo borra. Los controles funcionan con teclado. Al volver a abrir un campo, conserva sus IDs y el orden guardado.
+
+El resultado de `MediaPicker.open()` añade `replaceSelection`. Vale `true` cuando el usuario quita o reordena explícitamente la composición. `MediaField` aplica entonces el resultado completo, incluso si su comportamiento habitual es `append`. Sin esa edición explícita, `append` conserva la combinación anterior y `replace` sigue sustituyendo la selección. Los consumidores directos deben guardar los IDs en el orden devuelto y validar su acceso en backend.
+
+Esta composición de IDs no añade un constructor de páginas ni opciones de presentación de galerías dentro del texto.
+
 En una vista que no sea la biblioteca, registra los recursos en su meta, después incluye los componentes:
 
 ```php
@@ -170,9 +208,11 @@ Para contenido insertado después de cargar la página, llama a `MediaField.bind
 
 La biblioteca expone `window.MediaLibrary`. La pantalla administrativa la inicia mediante `media-admin.js`; otras integraciones pueden usar `new MediaLibrary({mount, uiRoot, mode, syncUrlEnabled, saveSource, kind, uploadMaxMB, endpoints})`. El fragmento PHP reemplaza el contenido del contenedor asignado; no se construyen tarjetas en JavaScript.
 
-`MediaPicker.open({selected, multiple, max, kind, saveSource, endpoints})` admite `endpoints: {list: URL, upload: URL}`. Esto permite usar el mismo selector en otros formularios con rutas propias; no elige una vista ni cambia el propietario de la biblioteca. Las rutas predeterminadas son `ajax/admin/media/list` y `ajax/admin/media/upload`. El campo acepta `data-ml-field-endpoint` para su vista previa. Todas las rutas alternativas deben conservar permisos, tokens y resolución del ámbito en el servidor.
+`MediaPicker.open({selected, multiple, max, kind, saveSource, endpoints})` admite `endpoints: {list: URL, upload: URL, details: URL, save: URL, field: URL}`. Las claves son opcionales y conservan sus rutas nativas bajo `ajax/admin/media/`. Esto permite usar el mismo selector en otros formularios con rutas propias; no elige una vista ni cambia el propietario de la biblioteca. Los endpoints personalizados de detalles, guardado y bandeja deben mantener los mismos contratos si se sustituyen. El campo acepta `data-ml-field-endpoint` para su vista previa. Todas las rutas alternativas deben conservar permisos, tokens y resolución del ámbito en el servidor.
 
 El listado acepta `q`, `source`, `kind`, `ym` y `page`; devuelve `status`, `code`, `data`, `meta` y `html`. La vista previa recibe `media_ids`, `variant` y `allow_remove_one`; recupera los archivos por ID bajo el ámbito activo. El backend construye las URL de los archivos y miniaturas; no acepta rutas de archivo aportadas por el navegador.
+
+El selector utiliza además `variant=selection` en el endpoint `field` para renderizar su bandeja mediante el fragmento PHP `_selection.php`, con el mismo máximo de 50 IDs y filtro por ámbito. Este fragmento no es una variante de imagen ni una opción de miniatura de `MediaField`; sus variantes siguen siendo `sthumb` y `gthumb`. Los listados descartan respuestas anteriores cuando una consulta más reciente ya está en curso.
 
 ## Uso desde PHP
 
@@ -219,6 +259,8 @@ if (($result['status'] ?? 'error') === 'success') {
 ```
 
 ## Guardar imágenes y galerías
+
+Para insertarlas dentro del texto con TinyMCE, consulta [la integración opcional de escritura](rich-text-media.md). Los campos de imagen/galería de un CRUD siguen guardando sus IDs como se indica a continuación; la integración de escritura conserva HTML semántico en el campo de contenido de la aplicación.
 
 Cada CRUD guarda el ID de la imagen en su propia tabla. Para una galería, guarda un arreglo JSON de IDs cuyo orden determina el orden de las imágenes. Las variantes disponibles pertenecen al registro del archivo; la vista elige el tamaño que necesita.
 
