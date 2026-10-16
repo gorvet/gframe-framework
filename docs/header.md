@@ -18,6 +18,9 @@ El archivo original se distribuye en `resources/skeleton/app/views/templates/hea
 | Título y descripción | Metadatos combinados de la página |
 | Robots | Política global y de la ruta; una meta de vista no puede cambiarla |
 | Canonical | Meta `canonical` preparada por Render |
+| Open Graph | `ogtype`, `ogsite_name`, `ogurl` (alternativa: `canonical`), `oglocale`, título, descripción, `ogimage`, `ogimagew`, `ogimageh`, `ogimagealt` |
+| Twitter Card | `xcard`, título, descripción, `ximage`, `ximagealt`, `xsite`, `xcreator` |
+| Autor y palabras clave | `author` y `keywords`, cuando tienen valor |
 | Favicon y apple-touch-icon | Imágenes del proyecto bajo `public/img/` |
 | Scripts de cabecera | `Meta::getHeaderJsScripts()` |
 | Hojas de estilo | `Meta::getCssLinks()` |
@@ -26,6 +29,8 @@ El archivo original se distribuye en `resources/skeleton/app/views/templates/hea
 | Campos CSRF | Formulario oculto `#tokens`, con `csrfToken` y `csrfTimestamp` |
 
 El header abre `<html>`, `<head>` y `<body>`; el footer cierra el documento. Las vistas y templates aportan el contenido intermedio. Evita repetir esas etiquetas en cada pantalla.
+
+Las etiquetas opcionales vacías se omiten. `xcard` utiliza `summary` por defecto y `ximage` utiliza `ogimage` cuando no hay una imagen específica para Twitter. Las imágenes deben tener URLs absolutas accesibles públicamente. Robots mantiene la política de indexación y añade permisos de vista previa de imagen, texto y vídeo.
 
 ## Registrar recursos
 

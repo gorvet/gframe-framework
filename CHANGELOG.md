@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+## 4.2.0 — 2026-10-16
+
+- Header: restauradas las etiquetas dinámicas Open Graph y Twitter Card, autor, palabras clave y permisos de vista previa. Conserva los scripts `hjs` antes del CSS, la política de indexación y la persistencia del panel. Incluye pruebas de renderizado de header y footer.
+
 - Correo: adjuntos locales o generados en memoria para HTML y plantillas, tanto síncronos como Async, con validación, límites y copia de bytes antes del lanzamiento asíncrono.
 
 ## 4.1.0 — 2026-10-15

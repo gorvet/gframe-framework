@@ -14,7 +14,7 @@ Do not spread those concerns through the main view markup.
 
 Use the actual GFrame keys, including `title`, `description`, `canonical`, `ogurl`, `ogimage`, `ogtype` and `ogsite_name`. Render seeds `canonical` and `ogurl` from `routeParams.currentURL`, then applies the resolved metaTags; set an explicit canonical when the page contract requires another URL. Check the resulting HTML rather than inventing a different key spelling.
 
-Storing social keys in Meta does not itself print Open Graph tags. The current skeleton header prints title, description, robots, canonical and JSON-LD, but no Open Graph meta elements. Inspect the project's actual header before claiming social previews are configured; a requested template enhancement is separate from supplying values in a page meta.
+The skeleton header emits Open Graph and Twitter tags from Meta, omitting empty optional values. It supports `ogimagew`, `ogimageh`, `ogimagealt`, `oglocale` and the original `xcard`, `ximage`, `ximagealt`, `xsite`, `xcreator` keys. Twitter images fall back to `ogimage`; `xcard` defaults to `summary`. Inspect the application's actual header: existing installations may retain an older or customized copy.
 
 ## Indexability Is a Route and Global Contract
 

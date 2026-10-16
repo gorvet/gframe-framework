@@ -22,6 +22,10 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 4.2.0: metadatos sociales y adjuntos de correo
+
+La cabecera distribuida vuelve a imprimir Open Graph y Twitter Card desde los metadatos. Actualice el paquete y sincronice los archivos gestionados con su política de personalizaciones. Si `--preserve-custom` conserva un header personalizado, incorpore el bloque social de `resources/skeleton/app/views/templates/header.php` del paquete a su copia de `app/views/templates/header.php`; el actualizador no fusiona esos archivos. Configure las imágenes absolutas mediante `ogimage` y, opcionalmente, `ximage`. No hay migraciones nuevas para esta corrección. La versión incorpora también [adjuntos de correo](mail.md).
+
 ### Versión 4.1.0: biblioteca, escritura y autoguardado privado
 
 Actualice el paquete y aplique los archivos administrados con la vista previa y su política de personalizaciones. La biblioteca amplía selección, galerías, atributos existentes y gestión; TinyMCE incorpora scroll propio, herramientas contextuales, concentración, esquema y protección ante pérdidas. Los overrides del campo y de sus metadatos deben adoptar los atributos/recursos nuevos o usar las vistas originales.
