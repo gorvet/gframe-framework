@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## Sin publicar
+
+- Correo: adjuntos locales o generados en memoria para HTML y plantillas, tanto síncronos como Async, con validación, límites y copia de bytes antes del lanzamiento asíncrono.
+
 ## 4.1.0 — 2026-10-15
 
 - Autoguardado privado optativo en servidor: módulo content-autosave con MySQL/SQLite, control de versión, recuperación explícita y coordinación con publicación; no crea artículos ni cambia contenido público automáticamente.

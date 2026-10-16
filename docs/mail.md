@@ -83,7 +83,29 @@ Los fallos posteriores se registran en el log PHP con el prefijo `[GFrame Mail A
 
 ### Opciones de envío
 
-`recipient_name` identifica al destinatario; `reply_to` y `reply_name` definen a quién responder; `timeout` limita la espera SMTP en segundos, con 60 por defecto y mínimo 1. `rate_limit` solicita la protección del formulario público descrita abajo. La API actual recibe un destinatario por llamada y no ofrece parámetros de adjuntos, CC o BCC.
+`recipient_name` identifica al destinatario; `reply_to` y `reply_name` definen a quién responder; `timeout` limita la espera SMTP en segundos, con 60 por defecto y mínimo 1. `rate_limit` solicita la protección del formulario público descrita abajo. `attachments` añade archivos según el contrato siguiente. La API recibe un destinatario por llamada y no ofrece parámetros CC o BCC.
+
+### Adjuntos
+
+Los cuatro métodos aceptan una lista `attachments` en sus opciones. Cada elemento utiliza exactamente un origen: `path`, archivo local legible, o `content`, bytes generados en memoria. `name` indica el nombre de descarga y es obligatorio para `content`; con `path` se utiliza por defecto el nombre del archivo. `type` admite un MIME explícito y utiliza `application/octet-stream` por defecto.
+
+```php
+$result = (new MailService())->sendHtmlAsync(
+    'cliente@example.com',
+    'Documentación',
+    '<p>Adjuntamos los documentos.</p>',
+    ['attachments' => [
+        ['path' => $authorizedPdfPath, 'name' => 'informe.pdf', 'type' => 'application/pdf'],
+        ['content' => $csvBytes, 'name' => 'resumen.csv', 'type' => 'text/csv'],
+    ]]
+);
+```
+
+La aplicación debe resolver `$authorizedPdfPath` y `$csvBytes` después de comprobar acceso al documento. Nunca pase rutas recibidas del navegador ni `$_FILES` directamente: valide la carga, su tamaño, tipo y pertenencia antes de preparar las opciones. No se descargan URLs ni se admiten wrappers PHP. Los nombres no admiten directorios ni caracteres de control. No hay imágenes incrustadas por CID en este contrato.
+
+Se admiten hasta 10 adjuntos y 10 MiB de bytes en total, antes de la codificación MIME. Esta aumenta el tamaño del mensaje; el servidor SMTP puede imponer límites menores. Los datos se copian en memoria. En Async se capturan al encolar y se serializan con la tarea; eliminar o cambiar el archivo original después no altera la copia. El worker no vuelve a abrir la ruta. Tenga en cuenta el uso de memoria y disco temporal del ejecutor al enviar documentos sensibles o grandes; el lanzamiento no añade una cola persistente ni reintentos.
+
+Una lista, origen, nombre o tipo inválido, un archivo no disponible o un límite excedido devuelve `mail_attachments_invalid`. En Async se valida antes de lanzar; en síncrono, antes de SMTP. No se envía parcialmente un correo omitiendo adjuntos inválidos. El servicio no elimina archivos originales. Sin `attachments`, las llamadas existentes mantienen su comportamiento.
 
 Async requiere `opis/closure:^4.3` y puede recuperar tareas serializadas con Opis 3. Antes de actualizar, deja finalizar los workers existentes si cambia el código que ejecutan. Consulta [Async](async.md) para los requisitos de PHP y los límites de compatibilidad. Actualiza el proyecto mediante `composer update gorvet/gframe --with-all-dependencies` cuando la versión corregida esté disponible. Una respuesta de cola confirma el inicio de la tarea, no la entrega del correo.
 

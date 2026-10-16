@@ -21,6 +21,8 @@ final class MailService implements MailSender
 
     public function sendTemplateAsync(string $recipient, string $subject, string $template, array $variables = [], array $options = []): array
     {
+        try { $options['attachments'] = MailAttachments::prepare($options['attachments'] ?? []); }
+        catch (\InvalidArgumentException) { return ['status' => 'error', 'code' => 'mail_attachments_invalid']; }
         if (array_key_exists('rate_limit', $options)) {
             return $this->limited($options, fn(array $clean): array => $this->sendTemplateAsync($recipient, $subject, $template, $variables, $clean));
         }
@@ -32,6 +34,8 @@ final class MailService implements MailSender
 
     public function sendHtmlAsync(string $recipient, string $subject, string $html, array $options = []): array
     {
+        try { $options['attachments'] = MailAttachments::prepare($options['attachments'] ?? []); }
+        catch (\InvalidArgumentException) { return ['status' => 'error', 'code' => 'mail_attachments_invalid']; }
         if (array_key_exists('rate_limit', $options)) {
             return $this->limited($options, fn(array $clean): array => $this->sendHtmlAsync($recipient, $subject, $html, $clean));
         }
@@ -64,6 +68,8 @@ final class MailService implements MailSender
         if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
             return ['status' => 'error', 'code' => 'invalid_email'];
         }
+        try { $attachments = MailAttachments::prepare($options['attachments'] ?? []); }
+        catch (\InvalidArgumentException) { return ['status' => 'error', 'code' => 'mail_attachments_invalid']; }
         $smtp = ($this->configuration ?? new SmtpConfiguration())->resolve();
         $validation = ($this->configuration ?? new SmtpConfiguration())->validate($smtp);
         if (($validation['status'] ?? '') !== 'success') return $validation;
@@ -90,6 +96,7 @@ final class MailService implements MailSender
             $mailer->Subject = $subject;
             $mailer->Body = $html;
             $mailer->AltBody = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html)));
+            MailAttachments::apply($mailer, $attachments);
             $mailer->send();
             return ['status' => 'success', 'code' => 'mail_sent'];
         } catch (Exception $exception) {
