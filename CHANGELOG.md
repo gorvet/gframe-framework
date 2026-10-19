@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+## 4.3.0 — 2026-10-19
+
+- Validación conjunta en una aplicación temporal instalada: login, CSRF, editor, autoguardado, preview, revisiones, papelera y publicación mediante el CLI de cron. El generador de proyectos solicita ahora GFrame `^4.3`.
+
 - Publicación programada optativa con `ScheduledContent` y `ScheduledPublicationCronHandler`: fechas UTC, reprogramación, cancelación y escritura condicional por estado/fecha/revisión, compatible con historial y papelera. Reutiliza cron recurrente y autorización del proyecto.
 
 - Papelera optativa para modelos versionados mediante `ContentTrash`: consultas de activos/eliminados, restauración por revisión y borrado definitivo confirmado con limpieza SQL transaccional. La aplicación conserva tablas, permisos, relaciones e integración de lectores y escritores.

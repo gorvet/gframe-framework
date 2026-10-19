@@ -15,7 +15,7 @@ Las mejoras opcionales de baja prioridad se registran en [Mejoras pendientes no 
 
 ## Futuras capacidades de contenido y operación
 
-Registradas el 16 de octubre de 2026 tras comparar el framework con la copia local de WordPress. Las prioridades 1–5 están implementadas en el framework y pendientes de publicación. Las restantes no tienen versión ni fecha de entrega asignada. Cada aplicación adopta expresamente estas capacidades.
+Registradas el 16 de octubre de 2026 tras comparar el framework con la copia local de WordPress. Las prioridades 1–5 están implementadas en el framework e incluidas en la entrega 4.3.0. Las restantes no tienen versión ni fecha de entrega asignada. Cada aplicación adopta expresamente estas capacidades.
 
 | Prioridad | Característica | Alcance previsto y punto de partida |
 | --- | --- | --- |
@@ -24,8 +24,8 @@ Registradas el 16 de octubre de 2026 tras comparar el framework con la copia loc
 | 3 | Vista previa privada en el sitio | Implementada: [preview privada](../docs/content-preview.md), plantilla pública y recarga tras persistir cambios. Barra pública administrativa aplazada. |
 | 4 | Papelera y restauración | Implementada: [contrato optativo](../docs/content-trash.md), estado recuperable, restauración y borrado definitivo confirmado con limpieza SQL transaccional. |
 | 5 | Publicación programada | Implementada: [publicación por cron](../docs/content-publication.md), fechas UTC, reprogramación, cancelación, revisión/estado/fecha condicionales e integración con historial y papelera. Cron virtual conserva su dependencia del tráfico. |
-| 6 | Salud del sitio | Reunir en una pantalla administrativa tareas atrasadas, errores de cron y correo y comprobaciones de almacenamiento, base de datos y configuración, sin mostrar secretos. Reutilizar los logs y estados existentes. |
-| 7 | Redirecciones al cambiar el slug | Conservar direcciones anteriores y resolver redirecciones locales evitando ciclos, cadenas innecesarias y destinos externos. Integrar la política de rutas y permisos de cada proyecto. |
+| 6 | Salud del sitio | Aplazada por el usuario el 19 de octubre de 2026. Propuesta futura: reunir diagnósticos de cron, correo, almacenamiento, base de datos y configuración, reutilizando los estados existentes y sin mostrar secretos. |
+| 7 | Redirecciones al cambiar el slug | Aplazadas por el usuario el 19 de octubre de 2026 como mejora futura mediante un módulo opcional independiente. Véase [Mejoras pendientes no urgentes](mejoras-pendientes.md#redirecciones). |
 
 Estas capacidades deben respetar los contratos de GFrame, mediante módulos opcionales y adaptadores cuando corresponda, sin imponer una tabla universal de artículos ni trasladar reglas de negocio al core. Las integraciones deben preservar autorización por contenido y tenant.
 

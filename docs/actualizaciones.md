@@ -22,6 +22,16 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 4.3.0: capacidades editoriales optativas
+
+Incluye [guardado por revisión y presencia](content-editing.md), [historial](content-revisions.md), [preview privada](content-preview.md), [papelera](content-trash.md) y [publicación programada](content-publication.md). No crea una tabla universal de artículos ni activa estas funciones automáticamente en contenidos existentes.
+
+Actualice el paquete dentro de la rama compatible 4.x y ejecute primero el actualizador con `--dry-run --preserve-custom`. Para instalar presencia, historial o preview, añada los módulos correspondientes según [módulos opcionales](modulos-opcionales.md); aplique sus migraciones en la misma conexión que utilicen sus modelos. Las columnas de revisión, papelera, estado y fecha del contenido pertenecen a migraciones de cada aplicación. Integre todos sus lectores y escritores según las guías enlazadas.
+
+El historial conserva 10 revisiones por defecto, con límite positivo configurable y vaciado confirmado por contenido. La preview nativa de TinyMCE desaparece de los controles predeterminados: configure `preview_url` para abrir la plantilla pública privada; revise sus overrides del editor. La publicación programada requiere un handler y registrador propios del proyecto sobre el cron existente, además de su ejecución en el despliegue.
+
+Los proyectos nuevos generados por esta versión solicitan `gorvet/gframe: ^4.3`. El actualizador conserva el `composer.json` de proyectos existentes; ajuste su restricción expresamente si todavía está en otra rama y revise las migraciones de las versiones intermedias. Salud del sitio, redirecciones y barra pública administrativa siguen aplazadas.
+
 ### Versión 4.2.0: metadatos sociales y adjuntos de correo
 
 La cabecera distribuida vuelve a imprimir Open Graph y Twitter Card desde los metadatos. Actualice el paquete y sincronice los archivos gestionados con su política de personalizaciones. Si `--preserve-custom` conserva un header personalizado, incorpore el bloque social de `resources/skeleton/app/views/templates/header.php` del paquete a su copia de `app/views/templates/header.php`; el actualizador no fusiona esos archivos. Configure las imágenes absolutas mediante `ogimage` y, opcionalmente, `ximage`. No hay migraciones nuevas para esta corrección. La versión incorpora también [adjuntos de correo](mail.md).

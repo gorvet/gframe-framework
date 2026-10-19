@@ -133,7 +133,7 @@ final class ProjectSkillsInstallerTest extends TestCase
         $project = $this->fixture('app', '1.0');
         ProjectScaffolder::frameworkDefault()->publish($project, true);
         $composer = json_decode(file_get_contents($project . '/composer.json'), true);
-        self::assertSame('^2.0.1', $composer['require']['gorvet/gframe']);
+        self::assertSame('^4.3', $composer['require']['gorvet/gframe']);
         self::assertSame($composer['scripts']['post-autoload-dump'], $composer['scripts']['gframe:skills']);
         self::assertStringContainsString('install-project-skills.php --project=.', $composer['scripts']['post-autoload-dump']);
         self::assertStringContainsString('gframe-orchestrator', file_get_contents($project . '/AGENTS.md'));

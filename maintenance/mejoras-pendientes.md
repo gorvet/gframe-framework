@@ -10,6 +10,16 @@ Esta lista recoge mejoras opcionales de GFrame que no bloquean las correcciones 
 
 - [ ] **Enlaces personalizados con variables.** Permitir enlaces cuyas partes dependan del destinatario (por ejemplo, su ID o un enlace de restablecimiento). Idea pendiente de concretar; no implementar todavía. Definir catálogo, generación segura en backend, permisos, caducidad y tratamiento de tokens sensibles. No permitir construir enlaces de acceso únicamente concatenando identificadores ni reutilizar tokens secretos como placeholders genéricos.
 
+## Contenido y multimedia
+
+- [ ] **Multimedia avanzada.** Interés confirmado por el usuario el 19 de octubre de 2026. Retomar el inventario WordPress/GFrame: edición visual no destructiva, imágenes adaptables, consulta de uso, operaciones masivas y procesamiento/metadatos adicionales. Concretar alcance antes de implementar; no confundir las propuestas con las mejoras ya entregadas del selector/editor.
+- [ ] **Patrones reutilizables de escritura.** Interés del usuario, pendiente de aclarar y concretar: fragmentos preparados que se insertan en el contenido. Decidir copia independiente o contenido sincronizado; no convertirlo en constructor de páginas.
+- [ ] **Importación/exportación de contenido.** Interés confirmado; pendiente de definir entidades, formato, medios, referencias y conflictos. No equivale a un backup completo ni autoriza acceso a otros proyectos.
+
+## Redirecciones
+
+- [ ] **Módulo opcional independiente de redirecciones.** Aplazado por el usuario el 19 de octubre de 2026; no es necesario ahora. Contemplar direcciones anteriores al cambiar el slug, destinos locales y prevención de ciclos y cadenas, respetando rutas y permisos de cada proyecto. Pendiente de diseño y autorización para implementar.
+
 ## Auth: aviso administrativo de registro
 
 - [x] **Avisar de nuevas cuentas a administradores o superadministrador.** Implementado el 2026-10-06 mediante `auth.registration_admin_notice`: desactivado por defecto, IDs opcionales con autorización administrativa global comprobada y canales `email`/`inbox`. El evento ocurre al crear la cuenta, no al verificarla; correo mediante Async, sin contraseñas ni tokens y sin alterar el registro ante fallos del aviso. Prueba dirigida con SQLite, selección de destinatarios, duplicados, reenvíos y fallo de transporte simulado. No acredita entrega SMTP real ni sustituye la investigación del correo de registro que el usuario no recibe.
