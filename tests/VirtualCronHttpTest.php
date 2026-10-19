@@ -107,11 +107,18 @@ PHP);
                 self::assertSame($expectedExit, proc_close($process), $error . $output);
                 return json_decode($output, true, 512, JSON_THROW_ON_ERROR);
             };
-            $diagnostic = $cli('--status', 0);
+            // La última respuesta puede haber lanzado una pasada vacía todavía pendiente.
+            $deadline = microtime(true) + 8;
+            do {
+                $diagnostic = $cli('--status', 0);
+                if (!$diagnostic['data']['busy'] && (int)$diagnostic['data']['state']['pending_until'] === 0) break;
+                usleep(20000);
+            } while (microtime(true) < $deadline);
             // Las peticiones posteriores pueden registrar una pasada vacía; el diagnóstico es de la última pasada.
             self::assertContains((int)$diagnostic['data']['state']['processed'], [0, 1]);
             self::assertArrayNotHasKey('launch_token', $diagnostic['data']['state']);
             self::assertFalse($diagnostic['data']['busy']);
+            self::assertSame(0, (int)$diagnostic['data']['state']['pending_until']);
             self::assertSame(0, $cli('10', 0)['data']['processed']);
             $database->exec("UPDATE cron_tasks SET status = 'pending', handler_class = 'MissingHandler'");
             self::assertSame(1, $cli('10', 1)['data']['failed']);

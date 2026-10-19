@@ -10,6 +10,7 @@ return [
     'Contenido y búsqueda' => [
         'rich-text-editor' => 'Editor enriquecido TinyMCE',
         'content-autosave' => 'Autoguardado privado del editor',
+        'content-editing' => 'Aviso de sesiones de edición',
         'markdown' => 'Markdown y HTML',
         'lexical-search' => 'Buscador léxico',
     ],

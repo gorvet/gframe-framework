@@ -7,6 +7,11 @@ final class SqliteDialect implements DatabaseDialectInterface
         return 'sqlite';
     }
 
+    public function exactComparisonExpression(string $column): string
+    {
+        return "CAST($column AS BLOB) = CAST(? AS BLOB)";
+    }
+
     public function jsonEmptyObjectExpression(): string
     {
         return "json('{}')";

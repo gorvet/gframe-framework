@@ -1,5 +1,7 @@
 # Component Integration and Readiness
 
+For optional content-editing presence, resolve its PHP view/meta through ModuleRuntime and publish its JS through the manifest. The standard #tokens bridge supplies CSRF; the backend supplies user-facing messages and authorized resource scope. Mount dynamic fragments explicitly and destroy instances before replacing them. Presence is advisory and expires; it never authorizes a save. Only after business success/commit call instance.confirmSaved(newRevision) and the editor's snapshot confirmation. A content_conflict must retain the form and pending text. See docs/content-editing.md in the effective package.
+
 Use only for the component changed by the task. Resolve `resources/modules/<module>/module.php`, the matching package's component guide and the actual template meta before editing. Installation/publication does not imply loading or initializing every component.
 
 ## Existing Component Boundaries

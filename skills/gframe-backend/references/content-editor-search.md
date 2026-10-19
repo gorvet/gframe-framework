@@ -1,5 +1,7 @@
 # Content Conversion, Editors and Authorized Search
 
+For protected final saves, explicitly adopt `GFrame\Content\VersionedContentModel` in the project's model; preserve the revision opened by the user and the server-authorized scope. A private draft version is not a published-content revision. Handle `content_conflict` without replacing text or confirming snapshots. The optional `content-editing` module supplies presence only: delegate to ContentPresenceController after auth/can/CSRF and authorization of the specific record/tenant. It chooses no business tables or permissions. See `docs/content-editing.md` in the effective package.
+
 Read only for Markdown, rich HTML editing or lexical search. Locate `docs/{markdown,rich-text-editor,lexical-search,html-sanitizer}.md` in the effective package for complete API/options. These modules do not create article storage or authorize business records.
 
 ## Choose the Input Contract

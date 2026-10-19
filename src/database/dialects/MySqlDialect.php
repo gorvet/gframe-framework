@@ -47,6 +47,11 @@ final class MySqlDialect implements DatabaseDialectInterface
         return "CAST($column AS CHAR)";
     }
 
+    public function exactComparisonExpression(string $column): string
+    {
+        return "CAST($column AS BINARY) = CAST(? AS BINARY)";
+    }
+
     public function groupConcatExpression(string $column, string $separator): string
     {
         $separator = str_replace("'", "''", $separator);

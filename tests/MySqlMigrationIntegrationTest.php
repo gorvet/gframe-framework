@@ -162,6 +162,37 @@ final class MySqlMigrationIntegrationTest extends TestCase
         self::assertSame('<p>Nuevo</p>', $service->load(7, 9, 'article:42:content')['data']['content']);
     }
 
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testContentEditingSchemaVersionedSaveAndScopedPresence(): void
+    {
+        $this->pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/content-editing/database/mysql.sql'));
+        $this->pdo->exec("CREATE TABLE articles (id INTEGER PRIMARY KEY, tenant_id INTEGER, content TEXT, revision VARCHAR(128)); INSERT INTO articles VALUES (1,7,'Original','r1')");
+        $parts = []; parse_str(str_replace(';', '&', substr(getenv('GFRAME_TEST_MYSQL_DSN'), 6)), $parts);
+        define('DB_CONNECTIONS', ['editing_mysql' => ['driver' => 'mysql', 'host' => $parts['host'] ?? '127.0.0.1', 'port' => (int)($parts['port'] ?? 3306),
+            'database' => $this->schema, 'username' => getenv('GFRAME_TEST_MYSQL_USER') ?: 'root', 'password' => getenv('GFRAME_TEST_MYSQL_PASSWORD') ?: '']]);
+        $model = (new class extends \GFrame\Content\VersionedContentModel {
+            protected $table = 'articles';
+            protected $fillable = ['content', 'revision'];
+        })->onConnection('editing_mysql');
+        self::assertSame('content_conflict', $model->useStrictComparison(false)->saveRevision(1, 'R1', ['content' => 'Wrong case'], ['tenant_id' => 7])['code']);
+        self::assertSame('content_conflict', $model->saveRevision(1, 'r1 ', ['content' => 'Trailing space'], ['tenant_id' => 7])['code']);
+        self::assertSame('content_conflict', $model->saveRevision(1, 'r1', ['content' => 'Ajeno'], ['tenant_id' => 8])['code']);
+        $saved = $model->saveRevision(1, 'r1', ['content' => 'Actual'], ['tenant_id' => 7]);
+        self::assertSame('success', $saved['status']);
+        self::assertSame('content_conflict', $model->saveRevision(1, 'r1', ['content' => 'Obsoleto'])['code']);
+        self::assertSame('Actual', $this->pdo->query('SELECT content FROM articles WHERE id=1')->fetchColumn());
+        $presence = new \GFrame\Content\ContentPresenceService((new \GFrame\Content\ContentPresenceModel())->onConnection('editing_mysql'));
+        self::assertSame(0, $presence->touch(1, 7, 'article:1', str_repeat('a',32), 100)['data']['other_sessions']);
+        self::assertSame(1, $presence->touch(2, 7, 'article:1', str_repeat('b',32), 101)['data']['other_sessions']);
+        self::assertSame(0, $presence->touch(2, 8, 'article:1', str_repeat('b',32), 101)['data']['other_sessions']);
+        self::assertSame(0, $presence->touch(1, 7, 'article:1', str_repeat('a',32), 191)['data']['other_sessions']);
+        $this->pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/database/schema/mysql/auth.sql'));
+        $runner = MigrationRunner::frameworkDefault();
+        $runner->baseline($this->pdo, 'mysql', ['self-account']);
+        self::assertSame(1, $runner->migrate($this->pdo, 'mysql', ['content-editing'])['count']);
+        self::assertSame(0, $runner->migrate($this->pdo, 'mysql', ['content-editing'])['count']);
+    }
+
     private function journalRunner(): MigrationRunner
     {
         $this->fixture = sys_get_temp_dir() . '/gframe-journal-' . bin2hex(random_bytes(8));

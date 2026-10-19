@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Optional capability: exactComparisonExpression(string $quotedColumn): string.
+ * ORM::whereExact fails closed when a custom dialect does not implement it.
+ */
 interface DatabaseDialectInterface
 {
     public function name(): string;

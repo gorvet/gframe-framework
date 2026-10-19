@@ -27,6 +27,7 @@ No todos estos módulos son opcionales en todos los perfiles. `managed` e `intra
 - [`markdown`](markdown.md): conversión de Markdown y HTML en PHP y JavaScript, sin dependencia de bots.
 - [`lexical-search`](lexical-search.md): búsqueda por relevancia y tolerancia a errores, sin base de datos propia.
 - [`content-autosave`](content-autosave.md): copias privadas del texto en el servidor, con control de versiones y recuperación explícita; requiere base de datos y una ruta autorizada de la aplicación.
+- [`content-editing`](content-editing.md): aviso de otras sesiones activas con caducidad; el guardado por revisión se adopta explícitamente en el modelo de la aplicación.
 
 - `admin-panel`: estructura visual compartida del panel, con navbar, sidebar, tema y puntos de inserción. Los perfiles administrados lo incluyen automáticamente. Consulte [Panel administrativo](panel-administrativo.md).
 

@@ -1,5 +1,7 @@
 # ORM, modelos y dialectos
 
+Para igualdad exacta de cadenas use `whereExact('revision', $expectedRevision)`: compara bytes, incluidas mayúsculas y espacios finales, independientemente de la collation. MySQL y SQLite proporcionan la expresión en sus dialectos. Un dialecto personalizado puede implementar `exactComparisonExpression(string $quotedColumn): string`; si no dispone de esa capacidad, solo esta operación lanza una excepción y no se degrada a igualdad permisiva. La interfaz existente y las otras operaciones no cambian. Para guardados de contenido completos consulte [guardado por revisión](content-editing.md).
+
 El ORM de GFrame permite consultar y modificar datos desde modelos PHP mediante una API común. DatabaseManager selecciona la conexión PDO y el dialecto correspondiente.
 
 El ORM no crea automáticamente tus tablas ni aplica permisos de ruta. Debes preparar el esquema y ejecutar las comprobaciones de acceso y negocio antes de operar sobre los datos.

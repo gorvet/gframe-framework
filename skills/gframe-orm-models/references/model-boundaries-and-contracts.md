@@ -1,5 +1,9 @@
 # Model Boundaries and Contracts
 
+## Versioned content writes
+
+Project models can explicitly extend `GFrame\Content\VersionedContentModel` (still ORM). The project owns its table and revision-column migration. `reset()->saveRevision($id, $expectedRevision, $normalizedFields, $serverScope)` performs the conditional write; success returns `content_saved`/`data.revision`, zero affected rows return `content_conflict`. Include revision in fillable; never pass full request arrays. The explicit equality scope preserves tenant/record restrictions; pending wheres are rejected to prevent OR broadening. Named connections are retained. The helper neither owns transactions nor authorizes actors. All writers must compare/rotate revisions. `whereExact()` compares revision bytes independently of collation; native dialects own the SQL. Custom dialects may add `exactComparisonExpression($quotedColumn)`; existing dialect implementations remain loadable, but this optional operation fails closed without that capability. See `docs/content-editing.md` in the effective package.
+
 ## What the Controller Owns
 
 Controllers should own:

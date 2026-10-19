@@ -2,6 +2,8 @@
 
 El módulo optativo `content-autosave` guarda una copia privada del texto mientras se escribe. La vincula al usuario, al tenant activo cuando existe y a una clave de contenido/campo. No crea otro artículo ni modifica su versión pública. La publicación continúa en el formulario de la aplicación.
 
+Para impedir que Guardar/Publicar sobrescriba otra edición, adopte [el guardado por revisión](content-editing.md). Use la revisión del modelo también como `base_version` del autoguardado; la copia privada conserva su control de versión independiente.
+
 ## Instalar y actualizar
 
 Añada `content-autosave` a la lista completa de módulos instalados mediante [el actualizador](modulos-opcionales.md#añadir-módulos-a-un-proyecto-instalado), primero con `--dry-run` y la política de personalizaciones habitual. Se resuelven `self-account` y `rich-text-editor` y se instala la tabla `content_autosaves` en MySQL o SQLite. Publicar únicamente assets no instala la tabla. No necesita modificar la tabla de artículos.

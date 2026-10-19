@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Guardado optativo por revisión mediante modelos ORM por herencia y actualización condicional por registro/ámbito. Módulo `content-editing` para avisar de otras sesiones activas, con caducidad, MySQL/SQLite y componente nativo. La aplicación conserva sus tablas, migraciones y permisos; no se activa en sitios existentes automáticamente.
+
 ## 4.2.0 — 2026-10-16
 
 - Header: restauradas las etiquetas dinámicas Open Graph y Twitter Card, autor, palabras clave y permisos de vista previa. Conserva los scripts `hjs` antes del CSS, la política de indexación y la persistencia del panel. Incluye pruebas de renderizado de header y footer.

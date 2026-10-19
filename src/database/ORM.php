@@ -114,6 +114,16 @@ abstract class ORM {
     return $this;
     }
 
+    /** Exact byte equality, independent of the connection/column collation. */
+    public function whereExact(string $column, string $value) {
+        $dialect = $this->dialect();
+        if (!is_callable([$dialect, 'exactComparisonExpression'])) {
+            throw new LogicException('El dialecto no admite comparaciones exactas.');
+        }
+        $this->addWhereCondition($dialect->exactComparisonExpression($this->quoteIdentifier($column)), $value, 'AND');
+        return $this;
+    }
+
     public function orWhere($column, $operator = null, $value = null) {
     if (is_array($column)) {
         foreach ($column as $cond) {
