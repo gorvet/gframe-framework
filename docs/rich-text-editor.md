@@ -158,7 +158,7 @@ Las opciones registradas se combinan con la configuración base. El componente p
 
 `register()` debe ejecutarse antes de `init()`. No reconfigura una instancia ya creada: si necesita cambiarla, guarde su contenido, destrúyala y vuelva a inicializarla. El componente evita inicializar dos veces el mismo ID; si TinyMCE no está cargado, `init()` no hace nada y no programa un reintento.
 
-La configuración base activa listas, enlaces, imágenes, tablas, código, vista previa y herramientas de selección. Oculta el menú, utiliza español y conserva las URLs del contenido con `convert_urls: false`. La base para cargar el idioma procede de `site_url`; revise esa variable cuando despliegue en una subcarpeta.
+La configuración base activa listas, enlaces, imágenes, tablas, código y herramientas de selección. Oculta el menú, utiliza español y conserva las URLs del contenido con `convert_urls: false`. La base para cargar el idioma procede de `site_url`; revise esa variable cuando despliegue en una subcarpeta.
 
 ### Herramientas de escritura
 
@@ -170,7 +170,7 @@ Al seleccionar texto aparece una barra contextual con formatos de párrafo y tí
 
 Escribe `/` al inicio de un párrafo para elegir párrafo, título 2 o 3, lista con viñetas, lista numerada, cita o separador. Puedes filtrar escribiendo, desplazarte con las flechas y confirmar con Intro. Escape cierra el menú y conserva el texto escrito. No se abre dentro de una frase o ruta. Las operaciones admiten Deshacer y mantienen el contenido HTML existente; no requieren la biblioteca de medios.
 
-La barra principal reúne formato básico, listas, enlaces, imágenes y tablas. **Más herramientas** contiene subrayado, cita, separador, quitar formato, código y vista previa. Usa un grupo nativo de TinyMCE en modo `floating`, accesible también con teclado. Si un proyecto registra otro `toolbar_mode`, el grupo propio se despliega en botones en línea; no se pierden esas funciones. Una barra personalizada sigue el orden que registre el proyecto.
+La barra principal reúne formato básico, listas, enlaces, imágenes y tablas. **Más herramientas** contiene subrayado, cita, separador, quitar formato y código; con `preview_url`, también la [vista previa privada del sitio](content-preview.md). Usa un grupo nativo de TinyMCE en modo `floating`, accesible también con teclado. Si un proyecto registra otro `toolbar_mode`, el grupo propio se despliega en botones en línea; no se pierden esas funciones. Una barra personalizada sigue el orden que registre el proyecto.
 
 Con la biblioteca activada, seleccionar una imagen muestra **Cambiar imagen** y **Quitar imagen del texto**. En una galería aparecen **Editar galería** y **Quitar galería del texto**. Quitar modifica solo el documento, admite Deshacer y conserva los archivos de la biblioteca. Las acciones de alineación predeterminadas de Quickbars se sustituyen por este contexto, salvo configuración explícita del proyecto.
 

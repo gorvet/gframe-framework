@@ -214,11 +214,11 @@
       min_height: parseInt(element.dataset.editorMinHeight || "580", 10),
       height: parseInt(element.dataset.editorMinHeight || "580", 10),
       resize: true,
-      plugins: "lists link autolink image table code preview quickbars wordcount fullscreen",
+      plugins: "lists link autolink image table code quickbars wordcount fullscreen",
       toolbar: "undo redo | blocks | bold italic | bullist numlist | link unlink image table | fullscreen gframeOutline gframeMore",
       toolbar_mode: "floating",
       toolbar_groups: {
-        gframeMore: {icon: 'more-drawer', tooltip: element.dataset.editorMore, items: 'underline blockquote hr | removeformat code preview'}
+        gframeMore: {icon: 'more-drawer', tooltip: element.dataset.editorMore, items: 'underline blockquote hr | removeformat code' + (element.dataset.editorPreviewUrl ? ' gframePreview' : '')}
       },
       toolbar_sticky: true,
       toolbar_sticky_offset: 60,
@@ -257,6 +257,7 @@
     options.target = element;
     var activity = {mediaPending: false};
     activities.set(element, activity);
+    configureSitePreview(element, options);
     if (options.toolbar_mode !== 'floating' && options.toolbar_groups && options.toolbar_groups.gframeMore) {
       if (typeof options.toolbar === 'string') options.toolbar = options.toolbar.replace(/\bgframeMore\b/g, options.toolbar_groups.gframeMore.items);
       delete options.toolbar_groups.gframeMore;
@@ -267,6 +268,26 @@
     configureSave(element, options, activity);
     if (element.dataset.editorMedia === '1') configureMedia(element, options, activity);
     tinymce.init(options);
+  }
+
+  function configureSitePreview(element, options) {
+    if (!element.dataset.editorPreviewUrl) return;
+    var url;
+    try { url = new URL(element.dataset.editorPreviewUrl, window.location.href); } catch (_) { url = null; }
+    if (!url || url.origin !== window.location.origin) {
+      if (options.toolbar_groups && options.toolbar_groups.gframeMore) options.toolbar_groups.gframeMore.items = options.toolbar_groups.gframeMore.items.replace(/\bgframePreview\b/g, '');
+      return;
+    }
+    var setup = options.setup;
+    options.setup = function(editor) {
+      if (typeof setup === 'function') setup(editor);
+      var action = {
+        text: element.dataset.editorPreviewLabel,
+        onAction: function() { window.open(url.href, '_blank', 'noopener'); }
+      };
+      editor.ui.registry.addButton('gframePreview', action);
+      editor.ui.registry.addMenuItem('gframePreview', action);
+    };
   }
 
   function configureWriting(element, options) {

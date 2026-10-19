@@ -42,6 +42,8 @@ if (strlen($editorDraftKey) > 512) {
     rows="<?= $editorRows ?>"
     data-editor-min-height="<?= $editorMinHeight ?>"
     data-editor-more="Más herramientas"
+    data-editor-preview-url="<?= htmlspecialchars((string)($editor['preview_url'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+    data-editor-preview-label="Vista previa del sitio"
     data-editor-outline="Esquema del artículo"
     data-editor-outline-empty="No hay títulos en el texto"
     data-editor-protect="<?= $editorProtect ? '1' : '0' ?>"

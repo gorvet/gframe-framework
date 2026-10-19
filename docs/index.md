@@ -48,6 +48,7 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 - [Editor de texto enriquecido](rich-text-editor.md).
 - [Guardado por revisión y presencia editorial](content-editing.md).
 - [Historial y restauración de revisiones](content-revisions.md).
+- [Vista previa privada del sitio](content-preview.md).
 - [Markdown y HTML](markdown.md).
 - [Búsqueda léxica](lexical-search.md).
 

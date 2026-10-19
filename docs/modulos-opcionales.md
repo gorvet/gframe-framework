@@ -29,6 +29,7 @@ No todos estos módulos son opcionales en todos los perfiles. `managed` e `intra
 - [`content-autosave`](content-autosave.md): copias privadas del texto en el servidor, con control de versiones y recuperación explícita; requiere base de datos y una ruta autorizada de la aplicación.
 - [`content-editing`](content-editing.md): aviso de otras sesiones activas con caducidad; el guardado por revisión se adopta explícitamente en el modelo de la aplicación.
 - [`content-revisions`](content-revisions.md): historial de 10 versiones por defecto, configurable, con comparación, restauración y vaciado autorizado por contenido.
+- [`content-preview`](content-preview.md): plantilla pública con copia privada y actualización tras cambios confirmados; requiere rutas propias autorizadas.
 
 - `admin-panel`: estructura visual compartida del panel, con navbar, sidebar, tema y puntos de inserción. Los perfiles administrados lo incluyen automáticamente. Consulte [Panel administrativo](panel-administrativo.md).
 

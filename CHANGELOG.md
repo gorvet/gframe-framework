@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Vista previa privada optativa con la plantilla pública, reutilizando autoguardado y actualización automática por versión confirmada. El botón propio del editor sustituye la preview TinyMCE predeterminada; sin URL de integración no se muestra. Barra pública administrativa aplazada.
+
 - Historial optativo `content-revisions`: 10 revisiones por defecto, límite configurable, comparación escapada, restauración con revisión nueva y vaciado confirmado por contenido sin borrar el estado actual. Guardado, snapshot y retención comparten transacción mediante modelos ORM por herencia.
 
 - Guardado optativo por revisión mediante modelos ORM por herencia y actualización condicional por registro/ámbito. Módulo `content-editing` para avisar de otras sesiones activas, con caducidad, MySQL/SQLite y componente nativo. La aplicación conserva sus tablas, migraciones y permisos; no se activa en sitios existentes automáticamente.

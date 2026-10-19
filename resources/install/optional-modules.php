@@ -12,6 +12,7 @@ return [
         'content-autosave' => 'Autoguardado privado del editor',
         'content-editing' => 'Aviso de sesiones de edición',
         'content-revisions' => 'Historial de revisiones del contenido',
+        'content-preview' => 'Vista previa privada del sitio',
         'markdown' => 'Markdown y HTML',
         'lexical-search' => 'Buscador léxico',
     ],
