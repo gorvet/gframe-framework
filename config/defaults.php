@@ -83,6 +83,7 @@ return [
             'window_seconds' => 3600,
         ],
     ],
+    'content' => ['revisions' => ['limit' => 10]],
     'notifications' => [
         'queue' => ['lease_seconds' => 900],
         'email' => [

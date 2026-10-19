@@ -11,6 +11,7 @@ return [
         'rich-text-editor' => 'Editor enriquecido TinyMCE',
         'content-autosave' => 'Autoguardado privado del editor',
         'content-editing' => 'Aviso de sesiones de edición',
+        'content-revisions' => 'Historial de revisiones del contenido',
         'markdown' => 'Markdown y HTML',
         'lexical-search' => 'Buscador léxico',
     ],
