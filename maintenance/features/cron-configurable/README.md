@@ -17,15 +17,15 @@
 **Por qué ahora:** la selección de modos está confirmada; resolver la concurrencia es requisito previo al disparador.
 **Criterio de éxito:** ejecución en segundo plano con coordinación compartida y recuperación demostradas, configuración y actualización documentadas.
 **Fuera de este ciclo:** aplicaciones consumidoras; CSRF se conserva en una feature independiente.
-**Siguiente decisión:** auditoría separada de las etapas implementadas; completar la evidencia Linux mediante CI.
+**Siguiente decisión:** ciclo cerrado; continuar las nuevas capacidades de contenido cuando se concilie su alcance.
 
 ## Estado del corte
 
 | # | Carpeta | Resultado | Depende de | Conciliación | Estado | Trabajo activo | Tareas | Auditoría |
 |---|---------|-----------|------------|--------------|--------|----------------|--------|-----------|
-| 01 | [01-ejecucion-coordinada](01-ejecucion-coordinada/CONCILIACION.md) | Scheduler/CLI con coordinación y recuperación verificables | — | ver archivo | auditando | principal implementado | TAREAS.md | pendiente |
-| 02 | [02-disparador-configurable](02-disparador-configurable/CONCILIACION.md) | Modo virtual por actividad HTTP y selección desde .env | 01 | ver archivo | auditando | principal implementado | TAREAS.md | pendiente |
-| 03 | [03-operacion-y-actualizacion](03-operacion-y-actualizacion/CONCILIACION.md) | Diagnóstico y actualización verificables en entornos declarados | 01, 02 | ver archivo | bloqueada | validación Linux pendiente | TAREAS.md | pendiente |
+| 01 | [01-ejecucion-coordinada](01-ejecucion-coordinada/CONCILIACION.md) | Scheduler/CLI con coordinación y recuperación verificables | — | ver archivo | cerrada | ninguno | TAREAS.md auditada | pasada 1: coincide |
+| 02 | [02-disparador-configurable](02-disparador-configurable/CONCILIACION.md) | Modo virtual por actividad HTTP y selección desde .env | 01 | ver archivo | cerrada | ninguno; delta 01 implementado | TAREAS.md auditada | pasada 2: coincide |
+| 03 | [03-operacion-y-actualizacion](03-operacion-y-actualizacion/CONCILIACION.md) | Diagnóstico y actualización verificables en entornos declarados | 01, 02 | ver archivo | cerrada | ninguno; delta 01 implementado | TAREAS.md auditada | pasada 2: coincide |
 
 ## Cobertura
 
@@ -36,7 +36,7 @@
 | R-09, R-10, R-12 | 03 | Operación y actualización | Host y ejecutor publicado | ambiental |
 | R-11 | 01, 02; integración y regresión en 03 | Concurrencia y proceso externo | MySQL/SQLite, Windows/Linux | ambiental |
 
-Los esquemas y migraciones necesarios para 01 están implementados. Las conciliaciones están cerradas y sus archivos son el estado canónico. La etapa 03 conserva pendiente la validación Linux; no hay auditoría ni cierre de etapas. Ver VERIFICACION.md. Bloqueo: acceso a Linux o ejecución de CI; revisión prevista 2026-10-16.
+Las etapas 01–03 quedan cerradas el 2026-10-19. Se conservan las pasadas iniciales con huecos y los deltas de verificación. El bloqueo Linux está resuelto: repetición MySQL/procesos aprobada, job 118176309692. [Evidencia de cierre](CI-20261019.md): 83 pruebas/1676 aserciones locales y 15/126 Linux/MySQL. Las omisiones locales de migraciones de cron están cubiertas por Linux; la omisión adicional de autosave es ajena al cierre. No quedan tareas activas en este ciclo ni se actualizan aplicaciones consumidoras.
 
 ## Ampliación del ejecutor
 

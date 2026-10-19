@@ -3,7 +3,7 @@
 **Principal:** sí
 **Origen:** CONCILIACION.md cerrada 2026-10-15
 **Spec:** [SPEC.md](../SPEC.md)
-**Estado:** en curso
+**Estado:** auditada
 
 ## Listado
 
@@ -19,7 +19,7 @@
   Impacto: runtime, configuración, persistencia, seguridad y documentación según el criterio.
   Verificar: nivel `estructural`; reproducir los estímulos y casos negativos de CA-03 mediante la suite focalizada; oráculo: resultado observable descrito en el criterio. Para nivel ambiental, registrar host y perfil; Linux no disponible queda pendiente.
 
-- [ ] T4 — Implementar y probar: ejecutar la matriz de procesos y fallos en hosts declarados (CA-04; SPEC.md y CONCILIACION.md).
+- [x] T4 — Implementar y probar: ejecutar la matriz de procesos y fallos en hosts declarados (CA-04; SPEC.md y CONCILIACION.md).
   Impacto: runtime, configuración, persistencia, seguridad y documentación según el criterio.
   Verificar: nivel `ambiental`; reproducir los estímulos y casos negativos de CA-04 mediante la suite focalizada; oráculo: resultado observable descrito en el criterio. Para nivel ambiental, registrar host y perfil; Linux no disponible queda pendiente.
 
@@ -58,3 +58,7 @@ Suite completa final: 491 pruebas, 4701 aserciones, 11 omitidas por requisitos d
 Comandos y cobertura: [VERIFICACION.md](../VERIFICACION.md). No constituye auditoría ni cierre de etapa.
 
 T4 permanece pendiente: falta ejecutar el perfil Linux de CI. Windows se verificó con HTTP y procesos reales. Bloqueo, desbloqueador y revisión están en CONCILIACION.md.
+
+## Cierre auditado — 2026-10-19
+
+La nota anterior conserva el estado histórico del 2026-10-15. T4 ya está verificada: Linux/MySQL repetido con job 118176309692, 15 pruebas/126 aserciones, sin omisiones; Windows reaudita procesos y HTTP. [AUDIT.md](AUDIT.md), pasada 2 coincide; [delta 01](TAREAS-delta-01.md) implementado. [Ledger común](../CI-20261019.md), E-10–E-12. Sin trabajo activo.

@@ -25,3 +25,7 @@ La suite completa y los checks finales están registrados en las notas de TAREAS
 Suite completa final: 491 pruebas, 4701 aserciones, 11 omitidas por requisitos de entorno, sin fallos. MySQL focalizado: 15 pruebas/126 aserciones, sin omisiones. Verificación focalizada de actualización/migraciones/HTTP/CSRF: 32 pruebas/877 aserciones, 6 omisiones MySQL cubiertas por la ejecución MySQL separada. Sintaxis: 431 archivos PHP válidos y lint posterior de MigrationRunner válido. Skills: 14 válidas y 79 enlaces comprobados. Markdown: 25 archivos con 0 enlaces locales ausentes. Revisión editorial: 23 textos y 0 errores críticos antes de las notas finales; revisión manual de estas notas.
 
 La suite completa se ejecutó con `php packages/phpunit/phpunit/phpunit --log-junit .phpunit.cache/cron-csrf-final.xml` (salida 0). El XML es un artefacto local ignorado, no parte del commit.
+
+## Cierre posterior — 2026-10-19
+
+La ausencia de auditoría indicada arriba es histórica. [AUDIT.md](01-formularios-publicos/AUDIT.md), pasada 2: coincide tras delta 01. Reauditoría conjunta: 83 pruebas/1676 aserciones, ninguna omisión de CSRF. Se añade HTTP real con continuidad de token entre peticiones, rechazo entre sesiones y recuperación al perder el almacenamiento. [Ledger reproducible](../cron-configurable/CI-20261019.md). Sin trabajo activo ni cambios de runtime.

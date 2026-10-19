@@ -37,3 +37,7 @@ La prueba de caída registra deliberadamente un efecto antes de terminar el proc
 Suite completa final: 491 pruebas, 4701 aserciones, 11 omitidas por requisitos de entorno, sin fallos. MySQL focalizado: 15 pruebas/126 aserciones, sin omisiones. Verificación focalizada de actualización/migraciones/HTTP/CSRF: 32 pruebas/877 aserciones, 6 omisiones MySQL cubiertas por la ejecución MySQL separada. Sintaxis: 431 archivos PHP válidos y lint posterior de MigrationRunner válido. Skills: 14 válidas y 79 enlaces comprobados. Markdown: 25 archivos con 0 enlaces locales ausentes. Revisión editorial: 23 textos y 0 errores críticos antes de las notas finales; revisión manual de estas notas.
 
 La suite completa se ejecutó con `php packages/phpunit/phpunit/phpunit --log-junit .phpunit.cache/cron-csrf-final.xml` (salida 0). El XML es un artefacto local ignorado, no parte del commit.
+
+## Cierre posterior — 2026-10-19
+
+Los límites pendientes anteriores describen el corte histórico del 2026-10-15. Las etapas 01–03 ya tienen auditoría independiente con veredicto coincide. Se repitió Linux/MySQL (job 118176309692, 15 pruebas/126 aserciones, sin omisiones) y la suite local pertinente (83 pruebas/1676 aserciones; siete omisiones MySQL, seis cubiertas por Linux y una de autosave ajena al cierre). [Ledger reproducible](CI-20261019.md). El bloqueo Linux queda resuelto; sin trabajo activo ni cambios de runtime.

@@ -3,7 +3,7 @@
 **Principal:** sí
 **Origen:** CONCILIACION.md cerrada 2026-10-15
 **Spec:** [SPEC.md](../SPEC.md)
-**Estado:** implementada
+**Estado:** auditada
 
 ## Listado
 
@@ -56,3 +56,7 @@ Skills canónicas: gframe-orchestrator, gframe-background-jobs, gframe-core-arch
 Suite completa final: 491 pruebas, 4701 aserciones, 11 omitidas por requisitos de entorno, sin fallos. MySQL focalizado: 15 pruebas/126 aserciones, sin omisiones. Verificación focalizada de actualización/migraciones/HTTP/CSRF: 32 pruebas/877 aserciones, 6 omisiones MySQL cubiertas por la ejecución MySQL separada. Sintaxis: 431 archivos PHP válidos y lint posterior de MigrationRunner válido. Skills: 14 válidas y 79 enlaces comprobados. Markdown: 25 archivos con 0 enlaces locales ausentes. Revisión editorial: 23 textos y 0 errores críticos antes de las notas finales; revisión manual de estas notas.
 
 Comandos y cobertura: [VERIFICACION.md](../VERIFICACION.md). No constituye auditoría ni cierre de etapa.
+
+## Cierre auditado — 2026-10-19
+
+[AUDIT.md](AUDIT.md), pasada 1 coincide tras reejecución Windows/SQLite y Linux/MySQL. [Ledger](../CI-20261019.md), E-10–E-12. Las notas anteriores se conservan como evidencia histórica de implementación; sin trabajo activo.

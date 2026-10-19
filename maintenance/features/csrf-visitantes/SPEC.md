@@ -1,6 +1,6 @@
 # CSRF para visitantes
 
-**Estado:** alcance aprobado para implementación el 2026-10-15; auditoría separada pendiente.
+**Estado:** etapa 01 auditada y cerrada el 2026-10-19. Ver [índice y evidencias](README.md).
 **Fecha:** 2026-10-15.
 
 ## Contexto

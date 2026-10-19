@@ -1,6 +1,6 @@
 # Cron real o virtual configurable
 
-**Estado:** alcance aprobado para implementación el 2026-10-15; auditoría separada pendiente.
+**Estado:** etapas 01–03 auditadas y cerradas el 2026-10-19; ampliación 04 cerrada previamente. Ver [índice y evidencias](README.md).
 **Fecha:** 2026-10-15.
 
 ## Decisiones confirmadas
