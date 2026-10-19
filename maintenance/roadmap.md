@@ -13,6 +13,24 @@ Las mejoras opcionales de baja prioridad se registran en [Mejoras pendientes no 
 - Documentar cada cambio funcional y cada decisión de arquitectura.
 - Revisar que la documentación y los skills evolucionen junto con el código.
 
+## Futuras capacidades de contenido y operación
+
+Registradas el 16 de octubre de 2026 tras comparar el framework con la copia local de WordPress. Las prioridades 1–4 están implementadas en el framework y pendientes de publicación. Las restantes no tienen versión ni fecha de entrega asignada. Cada aplicación adopta expresamente estas capacidades.
+
+| Prioridad | Característica | Alcance previsto y punto de partida |
+| --- | --- | --- |
+| 1 | Protección del guardado y edición simultánea | Implementada: [guardado y presencia](../docs/content-editing.md), con comparación atómica de revisión y ámbito. |
+| 2 | Revisiones del contenido | Implementada: [historial](../docs/content-revisions.md), 10 revisiones por defecto, límite configurable, comparación, restauración y vaciado confirmado. |
+| 3 | Vista previa privada en el sitio | Implementada: [preview privada](../docs/content-preview.md), plantilla pública y recarga tras persistir cambios. Barra pública administrativa aplazada. |
+| 4 | Papelera y restauración | Implementada: [contrato optativo](../docs/content-trash.md), estado recuperable, restauración y borrado definitivo confirmado con limpieza SQL transaccional. |
+| 5 | Publicación programada | Integrar fechas y estados del contenido con el cron existente. Revalidar el estado y la versión al ejecutar; contemplar cambios, cancelaciones y ejecuciones repetidas. Mantener la limitación de puntualidad del cron virtual cuando no hay tráfico. |
+| 6 | Salud del sitio | Reunir en una pantalla administrativa tareas atrasadas, errores de cron y correo y comprobaciones de almacenamiento, base de datos y configuración, sin mostrar secretos. Reutilizar los logs y estados existentes. |
+| 7 | Redirecciones al cambiar el slug | Conservar direcciones anteriores y resolver redirecciones locales evitando ciclos, cadenas innecesarias y destinos externos. Integrar la política de rutas y permisos de cada proyecto. |
+
+Estas capacidades deben respetar los contratos de GFrame, mediante módulos opcionales y adaptadores cuando corresponda, sin imponer una tabla universal de artículos ni trasladar reglas de negocio al core. Las integraciones deben preservar autorización por contenido y tenant.
+
+Los eventos generales de extensión quedan como propuesta por evaluar, sin implementación comprometida. Primero se identificarán necesidades que los registradores y puntos de extensión existentes no resuelvan; no se añadirá un sistema global de hooks solo por reproducir WordPress.
+
 ## Documentación y ayuda
 
 - Crear una guía de inicio rápido para proyectos nuevos.

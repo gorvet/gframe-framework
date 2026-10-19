@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Papelera optativa para modelos versionados mediante `ContentTrash`: consultas de activos/eliminados, restauración por revisión y borrado definitivo confirmado con limpieza SQL transaccional. La aplicación conserva tablas, permisos, relaciones e integración de lectores y escritores.
+
 - Vista previa privada optativa con la plantilla pública, reutilizando autoguardado y actualización automática por versión confirmada. El botón propio del editor sustituye la preview TinyMCE predeterminada; sin URL de integración no se muestra. Barra pública administrativa aplazada.
 
 - Historial optativo `content-revisions`: 10 revisiones por defecto, límite configurable, comparación escapada, restauración con revisión nueva y vaciado confirmado por contenido sin borrar el estado actual. Guardado, snapshot y retención comparten transacción mediante modelos ORM por herencia.
