@@ -13,12 +13,18 @@ abstract class VersionedContentModel extends \ORM
     /** Scope contains server-authorized equality filters, never request-selected columns. */
     public function saveRevision(int|string $id, string $expectedRevision, array $fields, array $scope = []): array
     {
+        return $this->saveRevisionConditionally($id, $expectedRevision, $fields, $scope);
+    }
+
+    /** Additional code-owned equality preconditions may include fields being changed. */
+    protected function saveRevisionConditionally(int|string $id, string $expectedRevision, array $fields, array $scope = [], array $conditions = []): array
+    {
         $revisionColumn = $this->revisionColumn();
         if ($this->wheres !== []) throw new LogicException('Use reset() y pase el ámbito autorizado explícitamente a saveRevision().');
         if ($this->fillable === [] || !in_array($revisionColumn, $this->fillable, true)) {
             throw new LogicException('El modelo debe declarar fillable e incluir su columna de revisión.');
         }
-        foreach ([$this->primaryKey, $revisionColumn, ...array_keys($fields), ...array_keys($scope)] as $column) {
+        foreach ([$this->primaryKey, $revisionColumn, ...array_keys($fields), ...array_keys($scope), ...array_keys($conditions)] as $column) {
             if (!is_string($column) || !preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/D', $column)) {
                 throw new InvalidArgumentException('Columna de contenido no válida.');
             }
@@ -39,6 +45,11 @@ abstract class VersionedContentModel extends \ORM
             if ($value === null) $query->whereNull($column);
             elseif (is_scalar($value)) $query->where($column, '=', $value);
             else throw new InvalidArgumentException('El ámbito requiere valores escalares o null.');
+        }
+        foreach ($conditions as $column => $value) {
+            if ($value === null) $query->whereNull($column);
+            elseif (is_scalar($value)) $query->where($column, '=', $value);
+            else throw new InvalidArgumentException('Las precondiciones requieren valores escalares o null.');
         }
         $revision = bin2hex(random_bytes(16));
         $result = $query->update([...$fields, $revisionColumn => $revision]);

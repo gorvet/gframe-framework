@@ -10,6 +10,8 @@ Catch expected launch exceptions in the requesting operation. Later failures bel
 
 ## Persistent Task Recipe
 
+For opt-in content publication, use ScheduledContent on the project's versioned/history model and a project subclass of GFrame\Content\ScheduledPublicationCronHandler. The subclass supplies publicationModel(), server-verified publicationContext(task) and current per-row mayPublish(row, context). Register one recurring existing-cron task per authorized scope; dates live on content, not one task per edit. The handler rechecks due date, status, revision and trash before conditional publication, keeps history transactional, and counts conflicts/denied rows as skipped. Infrastructure failures propagate to cron's existing error policy. No session/middleware runs in the worker. See docs/content-publication.md in the effective package; virtual cron remains traffic dependent.
+
 For an existing authorized, autoloadable handler, schedule once after project bootstrap:
 
 ```php

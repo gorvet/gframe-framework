@@ -25,13 +25,18 @@ abstract class RevisionedContentModel extends VersionedContentModel
 
     public function saveWithHistory(int|string $id, string $expectedRevision, array $fields, int $authorID, ?int $tenantID = null, array $scope = []): array
     {
+        return $this->saveHistoryConditionally($id, $expectedRevision, $fields, $authorID, $tenantID, $scope);
+    }
+
+    protected function saveHistoryConditionally(int|string $id, string $expectedRevision, array $fields, int $authorID, ?int $tenantID = null, array $scope = [], array $conditions = []): array
+    {
         if ($authorID <= 0) throw new InvalidArgumentException('El autor debe proceder del contexto autorizado.');
         $this->validatedFields();
         $limit = $this->historyLimit();
         $old = $this->record($id, $scope);
         if ($old === null || !hash_equals((string)$old[$this->revisionColumn()], $expectedRevision)) return $this->conflict();
-        return $this->atomic(function () use ($id, $expectedRevision, $fields, $authorID, $tenantID, $scope, $limit, $old): array {
-            $saved = parent::saveRevision($id, $expectedRevision, $fields, $scope);
+        return $this->atomic(function () use ($id, $expectedRevision, $fields, $authorID, $tenantID, $scope, $limit, $old, $conditions): array {
+            $saved = parent::saveRevisionConditionally($id, $expectedRevision, $fields, $scope, $conditions);
             if ($saved['status'] !== 'success') return $saved;
             $current = $this->record($id, $scope);
             $history = $this->history(); $key = $this->resourceKey($id, $tenantID, $scope);

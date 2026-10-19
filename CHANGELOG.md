@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Publicación programada optativa con `ScheduledContent` y `ScheduledPublicationCronHandler`: fechas UTC, reprogramación, cancelación y escritura condicional por estado/fecha/revisión, compatible con historial y papelera. Reutiliza cron recurrente y autorización del proyecto.
+
 - Papelera optativa para modelos versionados mediante `ContentTrash`: consultas de activos/eliminados, restauración por revisión y borrado definitivo confirmado con limpieza SQL transaccional. La aplicación conserva tablas, permisos, relaciones e integración de lectores y escritores.
 
 - Vista previa privada optativa con la plantilla pública, reutilizando autoguardado y actualización automática por versión confirmada. El botón propio del editor sustituye la preview TinyMCE predeterminada; sin URL de integración no se muestra. Barra pública administrativa aplazada.

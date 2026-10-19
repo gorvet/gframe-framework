@@ -50,6 +50,7 @@ Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), 
 - [Historial y restauración de revisiones](content-revisions.md).
 - [Vista previa privada del sitio](content-preview.md).
 - [Papelera y restauración de contenido](content-trash.md).
+- [Publicación programada mediante cron](content-publication.md).
 - [Markdown y HTML](markdown.md).
 - [Búsqueda léxica](lexical-search.md).
 
