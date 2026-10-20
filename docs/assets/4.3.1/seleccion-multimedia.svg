@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">Biblioteca, selección y formulario tienen su propio guardado</title><desc id="desc">Un archivo puede existir aunque el formulario consumidor todavía no se haya guardado.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8" fill="#596780"/></marker></defs>
+<rect width="1120" height="640" rx="20" fill="#f3f5fb"/><g font-family="Arial,sans-serif">
+<text x="48" y="65" font-size="27" fill="#203448" font-weight="700">Biblioteca, selección y formulario tienen su propio guardado</text>
+<text x="48" y="104" font-size="18" fill="#203448" font-weight="400">Un archivo puede existir aunque el formulario consumidor todavía no se haya guardado.</text>
+<rect x="48" y="158" width="304" height="190" rx="12" fill="#fff" stroke="#c6cce0"/>
+<text x="68" y="196" font-size="21" fill="#203448" font-weight="700">Biblioteca</text>
+<text x="68" y="238" font-size="17" fill="#203448" font-weight="400">Guarda archivos y atributos.</text>
+<text x="68" y="268" font-size="17" fill="#203448" font-weight="400">Conserva su identidad</text>
+<text x="68" y="298" font-size="17" fill="#203448" font-weight="400">y las URLs del servidor.</text>
+<path d="M352 253H397" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="408" y="158" width="304" height="190" rx="12" fill="#e9e3ff" stroke="#c6cce0"/>
+<text x="428" y="196" font-size="21" fill="#203448" font-weight="700">Selector</text>
+<text x="428" y="238" font-size="17" fill="#203448" font-weight="400">Elige y ordena archivos.</text>
+<text x="428" y="268" font-size="17" fill="#203448" font-weight="400">Confirma con «Usar».</text>
+<text x="428" y="298" font-size="17" fill="#203448" font-weight="400">Devuelve IDs y orden.</text>
+<path d="M712 253H757" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="768" y="158" width="304" height="190" rx="12" fill="#fff" stroke="#c6cce0"/>
+<text x="788" y="196" font-size="21" fill="#203448" font-weight="700">Formulario del proyecto</text>
+<text x="788" y="238" font-size="17" fill="#203448" font-weight="400">Recibe la selección.</text>
+<text x="788" y="268" font-size="17" fill="#203448" font-weight="400">Valida acceso a los IDs.</text>
+<text x="788" y="298" font-size="17" fill="#203448" font-weight="400">Persiste la entidad propia.</text>
+<rect x="48" y="392" width="1024" height="200" rx="12" fill="#203448"/>
+<text x="72" y="430" font-size="17" fill="#fff" font-weight="400">Quitar de la selección no borra el archivo de la biblioteca.</text>
+<text x="72" y="465" font-size="17" fill="#fff" font-weight="400">Cancelar no revierte atributos ya guardados ni elimina subidas correctas.</text>
+<text x="72" y="500" font-size="17" fill="#fff" font-weight="400">Nombre visible y texto alternativo no renombran el archivo físico.</text>
+</g></svg>

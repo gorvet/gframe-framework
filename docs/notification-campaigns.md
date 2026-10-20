@@ -277,6 +277,14 @@ La audiencia se normaliza por campaña, canal y destinatario. La base de datos m
 
 ## Estados
 
+![Audiencia, trabajos en cola y procesamiento de canales](assets/4.3.1/flujo-campanas.svg)
+
+*El avance de la campaña mide la preparación de trabajos para sus destinatarios. La entrega corresponde al procesamiento de la cola y al transporte de cada canal. Esquema de GFrame 4.3.1.*
+
+Interpreta el resultado por etapas: resolver audiencia autorizada, reservar destinatarios y generar trabajos con deduplicación, y procesar después la cola. El estado `completed` indica que terminó el procesamiento de destinatarios para generar trabajos; no acredita que todos los correos hayan llegado a sus bandejas.
+
+Antes de programar revisa audiencia, ámbito, canal, contenido y fecha. Usa las acciones descritas en [Programación, vista previa y prueba](#programación-vista-previa-y-prueba). Registrar un canal personalizado no lo incorpora automáticamente al formulario estándar.
+
 - `scheduled`: espera su fecha o el siguiente lote.
 - `running`: está generando trabajos.
 - `paused`: no debe continuar hasta reanudarse.

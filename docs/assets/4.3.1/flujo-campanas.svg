@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">De la audiencia a los trabajos de entrega</title><desc id="desc">Una campaña coordina destinatarios; cada canal tiene su procesamiento.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8" fill="#596780"/></marker></defs>
+<rect width="1120" height="640" rx="20" fill="#f3f5fb"/><g font-family="Arial,sans-serif">
+<text x="48" y="65" font-size="27" fill="#203448" font-weight="700">De la audiencia a los trabajos de entrega</text>
+<text x="48" y="104" font-size="18" fill="#203448" font-weight="400">Una campaña coordina destinatarios; cada canal tiene su procesamiento.</text>
+<rect x="48" y="158" width="304" height="190" rx="12" fill="#fff" stroke="#c6cce0"/>
+<text x="68" y="196" font-size="21" fill="#203448" font-weight="700">Audiencia</text>
+<text x="68" y="238" font-size="17" fill="#203448" font-weight="400">Resuelve destinatarios</text>
+<text x="68" y="268" font-size="17" fill="#203448" font-weight="400">en el ámbito autorizado.</text>
+<text x="68" y="298" font-size="17" fill="#203448" font-weight="400">Prepara la campaña.</text>
+<path d="M352 253H397" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="408" y="158" width="304" height="190" rx="12" fill="#e9e3ff" stroke="#c6cce0"/>
+<text x="428" y="196" font-size="21" fill="#203448" font-weight="700">Despacho por lotes</text>
+<text x="428" y="238" font-size="17" fill="#203448" font-weight="400">Reserva destinatarios.</text>
+<text x="428" y="268" font-size="17" fill="#203448" font-weight="400">Genera trabajos en cola</text>
+<text x="428" y="298" font-size="17" fill="#203448" font-weight="400">con deduplicación.</text>
+<path d="M712 253H757" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="768" y="158" width="304" height="190" rx="12" fill="#fff" stroke="#c6cce0"/>
+<text x="788" y="196" font-size="21" fill="#203448" font-weight="700">Procesamiento de cola</text>
+<text x="788" y="238" font-size="17" fill="#203448" font-weight="400">Ejecuta el canal elegido.</text>
+<text x="788" y="268" font-size="17" fill="#203448" font-weight="400">Incorpora su resultado</text>
+<text x="788" y="298" font-size="17" fill="#203448" font-weight="400">de entrega o fallo.</text>
+<rect x="48" y="392" width="1024" height="200" rx="12" fill="#203448"/>
+<text x="72" y="430" font-size="17" fill="#fff" font-weight="400">completed indica que terminó la preparación de trabajos para los destinatarios.</text>
+<text x="72" y="465" font-size="17" fill="#fff" font-weight="400">Cancelar la campaña no elimina trabajos que ya están en notification_queue.</text>
+<text x="72" y="500" font-size="17" fill="#fff" font-weight="400">Registrar un transporte no lo añade automáticamente al selector del formulario.</text>
+</g></svg>

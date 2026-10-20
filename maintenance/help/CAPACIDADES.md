@@ -1,6 +1,6 @@
 # Capacidades: presencia y profundidad de la ayuda
 
-Contraste inicial: 20 de octubre de 2026. Esta matriz complementa el informe de páginas generado por el sitio. Una página por módulo no acredita que todas sus funciones estén explicadas. La revisión actual localiza documentación y apartados; todavía no certifica todas las recetas contra el código ni su reproducción.
+Contraste inicial: 20 de octubre de 2026. Esta matriz complementa el informe de páginas generado por el sitio. Registra revisión documental, fuentes consultadas e ilustraciones; no certifica una auditoría funcional exhaustiva de cada API ni del framework completo.
 
 ## Ausencias confirmadas en la navegación anterior
 
@@ -14,21 +14,27 @@ Las rutas siguientes son relativas a la raíz del sitio de ayuda. Los apartados 
 | --- | --- | --- |
 | Elegir el perfil de instalación | `/guias/perfiles-instalacion`: capacidades de cada perfil | Añadido recorrido de elección y límites sobre entidades y tenancy; texto pendiente de distribución del paquete. |
 | Personalizar módulos por herencia y mantener originales separados | `/guias/modulos-runtime`: namespaces, carpetas de personalización, actualización y migración | Esquema integrado y recorrido de actualización con vista propia añadido al Markdown canónico; texto pendiente de distribución del paquete. |
-| Conexiones, transacciones, dialectos y procesamiento por lotes | `/guias/orm`: apartados específicos de cada función | Esquema integrado y explicación del ámbito de conexión/estado añadida al Markdown canónico. Queda profundizar en lotes y dialectos; texto pendiente de distribución del paquete. |
+| Conexiones, transacciones, dialectos y procesamiento por lotes | `/guias/orm`: apartados específicos de cada función | Revisados conexión, transacción, estado de consulta, lotes y dialectos contra ORM. Esquema integrado y criterios prácticos ampliados; pendiente publicar el paquete. |
 | Revocar dispositivos y limitar inactividad | `/guias/sesiones`: caducidad y revocación | Añadido recorrido de cierre, revocación y suspensión, sin atribuir una pantalla nativa. Texto pendiente de distribución del paquete; comprobación funcional de los ejemplos no repetida. |
-| Permisos globales, por tenant y excepciones | `/guias/permisos`: crear tenant, vincularlo, administrar roles y excepciones | Ejemplo guiado de dos ámbitos y efecto de cambiar permisos sobre una sesión. El esquema actual no sustituye ese recorrido. |
+| Permisos globales, por tenant y excepciones | `/guias/permisos`: crear tenant, vincularlo, administrar roles y excepciones | Añadido caso de dos tenants, excepción y retirada, con límites del actor y efecto sobre sesiones. Contraste con RoleModel/UserPermissionService; conserva el esquema de resolución existente. |
 | Consumidores API, scopes, CORS y proveedores propios | `/guias/api-access`: apartados específicos | Recorrido de autenticación y autorización ampliado; esquema integrado también en cliente HTTP. Las denegaciones siguen en su tabla canónica. Texto nuevo pendiente de distribución del paquete. |
-| Archivos y galerías: propietarios, orden, atributos y archivos remotos | `/modulos/media-library`: biblioteca/propietario, selección, galerías, seguridad | Las capturas actuales no muestran todas estas operaciones. Sustituir la captura recortada y añadir selección/atributos. |
+| Archivos y galerías: propietarios, orden, atributos y archivos remotos | `/modulos/media-library`: biblioteca/propietario, selección, galerías, seguridad | Recorte corregido; nueva captura nativa de atributos guardados y esquema archivo/selección/formulario. Tabla de efectos y límites del selector contrastada con su contrato. |
 | Búsqueda que normaliza tildes, pondera campos y genera fragmentos | `/modulos/lexical-search`: ejemplo PHP, opciones y filtro en navegador | Añadida elección PHP/JS y orden de autorización/búsqueda/paginación. Captura integrada con dos resultados calculados por el motor original e interfaz de ejemplo identificada. Texto nuevo pendiente de distribución del paquete. |
-| Correo directo, en segundo plano, plantillas y adjuntos | `/guias/mail`: método, feedback, adjuntos, plantillas | Esquema que distinga aceptación del trabajo y entrega SMTP. La imagen de una plantilla no explica el transporte. |
-| Campañas con audiencias, recurrencia, reglas y prevención de duplicados | `/modulos/notification-campaigns`: audiencias, reglas, recurrencia y estados | Ilustrar el flujo completo y revisar las instrucciones de operación. Una captura del formulario no cubre todo el módulo. |
-| Cron persistente: concurrencia, recuperación y ejecución real/virtual | `/modulos/cron-runner`: apartados específicos | Esquema de los caminos de ejecución y explicación práctica de elección/configuración. |
-| Sitemap dinámico, robots, llms.txt e indexación por ruta | `/guias/seo`: rutas del sistema, proveedores y política de indexación | Ejemplo de página pública frente a privada y diagrama de generación; no necesita una captura administrativa. |
-| Metas dinámicas y deduplicación de recursos | `/guias/meta`: prioridades, recursos, robots y JSON-LD | Recorrido vista → grupo → plantilla y resultado HTML. |
-| Editor: guardado, recuperación, multimedia y contenido dinámico | `/modulos/rich-text-editor` y guías de contenido | Corregir preview y márgenes; conservar la distinción entre editor y plantilla pública del proyecto. |
-| Componentes: selección, tablas y feedback | Guías de GFSelect, GFTable y alertas | Mostrar GFSelect abierto y toast; revisar estados útiles, no solo el componente cerrado o un diálogo. |
+| Correo directo, en segundo plano, plantillas y adjuntos | `/guias/mail`: método, feedback, adjuntos, plantillas | Revisados métodos y códigos de MailService. Esquema de solicitud/worker/SMTP integrado; sin afirmar recepción ni realizar envíos reales. |
+| Campañas con audiencias, recurrencia, reglas y prevención de duplicados | `/modulos/notification-campaigns`: audiencias, reglas, recurrencia y estados | Revisados despacho, deduplicación y estado completed frente a cola/entrega. Formulario nativo y esquema del flujo integrados; sin programar campañas reales. |
+| Cron persistente: concurrencia, recuperación y ejecución real/virtual | `/modulos/cron-runner`: apartados específicos | Revisados disparador real/virtual y ejecutor CLI/HTTP contra VirtualCron y configuración documentada. Esquema de caminos y criterios de elección integrados. |
+| Sitemap dinámico, robots, llms.txt e indexación por ruta | `/guias/seo`: rutas del sistema, proveedores y política de indexación | Contraste con SeoPolicy y políticas documentadas. Tabla pública/privada/excluida y esquema global/ruta/salidas integrados. |
+| Metas dinámicas y deduplicación de recursos | `/guias/meta`: prioridades, recursos, robots y JSON-LD | Contraste con Meta y resolución de archivos documentada. Recorrido de ficha, cinco capas y deduplicación ilustrados. |
+| Editor: guardado, recuperación, multimedia y contenido dinámico | `/modulos/rich-text-editor` y guías de contenido | Preview y márgenes corregidos; estilos de lectura identificados como propios del ejemplo. Se conserva la separación entre componente nativo y plantilla del proyecto. |
+| Componentes: selección, tablas y feedback | Guías de GFSelect, GFTable y alertas | GFSelect abierto completo y toast ya ilustrados; las capturas corresponden a los componentes reales. Estados adicionales conservados como ampliación posterior. |
 
-## Revisión pendiente antes de declarar cobertura completa
+## Evidencia y mantenimiento de cobertura
+
+### Cierre documental de los puntos 2 y 3
+
+Revisados permisos por ámbito, multimedia, correo, campañas, cron, SEO y metas. Se completó además la explicación de lotes y dialectos del ORM. Cada área mantiene su guía canónica y apoyo visual: seis esquemas nuevos y una captura de atributos multimedia guardados mediante el endpoint original en una aplicación temporal. No se añadieron funciones al runtime ni se atribuyeron pantallas inexistentes.
+
+Fuentes: `RoleModel`, `UserPermissionService`, componentes y controlador multimedia, `MailService`, `CampaignService`, `NotificationQueueWorker`, `VirtualCron`/`CronRuntime`, `SeoPolicy`, `Meta` y `ORM::chunkById()`. No se enviaron correos ni campañas ni se ejecutaron tareas de negocio. La publicación permanece aplazada por instrucción del usuario. El inventario conserva los estados visuales adicionales para ampliación posterior.
 
 ### Primer lote de ampliación
 

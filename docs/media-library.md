@@ -147,6 +147,12 @@ El campo reutilizable se incluye desde `app/views/components/media/mediaField.ph
 
 ### Subir y preparar la selección
 
+Guardar un archivo en la biblioteca, confirmar una selección y guardar el registro de negocio son tres operaciones distintas. Completar una no confirma automáticamente las otras.
+
+![Archivo, selección y formulario son operaciones distintas](assets/4.3.1/seleccion-multimedia.svg)
+
+*El selector devuelve los IDs y su orden. El formulario del proyecto valida su acceso y los persiste; editar atributos modifica la biblioteca, no solamente una selección provisional. Esquema de GFrame 4.3.1.*
+
 La subida muestra progreso y resultado por archivo tanto en la biblioteca principal como en el selector. El porcentaje mide la transferencia: al terminar puede aparecer «Procesando…» hasta que el servidor confirme el guardado. Un error de un archivo no descarta los demás.
 
 En el selector, las subidas correctas quedan seleccionadas sin cerrar el modal. En selección simple se elige el último archivo válido del lote, según el orden de entrada; en selección múltiple se añaden en ese orden, conservando la selección anterior y respetando el máximo. Los archivos que excedan el máximo pueden quedar guardados en la biblioteca, pero no seleccionados; el modal lo indica. «Desde URL» conserva su significado de enlace externo y usa el mismo flujo de selección tras el registro.
@@ -154,6 +160,18 @@ En el selector, las subidas correctas quedan seleccionadas sin cerrar el modal. 
 Cerrar y reabrir el selector no incorpora las selecciones de una subida anterior que termine tarde. Los archivos que ya se subieron no se borran al cancelar la selección. Una subida correcta no guarda por sí sola el formulario que utiliza el campo: confirme con «Usar» y guarde el formulario.
 
 ### Consultar y editar atributos desde el selector
+
+![Detalles nativos de un archivo con nombre visible y texto alternativo guardados](assets/4.3.1/multimedia-atributos.png)
+
+*Panel nativo de detalles de la biblioteca, con atributos guardados en una aplicación temporal. Ilustra los datos del archivo; el selector dispone de su propio panel dentro del modal. Captura de GFrame 4.3.1.*
+
+| Acción | Qué modifica | Qué conserva |
+| --- | --- | --- |
+| Guardar nombre visible o texto alternativo | Atributos en la biblioteca | Archivo físico y URL |
+| Quitar de la selección | Composición elegida | Archivo almacenado |
+| Reordenar la selección | Orden de los IDs devueltos | Contenido de cada archivo |
+| Confirmar con «Usar» | Resultado entregado al campo | No guarda por sí solo la entidad del proyecto |
+| Cancelar | Descarta la composición provisional | No revierte atributos guardados ni borra subidas correctas |
 
 Al seleccionar un archivo se consultan sus detalles en el mismo modal. El nombre visible y el texto alternativo de una imagen pueden guardarse mediante las rutas existentes; se mantienen `media.edit`, CSRF y el ámbito del servidor. Un permiso de consulta no concede permiso de edición y el rechazo de guardado se informa sin aplicar cambios locales como si se hubieran guardado.
 

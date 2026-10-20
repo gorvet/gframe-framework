@@ -4,7 +4,7 @@ Estado: actualización 4.3.1, 20 de octubre de 2026. Este archivo identifica qu�
 
 ## Archivos disponibles
 
-Raíz común: `docs/assets/4.3.1/` del framework. Diecinueve capturas reales, cuatro esquemas y una ilustración original generada con IA. Se distribuyen en veinticinco guías; el correo, el acceso y el esquema de canales HTTP se reutilizan en dos guías cada uno. Alerts incorpora diálogo y toast.
+Raíz común: `docs/assets/4.3.1/` del framework. Veinte capturas reales, diez esquemas y una ilustración original generada con IA. Se distribuyen en veintiocho guías; algunos recursos se reutilizan y una guía puede incluir varias figuras. Alerts incorpora diálogo y toast.
 
 | Archivo | Tipo | Apartado y ruta | Qué muestra / intención | Estado |
 | --- | --- | --- | --- | --- |
@@ -30,6 +30,13 @@ Raíz común: `docs/assets/4.3.1/` del framework. Diecinueve capturas reales, cu
 | `modulos-runtime.svg` | Esquema técnico | Personalización de módulos, `/guias/modulos-runtime` | Decisión por archivo entre vista propia y original; efecto de una actualización sobre la personalización. | Nueva |
 | `transacciones.svg` | Esquema técnico | ORM, `/guias/orm` | Flujo de apertura, escrituras, confirmación o reversión sobre una conexión; límites respecto a archivos y servicios externos. | Nueva |
 | `canales-http.svg` | Esquema técnico | API, `/guias/api-access`, y cliente HTTP, `/guias/http-client` | Dirección de las llamadas, autenticación/contexto entrante y resultado de transporte saliente; límites de autorización y negocio. | Nueva, integrada en dos guías |
+| `multimedia-atributos.png` | Captura real | Multimedia, `/modulos/media-library` | Modal nativo de detalles con nombre visible y texto alternativo guardados mediante el endpoint real en una aplicación temporal. No representa el panel interno del selector. | Nueva |
+| `seleccion-multimedia.svg` | Esquema técnico | Multimedia, `/modulos/media-library` | Distingue persistencia del archivo, composición de IDs y guardado del formulario; efectos de cancelar o quitar de selección. | Nueva |
+| `entrega-correo.svg` | Esquema técnico | Mail, `/guias/mail` | Solicitud Async, worker y aceptación SMTP; sin afirmar recepción ni reintentos automáticos. | Nueva |
+| `flujo-campanas.svg` | Esquema técnico | Campañas, `/modulos/notification-campaigns` | Audiencia, despacho con deduplicación y procesamiento por canal; aclara el significado de completed. | Nueva |
+| `caminos-cron.svg` | Esquema técnico | Cron, `/modulos/cron-runner` | Disparadores real/virtual y ejecutores CLI/HTTP, con límites de cadencia y autenticación. | Nueva |
+| `politica-seo.svg` | Esquema técnico | SEO, `/guias/seo` | Configuración global, elegibilidad de ruta y salidas HTML/índices; la exclusión no reemplaza permisos. | Nueva |
+| `capas-meta.svg` | Esquema técnico | Metas, `/guias/meta` | Cinco capas de archivos meta en su orden real y deduplicación por ruta de recursos. | Nueva |
 | `busqueda.png` | Captura de integración de ejemplo | Búsqueda léxica, `/modulos/lexical-search` | Consulta «campañs» y dos resultados calculados por el motor PHP original, con títulos y snippets. La interfaz es propia del ejemplo; no es una pantalla distribuida por el módulo. | Nueva |
 | `equipo-editorial.png` | Ilustración IA original | Recurso del artículo y biblioteca; visible dentro de las capturas de editor, biblioteca y preview | Mesa de trabajo cálida con portátiles, libreta, cerámica y plantas, para dar contexto al caso editorial Estudio Nexo. No es una captura de producto ni prueba una capacidad de IA de GFrame. | Fuente conservada; no se inserta como pantalla independiente |
 
@@ -37,13 +44,15 @@ La fotografía se generó expresamente para esta ayuda, sin imágenes de referen
 
 ## Dónde se integran
 
-Cada guía Markdown enlaza sus imágenes con `![texto alternativo](assets/4.3.1/archivo)` y mantiene su pie como párrafo en cursiva. Veinticinco guías tienen apoyo visual. Texto, imágenes y pies viajan juntos en el paquete Composer. El sitio transforma esos enlaces en figuras con dimensiones, carga diferida y ampliación, y sirve los originales desde el repositorio local o el paquete instalado. No mantiene una lista paralela ni copias en su carpeta pública.
+Cada guía Markdown enlaza sus imágenes con `![texto alternativo](assets/4.3.1/archivo)` y mantiene su pie como párrafo en cursiva. Veintiocho guías tienen apoyo visual. Texto, imágenes y pies viajan juntos en el paquete Composer. El sitio transforma esos enlaces en figuras con dimensiones, carga diferida y ampliación, y sirve los originales desde el repositorio local o el paquete instalado. No mantiene una lista paralela ni copias en su carpeta pública.
 
 ### Corrección de encuadres
 
 Se recapturaron multimedia, editor, preview, acceso, cuenta, usuarios, autoguardado, revisiones, programación, panel, notificaciones, campañas, correo, selectores, tabla y diálogo. El margen pertenece al PNG original, no a un relleno del contenedor web. `maintenance/help/capture-frame.cjs` conserva los iframes del editor y extiende el encuadre para incluir el desplegable abierto. Instalación conserva su captura anterior, que ya contenía el asistente completo.
 
-## Capturas pendientes
+## Ampliaciones visuales conservadas para seguimiento
+
+El lote de revisión de permisos, multimedia, correo, campañas, cron, SEO y metas ya cuenta con apoyo visual. Los estados siguientes amplían recorridos concretos; no deben confundirse con áreas totalmente sin ilustrar.
 
 Son un inventario de cobertura futura, no funcionalidades ausentes del framework ni una autorización para ampliar este cambio.
 
@@ -51,7 +60,7 @@ Son un inventario de cobertura futura, no funcionalidades ausentes del framework
 | --- | --- | --- |
 | Instalación | Conexión y validación de base de datos | Usar un esquema temporal; no mostrar usuario/clave reales. |
 | Instalación | Selección de módulos y revisión final | Mantener el mismo caso de revista y mostrar dependencias como las resuelve el instalador. |
-| Multimedia | Detalles, texto alternativo y variantes | Usar la portada original; guardar metadatos coherentes, sin archivos personales. |
+| Multimedia | Variantes de imagen | Los detalles y el texto alternativo ya tienen captura real; las variantes pueden ilustrarse aparte con la misma portada. |
 | Multimedia | Selector dentro del editor y galería | Capturar el modal nativo y su selección aplicada al contenido. |
 | Editor | Concentración, esquema y herramientas secundarias | Usar el mismo artículo; mostrar la tarea concreta, no otra pantalla inicial. |
 | Historial | Confirmación y resultado de restauración | La comparación ya está ilustrada. Falta documentar visualmente una restauración completa sin cambios implícitos de publicación. |
@@ -68,6 +77,8 @@ Son un inventario de cobertura futura, no funcionalidades ausentes del framework
 
 ## Reproducción y mantenimiento
 
+Los seis esquemas de este lote se generan con `python maintenance/help/create-diagrams.py`, sin dependencias externas. Para reproducir únicamente los atributos multimedia: configura `GFRAME_CAPTURE_FILES=multimedia-atributos.png` y ejecuta `node maintenance/help/capture-help.cjs`. El generador guarda realmente los atributos en su aplicación temporal y termina antes de los recorridos editoriales cuando esa es la única captura solicitada.
+
 Los generadores son herramientas de contribución: ejecútalos desde un checkout completo del framework, con sus fixtures de `tests/`, PHP y Playwright/Chrome disponibles. El paquete Composer incluye la ayuda ya generada; no necesita ejecutar estos generadores para consultarla.
 
 La captura de búsqueda se reproduce con `node maintenance/help/capture-search.cjs`. Su fixture `maintenance/help/examples/search.php` llama directamente al motor original y exige dos resultados; no instala una pantalla en el framework ni consulta datos de usuarios. La captura es una página de ejemplo con los resultados efectivos del algoritmo.
@@ -78,7 +89,7 @@ El generador está en el repositorio del framework: `maintenance/capture-help.cj
 node maintenance/capture-help.cjs docs/assets/4.3.1
 ```
 
-Para reproducir los encuadres vigentes ejecuta desde el framework `node maintenance/help/capture-help.cjs`. Genera nueve capturas: multimedia, editor, preview, acceso, cuenta, usuarios, autoguardado, revisiones y programación. Por defecto lee este framework y escribe en `docs/assets/4.3.1`; `GFRAME_SOURCE` permite indicar otra raíz y el primer argumento cambia el destino. No regenera la fotografía ni el instalador. La hoja visual se guarda en la caché ignorada del framework, no se publica.
+Para reproducir los encuadres vigentes ejecuta desde el framework `node maintenance/help/capture-help.cjs`. Genera diez capturas: biblioteca y atributos multimedia, editor, preview, acceso, cuenta, usuarios, autoguardado, revisiones y programación. Por defecto lee este framework y escribe en `docs/assets/4.3.1`; `GFRAME_SOURCE` permite indicar otra raíz y el primer argumento cambia el destino. No regenera la fotografía ni el instalador. La hoja visual se guarda en la caché ignorada del framework, no se publica.
 
 Ambos generadores aceptan `GFRAME_CAPTURE_FILES`, una lista de nombres separados por comas, para sustituir solo los archivos indicados. Los recorridos necesarios se ejecutan en la aplicación temporal; no se repiten suites generales del framework.
 

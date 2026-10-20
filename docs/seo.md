@@ -111,6 +111,23 @@ La privacidad de una intranet depende de autenticación, autorización y configu
 
 ## Política de indexación de las páginas HTML
 
+![Política compartida para HTML e índices](assets/4.3.1/politica-seo.svg)
+
+*Las decisiones globales y de ruta afectan al HTML y a sus índices correspondientes. La indexación no reemplaza los permisos de acceso. Esquema de GFrame 4.3.1.*
+
+### Comparar páginas públicas y privadas
+
+| Caso | Tratamiento esperado |
+| --- | --- |
+| Página pública elegible, con SEO e indexación habilitados | Puede incorporarse a los índices |
+| Pantalla protegida con `auth`, `admin`, `role:*` o `can:*` | No se incorpora como página pública indexable |
+| Confirmación con `context.seo.indexable=false` | Se excluye de Sitemap y LLMS y fuerza noindex en HTML |
+| Indexación global deshabilitada | Una ruta no puede reactivarla con `indexable=true` |
+
+Compara el HTML de la página pública y de la confirmación excluida, y sus URLs en `sitemap.xml` y `llms.txt`. Comprueba la autorización de la pantalla privada por separado: excluir una URL no impide abrirla si carece de protección.
+
+### Aplicación de la política
+
 GFrame aplica una política de indexación con dos niveles:
 
 1. el interruptor global `SEO_ALLOW_INDEXING`;

@@ -164,6 +164,25 @@ Los servicios devuelven arreglos con `status` y `code`; el controlador decide si
 
 ## Administrar roles y excepciones
 
+### Una cuenta en dos organizaciones
+
+Considera una cuenta ordinaria con membresías activas en los tenants 10 y 20. El proyecto define `articles.edit`; este ejemplo no presupone un módulo de artículos instalado.
+
+| Ámbito | Plantilla de la membresía | Excepción en ese ámbito | Resultado para `articles.edit` |
+| --- | --- | --- | --- |
+| Tenant 10 | Concede la capacidad | Ninguna | Permitido, sujeto a autorización del registro |
+| Tenant 20 | No concede la capacidad | Ninguna | Denegado |
+| Tenant 10 | Concede la capacidad | `deny` individual | Denegado |
+| Tenant 10, tras retirar la excepción | Concede la capacidad | Ninguna | Vuelve a regir la plantilla |
+
+Activa coherentemente el tenant que vas a consultar y comprueba la capacidad en ese ámbito. Una excepción global utiliza tenant `0`; una excepción sobre la membresía utiliza su tenant positivo. No traslades excepciones entre ámbitos para simular un cambio de organización.
+
+Las operaciones deben ejecutarse con un actor autorizado. Los servicios actuales exigen superadministrador para `setOverride()` y `removeOverride()`; ser dueño de una organización no basta. La cuenta usada para comprobar la tabla debe ser ordinaria, porque el bypass del superadministrador cambiaría el caso.
+
+Con un driver administrado, la próxima petición comprueba las versiones y recarga permisos cuando corresponde. `assignRole()` tiene otro efecto: revoca las sesiones del usuario. Consulta [Sesión y coste de consultas](#sesión-y-coste-de-consultas) para diseñar el flujo posterior al cambio.
+
+### Operaciones disponibles
+
 Los servicios reciben primero el ID del actor autenticado y verifican su autoridad en el servidor. Las siguientes operaciones globales requieren superadministrador:
 
 ```php

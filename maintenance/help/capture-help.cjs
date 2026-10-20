@@ -94,6 +94,20 @@ async function context(base) {
         await page.setViewportSize({width: 980, height: 900});
         await page.waitForFunction(() => !document.body.classList.contains('drawer-open'));
         await captureFrame(page, '.section.dashboard', join(output, 'multimedia.png'));
+        const captureOnly = process.env.GFRAME_CAPTURE_FILES?.split(',');
+        if (!captureOnly || captureOnly.includes('multimedia-atributos.png')) {
+            await page.setViewportSize({width:1120,height:1200});
+            await page.locator('.m-list-card[data-media-id="1"]').first().click();
+            await page.locator('#editMediaModal').waitFor({state:'visible'});
+            await page.locator('#media-original-name').fill('Equipo editorial — portada de la guía');
+            await page.locator('#alt_text').fill('Equipo de redacción trabajando con portátiles y cuadernos alrededor de una mesa.');
+            const saved = page.waitForResponse(response => response.url().endsWith('ajax/admin/media/save'));
+            await page.locator('#editMedia_guardar').click();
+            if ((await (await saved).json()).status !== 'success') throw new Error('No se guardaron los atributos del recurso temporal.');
+            await captureFrame(page, '#editMediaModal .modal-content', join(output,'multimedia-atributos.png'));
+            await page.locator('#editMediaModal').getByRole('button',{name:'Cerrar',exact:true}).last().click();
+            if (captureOnly?.every(file => file === 'multimedia-atributos.png')) return;
+        }
         await page.setViewportSize({width: 1440, height: 1000});
         await page.goto(base + 'editorial');
         await page.waitForFunction(() => window.tinymce?.get('article-content')?.initialized);
@@ -143,11 +157,11 @@ async function context(base) {
         await ready();
         await page.evaluate(() => Promise.all([...tinymce.get('article-content').getDoc().images].map(image => image.decode())));
         await captureFrame(page, 'main', join(output,'publicacion-programada.png'));
-        const captures = ['multimedia.png','editor.png','vista-previa.png','autenticacion.png','mi-cuenta.png','usuarios.png','autoguardado.png','revisiones.png','publicacion-programada.png'];
+        const captures = ['multimedia.png','multimedia-atributos.png','editor.png','vista-previa.png','autenticacion.png','mi-cuenta.png','usuarios.png','autoguardado.png','revisiones.png','publicacion-programada.png'];
         await page.setContent('<!doctype html><html lang="es"><meta charset="utf-8"><style>body{font:14px sans-serif;display:flex;flex-wrap:wrap;gap:12px;background:#eee}figure{margin:0;padding:8px;background:white;width:430px}img{width:100%;height:340px;object-fit:contain;object-position:top}figcaption{padding:6px}</style>' + captures.map(file => '<figure><figcaption>' + file + '</figcaption><img src="data:image/png;base64,' + readFileSync(join(output,file)).toString('base64') + '"></figure>').join(''));
         await page.screenshot({path:join(source,'.phpunit.cache/more-help-sheet.png'),fullPage:true});
         await ctx.close();
-        process.stdout.write('Nueve capturas con encuadre completo, incluida multimedia y la plantilla pública de lectura.\n');
+        process.stdout.write('Diez capturas con encuadre completo, incluidos atributos multimedia y plantilla pública de lectura.\n');
     } finally {
         if (browser) await browser.close();
         for (const server of servers) if (server.exitCode === null) { const ended = new Promise(done => server.once('exit', done)); server.kill(); await ended; }

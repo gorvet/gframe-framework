@@ -25,10 +25,12 @@ El margen solicitado pertenece al encuadre del PNG original, no al contenedor de
 
 ## Avance: descubrimiento y profundidad
 
+Prioridad posterior del usuario: terminar los puntos 2 y 3 (revisión de las áreas pendientes e ilustraciones) antes de publicar el paquete. El cierre de ese lote se registra en [CAPACIDADES.md](CAPACIDADES.md); no implica crear un tag, actualizar Composer o desplegar producción.
+
 El catálogo incorpora las ocho guías públicas omitidas, separa las temáticas y utiliza los títulos documentales. El orden explícito de las guías se aplica tanto al sidebar como al índice de módulos. El informe `docs/COBERTURA-AYUDA.md` del sitio registra páginas y enlaces; [MATRIZ-CAPACIDADES.md](CAPACIDADES.md) identifica funciones que deben explicarse o ilustrarse mejor, más allá del editor.
 
 Se sustituyeron los encuadres indicados en [el inventario visual](../../docs/assets/INVENTARIO.md), se abrió GFSelect, se añadió el toast y se incluyó el acceso en la guía central de autenticación. La preview utiliza una plantilla de lectura del ejemplo; no se modificaron estilos globales del core.
 
 La revisión focalizada del catálogo no detecta rutas documentales ni fragmentos rotos. Los tres enlaces a Markdown de mantenimiento se identifican como notas internas de GitHub. Se revisó el HTML real de autenticación, GFSelect e índice de módulos en navegador, con una vista móvil de autenticación: H1 único, canonical presente y sin desbordamiento horizontal en esa vista. Las hojas de captura permitieron revisar las imágenes sustituidas; se corrigieron específicamente el contenido del iframe y el desplegable completo. No se ejecutaron suites generales ni Composer.
 
-Continúan pendientes el contraste semántico completo de capacidades contra código, las recetas y esquemas adicionales de la matriz, la revisión móvil de cada componente y la disponibilidad de enlaces externos. Esta entrega mejora estructura, navegación e ilustraciones; no certifica cobertura completa del framework ni una auditoría de seguridad.
+El lote posterior completa la revisión documental y el apoyo visual de las siete áreas seleccionadas, según CAPACIDADES.md. Permanecen como ampliación la revisión móvil de cada componente, los estados visuales adicionales del inventario y la disponibilidad de enlaces externos. No equivale a una auditoría funcional exhaustiva del framework ni a la auditoría de seguridad aplazada. La publicación permanece pendiente por instrucción del usuario.

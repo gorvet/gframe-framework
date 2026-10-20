@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">El disparador y el ejecutor son decisiones distintas</title><desc id="desc">Los cuatro caminos terminan en el runner de tareas persistentes del proyecto.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8" fill="#596780"/></marker></defs>
+<rect width="1120" height="640" rx="20" fill="#f3f5fb"/><g font-family="Arial,sans-serif">
+<text x="48" y="65" font-size="27" fill="#203448" font-weight="700">El disparador y el ejecutor son decisiones distintas</text>
+<text x="48" y="104" font-size="18" fill="#203448" font-weight="400">Los cuatro caminos terminan en el runner de tareas persistentes del proyecto.</text>
+<rect x="48" y="158" width="304" height="190" rx="12" fill="#fff" stroke="#c6cce0"/>
+<text x="68" y="196" font-size="21" fill="#203448" font-weight="700">Disparador</text>
+<text x="68" y="238" font-size="17" fill="#203448" font-weight="400">Real: programador externo.</text>
+<text x="68" y="268" font-size="17" fill="#203448" font-weight="400">Virtual: visita web/AJAX</text>
+<text x="68" y="298" font-size="17" fill="#203448" font-weight="400">compatible con el disparador.</text>
+<path d="M352 253H397" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="408" y="158" width="304" height="190" rx="12" fill="#e9e3ff" stroke="#c6cce0"/>
+<text x="428" y="196" font-size="21" fill="#203448" font-weight="700">Ejecutor</text>
+<text x="428" y="238" font-size="17" fill="#203448" font-weight="400">CLI: PHP y procesos.</text>
+<text x="428" y="268" font-size="17" fill="#203448" font-weight="400">HTTP: POST autenticado</text>
+<text x="428" y="298" font-size="17" fill="#203448" font-weight="400">a la URL del proyecto.</text>
+<path d="M712 253H757" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="768" y="158" width="304" height="190" rx="12" fill="#fff" stroke="#c6cce0"/>
+<text x="788" y="196" font-size="21" fill="#203448" font-weight="700">Runner persistente</text>
+<text x="788" y="238" font-size="17" fill="#203448" font-weight="400">Selecciona tareas vencidas.</text>
+<text x="788" y="268" font-size="17" fill="#203448" font-weight="400">Aplica límites y reservas.</text>
+<text x="788" y="298" font-size="17" fill="#203448" font-weight="400">Ejecuta sus manejadores.</text>
+<rect x="48" y="392" width="1024" height="200" rx="12" fill="#203448"/>
+<text x="72" y="430" font-size="17" fill="#fff" font-weight="400">Real + CLI / Real + HTTP / Virtual + CLI / Virtual + HTTP.</text>
+<text x="72" y="465" font-size="17" fill="#fff" font-weight="400">Sin visitas, virtual no garantiza cadencia. Real necesita programación del servidor.</text>
+<text x="72" y="500" font-size="17" fill="#fff" font-weight="400">HTTP requiere secreto y URL confiable; no permite elegir handlers desde la petición.</text>
+</g></svg>

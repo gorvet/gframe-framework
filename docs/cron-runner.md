@@ -150,6 +150,14 @@ Los addons pueden publicar registradores PHP en `config/cron/`; el punto de entr
 
 ## Seleccionar cron real o virtual
 
+El modo decide quién dispara la ejecución. En `real`, debes configurar el programador del servidor; GFrame no lo instala. En `virtual`, una visita compatible activa la comprobación y el lanzamiento: sin visitas no hay una cadencia garantizada.
+
+El ejecutor es otra decisión. `cli` necesita PHP CLI y, para lanzarlo desde una visita, ejecución de procesos habilitada. `http` utiliza el endpoint autenticado del proyecto y necesita una URL confiable y un secreto. Elegir HTTP no elimina la necesidad de un disparador.
+
+![Disparadores y ejecutores del cron persistente](assets/4.3.1/caminos-cron.svg)
+
+*Real o virtual decide el disparador; CLI o HTTP decide el ejecutor. Ambos procesan las tareas persistentes según los límites y reservas del runner. Esquema de GFrame 4.3.1.*
+
 Las variables siguientes se leen directamente desde `.env`, sin necesidad de añadir claves al `config/app.php` existente:
 
 ```dotenv

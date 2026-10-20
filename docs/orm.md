@@ -186,6 +186,10 @@ $processedIds = [];
 
 La columna de recorrido debe estar en la selección y ser única y ordenable. El método avanza con `>` sobre el último valor, conserva los filtros y sustituye orden, límite y offset. Evita modificar esa columna durante el recorrido.
 
+Elige el tamaño de lote según la memoria y el trabajo realizado por el callback. Procesar por lotes no convierte la operación en una tarea de fondo: el recorrido se ejecuta en el proceso que lo llama. Si debe continuar fuera de la petición web, integra ese servicio con [Async](async.md) o [cron](cron-runner.md), según necesite ejecución inmediata o programación persistente.
+
+El método realiza una consulta por lote y no crea una instantánea ni una transacción del recorrido. La visibilidad de los cambios depende de la conexión y del contexto transaccional del servicio. Conserva los filtros de autorización y no cambies la columna de avance al procesar las filas. Si interrumpes devolviendo `false`, decide qué trabajo ya confirmado puedes retomar sin duplicarlo.
+
 ## Insertar, actualizar y borrar
 
 ```php
@@ -301,6 +305,8 @@ modelo → ORM → DatabaseManager
 `DatabaseDialectInterface` define expresiones LIKE, JSON, conversión a texto y concatenación agrupada, además de compilación de upsert e inspección de índices únicos. `MySqlDialect` y `SqliteDialect` implementan esas diferencias.
 
 Esto permite mantener una API común sin escribir ramas de motor en cada modelo. No convierte SQL arbitrario ni migra esquemas entre motores. JSON, collations, índices, funciones, versiones y tipos de columna siguen requiriendo comprobación en el motor de destino.
+
+Al adaptar una aplicación entre MySQL y SQLite, empieza por los filtros, agregados y escrituras de la API común; identifica después sus expresiones SQL directas y migraciones. Revisa esas partes contra el motor de destino en lugar de asumir que cambiar el nombre de conexión también transforma su SQL o su esquema.
 
 El manager reconoce los drivers implementados en su código. Añadir una entrada PostgreSQL a la configuración no basta: un nuevo motor requiere una conexión que implemente `DatabaseConnectionInterface`, un dialecto que implemente `DatabaseDialectInterface`, registro en DatabaseManager y pruebas. No existe un registro de drivers externos configurable desde una ruta.
 

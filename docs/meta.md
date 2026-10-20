@@ -16,6 +16,27 @@ Las capas posteriores amplían o sustituyen los valores anteriores. Los recursos
 
 ## Configuración global
 
+### Resolver una ficha de catálogo
+
+![Orden de las cinco capas de metadatos y recursos](assets/4.3.1/capas-meta.svg)
+
+*Las capas se cargan de global a vista; las posteriores amplían o sustituyen valores anteriores. CSS y JS se deduplican por sus rutas declaradas. Esquema de GFrame 4.3.1.*
+
+Para `app/views/catalogo/productShow.php`, reparte los datos según su alcance:
+
+| Dato | Capa adecuada |
+| --- | --- |
+| Bootstrap y estilos de toda la aplicación | Global |
+| Recursos comunes del layout | Template y sus aportaciones |
+| CSS del catálogo | `catalogo.group.meta.php` |
+| Título, descripción y recursos exclusivos de la ficha | `productShow.meta.php` |
+
+Una ruta CSS declarada de forma idéntica en global y vista se conserva una sola vez. Dos rutas distintas que descargan la misma biblioteca no son una misma declaración: evita duplicarlas con nombres diferentes. Comprueba las etiquetas finales y el orden de las dependencias en el HTML.
+
+Las metas de una carpeta superior no se heredan automáticamente en todos los grupos anidados. Para recursos de un panel o layout utiliza el meta de template.
+
+### Recursos comunes de toda la aplicación
+
 Distribuye los recursos según su alcance: global para toda la aplicación, template para un layout, grupo para una familia de pantallas y vista para una pantalla concreta. Declara dependencias antes de los scripts que las utilizan.
 
 Para `app/views/catalogo/productShow.php`, los archivos son `catalogo.group.meta.php` y `productShow.meta.php` en esa carpeta. En grupos anidados se usa el nombre de la última carpeta. Las metas de carpetas superiores no se heredan automáticamente; comparte recursos del panel mediante su meta de template.

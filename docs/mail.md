@@ -8,6 +8,12 @@ El soporte Mail del núcleo realiza todos los envíos de correo de GFrame. Puede
 
 ## Elegir el método
 
+Decide primero si la petición web debe esperar al servidor SMTP o solicitar el lanzamiento de una tarea. En segundo plano, una respuesta correcta de la acción no certifica que el correo haya sido aceptado por SMTP ni recibido por el destinatario.
+
+![De la petición web al worker y al servidor SMTP](assets/4.3.1/entrega-correo.svg)
+
+*Los métodos Async aceptan el lanzamiento de una tarea. El envío ocurre en el worker y la aceptación SMTP tampoco prueba la recepción en la bandeja del destinatario. Esquema de GFrame 4.3.1.*
+
 | Método de `MailService` | Contenido | Ejecución |
 | --- | --- | --- |
 | `sendTemplateAsync()` | Plantilla y variables | Segundo plano; recomendado en acciones web |

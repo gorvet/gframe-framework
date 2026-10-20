@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">Cinco capas, de lo compartido a lo específico</title><desc id="desc">Los valores posteriores amplían o sustituyen; CSS y JS se deduplican por su ruta.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8" fill="#596780"/></marker></defs>
+<rect width="1120" height="640" rx="20" fill="#f3f5fb"/><g font-family="Arial,sans-serif">
+<text x="48" y="65" font-size="27" fill="#203448" font-weight="700">Cinco capas, de lo compartido a lo específico</text>
+<text x="48" y="104" font-size="18" fill="#203448" font-weight="400">Los valores posteriores amplían o sustituyen; CSS y JS se deduplican por su ruta.</text>
+<rect x="48" y="142" width="1024" height="56" rx="10" fill="#fff" stroke="#c6cce0"/>
+<text x="70" y="177" font-size="19" fill="#203448" font-weight="700">1. Global</text>
+<text x="425" y="177" font-size="18" fill="#203448" font-weight="400">config/meta/global.meta.php</text>
+<path d="M560 198V211" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="214" width="1024" height="56" rx="10" fill="#fff" stroke="#c6cce0"/>
+<text x="70" y="249" font-size="19" fill="#203448" font-weight="700">2. Template</text>
+<text x="425" y="249" font-size="18" fill="#203448" font-weight="400">app/views/templates/&lt;plantilla&gt;.meta.php</text>
+<path d="M560 270V283" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="286" width="1024" height="56" rx="10" fill="#fff" stroke="#c6cce0"/>
+<text x="70" y="321" font-size="19" fill="#203448" font-weight="700">3. Aportaciones al template</text>
+<text x="425" y="321" font-size="18" fill="#203448" font-weight="400">app/views/templates/meta/&lt;plantilla&gt;/*.meta.php</text>
+<path d="M560 342V355" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="358" width="1024" height="56" rx="10" fill="#fff" stroke="#c6cce0"/>
+<text x="70" y="393" font-size="19" fill="#203448" font-weight="700">4. Grupo de vistas</text>
+<text x="425" y="393" font-size="18" fill="#203448" font-weight="400">app/views/&lt;grupo&gt;/&lt;grupo&gt;.group.meta.php</text>
+<path d="M560 414V427" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="430" width="1024" height="56" rx="10" fill="#e9e3ff" stroke="#c6cce0"/>
+<text x="70" y="465" font-size="19" fill="#203448" font-weight="700">5. Vista concreta</text>
+<text x="425" y="465" font-size="18" fill="#203448" font-weight="400">app/views/&lt;grupo&gt;/&lt;vista&gt;.meta.php</text>
+<text x="48" y="567" font-size="19" fill="#203448" font-weight="400">Las metas de carpetas superiores no se heredan automáticamente en grupos anidados.</text>
+</g></svg>
