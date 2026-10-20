@@ -82,9 +82,10 @@ async function context(base) {
         if (login.status !== 'success') throw new Error('Login temporal fallido.');
         await page.goto(base + 'admin/media');
         await page.locator('h1').first().waitFor();
-        await page.getByRole('button', {name: 'Contraer menú', exact: true}).click();
-        await page.waitForFunction(() => document.documentElement.dataset.gfSidebar === 'collapsed');
+        await page.setViewportSize({width: 980, height: 900});
+        await page.waitForFunction(() => !document.body.classList.contains('drawer-open'));
         await page.locator('.section.dashboard').screenshot({path: join(output, 'multimedia.png'), animations: 'disabled'});
+        await page.setViewportSize({width: 1440, height: 1000});
         await page.goto(base + 'editorial');
         await page.waitForFunction(() => window.tinymce?.get('article-content')?.initialized);
         const article = '<h2>Una redacción más clara, del borrador a la publicación</h2>'
