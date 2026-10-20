@@ -229,6 +229,21 @@ La propiedad protegida `$casts` admite `int`, `float`, `bool`, `datetime` y `jso
 
 ## Conexiones y transacciones
 
+### Preparar una operación que modifica varios registros
+
+Imagina que una operación debe crear un pedido y descontar existencias. Para que ambas escrituras compartan resultado, el servicio debe usar una conexión concreta en los dos modelos y en los métodos de transacción. Abrir la transacción en `catalog` y escribir con un modelo que usa la conexión predeterminada deja esa escritura fuera de la transacción de `catalog`.
+
+Antes de programar ese flujo, identifica:
+
+- la conexión configurada que contiene las tablas;
+- qué escrituras forman una sola operación de negocio;
+- cómo comunica cada método un fallo, para impedir un `commit` después de un resultado fallido;
+- qué acciones externas se realizarán después de confirmar los datos.
+
+El recorrido es: abrir transacción, ejecutar y comprobar todas las escrituras, confirmar si terminan correctamente y revertir ante un fallo. El ejemplo siguiente muestra el contrato de conexión; la validación de existencias y las reglas del pedido corresponden al servicio del proyecto.
+
+### Seleccionar la conexión
+
 Los modelos sin `$connection` usan la conexión predeterminada. Puedes declarar `protected $connection = 'catalog';` o elegirla en una consulta mediante `onConnection('catalog')`. El nombre debe estar configurado en el proyecto; consulta [Configuración](configuracion.md).
 
 Una transacción solo engloba escrituras realizadas sobre la misma conexión:
@@ -249,6 +264,12 @@ try {
 El ejemplo supone que `catalog` existe y que el inicio de la transacción fue satisfactorio. En el servicio o controlador, registra el error de forma segura y devuelve el contrato público correspondiente, sin exponer SQL ni credenciales.
 
 No hay transacciones distribuidas entre conexiones ni una API de savepoints en estos métodos. Una operación sobre archivos o un servicio externo tampoco se revierte mediante rollback de PDO.
+
+### Separar consultas dentro de un servicio
+
+Una instancia del ORM conserva el estado de construcción de su consulta. Al reutilizarla, filtros, joins o límites anteriores pueden alterar una consulta posterior. Usa una instancia nueva para otra consulta o llama a `reset()` antes de construirla. `reset()` limpia ese estado; no cierra una transacción ni cambia por sí mismo la conexión seleccionada.
+
+Si consultas otra tabla mediante `queryTable()`, vuelve a comprobar la conexión que utiliza esa consulta. No deduzcas su ámbito a partir de un modelo distinto que se haya usado antes. Mantén además los filtros de autorización y tenant del servicio: una transacción protege la unidad de las escrituras, no concede permisos sobre las filas.
 
 ## Relaciones y joins
 

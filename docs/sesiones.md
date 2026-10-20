@@ -119,6 +119,20 @@ No son una duración máxima absoluta desde el login. Las peticiones pueden reno
 
 ## Cerrar sesión y revocar dispositivos
 
+### Elegir la operación según la intención
+
+| Intención | Operación | Resultado esperado |
+| --- | --- | --- |
+| La persona sale del dispositivo actual | Acción protegida de cierre de sesión | Se elimina su sesión actual y caduca su cookie |
+| Debe volver a identificarse en todos sus dispositivos | Revocación de registros de sesión del usuario | Los registros revocados dejan de ser válidos al comprobarse; no implica desactivar la cuenta |
+| Se suspende el acceso a una cuenta | Servicio de administración de usuarios | Cambia el estado persistido y aplica revocación con bloqueo |
+
+La revocación de dispositivos requiere un driver administrado. Si el proyecto utiliza `native`, no dispone del registro central que necesita ese recorrido. Consulta primero [Drivers](#drivers).
+
+Estos contratos permiten construir una pantalla de gestión de sesiones del proyecto; no significan que exista una pantalla universal de dispositivos instalada en todas las aplicaciones.
+
+### Cerrar la sesión actual
+
 El cierre estándar pasa por la acción protegida del módulo auth-ui. Internamente utiliza:
 
 ```php
@@ -129,6 +143,8 @@ use GFrame\Auth\SessionManager;
 ```
 
 El método elimina el registro del dispositivo, vacía `$_SESSION`, caduca la cookie y destruye la sesión PHP. En una acción propia conserva protección de acceso, método de mutación y CSRF; no conviertas el cierre en una ruta GET pública.
+
+### Revocar todos los dispositivos
 
 Para revocar todos los dispositivos desde un servicio del proyecto:
 
@@ -144,6 +160,10 @@ $revoked = $registry->revokeUser($userID);
 ```
 
 El ejemplo requiere `database` o `redis` y un ID obtenido del servidor. Para suspender una cuenta usa los servicios de usuarios existentes: además del estado persistido, aplican la revocación con bloqueo. `allowUser()` retira el bloqueo del registro, pero no cambia por sí mismo `users.status` ni recupera sesiones anteriores.
+
+Antes de revocar, autoriza la operación sobre la cuenta destinataria. En una acción de cuenta propia, obtén el ID de la identidad de sesión; en administración, aplica el permiso y el ámbito de la cuenta que se gestiona. No confíes en un ID enviado por el navegador sin esas comprobaciones.
+
+Después, comprueba con dos sesiones independientes que los dispositivos revocados ya no acceden a una ruta protegida y que un acceso nuevo responde a la política vigente de la cuenta. Una sesión caducada, una revocación y una cuenta suspendida son estados distintos; el mensaje de la interfaz debe orientar a identificarse de nuevo o a solicitar ayuda según corresponda.
 
 CSRF utiliza `csrfToken` y `csrfTimestamp` guardados en la sesión. `SessionRuntime` los genera también para visitantes anónimos, los conserva entre peticiones y `SessionManager::login()` los renueva al autenticar. Envía esos valores mediante los contratos del [frontend](frontend-core.md) en las acciones protegidas; no inventes otra cookie de autenticación o un segundo mecanismo CSRF. Consulte [CSRF en formularios públicos](middleware.md#formularios-de-visitantes).
 

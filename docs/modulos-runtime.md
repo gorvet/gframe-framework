@@ -1,5 +1,20 @@
 # Módulos con originales y personalizaciones separadas
 
+Personaliza una capa concreta del módulo y conserva las demás conectadas con sus originales. Así puedes adaptar la cuenta o el panel sin copiar una aplicación completa ni editar los archivos que administra Composer.
+
+Para seguir el recorrido, necesitas una aplicación instalada y un módulo runtime activo. El ejemplo utiliza `self-account`, incluido en los perfiles administrados. Si todavía estás eligiendo la base del proyecto, empieza por [los perfiles de instalación](perfiles-instalacion.md).
+
+## Elegir qué personalizar
+
+| Necesidad del proyecto | Punto de personalización | Qué sigue resolviendo el módulo |
+| --- | --- | --- |
+| Cambiar la presentación de la cuenta | `app/views/self-account/self-accountIndex.php` | Controlador y servicios originales |
+| Añadir datos al resultado del controlador | `app/controllers/self-account/SelfAccountController.php` con herencia | Vista original, salvo que también la personalices |
+| Adaptar la lógica de un servicio extensible | Subclase del servicio, construida o inyectada por tu controlador | Las capas que tu integración siga utilizando |
+| Usar la pantalla tal como viene | No crear una personalización | Todas las capas originales del módulo |
+
+Una personalización tiene prioridad por archivo. Crear la carpeta del módulo no desactiva sus originales. Tampoco basta con declarar una subclase de servicio para que todas las instancias del original pasen a utilizarla.
+
 ## Estructura e instalación
 
 Un módulo runtime conserva sus originales en una estructura equivalente a `app`. El proyecto contiene solamente las personalizaciones activas. El instalador crea carpetas vacías únicamente para las capas que contienen archivos originales: controladores, modelos, servicios o vistas. Error-pages solo crea su carpeta de vistas; no copia las clases ni las vistas originales. Las rutas se publican en `config/routes` y los CSS/JS siguen publicándose en `public` según el manifiesto.
@@ -80,6 +95,31 @@ Una instancia creada con `new ClaseOriginal()` no cambia automáticamente por ex
 Para personalizar la presentación, cree `app/views/self-account/self-accountIndex.php`. Recibe los mismos datos del controlador. Puede copiar manualmente la original para empezar. Sin esa personalización, se utiliza la original actualizada. Para parciales propios de un módulo, use `ModuleRuntime::file('views', 'self-account/_partial.php', 'self-account')`, compruebe el resultado y después inclúyalo. Un `include` directo a `app` no obtiene respaldo automáticamente.
 
 ## Actualización y migración
+
+### Actualizar una cuenta personalizada
+
+Supón que adaptaste únicamente `app/views/self-account/self-accountIndex.php` y dejaste el controlador original. Antes de actualizar, conserva una copia de seguridad del proyecto y sus datos. Descarga la versión compatible del paquete y revisa la sincronización:
+
+```bash
+composer update gorvet/gframe
+composer gframe:update -- --dry-run --preserve-custom
+```
+
+En la vista previa, revisa los archivos administrados y las migraciones pendientes. `--preserve-custom` conserva personalizaciones administradas y comunica los conflictos; no los fusiona. Las personalizaciones runtime de `app` tampoco se sobrescriben con los originales del paquete.
+
+Cuando hayas resuelto los conflictos previstos, aplica la sincronización con la misma política:
+
+```bash
+composer gframe:update -- --preserve-custom
+```
+
+Al abrir de nuevo la cuenta, se ejecuta el controlador original actualizado y se mantiene tu vista. Compara la vista original nueva con tu personalización: si el controlador entrega campos nuevos o el formulario cambia su contrato, incorpora expresamente esos cambios en tu archivo. El actualizador no adapta una vista propia por ti.
+
+Si decides volver a la presentación original, guarda fuera de la ruta activa una copia de tu personalización y retira ese archivo de `app/views/self-account/`. La siguiente resolución utilizará el original del módulo, siempre que no exista otra personalización de la misma vista. No retires toda la carpeta si contiene otros archivos que sigas utilizando.
+
+Comprueba la pantalla inicial y sus acciones, incluidas las respuestas AJAX y sus parciales. Mantén los permisos, los campos y la protección CSRF del contrato original. Para el procedimiento general y las migraciones, consulta [Actualización de proyectos](actualizaciones.md).
+
+### Trasladar personalizaciones antiguas
 
 Admin-panel, Error-pages y Heartbeat también utilizan runtime. El escritorio conserva la URL `admin`, declara `admin-panel/AdminController` y mantiene la vista explícita `adminIndex`. Sus parciales se personalizan bajo `app/views/admin-panel/parts/`; los menús y acciones publicados por otros módulos usan esa misma ubicación. ErrorResponder conserva su contrato y señala `sourceModule=error-pages`, con vistas bajo `app/views/error-pages/`. El parcial `_errorCard.php` usa la misma prioridad proyecto/original. Heartbeat conserva `ajax/heartbeat` y sus middleware, pero declara `heartbeat-client/HeartbeatController`; para añadir canales, herede en `app/controllers/heartbeat-client/HeartbeatController.php` y llame a `parent::__construct()`.
 

@@ -4,6 +4,21 @@ Los perfiles de instalación no son plantillas de negocio. Definen **capacidades
 
 La fuente actual de perfiles es `resources/install/profiles.php`.
 
+## Elegir el punto de partida
+
+Elige según cómo trabajará el proyecto antes de seleccionar módulos opcionales:
+
+1. Si solo publicas páginas o consumes una fuente externa y no necesitas cuentas ni persistencia propia, empieza con `static`.
+2. Si habrá un equipo que gestione contenido o usuarios y el sitio conserva una parte pública, utiliza `managed`.
+3. Si el acceso a la aplicación debe ser privado, utiliza `intranet`.
+4. Si distintas organizaciones comparten la aplicación y los datos deben separarse por tenant, utiliza `saas`.
+
+Por ejemplo, una revista con redactores y lectores públicos encaja en `managed`; una herramienta interna del equipo encaja en `intranet`. Un portal de varias organizaciones puede necesitar `saas`, pero el proyecto sigue siendo responsable de aplicar el ámbito del tenant en sus consultas y operaciones.
+
+El perfil no crea los artículos, expedientes o pedidos de tu negocio. Tampoco convierte todas las tablas del proyecto en datos aislados por tenant de forma automática. Después de instalar, sigue [Tu primera página](primer-proyecto.md) y añade las entidades y permisos propios.
+
+Cambiar un nombre de perfil en una configuración no equivale a migrar una aplicación existente. Añadir autenticación, base de datos o tenancy a un proyecto ya desplegado exige revisar su esquema, rutas y datos. Esta elección describe el punto de partida del instalador.
+
 ## Resumen
 
 | Perfil | Base de datos | Auth | Tenancy | Público | Módulos exigidos por el perfil |
