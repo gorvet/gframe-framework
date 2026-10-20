@@ -2,6 +2,11 @@
 
 ## Sin publicar
 
+## 4.3.2 — 2026-10-20
+
+- La ayuda ilustrada pertenece íntegramente al paquete: guías Markdown, imágenes, esquemas y pies con enlaces relativos en `docs/assets/`, inventario canónico y herramientas de reproducción en `maintenance/help/`. El sitio documental consume la misma fuente para texto y recursos, sin copias independientes.
+- Ampliados los recorridos de instalación y personalización, ORM, sesiones y permisos, API y HTTP, búsqueda, multimedia, correo, campañas, cron, SEO y metas. Incluye 31 recursos visuales utilizados en 28 guías y distingue las capacidades nativas de las integraciones de ejemplo. Sin cambios de API ni migraciones.
+
 ## 4.3.1 — 2026-10-20
 
 - La restauración del historial con `ScheduledContent` conserva el estado y la fecha actuales: no publica ni recupera programaciones antiguas desde un snapshot. Incluye regresión combinada y actualización de contratos y skills; se corrige también la restricción del generador indicada en la guía de skills.
