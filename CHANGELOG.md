@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+## 4.3.1 — 2026-10-20
+
+- La restauración del historial con `ScheduledContent` conserva el estado y la fecha actuales: no publica ni recupera programaciones antiguas desde un snapshot. Incluye regresión combinada y actualización de contratos y skills; se corrige también la restricción del generador indicada en la guía de skills.
+
 ## 4.3.0 — 2026-10-19
 
 - Validación conjunta en una aplicación temporal instalada: login, CSRF, editor, autoguardado, preview, revisiones, papelera y publicación mediante el CLI de cron. El generador de proyectos solicita ahora GFrame `^4.3`.

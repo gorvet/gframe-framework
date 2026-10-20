@@ -22,6 +22,10 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 4.3.1: restauración sin transición de publicación
+
+Corrige la restauración de revisiones en modelos con `ScheduledContent`: conserva el estado y la fecha actuales, aunque el snapshot contenga valores anteriores. No vuelve a publicar borradores ni reactiva programaciones canceladas. Un contenido ya publicado continúa publicado y su texto restaurado puede verse inmediatamente; mantenga la autorización por registro. No requiere migraciones. Se corrige también la restricción actual del generador indicada en la guía de skills: `^4.3`.
+
 ### Versión 4.3.0: capacidades editoriales optativas
 
 Incluye [guardado por revisión y presencia](content-editing.md), [historial](content-revisions.md), [preview privada](content-preview.md), [papelera](content-trash.md) y [publicación programada](content-publication.md). No crea una tabla universal de artículos ni activa estas funciones automáticamente en contenidos existentes.

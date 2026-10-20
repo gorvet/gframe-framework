@@ -75,13 +75,17 @@ abstract class RevisionedContentModel extends VersionedContentModel
 
     public function restoreRevision(int|string $id, int $entryID, string $expectedRevision, int $authorID, ?int $tenantID = null, array $scope = []): array
     {
-        if ($this->record($id, $scope) === null) return $this->conflict();
+        $current = $this->record($id, $scope);
+        if ($current === null) return $this->conflict();
         $entry = $this->history()->entry($this->resourceKey($id, $tenantID, $scope), $entryID);
         if ($entry === null) return $this->missing();
         $fields = json_decode($entry['fields_json'], true, flags: JSON_THROW_ON_ERROR);
         if (array_keys($fields) !== $this->validatedFields()) throw new LogicException('Los campos del historial requieren una migración explícita.');
-        return $this->saveWithHistory($id, $expectedRevision, $fields, $authorID, $tenantID, $scope);
+        return $this->saveWithHistory($id, $expectedRevision, $this->restoreHistoryFields($fields, $current), $authorID, $tenantID, $scope);
     }
+
+    /** Lifecycle extensions may preserve current state while restoring historical content. */
+    protected function restoreHistoryFields(array $fields, array $current): array { return $fields; }
 
     public function clearRevisions(int|string $id, string $expectedRevision, bool $confirmed, ?int $tenantID = null, array $scope = []): array
     {

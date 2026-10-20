@@ -42,6 +42,8 @@ Cada éxito devuelve el contrato de guardado `content_saved` y `data.revision`; 
 
 Los guardados posteriores pueden conservar la fecha programada; el worker recoge la revisión vigente. Todos los escritores deben comparar y rotar revisión. Las operaciones conservan la conexión del modelo y, con historial, guardan snapshots y publicación en la misma transacción. Un fallo del historial revierte estado, fecha y revisión.
 
+Al restaurar una revisión histórica, `ScheduledContent` conserva el estado y la fecha actuales; los valores históricos se mantienen para comparar, pero no se aplican como una orden de publicar o reprogramar. Para cambiar esos valores use los métodos de publicación con su autorización específica. Si el contenido ya está publicado, restaurar su texto actualiza ese contenido visible.
+
 ## Handler del proyecto
 
 Cree una clase autoloadable, sin argumentos obligatorios de constructor, que herede de `GFrame\Content\ScheduledPublicationCronHandler` e implemente:

@@ -15,6 +15,15 @@ trait ScheduledContent
     protected function publishedPublicationStatus(): string { return 'published'; }
     protected function cancelledPublicationStatus(): string { return 'draft'; }
 
+    /** Snapshots retain lifecycle data for comparison, but restoring does not publish or reschedule. */
+    protected function restoreHistoryFields(array $fields, array $current): array
+    {
+        foreach ([$this->publicationStatusColumn(), $this->publicationDateColumn()] as $column) {
+            if (array_key_exists($column, $fields)) $fields[$column] = $current[$column];
+        }
+        return $fields;
+    }
+
     /** Rows must come from the server-side due query, never a request body. */
     public function publishScheduledRow(array $row, int $authorID, ?int $tenantID = null, array $scope = []): array
     {

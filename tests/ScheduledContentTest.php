@@ -8,6 +8,83 @@ use PHPUnit\Framework\TestCase;
 final class ScheduledContentTest extends TestCase
 {
     #[RunInSeparateProcess]
+    public function testHistoryRestorePreservesCurrentPublicationStateAndDate(): void
+    {
+        $connection = ['driver' => 'sqlite', 'path' => ':memory:'];
+        $engine = getenv('GFRAME_PUBLICATION_TEST_ENGINE') === 'mysql' ? 'mysql' : 'sqlite';
+        if ($engine === 'mysql') {
+            $admin = new \PDO('mysql:host=127.0.0.1;port=3306', 'root', '');
+            $schema = 'gframe_restore_test_' . bin2hex(random_bytes(6));
+            $admin->exec('CREATE DATABASE `' . $schema . '`');
+            register_shutdown_function(static function () use ($admin, $schema): void { $admin->exec('DROP DATABASE IF EXISTS `' . $schema . '`'); });
+            $connection = ['driver' => 'mysql', 'host' => '127.0.0.1', 'database' => $schema, 'username' => 'root', 'password' => ''];
+        }
+        define('DB_DEFAULT_CONNECTION', 'unused');
+        define('DB_CONNECTIONS', ['publication' => $connection]);
+        $pdo = \DatabaseManager::connection('publication');
+        $pdo->exec('CREATE TABLE articles(id INTEGER PRIMARY KEY,tenant_id INTEGER,content TEXT,revision VARCHAR(128),status VARCHAR(32),publish_at DATETIME NULL,deleted_at DATETIME NULL)');
+        $pdo->exec("INSERT INTO articles VALUES(1,7,'Publicado original','r1','published',NULL,NULL)");
+        $pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/content-revisions/database/' . $engine . '.sql'));
+        $model = (new PublicationHistoryArticle())->onConnection('publication');
+        $scope = ['tenant_id' => 7];
+        $date = '2099-01-01 00:00:00';
+        $revision = $model->schedulePublication(1, 'r1', $date, 7, 7, $scope)['data']['revision'];
+        $publishedID = (int)$pdo->query("SELECT id FROM content_revisions WHERE revision='r1'")->fetchColumn();
+        $scheduledID = (int)$pdo->query("SELECT id FROM content_revisions WHERE revision=" . $pdo->quote($revision))->fetchColumn();
+        self::assertGreaterThan(0, $publishedID);
+        self::assertGreaterThan(0, $scheduledID);
+        $revision = $model->saveWithHistory(1, $revision, ['content' => 'Edición nueva'], 7, 7, $scope)['data']['revision'];
+        self::assertSame('content_conflict', $model->restoreRevision(1, $publishedID, 'r1', 7, 7, $scope)['code']);
+        self::assertSame('content_conflict', $model->restoreRevision(1, $publishedID, $revision, 8, 8, ['tenant_id' => 8])['code']);
+        $restored = $model->restoreRevision(1, $publishedID, $revision, 7, 7, $scope);
+        self::assertSame('content_saved', $restored['code']);
+        self::assertNotSame($revision, $restored['data']['revision']);
+        $row = $pdo->query('SELECT * FROM articles WHERE id=1')->fetch(\PDO::FETCH_ASSOC);
+        self::assertSame('Publicado original', $row['content']);
+        self::assertSame('scheduled', $row['status']);
+        self::assertSame($date, $row['publish_at']);
+        $revision = $model->cancelPublication(1, $restored['data']['revision'], 7, 7, $scope)['data']['revision'];
+        $restored = $model->restoreRevision(1, $scheduledID, $revision, 7, 7, $scope);
+        self::assertSame('content_saved', $restored['code']);
+        $row = $pdo->query('SELECT * FROM articles WHERE id=1')->fetch(\PDO::FETCH_ASSOC);
+        self::assertSame('draft', $row['status']);
+        self::assertNull($row['publish_at']);
+        self::assertSame([], $model->dueContent($scope, new \DateTimeImmutable('2100-01-01'))->get());
+        $snapshot = json_decode($pdo->query('SELECT fields_json FROM content_revisions WHERE revision=' . $pdo->quote($restored['data']['revision']))->fetchColumn(), true);
+        self::assertSame('draft', $snapshot['status']);
+        self::assertNull($snapshot['publish_at']);
+        $revision = $restored['data']['revision'];
+        $beforeFailure = $pdo->query('SELECT * FROM articles WHERE id=1')->fetch(\PDO::FETCH_ASSOC);
+        $historyCount = (int)$pdo->query('SELECT COUNT(*) FROM content_revisions')->fetchColumn();
+        $pdo->exec($engine === 'mysql'
+            ? "CREATE TRIGGER audit_history_failure BEFORE INSERT ON content_revisions FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='audit history failure'"
+            : "CREATE TRIGGER audit_history_failure BEFORE INSERT ON content_revisions BEGIN SELECT RAISE(ABORT, 'audit history failure'); END");
+        try {
+            $model->restoreRevision(1, $publishedID, $revision, 7, 7, $scope);
+            self::fail('El fallo al guardar el historial debe revertir la restauración.');
+        } catch (\PDOException) {
+            self::assertSame($beforeFailure, $pdo->query('SELECT * FROM articles WHERE id=1')->fetch(\PDO::FETCH_ASSOC));
+            self::assertSame($historyCount, (int)$pdo->query('SELECT COUNT(*) FROM content_revisions')->fetchColumn());
+        }
+        $pdo->exec('DROP TRIGGER audit_history_failure');
+        $pdo->exec('CREATE TABLE custom_articles(id INTEGER PRIMARY KEY,content TEXT,revision VARCHAR(128),state VARCHAR(32),release_at DATETIME NULL)');
+        $pdo->exec("INSERT INTO custom_articles VALUES(1,'Original','custom-r1','live',NULL)");
+        $custom = (new PublicationCustomHistoryArticle())->onConnection('publication');
+        $scheduled = $custom->schedulePublication(1, 'custom-r1', $date, 7);
+        $entryID = (int)$pdo->query("SELECT id FROM content_revisions WHERE revision='custom-r1'")->fetchColumn();
+        $restored = $custom->restoreRevision(1, $entryID, $scheduled['data']['revision'], 7);
+        self::assertSame('content_saved', $restored['code']);
+        $row = $pdo->query('SELECT * FROM custom_articles WHERE id=1')->fetch(\PDO::FETCH_ASSOC);
+        self::assertSame('queued', $row['state']);
+        self::assertSame($date, $row['release_at']);
+        $published = $custom->publishScheduled(1, $restored['data']['revision'], 7, null, [], new \DateTimeImmutable('2100-01-01'));
+        $restored = $custom->restoreRevision(1, $entryID, $published['data']['revision'], 7);
+        self::assertSame('content_saved', $restored['code']);
+        self::assertSame('live', $pdo->query('SELECT state FROM custom_articles WHERE id=1')->fetchColumn());
+        self::assertNull($pdo->query('SELECT release_at FROM custom_articles WHERE id=1')->fetchColumn());
+    }
+
+    #[RunInSeparateProcess]
     public function testSchedulingCancellationPublicationAndHistory(): void
     {
         $connection = ['driver' => 'sqlite', 'path' => ':memory:'];
@@ -100,6 +177,18 @@ final class ScheduledContentTest extends TestCase
             sort($results);self::assertSame(['error','success'],$results);self::assertSame('published', $pdo->query('SELECT status FROM articles')->fetchColumn());
         } finally {unset($pdo);foreach(glob($root.'/*') as $file)unlink($file);rmdir($root);}
     }
+}
+
+final class PublicationCustomHistoryArticle extends RevisionedContentModel
+{
+    use ScheduledContent;
+    protected $table = 'custom_articles';
+    protected $fillable = ['content', 'revision', 'state', 'release_at'];
+    protected function historyFields(): array { return ['content', 'state', 'release_at']; }
+    protected function publicationStatusColumn(): string { return 'state'; }
+    protected function publicationDateColumn(): string { return 'release_at'; }
+    protected function scheduledPublicationStatus(): string { return 'queued'; }
+    protected function publishedPublicationStatus(): string { return 'live'; }
 }
 
 class PublicationArticle extends VersionedContentModel

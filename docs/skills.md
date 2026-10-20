@@ -31,7 +31,7 @@ Cada carpeta contiene `SKILL.md` y, cuando corresponde, referencias con contrato
 
 Los proyectos nuevos generados con esta versión activan las skills locales durante `composer install`, `composer update` y `composer dump-autoload`, mediante el evento `post-autoload-dump`. El repositorio de desarrollo del framework utiliza el mismo mecanismo, con sus propias skills como fuente. No interviene el instalador visual ni se escribe en directorios globales.
 
-El esqueleto requiere `gorvet/gframe:^2.0.1`, la primera versión con el instalador PHP. Los paquetes 1.x y 2.0.0 carecen de ese comando. Composer descarga una versión compatible y ejecuta la activación local.
+El esqueleto actual requiere `gorvet/gframe:^4.3`. El instalador PHP está disponible desde 2.0.1; los paquetes 1.x y 2.0.0 carecen de ese comando. Composer descarga una versión compatible con la restricción del proyecto y ejecuta la activación local.
 
 Codex descubre las skills en `.agents/skills`; Claude Code, en `.claude/skills`. Las fuentes originales permanecen en `skills/` del framework o en `skills/` del paquete Composer instalado. Los catorce especialistas se conservan. `AGENTS.md` dirige el trabajo al coordinador sin repetir sus reglas; `CLAUDE.md` importa esa instrucción.
 

@@ -84,7 +84,7 @@ $result = $model->reset()->restoreRevision(
 
 Use una acción POST propia con `auth`, permiso de restauración de su aplicación y CSRF. Compruebe primero que el actor puede restaurar ese registro y solicite confirmación con `swalAlert` en la interfaz. La revisión esperada es la que vio el usuario, no una lectura nueva que elimine el conflicto.
 
-Restaurar copia los campos permitidos mediante el mismo guardado condicional, genera un token nuevo y añade una entrada con el autor de la restauración. No reutiliza el token antiguo ni publica automáticamente. Ante conflicto conserve el formulario y no confirme los snapshots. El HTML histórico se guarda como contenido, no se ejecuta al compararlo; su renderizado público debe mantener el saneamiento y autorización propios del proyecto.
+Restaurar copia los campos permitidos mediante el mismo guardado condicional, genera un token nuevo y añade una entrada con el autor de la restauración. No reutiliza el token antiguo ni publica automáticamente. En modelos con `ScheduledContent`, conserva el estado y la fecha de publicación actuales aunque figuren en el snapshot: no vuelve a publicar un borrador ni reactiva una programación cancelada. Un contenido ya publicado sigue publicado; restaurar su texto modifica ese contenido visible y requiere la autorización correspondiente. Ante conflicto conserve el formulario y no confirme los snapshots. El HTML histórico se guarda como contenido, no se ejecuta al compararlo; su renderizado público debe mantener el saneamiento y autorización propios del proyecto.
 
 ## Borrar todas las revisiones
 
