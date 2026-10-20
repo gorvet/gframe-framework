@@ -10,6 +10,21 @@ otro sistema → tu aplicación GFrame   = API entrante / Router
 tu aplicación GFrame → otro sistema   = HttpClient
 ```
 
+## Integrar un servicio desde el proyecto
+
+Coloca la llamada en el servicio del proyecto que conoce al proveedor externo. Obtén allí la URL y las credenciales de la configuración apropiada, realiza `HttpClient::request()` y traduce el resultado al contrato que necesita tu aplicación.
+
+Revisa el resultado en este orden:
+
+1. `error` indica si cURL ha comunicado un fallo de transporte. En ese caso puede no existir una respuesta HTTP válida.
+2. `status` identifica el código HTTP. Un cuerpo JSON válido no convierte un `401`, `422` o `500` en éxito.
+3. `ok` solo acredita transporte sin error y estado entre 200 y 299. No comprueba que el proveedor haya completado una operación de negocio.
+4. `json` contiene el cuerpo decodificado cuando procede. Comprueba su estructura y el contrato del proveedor antes de acceder a campos o decidir el resultado de la operación.
+
+Si necesitas reintentos, límites propios por proveedor o una política de idempotencia, prográmalos en la integración del proyecto. `request()` no aporta por sí mismo una cola persistente ni una política automática de reintentos. Tampoco devuelve el envelope del controlador GFrame: devuelve el array de transporte descrito a continuación.
+
+Para informar al usuario, convierte los errores externos en mensajes adecuados del proyecto. Evita enviarle directamente cuerpos de error del proveedor o registrar cabeceras de autorización.
+
 ## Petición básica
 
 ```php

@@ -13,3 +13,9 @@ Se ampliaron `docs/perfiles-instalacion.md`, `docs/modulos-runtime.md`, `docs/or
 La revisión documental del sitio local detecta 104 páginas y 691 enlaces, sin rutas ni fragmentos pendientes. Se renderizaron módulos runtime y ORM en navegador, con H1 único y canonical; la vista móvil del primero no presenta desbordamiento horizontal. Se inspeccionó visualmente el esquema de resolución integrado. No se realizaron actualizaciones reales de proyectos, mutaciones de cuentas ni transacciones de negocio; no se repitieron suites generales.
 
 La matriz del sitio conserva las áreas restantes: roles por ámbito, API, multimedia, búsqueda, correo, campañas, cron, SEO y metas. Los ejemplos ampliados de este lote todavía no están en un tag publicado.
+
+## Segundo lote: integraciones y búsqueda
+
+Se amplían `api-access.md`, `http-client.md` y `lexical-search.md`. Fuentes contrastadas: `RouteApiCredentialProvider::authenticate()`, el middleware Bearer/CORS y su contexto de salida, `HttpClient::request()` y `LexicalSearchEngine::rank()`. Se usa además `skills/gframe-integrations/SKILL.md`. Se explicita qué aporta el framework y qué implementa el proyecto; no se añaden endpoints, pantallas, reintentos ni filtros automáticos inexistentes.
+
+La receta PHP publicada de búsqueda se ejecutó sin aplicación instalada: «campañs» devuelve «Gestión de campañas», con `_search_score` y `snippet`. El sitio añade una captura de una interfaz expresamente identificada como ejemplo, con dos resultados calculados por el motor original, y un esquema compartido de canales HTTP. No se contactaron servicios externos ni se usaron credenciales reales.

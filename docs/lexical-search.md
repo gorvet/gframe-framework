@@ -16,6 +16,20 @@ $results = $engine->rank($authorizedRows, $query, ['title' => 2, 'body' => 1], [
 
 Normaliza mayúsculas, tildes y espacios; busca palabras, coincidencias parciales y pequeñas diferencias mediante distancia de edición. Pondera campos, añade coincidencia de frase y ordena por relevancia. Conserva los campos de cada fila y añade `_search_score` y, si se solicita, `snippet` como texto plano. Escape ese texto al imprimirlo en HTML.
 
+## Elegir búsqueda en PHP o filtro en JavaScript
+
+| Necesidad | Utiliza | Conjunto examinado |
+| --- | --- | --- |
+| Ordenar documentos por relevancia y ponderar título/cuerpo | `LexicalSearchEngine::rank()` en PHP | Las filas que el servicio recibe |
+| Ocultar elementos de una lista ya visible según el texto escrito | `GFrameLexicalSearch.matches()` en JavaScript | Los elementos que ya llegaron al navegador |
+| Buscar registros que todavía no se han cargado en la página | Endpoint del proyecto que use el motor PHP | El conjunto que ese endpoint obtiene y autoriza |
+
+Para una búsqueda del lado del servidor, primero selecciona las filas que puede consultar el usuario y después calcula relevancia. El motor no verifica permisos ni añade condiciones de tenant. Al recibir una consulta vacía, puedes mostrar el listado normal sin llamar a `rank()`, como hace el ejemplo siguiente.
+
+Después de ordenar, aplica la paginación del resultado y renderiza la lista en la vista del proyecto. El módulo no crea por sí mismo un índice persistente, un endpoint AJAX ni una pantalla con tarjetas. La aplicación decide el formulario, el diseño, los enlaces y cómo presentar una búsqueda sin coincidencias.
+
+Si necesitas buscar sobre un catálogo completo, no limites primero la consulta a la página actual: los registros excluidos antes de llamar al motor no pueden aparecer en sus resultados. La búsqueda léxica funciona sobre datos recibidos, no consulta automáticamente todas las tablas de la base de datos.
+
 ## Ejemplo completo en PHP
 
 ```php

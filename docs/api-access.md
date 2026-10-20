@@ -2,6 +2,19 @@
 
 La declaración de endpoints, consumidores y respuestas se explica en [Rutas: API](rutas.md#api). Esta referencia describe el proveedor de credenciales utilizado por el middleware `allow_cors_with_token` para autenticar sistemas que consumen la aplicación.
 
+## Recorrido de una petición autorizada
+
+Antes de crear una integración, separa estas decisiones:
+
+1. Declara el endpoint y configura sus consumidores en el contexto de la ruta. El ejemplo de pedidos representa una API del proyecto; GFrame no instala un módulo de pedidos con esas rutas.
+2. El proveedor autentica el Bearer y el middleware comprueba el origen cuando corresponde. Si la autenticación falla, la acción no debe ejecutarse como consumidor válido.
+3. La acción recibe `api_consumer`, `api_tenant_id` y `api_scopes` en el contexto. Comprueba la capacidad que requiere la operación y pasa el ámbito autorizado al servicio.
+4. El servicio consulta o modifica únicamente los registros permitidos. Después devuelve el [contrato de respuesta](respuestas.md) que utilizará el consumidor.
+
+Por ejemplo, una credencial con `orders.read` puede autenticarse correctamente y aun así carecer de autorización para escribir. El middleware incorpora los alcances; la comprobación de `orders.write` del ejemplo posterior pertenece a tu acción o servicio. Lo mismo sucede con el tenant: recibir su identificador no añade automáticamente filtros al ORM.
+
+Las credenciales de este proveedor identifican sistemas consumidores. No equivalen por sí mismas a una sesión de usuario de auth-ui ni crean una interfaz de gestión de tokens. Para almacenar o administrar credenciales según las reglas del proyecto, implementa el [proveedor personalizado](#proveedor-personalizado).
+
 ## Un consumidor
 
 Declara el token y los orígenes autorizados en el contexto de la ruta:
