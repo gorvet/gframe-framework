@@ -1,5 +1,9 @@
 # GF Select
 
+![GFSelect abierto con opciones de país y selección múltiple](assets/4.3.1/selectores.png)
+
+*El desplegable abierto muestra la búsqueda y sus opciones junto a la selección múltiple y las variantes deshabilitadas. El ejemplo no guarda preferencias en una cuenta. Captura de GFrame 4.3.1.*
+
 GFSelect presenta un `<select>` nativo como desplegable con búsqueda. El valor, el nombre del campo y la validación siguen perteneciendo al elemento nativo; los formularios se envían como siempre. Se instala como componente básico obligatorio en todos los perfiles, sin dependencia de jQuery. Su utilización en cada campo sigue siendo explícita.
 
 ## Instalación y carga

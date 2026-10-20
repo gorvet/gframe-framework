@@ -1,5 +1,9 @@
 # Panel administrativo
 
+![Estructura del panel con navegación y módulos instalados](assets/4.3.1/panel-administrativo.png)
+
+*Panel nativo de Estudio Nexo con sus entradas de navegación y acceso a la cuenta. El escritorio es el punto de partida; las herramientas de negocio se añaden desde los módulos del proyecto. Captura de GFrame 4.3.1.*
+
 `admin-panel` proporciona la plantilla `admin`, el escritorio `/admin`, la barra superior, el menú lateral y el cambio de tema. Se incluye en los perfiles `managed`, `intranet` y `saas`.
 
 ## Crear una pantalla administrativa

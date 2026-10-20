@@ -1,5 +1,9 @@
 # Módulos con originales y personalizaciones separadas
 
+![Prioridad de la personalización del proyecto frente al original del módulo](assets/4.3.1/modulos-runtime.svg)
+
+*La prioridad se decide por archivo. Puedes personalizar la vista y seguir utilizando las otras capas originales; al actualizar, revisa los cambios que tu archivo propio deba incorporar. Esquema de GFrame 4.3.1.*
+
 Personaliza una capa concreta del módulo y conserva las demás conectadas con sus originales. Así puedes adaptar la cuenta o el panel sin copiar una aplicación completa ni editar los archivos que administra Composer.
 
 Para seguir el recorrido, necesitas una aplicación instalada y un módulo runtime activo. El ejemplo utiliza `self-account`, incluido en los perfiles administrados. Si todavía estás eligiendo la base del proyecto, empieza por [los perfiles de instalación](perfiles-instalacion.md).

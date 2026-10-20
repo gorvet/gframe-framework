@@ -1,5 +1,9 @@
 # Administración de usuarios
 
+![Administración de las cuentas del equipo editorial](assets/4.3.1/usuarios.png)
+
+*Listado nativo de usuarios con sus controles de búsqueda y administración. Las acciones disponibles dependen del rol y de los permisos del actor. Captura de GFrame 4.3.1.*
+
 `user-admin` permite listar cuentas, buscar por correo, filtrar por rol o estado y administrar acceso y roles. Se incluye en los perfiles administrados. La cuenta propia se gestiona en [Cuenta y seguridad](self-account.md).
 
 ## Acceder a la pantalla

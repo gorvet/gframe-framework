@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">API entrante y cliente HTTP saliente</title><desc id="desc">La API entrante autentica al consumidor y entrega su contexto a la aplicación, que autoriza la operación. El cliente HTTP saliente llama a un proveedor externo y devuelve el resultado de transporte al servicio del proyecto.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8" fill="#596780"/></marker></defs>
+<rect width="1120" height="640" rx="20" fill="#f3f5fb"/>
+<g font-family="Arial,sans-serif" fill="#203448">
+<text x="48" y="65" font-size="30" font-weight="700">Dos direcciones, dos contratos distintos</text>
+<text x="48" y="103" font-size="18">Autenticar una llamada, autorizar sus datos y contactar un proveedor son pasos distintos.</text>
+<text x="48" y="155" font-size="22" font-weight="700">API entrante: otro sistema llama a tu aplicación</text>
+<rect x="48" y="181" width="275" height="112" rx="12" fill="#fff" stroke="#cfd6e5"/>
+<text x="72" y="218" font-size="21" font-weight="700">Sistema consumidor</text><text x="72" y="251" font-size="17">Envía Bearer en la cabecera</text><text x="72" y="277" font-size="17">y los datos de su petición.</text>
+<rect x="422" y="181" width="275" height="112" rx="12" fill="#e9e3ff" stroke="#7961d8"/>
+<text x="446" y="218" font-size="21" font-weight="700">Ruta y middleware</text><text x="446" y="251" font-size="17">Autentican al consumidor</text><text x="446" y="277" font-size="17">y aplican el contrato CORS.</text>
+<rect x="797" y="181" width="275" height="112" rx="12" fill="#fff" stroke="#cfd6e5"/>
+<text x="821" y="218" font-size="21" font-weight="700">Acción del proyecto</text><text x="821" y="251" font-size="17">Comprueba scopes y limita</text><text x="821" y="277" font-size="17">los datos al ámbito permitido.</text>
+<path d="M323 236H412M697 236H787" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="48" y="357" font-size="22" font-weight="700">HTTP saliente: tu aplicación llama a otro sistema</text>
+<rect x="48" y="383" width="275" height="112" rx="12" fill="#fff" stroke="#cfd6e5"/>
+<text x="72" y="420" font-size="21" font-weight="700">Servicio del proyecto</text><text x="72" y="453" font-size="17">Decide URL, credenciales</text><text x="72" y="479" font-size="17">y la operación de negocio.</text>
+<rect x="422" y="383" width="275" height="112" rx="12" fill="#e9e3ff" stroke="#7961d8"/>
+<text x="446" y="420" font-size="21" font-weight="700">HttpClient::request()</text><text x="446" y="453" font-size="17">Realiza la llamada con cURL.</text><text x="446" y="479" font-size="17">Devuelve status, body y error.</text>
+<rect x="797" y="383" width="275" height="112" rx="12" fill="#fff" stroke="#cfd6e5"/>
+<text x="821" y="420" font-size="21" font-weight="700">Proveedor externo</text><text x="821" y="453" font-size="17">Responde según su contrato,</text><text x="821" y="479" font-size="17">que el proyecto debe validar.</text>
+<path d="M323 438H412M697 438H787" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="535" width="1024" height="65" rx="12" fill="#203448"/>
+<text x="72" y="575" font-size="19" fill="#fff">El contexto API no filtra el ORM. Un HTTP 2xx no certifica el resultado de negocio externo.</text>
+</g></svg>

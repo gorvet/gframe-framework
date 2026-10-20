@@ -1,5 +1,9 @@
 # Cliente HTTP saliente
 
+![Diferencia entre recibir una petición API y realizar una llamada HTTP](assets/4.3.1/canales-http.svg)
+
+*HttpClient devuelve el resultado del transporte saliente. El servicio del proyecto interpreta el contrato del proveedor; no se crea una API entrante ni una cola por usar el cliente. Esquema de GFrame 4.3.1.*
+
 `HttpClient` permite que una aplicación GFrame haga peticiones HTTP hacia servicios externos. Es una clase global del core y utiliza cURL.
 
 No debe confundirse con [Acceso API](api-access.md):

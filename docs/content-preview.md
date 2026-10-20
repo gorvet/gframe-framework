@@ -1,5 +1,9 @@
 # Vista previa privada del sitio
 
+![Vista previa de un artículo completo en su plantilla pública](assets/4.3.1/vista-previa.png)
+
+*El borrador se presenta con estilos de lectura propios del ejemplo: anchura contenida, títulos, espaciado, listas y cita. La plantilla pertenece al proyecto; abrirla no publica el contenido ni aplica estos estilos a todo el core. Captura de GFrame 4.3.1.*
+
 Instale el módulo optativo `content-preview` mediante [el actualizador](modulos-opcionales.md#añadir-módulos-a-un-proyecto-instalado), primero con `--dry-run`. Reutiliza `content-autosave` y su tabla; no instala artículos ni publica contenido.
 
 ## Rutas y plantilla

@@ -1,5 +1,9 @@
 # GF Table
 
+![Tabla de solicitudes con búsqueda y columnas ordenables](assets/4.3.1/tablas.png)
+
+*GF Table aplicado a seis solicitudes ficticias. La búsqueda y la ordenación trabajan sobre las filas cargadas; no sustituyen filtros ni paginación del servidor. Captura de GFrame 4.3.1.*
+
 Componente básico obligatorio de búsqueda y ordenación local de tablas, instalado en todos los perfiles. No reemplaza la paginación ni las consultas del servidor: actúa solamente sobre las filas presentes en el navegador. Se utiliza donde la vista lo requiere.
 
 ## Uso

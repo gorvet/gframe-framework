@@ -1,5 +1,9 @@
 # Publicación programada
 
+![Artículo programado con fecha futura y estado confirmado](assets/4.3.1/publicacion-programada.png)
+
+*Integración de ejemplo: después de programar, el formulario vuelve a consultar el estado y la fecha UTC guardados. La aplicación conserva sus permisos, formulario y ejecución de cron. Captura de GFrame 4.3.1.*
+
 `GFrame\Content\ScheduledContent` añade programación, cambio de fecha, cancelación y publicación por revisión a modelos que heredan de `VersionedContentModel` o `RevisionedContentModel`. Reutiliza el [cron existente](cron-runner.md); la aplicación conserva tabla, estados, permisos y rutas. No crea una tabla universal ni activa trabajos en instalaciones existentes.
 
 ## Modelo

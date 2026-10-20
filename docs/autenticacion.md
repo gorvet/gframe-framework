@@ -1,5 +1,9 @@
 # Autenticación
 
+![Formulario de acceso conectado con los contratos de autenticación](assets/4.3.1/autenticacion.png)
+
+*La interfaz nativa de acceso utiliza los contratos descritos en esta guía. Es un ejemplo del módulo auth-ui; el núcleo de autenticación también puede integrarse en otras interfaces. Captura de GFrame 4.3.1.*
+
 La autenticación comprueba quién está usando la aplicación. GFrame proporciona registro, verificación del correo, inicio y cierre de sesión y recuperación de contraseña. Las pantallas y los endpoints estándar pertenecen a [Interfaz de autenticación](auth-ui.md); esta guía explica el contrato PHP que utilizan.
 
 ## Componentes y recorrido

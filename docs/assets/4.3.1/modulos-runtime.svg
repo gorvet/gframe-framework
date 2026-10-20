@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+<title id="title">Cómo se resuelve una personalización de módulo</title><desc id="desc">El proyecto tiene prioridad por archivo. Si no hay personalización, se utiliza el original del módulo. Una actualización conserva la personalización y requiere revisar los cambios del original.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 8 4 0 8" fill="#596780"/></marker></defs>
+<rect width="1120" height="640" rx="20" fill="#f3f5fb"/>
+<g font-family="Arial,sans-serif" fill="#203448">
+<text x="48" y="65" font-size="30" font-weight="700">Personaliza una capa, conserva el resto</text>
+<text x="48" y="101" font-size="18">Ejemplo: la pantalla de cuenta del módulo self-account</text>
+<rect x="48" y="139" width="1024" height="66" rx="12" fill="#fff" stroke="#cfd6e5"/>
+<text x="76" y="180" font-size="22" font-weight="700">La ruta solicita la vista de la cuenta</text>
+<path d="M560 205V237" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="280" y="241" width="560" height="66" rx="12" fill="#e9e3ff" stroke="#7961d8"/>
+<text x="560" y="281" text-anchor="middle" font-size="21" font-weight="700">¿Existe la vista personalizada en app?</text>
+<path d="M395 307V345H280V374M725 307V345H840V374" fill="none" stroke="#596780" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="322" y="338" font-size="18" font-weight="700">Sí</text><text x="773" y="338" font-size="18" font-weight="700">No</text>
+<rect x="48" y="380" width="464" height="111" rx="12" fill="#fff" stroke="#7961d8"/>
+<text x="72" y="415" font-size="22" font-weight="700">Utiliza tu archivo del proyecto</text>
+<text x="72" y="448" font-size="17">app/views/self-account/</text><text x="72" y="474" font-size="17">self-accountIndex.php</text>
+<rect x="608" y="380" width="464" height="111" rx="12" fill="#fff" stroke="#cfd6e5"/>
+<text x="632" y="415" font-size="22" font-weight="700">Utiliza el original del módulo</text>
+<text x="632" y="448" font-size="17">El paquete aporta la vista y mantiene</text><text x="632" y="474" font-size="17">las capas que no has personalizado.</text>
+<rect x="48" y="523" width="1024" height="77" rx="12" fill="#203448"/>
+<text x="72" y="554" font-size="19" font-weight="700" fill="#fff">Al actualizar: tu personalización se conserva; no se fusiona con el original.</text>
+<text x="72" y="582" font-size="17" fill="#fff">Compara los cambios del módulo e incorpora los que necesite tu integración.</text>
+</g></svg>

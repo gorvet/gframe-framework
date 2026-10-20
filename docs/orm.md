@@ -1,5 +1,9 @@
 # ORM, modelos y dialectos
 
+![Confirmación y reversión de escrituras sobre una misma conexión](assets/4.3.1/transacciones.svg)
+
+*El servicio controla el resultado de las escrituras y confirma o revierte su transacción. Los permisos, las reglas de negocio y las operaciones externas necesitan su propio tratamiento. Esquema de GFrame 4.3.1.*
+
 Para igualdad exacta de cadenas use `whereExact('revision', $expectedRevision)`: compara bytes, incluidas mayúsculas y espacios finales, independientemente de la collation. MySQL y SQLite proporcionan la expresión en sus dialectos. Un dialecto personalizado puede implementar `exactComparisonExpression(string $quotedColumn): string`; si no dispone de esa capacidad, solo esta operación lanza una excepción y no se degrada a igualdad permisiva. La interfaz existente y las otras operaciones no cambian. Para guardados de contenido completos consulte [guardado por revisión](content-editing.md).
 
 El ORM de GFrame permite consultar y modificar datos desde modelos PHP mediante una API común. DatabaseManager selecciona la conexión PDO y el dialecto correspondiente.

@@ -1,5 +1,9 @@
 # Instalación
 
+![Primer paso del instalador: proyecto y cuenta administrativa](assets/4.3.1/instalacion.png)
+
+*El asistente adapta las opciones al perfil elegido. Aquí se prepara la revista de Estudio Nexo como aplicación administrada. Captura de GFrame 4.3.1.*
+
 ## Requisitos
 
 - PHP 8.1.9 o superior; la versión 1.x se ha probado en PHP 8.1. Este mínimo evita el fallo de referencias en WeakMap que afecta a Async con Opis 4.

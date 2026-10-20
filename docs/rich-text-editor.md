@@ -1,5 +1,9 @@
 # Editor de texto enriquecido
 
+![Editor con un artículo, una imagen y autoguardado privado](assets/4.3.1/editor.png)
+
+*Ejemplo de integración en Estudio Nexo: el componente de edición es nativo; el formulario, las acciones editoriales y la política de publicación pertenecen al proyecto. Captura de GFrame 4.3.1.*
+
 El módulo `rich-text-editor` publica un componente reutilizable basado en TinyMCE. Incluye idioma español, normalización del contenido pegado desde Word y soporte para enlaces, imágenes, tablas, listas, código y vista previa.
 
 ## Instalación

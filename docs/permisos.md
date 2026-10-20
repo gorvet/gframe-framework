@@ -1,5 +1,9 @@
 # Roles, permisos y membresías
 
+![Esquema de identidad, ámbito y resolución de permisos](assets/4.3.1/permisos.svg)
+
+*Diagrama del contrato de autorización: distingue el bypass del superadministrador del flujo ordinario y recuerda que la aplicación debe autorizar cada registro. No representa una pantalla de roles. Esquema de GFrame 4.3.1.*
+
 GFrame guarda la plantilla de cada rol en `roles.permissions_json`. Las aplicaciones globales asignan un rol en `users.role_id`. Las aplicaciones multitenant usan una fila de `tenant_memberships` por pareja usuario–tenant. Esa fila guarda el rol, el estado activo y únicamente las excepciones de ese usuario en ese tenant.
 
 ## Alcance real del módulo

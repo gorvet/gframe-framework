@@ -1,5 +1,9 @@
 # Notificaciones
 
+![Bandeja con avisos de equipo, soporte y acceso](assets/4.3.1/notificaciones.png)
+
+*Bandeja nativa con mensajes ficticios leídos y pendientes, acciones y enlaces de seguimiento. Los asuntos son ejemplos de la aplicación, no automatismos que GFrame active por defecto. Captura de GFrame 4.3.1.*
+
 El módulo `notifications` proporciona un inbox por usuario, aislamiento opcional por tenant y un registro extensible de transportes. No contiene campañas ni lógica específica de correo, WhatsApp, Telegram, push o SMS.
 
 ## Instalación

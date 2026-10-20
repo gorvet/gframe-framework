@@ -1,5 +1,9 @@
 # Autoguardado privado en el servidor
 
+![Recuperación de un borrador privado al volver al editor](assets/4.3.1/autoguardado.png)
+
+*El artículo guardado convive con una copia privada recuperable. El aviso permite recuperar o descartar esa copia; su existencia no significa que el contenido se haya publicado. Captura de GFrame 4.3.1.*
+
 El módulo optativo `content-autosave` guarda una copia privada del texto mientras se escribe. La vincula al usuario, al tenant activo cuando existe y a una clave de contenido/campo. No crea otro artículo ni modifica su versión pública. La publicación continúa en el formulario de la aplicación.
 
 Para impedir que Guardar/Publicar sobrescriba otra edición, adopte [el guardado por revisión](content-editing.md). Use la revisión del modelo también como `base_version` del autoguardado; la copia privada conserva su control de versión independiente.

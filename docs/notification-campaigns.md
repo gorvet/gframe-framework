@@ -1,5 +1,9 @@
 # Campañas de notificaciones
 
+![Preparación de una campaña de bienvenida al equipo](assets/4.3.1/campanas.png)
+
+*Formulario nativo con un mensaje de incorporación y sus opciones de destinatarios y entrega. Es un borrador de demostración: no se ha enviado ni programado una campaña real. Captura de GFrame 4.3.1.*
+
 `notification-campaigns` crea envíos masivos inmediatos o programados. Depende de `notifications` y `cron-runner`, pero no depende de ningún transporte concreto.
 
 ## Responsabilidades

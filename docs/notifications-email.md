@@ -1,5 +1,9 @@
 # Transporte de correo para notificaciones
 
+![Ejemplo de presentación de un mensaje por correo](assets/4.3.1/correo.png)
+
+*Ejemplo visual del soporte Mail utilizado por el canal de correo. Esta imagen ilustra el renderizado de una plantilla; no representa una cola procesada ni acredita entrega SMTP. Captura de GFrame 4.3.1.*
+
 `notifications-email` envía notificaciones por correo mediante `GFrame\Mail\MailService`. Incluye el transporte `email`, la plantilla general y un procesador de cola con reintentos.
 
 ## Instalación

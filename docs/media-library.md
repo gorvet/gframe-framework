@@ -1,5 +1,9 @@
 # Biblioteca multimedia
 
+![Biblioteca multimedia con recursos para una publicación](assets/4.3.1/multimedia.png)
+
+*La biblioteca reúne la portada editorial y los recursos de marca. Los filtros y las vistas permiten encontrar y reutilizar archivos sin volver a subirlos. Captura de GFrame 4.3.1.*
+
 `media-library` instala una biblioteca de archivos con listado, búsqueda, carga, eliminación y campos reutilizables. Puede operar de forma global, por tenant o por usuario.
 
 ## Instalación

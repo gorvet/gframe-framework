@@ -1,5 +1,13 @@
 # Feedback de operaciones
 
+![Toast de confirmación después de guardar las preferencias](assets/4.3.1/toast.png)
+
+*Aviso no modal creado mediante alertToast. Confirma el resultado sin interrumpir el formulario; el mensaje pertenece al ejemplo y no ejecuta una operación real. Captura de GFrame 4.3.1.*
+
+![Confirmación antes de aplicar un cambio de acceso](assets/4.3.1/alertas.png)
+
+*Diálogo creado mediante swalAlert con opciones para continuar o volver a revisar. El texto es un ejemplo de integración; esta captura no modifica permisos. Captura de GFrame 4.3.1.*
+
 `alerts` es un componente frontend JS/CSS: toast, confirmaciones y estados de carga. No tiene MVC PHP ni gestiona el inbox de `notifications` o los envíos de Campañas.
 
 ## Recursos y dependencias

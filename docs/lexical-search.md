@@ -1,5 +1,9 @@
 # Búsqueda léxica
 
+![Consulta con un error de escritura y resultados calculados por el motor léxico](assets/4.3.1/busqueda.png)
+
+*Ejemplo de integración: LexicalSearchEngine ordena los documentos recibidos y genera sus fragmentos. La interfaz pertenece al ejemplo; el módulo no incluye esta pantalla ni autoriza los documentos por sí mismo. Captura de GFrame 4.3.1.*
+
 El módulo `lexical-search` proporciona búsqueda léxica en PHP y JavaScript. No necesita base de datos propia.
 
 Utilícelo para ordenar un catálogo pequeño, buscar documentos ya cargados o filtrar elementos visibles en el navegador. La aplicación entrega los datos y decide cómo mostrar resultados; el módulo no crea una pantalla de búsqueda.

@@ -1,5 +1,9 @@
 # Revisiones del contenido
 
+![Comparación de dos revisiones guardadas del artículo](assets/4.3.1/revisiones.png)
+
+*Comparación nativa de los valores anterior y posterior, integrada en una página de ejemplo de Estudio Nexo. El HTML histórico se muestra como texto, sin ejecutarlo. Captura de GFrame 4.3.1.*
+
 `content-revisions` conserva hasta **10 revisiones por contenido** de forma predeterminada. El límite puede subir o bajar. Permite comparar valores, restaurar una versión y borrar todas las revisiones de un contenido sin modificar su versión actual.
 
 ## Instalar y configurar

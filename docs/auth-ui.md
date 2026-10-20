@@ -1,5 +1,9 @@
 # Interfaz de autenticación
 
+![Pantalla de acceso de Estudio Nexo](assets/4.3.1/autenticacion.png)
+
+*Formulario nativo de acceso: correo, contraseña y enlaces de registro y recuperación. Los campos se mantienen vacíos; no se muestran credenciales. Captura de GFrame 4.3.1.*
+
 El módulo `auth-ui` instala el acceso web estándar de GFrame: inicio y cierre de sesión, registro, verificación del correo, recuperación y restablecimiento de contraseña.
 
 ## Instalación

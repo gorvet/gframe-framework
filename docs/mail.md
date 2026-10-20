@@ -1,5 +1,9 @@
 # Correo y plantillas
 
+![Correo de bienvenida renderizado con la plantilla del framework](assets/4.3.1/correo.png)
+
+*Plantilla Mail con contenido de Estudio Nexo y enlace al espacio de trabajo. Se ha renderizado localmente, sin enviar correo ni conectar con SMTP. Captura de GFrame 4.3.1.*
+
 El soporte Mail del núcleo realiza todos los envíos de correo de GFrame. Puede usarse directamente desde formularios, autenticación y servicios. El addon `notifications-email` lo utiliza como adaptador para colas y campañas.
 
 ## Elegir el método

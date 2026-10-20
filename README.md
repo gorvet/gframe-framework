@@ -143,6 +143,8 @@ Entre las áreas cubiertas por el framework están:
 
 Consulta [el índice de documentación](docs/index.md) para elegir la guía según la tarea.
 
+Las guías y sus recursos visuales se distribuyen juntos en el paquete: los Markdown están en `docs/` y las imágenes y esquemas en `docs/assets/`. Cada guía enlaza los originales con rutas relativas. [El inventario visual](docs/assets/INVENTARIO.md) identifica su uso y procedencia; los generadores se mantienen en `maintenance/help/`. El sitio de documentación presenta estos mismos archivos desde el repositorio local o la versión instalada con Composer, sin mantener otra copia de la ayuda.
+
 ## Reconstrucción documental
 
 La rama de reconstrucción mantiene un inventario explícito de documentación cubierta, parcial, ausente u obsoleta en [docs/reconstruccion-documentacion.md](docs/reconstruccion-documentacion.md). El código es la fuente de verdad para resolver contradicciones.

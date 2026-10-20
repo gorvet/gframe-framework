@@ -1,5 +1,9 @@
 # Cuenta y seguridad
 
+![Cuenta y seguridad de la persona que ha iniciado sesión](assets/4.3.1/mi-cuenta.png)
+
+*Pantalla nativa para consultar la cuenta y gestionar su seguridad. La captura utiliza una cuenta temporal; las contraseñas no aparecen en la imagen. Captura de GFrame 4.3.1.*
+
 El módulo `self-account` permite que un usuario autenticado consulte sus datos básicos de acceso, cambie su contraseña y desactive su propia cuenta.
 
 ## Instalación

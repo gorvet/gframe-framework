@@ -1,5 +1,9 @@
 # Proveedor de credenciales API
 
+![Contratos de API entrante y cliente HTTP saliente](assets/4.3.1/canales-http.svg)
+
+*El esquema distingue la autenticación del consumidor, la autorización de la operación y el transporte a proveedores externos. Los endpoints y servicios de negocio pertenecen al proyecto. Esquema de GFrame 4.3.1.*
+
 La declaración de endpoints, consumidores y respuestas se explica en [Rutas: API](rutas.md#api). Esta referencia describe el proveedor de credenciales utilizado por el middleware `allow_cors_with_token` para autenticar sistemas que consumen la aplicación.
 
 ## Recorrido de una petición autorizada
