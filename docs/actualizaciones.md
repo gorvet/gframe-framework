@@ -22,6 +22,10 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 4.3.3: recurrencia del cron en UTC
+
+Corrige el desfase de `CronScheduler` cuando la zona del proyecto difiere de UTC. Incluye la validación de fechas de `CronTaskService`; no cambia la zona global ni requiere migraciones nuevas. Las fechas ya aplazadas se conservan: consulte la [recuperación de tareas](cron-runner.md#recuperar-tareas-aplazadas-por-la-zona-horaria) después de actualizar. Composer obtiene esta versión de la etiqueta `v4.3.3`; si el proyecto fija una versión anterior exacta, cambie esa restricción antes de resolver la actualización.
+
 ### Versión 4.3.1: restauración sin transición de publicación
 
 Corrige la restauración de revisiones en modelos con `ScheduledContent`: conserva el estado y la fecha actuales, aunque el snapshot contenga valores anteriores. No vuelve a publicar borradores ni reactiva programaciones canceladas. Un contenido ya publicado continúa publicado y su texto restaurado puede verse inmediatamente; mantenga la autorización por registro. No requiere migraciones. Se corrige también la restricción actual del generador indicada en la guía de skills: `^4.3`.

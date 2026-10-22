@@ -60,7 +60,12 @@ final class CronScheduler extends CronRunner
                 }
                 $interval = (int)($task['repeat_interval_seconds'] ?? 0);
                 $shouldRepeat = !array_key_exists('reschedule', $handlerResult) || !empty($handlerResult['reschedule']);
-                $nextRunAt = $shouldRepeat && $interval >= 60 ? gmdate('Y-m-d H:i:s', max(time(), strtotime((string)$task['scheduled_at']) ?: time()) + $interval) : null;
+                $nextRunAt = null;
+                if ($shouldRepeat && $interval >= 60) {
+                    $now = time();
+                    $scheduledAt = date_create_immutable((string)$task['scheduled_at'], new DateTimeZone('UTC'));
+                    $nextRunAt = gmdate('Y-m-d H:i:s', max($now, $scheduledAt === false ? $now : $scheduledAt->getTimestamp()) + $interval);
+                }
                 $runtime->assertOwned();
                 $this->tasks->markSuccess($taskID, $nextRunAt);
                 $processed++;

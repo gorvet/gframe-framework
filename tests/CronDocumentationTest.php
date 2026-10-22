@@ -20,7 +20,7 @@ final class CronDocumentationTest extends TestCase
         $notifications = new \GFrame\Notifications\NotificationService(new \GFrame\Notifications\NotificationModel());
         $notifications->notify(1, ['title' => 'Expired', 'message' => 'Old notice', 'expires_at' => '-1 day']);
         preg_match_all('/```php\R(.*?)\R```/s', file_get_contents($root . '/docs/cron-runner.md'), $blocks);
-        self::assertCount(4, $blocks[1]);
+        self::assertCount(5, $blocks[1]);
         eval(preg_replace('/^<\?php\s*/', '', $blocks[1][0]));
         eval($blocks[1][1]);
         self::assertSame('cron_task_scheduled', $result['code']);
@@ -31,6 +31,8 @@ final class CronDocumentationTest extends TestCase
         self::assertSame('cron_task_resumed', $resumed['code']);
         self::assertSame('cron_task_rescheduled', $changed['code']);
         eval($blocks[1][3]);
+        self::assertSame('cron_task_rescheduled', $result['code']);
+        eval($blocks[1][4]);
         self::assertSame(1, $result['data']['processed']);
         self::assertSame(0, $result['data']['failed']);
         self::assertSame(1, (int)$pdo->query('SELECT is_deleted FROM user_notifications')->fetchColumn());

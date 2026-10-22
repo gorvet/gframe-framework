@@ -71,5 +71,5 @@ final class CronTaskService
     }
 
     private function validKey(string $key): bool { return preg_match('/^[a-z0-9][a-z0-9_.:-]{0,119}$/i', $key) === 1; }
-    private function validDate(string $date): bool { return trim($date) !== '' && strtotime($date) !== false; }
+    private function validDate(string $date): bool { return trim($date) !== '' && date_create_immutable($date, new DateTimeZone('UTC')) !== false; }
 }

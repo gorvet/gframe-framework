@@ -108,7 +108,7 @@ final class InMemoryCronTaskRepository implements \CronTaskRepository
     public function createTask(array $task): int { $id = count($this->tasks) + 1; $this->tasks[$id] = ['task_id' => $id] + $task; return $id; }
     public function findByKey(string $taskKey): ?array { foreach ($this->tasks as $task) if ($task['task_key'] === $taskKey) return $task; return null; }
     public function updateTask(string $taskKey, array $changes): bool { foreach ($this->tasks as &$task) if ($task['task_key'] === $taskKey) { $task = $changes + $task; return true; } return false; }
-    public function reserveDue(int $limit): array { $rows = []; foreach ($this->tasks as &$task) if ($task['status'] === 'pending' && !empty($task['is_active']) && strtotime($task['scheduled_at']) <= time()) { $task['status'] = 'processing'; $task['attempts'] = (int)($task['attempts'] ?? 0) + 1; $rows[] = $task; } return array_slice($rows, 0, $limit); }
+    public function reserveDue(int $limit): array { $rows = []; foreach ($this->tasks as &$task) if ($task['status'] === 'pending' && !empty($task['is_active']) && $task['scheduled_at'] <= gmdate('Y-m-d H:i:s')) { $task['status'] = 'processing'; $task['attempts'] = (int)($task['attempts'] ?? 0) + 1; $rows[] = $task; } return array_slice($rows, 0, $limit); }
     public function markSuccess(int $taskID, ?string $nextRunAt = null): void { $this->tasks[$taskID]['status'] = $nextRunAt === null ? 'completed' : 'pending'; if ($nextRunAt !== null) $this->tasks[$taskID]['scheduled_at'] = $nextRunAt; }
     public function markFailed(int $taskID, string $message): void { $this->tasks[$taskID]['status'] = 'error'; $this->tasks[$taskID]['last_error'] = $message; }
     public function recoverStale(int $seconds): int { return 0; }

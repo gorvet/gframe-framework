@@ -77,6 +77,8 @@ La clave identifica una tarea única en toda la tabla; use prefijos propios e in
 
 Las fechas se guardan en UTC. Para una tarea única, omita el quinto argumento. Para una recurrente, ese argumento es el intervalo en segundos, con un mínimo de 60. El nombre de clase se almacena, pero `schedule()` no comprueba que exista o extienda `Cron`; esa comprobación ocurre al ejecutarla.
 
+Desde 4.3.3, la validación y el cálculo de recurrencia interpretan las fechas sin zona explícita en UTC, conservando la zona horaria del proyecto. Los cambios de horario estacional no alteran el intervalo en segundos.
+
 ### Resultado del manejador
 
 El scheduler utiliza `reschedule` para decidir si una tarea recurrente continúa. Devuelva `['reschedule' => false]` cuando haya terminado definitivamente. Si falta esa clave, una tarea con intervalo continúa por defecto; una tarea sin intervalo siempre termina.
@@ -104,6 +106,24 @@ $changed = $service->reschedule('maintenance.notifications.cleanup', gmdate('Y-m
 `pause()` desactiva la reserva futura sin cambiar el estado de la fila. `resume()` la activa y la pone en `pending`, conservando la fecha. `reschedule()` cambia fecha, reactiva la tarea y limpia bloqueo/error. `cancel()` pone `cancelled` y desactiva la fila; no borra la tarea y no interrumpe un handler que ya esté ejecutándose. Una llamada posterior a `resume()` o `reschedule()` puede reactivarla.
 
 Los métodos devuelven `cron_task_not_found` si no existe la clave. `schedule()` devuelve el ID en `data.task_id`; una clave/fecha inválida devuelve `invalid_cron_task` y un intervalo inferior al mínimo, `invalid_cron_interval`.
+
+### Recuperar tareas aplazadas por la zona horaria
+
+Las versiones anteriores a 4.3.3 podían aplazar la recurrencia al interpretar `scheduled_at` UTC con la zona local. Actualizar el paquete corrige los cálculos siguientes, pero conserva las fechas existentes. Detenga los disparadores real/virtual y espere a que terminen los workers antes de recuperar las tareas afectadas.
+
+Revise cada clave y su trabajo pendiente. Desde un comando que haya cargado el proyecto, reprograme únicamente las tareas confirmadas; por ejemplo, para que una tarea quede disponible inmediatamente:
+
+```php
+$result = (new \CronTaskService())->reschedule(
+    'maintenance.notifications.cleanup',
+    gmdate('Y-m-d H:i:s')
+);
+if (($result['status'] ?? '') !== 'success') {
+    throw new \RuntimeException('No se pudo reprogramar la tarea.');
+}
+```
+
+Elija una fecha UTC futura si todavía no debe ejecutarse. Esta llamada no ejecuta el manejador, conserva payload e intervalo y reactiva la tarea. No reste cuatro o cinco horas indiscriminadamente ni reactive tareas pausadas o canceladas sin revisar su propósito. Compruebe la fecha y el estado guardados antes de reactivar el disparador: la próxima ejecución puede procesar todo el trabajo de negocio pendiente, incluidos correos.
 
 ## Concurrencia y recuperación
 

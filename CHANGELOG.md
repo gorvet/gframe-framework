@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+## 4.3.3 — 2026-10-22
+
+- Cron: `CronScheduler` interpreta `scheduled_at` explícitamente en UTC al calcular la recurrencia y `CronTaskService` valida las fechas con la misma zona. Conserva la zona del proyecto y evita los aplazamientos adicionales de cuatro o cinco horas con `America/Havana`. Sin migraciones; las tareas ya aplazadas requieren reprogramación selectiva.
+- Pruebas de recurrencia, tareas vencidas y futuras, recuperación y cambios de horario estacional; guía y skill de cron actualizadas con el procedimiento de recuperación.
 ## 4.3.2 — 2026-10-20
 
 - La ayuda ilustrada pertenece íntegramente al paquete: guías Markdown, imágenes, esquemas y pies con enlaces relativos en `docs/assets/`, inventario canónico y herramientas de reproducción en `maintenance/help/`. El sitio documental consume la misma fuente para texto y recursos, sin copias independientes.
