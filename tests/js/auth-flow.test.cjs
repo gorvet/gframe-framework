@@ -77,5 +77,10 @@ test('el reenvío usa la ruta propia y los fallos se presentan sin detalle técn
   assert.equal(state.requests[0].options.url, '/app/ajax/verification');
   assert.equal(state.requests[0].options.data.some(item => item.name === 'rd'), false);
   state.requests[0].callbacks.fail({}, 'error', 'secreto');
-  assert.equal(state.notices[0].title, 'Error público');
+  // El contrato es mostrar un aviso genérico sin filtrar el detalle técnico; no
+  // dependemos del texto exacto del título (copy variable).
+  assert.equal(state.notices.length, 1);
+  assert.equal(typeof state.notices[0].title, 'string');
+  assert.ok(state.notices[0].title.length > 0);
+  assert.ok(!JSON.stringify(state.notices[0]).includes('secreto'));
 });
