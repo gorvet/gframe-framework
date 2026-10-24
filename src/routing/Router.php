@@ -36,6 +36,8 @@ class Router {
 
   public function route() {
 
+    \GFrame\Http\SecurityHeaders::send();
+
     // Detectamos el "origen de la ruta"
     $this->intendedType = $this->detectIntendedType();
     \GFrame\Cron\VirtualCron::register($this->intendedType);
@@ -139,6 +141,14 @@ echo "</pre>";*/
         //echo "<pre>Comparando: pattern={$pattern} vs uriPath={$uriPath}</pre>";
 
         if (preg_match($regexPattern, $uriPath, $matches)) {
+
+          $declaredType = (string)($route['type'] ?? 'web');
+          $validChannel = $declaredType === 'system'
+              ? in_array($this->intendedType, ['web', 'ajax'], true)
+              : $declaredType === $this->intendedType;
+          if (!$validChannel) {
+              throw new LogicException('Canal incoherente en la ruta ' . $pattern . ': declarado ' . $declaredType . ', URL ' . $this->intendedType . '. Revisa el archivo routes_*.php y el prefijo.');
+          }
 
           array_shift($matches);
           preg_match_all('#\{([a-zA-Z_]+)\}#', $pattern, $paramNames);
@@ -805,6 +815,10 @@ private function resolveControllerPath(string $controller): ?string {
         if (!$rd) return $fallback;
 
         $rd = urldecode($rd);
+
+        // 0) Trata las barras invertidas como barras: muchos navegadores leen
+        //    "/\\host" como "//host" (protocolo-relativo) y saldrían del sitio.
+        $rd = str_replace('\\', '/', $rd);
 
         // 1) Si vino con dominio propio, quítalo (solo permitimos rutas internas)
         $siteHost = parse_url(site_url, PHP_URL_HOST);

@@ -58,6 +58,8 @@ Router separately detects the request channel from its first URL segment after t
 
 `system` is a declaration category, not a Router channel prefix. System routes such as `sitemap.xml` still follow the web URL channel. Preserve their controller/output contract rather than inventing `system/` URLs or treating every declared system route as JSON.
 
+Router rejects matched declarations whose type differs from the effective URL channel before route-session startup, middleware injection or controller execution. The error identifies the pattern and both channels. System declarations permit web or ajax (including heartbeat), never api/webhook/sse. Migrate incoherent declarations by correcting their source file while preserving public URLs and access rules. SecurityHeaders emits conservative configurable defaults at Router entry; CSP, framing and HSTS require explicit project policies. Forwarded security headers require security.trusted_proxies IP/CIDR configuration.
+
 ## Runtime Flow
 
 Admin-panel, error-pages and heartbeat-client also use runtime originals. Dashboard routes declare admin-panel, error routes built by ErrorResponder declare sourceModule=error-pages, and ajax/heartbeat declares heartbeat-client without changing its auth/CSRF/noRefreshSession settings. Add heartbeat channels through controller inheritance and parent::__construct(), not through another callback configuration registry. Public assets and route files remain published.

@@ -23,7 +23,7 @@ El nombre del archivo no añade el prefijo a la URL. Debes declarar `ajax/...`, 
 
 Por ejemplo, declarar `productos` en `routes_ajax.php` registra ese patrón, pero una petición a `/productos` sigue entrando por el canal web. Para ejecutarla como AJAX, declara `ajax/productos` y solicita `/ajax/productos`. Una cabecera `X-Requested-With` tampoco selecciona el canal: sus controles se aplican después de reconocer el prefijo.
 
-El tipo registrado sirve también a componentes que consultan el catálogo de rutas. Para las peticiones normales, Router selecciona el transporte por la URL y busca el método y patrón; en preflight `OPTIONS`, además exige una declaración de tipo API. Mantén coherentes el nombre del archivo y el prefijo, aunque alguno de esos mecanismos permita registrar combinaciones distintas.
+Router rechaza una ruta coincidente si su tipo declarado no coincide con el canal de la URL, antes de iniciar su sesión, inyectar middleware o ejecutar el controlador. El error identifica el patrón y ambos canales. Para migrar una declaración incoherente, mueve la declaración al archivo correcto y conserva su URL pública y sus permisos; el nombre del archivo no añade prefijos. `system` admite únicamente los canales web y AJAX, para conservar recursos como sitemap y heartbeat; no exime a una API de sus controles. En preflight `OPTIONS` se exige además una declaración API.
 
 Declara las rutas directamente en sus archivos de canal. Si las construyes desde otro archivo mediante un helper, la inferencia usa el archivo que llama al método de RouteBuilder, no necesariamente el archivo que carga el helper.
 

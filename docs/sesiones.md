@@ -104,7 +104,19 @@ SESSION_REDIS_PASSWORD=""
 SESSION_REDIS_DATABASE="0"
 ```
 
-Configura también un `session.redis.prefix` distinto para cada proyecto que comparta la misma base Redis. Separa los nombres de cookie mediante `session.name` cuando varios proyectos comparten dominio. Las opciones de cookie `Secure`, `HttpOnly` y `SameSite` dependen de la configuración PHP del despliegue; usa HTTPS y comprueba las cabeceras reales. `SessionRuntime` activa el modo estricto, pero no establece por sí mismo todas esas opciones.
+Configura también un `session.redis.prefix` distinto para cada proyecto que comparta la misma base Redis. Separa los nombres de cookie mediante `session.name` cuando varios proyectos comparten dominio.
+
+`SessionRuntime` fija las banderas de la cookie de sesión antes de iniciarla, con valores seguros por defecto y modo estricto (`use_strict_mode`, `use_only_cookies`). No dependas del `php.ini` del despliegue para estas opciones:
+
+| Opción | Clave de configuración | Valor por defecto |
+| --- | --- | --- |
+| `HttpOnly` | `session.cookie_httponly` | `true` |
+| `Secure` | `session.cookie_secure` | `null` (automático: activo bajo HTTPS) |
+| `SameSite` | `session.cookie_samesite` | `null`: conserva PHP; si falta, `Lax` |
+| Ámbito | `session.cookie_path`, `session.cookie_domain` | `null`: conserva PHP |
+| Vida de la cookie | `session.cookie_lifetime` | `null`: conserva PHP |
+
+`Secure` automático conserva una cookie PHP ya segura y se activa bajo HTTPS. `X-Forwarded-Proto` solo se acepta si `REMOTE_ADDR` pertenece a `security.trusted_proxies` (lista de IP o CIDR; vacía por defecto). Configura las direcciones reales del proxy y exige que reescriba esas cabeceras. Puedes fijar `session.cookie_secure=true` cuando el despliegue siempre sirve HTTPS. `SameSite=None` activa siempre Secure. Una configuración explícita de GFrame puede cambiar las opciones heredadas; los valores automáticos conservan `Strict`, path, dominio y duración. Comprueba las cookies reales tras el despliegue.
 
 ## Caducidad e inactividad
 
@@ -166,6 +178,8 @@ Antes de revocar, autoriza la operación sobre la cuenta destinataria. En una ac
 Después, comprueba con dos sesiones independientes que los dispositivos revocados ya no acceden a una ruta protegida y que un acceso nuevo responde a la política vigente de la cuenta. Una sesión caducada, una revocación y una cuenta suspendida son estados distintos; el mensaje de la interfaz debe orientar a identificarse de nuevo o a solicitar ayuda según corresponda.
 
 CSRF utiliza `csrfToken` y `csrfTimestamp` guardados en la sesión. `SessionRuntime` los genera también para visitantes anónimos, los conserva entre peticiones y `SessionManager::login()` los renueva al autenticar. Envía esos valores mediante los contratos del [frontend](frontend-core.md) en las acciones protegidas; no inventes otra cookie de autenticación o un segundo mecanismo CSRF. Consulte [CSRF en formularios públicos](middleware.md#formularios-de-visitantes).
+
+Para un usuario autenticado el token vale lo que dure su sesión: caduca al cerrar sesión o por inactividad (`session.idle_timeout`), no con un temporizador propio que forzaría un 403 a mitad de una operación. Las sesiones de **invitado** (formularios públicos) sí admiten una caducidad acotada opcional: define `security.csrf_guest_max_age` (segundos) y, al validar un token de invitado más antiguo, se rota y la respuesta usa `to_reload` para que el frontend recargue el formulario. `0` desactiva esa caducidad.
 
 ## Creación, actualización y revocación
 

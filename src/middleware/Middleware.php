@@ -594,14 +594,7 @@ private function is_same_origin(): bool {
 
     $originParts = $originUrl ? (parse_url($originUrl) ?: []) : [];
 
-    // Respetar proxy/CDN
-    $scheme = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ($_SERVER['REQUEST_SCHEME'] ?? null);
-    $host   = $_SERVER['HTTP_X_FORWARDED_HOST']  ?? ($_SERVER['HTTP_HOST'] ?? null);
-
-
-    $siteParts = parse_url(site_url) ?: [];
-    $siteParts['scheme'] = $siteParts['scheme'] ?? $scheme;
-    $siteParts['host']   = $siteParts['host']   ?? $host;
+    $siteParts = parse_url(\GFrame\Http\RequestSecurity::origin()) ?: [];
 
     $originParts['port'] = $originParts['port'] ?? ((strtolower($originParts['scheme'] ?? '') === 'https') ? 443 : 80);
     $siteParts['port']   = $siteParts['port']   ?? ((strtolower($siteParts['scheme'] ?? '') === 'https') ? 443 : 80);

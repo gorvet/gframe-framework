@@ -36,8 +36,26 @@ final class CsrfToken
             return ['status' => 'unauthorized', 'code' => 'fail_csrf', 'message' => 'Falta un token CSRF válido.'];
         }
         if (hash_equals($_SESSION['csrfToken'], $token) && (string)$timestamp === (string)$_SESSION['csrfTimestamp']) {
+            // Para usuarios autenticados, el token caduca con la sesión (logout o
+            // inactividad); no se le aplica un temporizador propio que forzaría un
+            // 403 a mitad del trabajo. Solo las sesiones de invitado admiten una
+            // caducidad acotada, pensada para formularios públicos.
+            if (self::isGuestSession()) {
+                $maxAge = (int)\GFrame\Config\ConfigRepository::get('security.csrf_guest_max_age', 0);
+                if ($maxAge > 0 && (time() - (int)$_SESSION['csrfTimestamp']) > $maxAge) {
+                    self::rotate();
+                    return ['status' => 'unauthorized', 'code' => 'to_reload', 'message' => 'El formulario caducó. Recárgalo e inténtalo de nuevo.'];
+                }
+            }
             return ['status' => 'success'];
         }
         return ['status' => 'unauthorized', 'code' => (int)$timestamp < (int)$_SESSION['csrfTimestamp'] ? 'to_reload' : 'fail_csrf', 'message' => 'Recarga el formulario e inténtalo de nuevo.'];
+    }
+
+    /** Una sesión sin identidad autenticada es de invitado (formularios públicos). */
+    private static function isGuestSession(): bool
+    {
+        $auth = $_SESSION['auth'] ?? null;
+        return !is_array($auth) || (int)($auth['id'] ?? 0) <= 0;
     }
 }
