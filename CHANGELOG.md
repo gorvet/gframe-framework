@@ -2,6 +2,13 @@
 
 ## Sin publicar
 
+## 4.4.0 — 2026-10-24
+
+- Coordinación de asistentes: canal local compartido fuera de los worktrees, reservas con caducidad, comprobación previa a editar y panel de mensajes. Incluye exclusión mutua, errores visibles y conservación del borrador ante fallos de envío.
+- Calidad: PHPStan 2.3.1 fijado como dependencia de desarrollo y obligatorio en CI. El baseline delimita 68 diagnósticos heredados pendientes; los errores nuevos y las entradas obsoletas fallan. La sincronización con Codex resuelve el comando estable del CLI en cada ejecución.
+- ORM: `transaction()` garantiza rollback ante excepciones y respeta transacciones externas; `reconnect()` rechaza conexiones con transacción activa. Aviso de posible N+1 solo en depuración.
+- Registro: niveles configurables, contexto y redacción de secretos; checklist de despliegue y documentación actualizados.
+
 - Correcciones de PR: la reconexión respeta transacciones abiertas directamente desde DatabaseManager; el historial SQLite repite íntegramente las transacciones ante conflictos de bloqueo, conservando CAS. La configuración de cookies respeta session.use_cookies desactivado; las pruebas capturan los logs de errores esperados sin confundirlos con fallos del proceso aislado.
 
 - Seguridad: reservas atómicas por IP/identidad en autenticación, hash bcrypt de relleno, proxies de confianza y conservación de políticas de cookie existentes. Se mantienen los mensajes de cuentas.
