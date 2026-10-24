@@ -30,6 +30,7 @@ Use framework helpers from shared JS:
 - `alertToast({ icon, title })`
 - `alertToast` accepts `timer` in milliseconds (default 5000, zero persists); the progress bar matches that duration. Titles are plain text, never raw HTML. The toast uses Bootstrap body variables for both themes. See `docs/alerts.md`.
 - `swalAlert(options)`
+- SweetAlert titles (`title` and `titleText`) never end with a full stop, including feedback sourced from backend messages. Write fixed titles without it; the shared helper removes trailing full stops from string titles without changing the original options or backend message. Body `text`/`html` retains normal sentence punctuation. This rule also applies to direct SweetAlert calls in pre-bootstrap code.
 - Preserve the existing SweetAlert2 `sweetTheme.css` bridge instead of replacing the external library. `swalAlert` keeps caller options immutable, retains Bootstrap classes when customClass is partial, and defaults to Cancel before the main action with centered buttons. Normal form actions remain right-aligned. Keep the loading popup's action container visible because it contains the loader.
 - `successError(message, code)`
 - `ajaxError(status, error)`

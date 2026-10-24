@@ -31,8 +31,8 @@
         handling = true;
         stop(reason);
         const title = reason === 'expired'
-            ? 'Tu sesión se cerró por inactividad.'
-            : 'Tu sesión se cerró.';
+            ? 'Tu sesión se cerró por inactividad'
+            : 'Tu sesión se cerró';
 
         if (typeof window.swalAlert === 'function') {
             window.swalAlert({icon: 'info', title: title, confirmButtonText: 'Acceder', allowOutsideClick: false})

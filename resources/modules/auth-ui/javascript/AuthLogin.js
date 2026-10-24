@@ -130,11 +130,11 @@ function verifyAcount(){
       } 
       else {
         if (response.code==='invalid_user') {
-          swalOptions.title = 'Usuario incorrecto.';
+          swalOptions.title = 'Usuario incorrecto';
           swalAlert(swalOptions)
         }
         else if (response.code==='suspended_account') {
-          swalOptions.title = 'Su cuenta ha sido suspendida.';
+          swalOptions.title = 'Su cuenta ha sido suspendida';
           swalAlert(swalOptions)
         }  
         else{
@@ -155,14 +155,14 @@ function getLoginErrorSwalOptions(response) {
   if (response.code === 'invalid_user') {
     return {
       icon: 'error',
-      title: 'Usuario o contraseña incorrecta.'
+      title: 'Usuario o contraseña incorrecta'
     };
   }
 
   if (response.code === 'suspended_account') {
     return {
       icon: 'error',
-      title: 'Su cuenta ha sido suspendida.'
+      title: 'Su cuenta ha sido suspendida'
     };
   }
 
@@ -220,7 +220,7 @@ function validateAcount(validateToken){
         else if (response.code==='suspended_account') {
           swalOptions = {
             icon: 'error',
-            title: 'Su cuenta ha sido suspendida.',
+            title: 'Su cuenta ha sido suspendida',
           }
           swalAlert(swalOptions).then((result) => {
             if (result.isConfirmed) {

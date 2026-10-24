@@ -80,7 +80,7 @@ function getRecoveryErrorSwalOptions(response) {
   if (response.code === 'not_exists') {
     return {
       icon: 'warning',
-      title: 'Oops...',
+      title: 'Oops',
       text: 'Parece que este correo no está registrado.',
     };
   }

@@ -34,8 +34,8 @@ test('el cierre único notifica otras pestañas incluso si localStorage está bl
 });
 
 for (const scenario of [
-  { reason: 'logout', title: 'Tu sesión se cerró.', redirect: 'https://example.test/app/login' },
-  { reason: 'expired', title: 'Tu sesión se cerró por inactividad.', redirect: 'https://example.test/app/login?rd=admin' }
+  { reason: 'logout', title: 'Tu sesión se cerró', redirect: 'https://example.test/app/login' },
+  { reason: 'expired', title: 'Tu sesión se cerró por inactividad', redirect: 'https://example.test/app/login?rd=admin' }
 ]) {
 test(`${scenario.reason} de otra pestaña conserva el aviso y el destino correcto`, async () => {
   let channel;

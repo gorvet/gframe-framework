@@ -105,6 +105,11 @@ function swalAlert(swalOptions) {
 		},
 	};
   const options = mergeDeep(defaultOptions, swalOptions);
+  for (const key of ['title', 'titleText']) {
+    if (typeof options[key] === 'string') {
+      options[key] = options[key].replace(/\.+\s*$/, '');
+    }
+  }
   return Swal.fire(options);
 }
 

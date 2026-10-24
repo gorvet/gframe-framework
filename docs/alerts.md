@@ -40,6 +40,8 @@ El icono predeterminado de `alertToast()` es `success`; un icono desconocido se 
 
 ## Confirmación y validación
 
+Los títulos de SweetAlert no llevan punto final. `swalAlert` elimina los puntos finales de las opciones de texto `title` y `titleText`, incluidos los mensajes recibidos del backend, sin modificar el objeto original. Escriba también los títulos fijos sin punto final. El contenido de `text` y `html` conserva su puntuación.
+
 ```js
 async function confirmarOperacion(respuesta) {
 const resultado = await swalAlert({

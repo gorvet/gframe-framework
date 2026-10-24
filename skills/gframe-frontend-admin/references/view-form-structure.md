@@ -10,6 +10,8 @@ Before any existing rename, check template/JS/CSS references, external callers, 
 
 ## Basic Screen Structure
 
+View, section, modal and card titles never end with a full stop. Apply this to literal headings, title variables and server-rendered title attributes. Preserve question/exclamation marks and punctuation within the title; explanatory paragraphs and body messages retain normal sentence punctuation. Check dynamic title producers as well as visible heading markup.
+
 Native Auth labels inherit common.css size, weight and color; do not add a login-specific label override. Auth cards with the native colored header have no exterior border. The Auth home link reads “Ir al inicio” and uses primary/primary-hover; this wording change does not apply to error actions. Auth/error shells include their compact footer in the viewport height and allow scrolling for short viewports or expanded content. Keep project branding/backgrounds separate and do not style browser password-manager popups as application DOM.
 
 Typical admin screens keep this order:
