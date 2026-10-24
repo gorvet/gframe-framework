@@ -103,12 +103,15 @@ abstract class ORM {
     public function where($column, $operator = null, $value = null) {
     if (is_array($column)) {
         foreach ($column as $cond) {
-            $this->addWhereCondition("{$cond[0]} {$cond[1]} ?", $cond[2], 'AND');
+            $col = $this->assertIdentifier($cond[0] ?? '');
+            $op  = $this->assertComparisonOperator($cond[1] ?? '');
+            $this->addWhereCondition("{$col} {$op} ?", $cond[2] ?? null, 'AND');
         }
     } else {
+        $op = $this->assertComparisonOperator($operator);
     // Si activaste comparación estricta, le metemos CAST al campo
-        $column = $this->applyStrictComparisonToColumn($column);
-        $this->addWhereCondition("$column $operator ?", $value, 'AND');
+        $column = $this->applyStrictComparisonToColumn($this->assertIdentifier($column));
+        $this->addWhereCondition("$column $op ?", $value, 'AND');
     }
 
     return $this;
@@ -127,11 +130,14 @@ abstract class ORM {
     public function orWhere($column, $operator = null, $value = null) {
     if (is_array($column)) {
         foreach ($column as $cond) {
-            $this->addWhereCondition("{$cond[0]} {$cond[1]} ?", $cond[2], 'OR');
+            $col = $this->assertIdentifier($cond[0] ?? '');
+            $op  = $this->assertComparisonOperator($cond[1] ?? '');
+            $this->addWhereCondition("{$col} {$op} ?", $cond[2] ?? null, 'OR');
         }
     } else {
-        $column = $this->applyStrictComparisonToColumn($column);
-        $this->addWhereCondition("$column $operator ?", $value, 'OR');
+        $op = $this->assertComparisonOperator($operator);
+        $column = $this->applyStrictComparisonToColumn($this->assertIdentifier($column));
+        $this->addWhereCondition("$column $op ?", $value, 'OR');
     }
 
     return $this;
@@ -146,22 +152,22 @@ abstract class ORM {
     }
 
     public function whereNull($column) {
-    $this->addWhereCondition("$column IS NULL", [], 'AND');
+    $this->addWhereCondition($this->assertIdentifier($column) . " IS NULL", [], 'AND');
     return $this;
     }
 
     public function whereNotNull($column) {
-    $this->addWhereCondition("$column IS NOT NULL", [], 'AND');
+    $this->addWhereCondition($this->assertIdentifier($column) . " IS NOT NULL", [], 'AND');
     return $this;
     }
 
     public function orWhereNull($column) {
-    $this->addWhereCondition("$column IS NULL", [], 'OR');
+    $this->addWhereCondition($this->assertIdentifier($column) . " IS NULL", [], 'OR');
     return $this;
     }
 
     public function orWhereNotNull($column) {
-    $this->addWhereCondition("$column IS NOT NULL", [], 'OR');
+    $this->addWhereCondition($this->assertIdentifier($column) . " IS NOT NULL", [], 'OR');
     return $this;
     }
 
@@ -187,7 +193,7 @@ abstract class ORM {
     public function whereLikePattern($column, $pattern, $boolean = 'AND') {
     $pattern = (string)$pattern;
     if ($pattern === '') return $this;
-    return $this->whereRaw($this->dialect()->likeExpression((string)$column), [$pattern], $boolean);
+    return $this->whereRaw($this->dialect()->likeExpression($this->assertIdentifier($column)), [$pattern], $boolean);
     }
 
     public function orWhereLikePattern($column, $pattern) {
@@ -211,7 +217,7 @@ abstract class ORM {
     $parts = [];
     $params = [];
     foreach ($columns as $col) {
-        $parts[] = $this->dialect()->likeExpression((string)$col);
+        $parts[] = $this->dialect()->likeExpression($this->assertIdentifier($col));
         $params[] = $like;
     }
 
@@ -233,7 +239,7 @@ abstract class ORM {
     }
 
     // Si strictCompare está activo y la columna es un string, aplicamos CAST
-    $column = $this->applyStrictComparisonToColumn($column);
+    $column = $this->applyStrictComparisonToColumn($this->assertIdentifier($column));
 
     $placeholders = implode(', ', array_fill(0, count($values), '?'));
     $condition = "$column IN ($placeholders)";
@@ -247,7 +253,7 @@ abstract class ORM {
         throw new Exception("whereBetween requiere exactamente 2 valores [min, max].");
     }
 
-    $column = $this->applyStrictComparisonToColumn($column);
+    $column = $this->applyStrictComparisonToColumn($this->assertIdentifier($column));
     $this->addWhereCondition("$column BETWEEN ? AND ?", [$range[0], $range[1]], $boolean);
     return $this;
     }
@@ -268,6 +274,8 @@ abstract class ORM {
 
 
     public function select(...$columns) {
+    // Admite columnas, alias y funciones (p. ej. "COUNT(*) AS total"); no valida
+    // identificadores. No pase aquí entrada del usuario sin lista blanca propia.
     if (count($columns) === 1 && $columns[0] === '*') {
         $this->select = '*';
         return $this;
@@ -281,6 +289,9 @@ abstract class ORM {
 
 
     public function orderBy($column, $direction = 'ASC') {
+    // Los identificadores no admiten enlaces (?); ORDER BY es un vector de
+    // inyección si recibe entrada del usuario. Para expresiones use orderByExpr.
+    $column = $this->assertIdentifier($column);
     $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
 
     if (!empty($this->orderBy)) {
@@ -292,6 +303,8 @@ abstract class ORM {
     return $this;
     }
     public function orderByExpr($expr, $direction = 'ASC') {
+    // Vía explícita para expresiones de ordenación; no valida identificadores.
+    // No pase aquí entrada del usuario sin una lista blanca propia del código.
     $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
 
     if (!empty($this->orderBy)) {
@@ -904,6 +917,9 @@ abstract class ORM {
 
 
     public function join($table, $leftColumn, $operator, $rightColumn, $type = 'INNER') {
+    // Estructura propia del código: admite alias de tabla/columna (p. ej.
+    // "pedidos AS p", "p.id"). No valida identificadores; no pases aquí entrada
+    // del usuario sin una lista blanca propia.
     $this->joins[] = "$type JOIN $table ON $leftColumn $operator $rightColumn";
     return $this;
     }
@@ -925,11 +941,16 @@ abstract class ORM {
     return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     public function groupBy($column) {
+    // Admite expresiones (p. ej. SUBSTR(...)); no valida identificadores.
+    // No pase aquí entrada del usuario sin una lista blanca propia del código.
     $this->groupBy = "GROUP BY $column";
     return $this;
     }
 
     public function having($column, $operator, $value) {
+    // Posición de expresión: admite agregados (p. ej. "COUNT(*)") y alias de
+    // SELECT. No valida identificadores; no pases aquí entrada del usuario sin
+    // una lista blanca propia.
     $this->havings[] = ["$column $operator ?", $value];
     return $this;
     }
@@ -1346,6 +1367,32 @@ abstract class ORM {
     : '/^[A-Za-z_][A-Za-z0-9_]*$/';
 
     return (bool)preg_match($pattern, $identifier);
+    }
+
+    /** Operadores de comparación admitidos en condiciones con identificador. */
+    private const COMPARISON_OPERATORS = ['=', '!=', '<>', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE'];
+
+    /**
+     * Valida un identificador de columna/tabla (opcionalmente con un punto)
+     * antes de interpolarlo en SQL. Los enlaces de valores (?) no protegen los
+     * identificadores ni las expresiones, por lo que un argumento que no sea un
+     * identificador literal se rechaza aquí. Para expresiones use orderByExpr,
+     * select, groupBy o whereRaw con entrada propia del código.
+     */
+    private function assertIdentifier($identifier): string {
+    if (!is_string($identifier) || !$this->isSafeIdentifier($identifier, true)) {
+        throw new Exception('Identificador de columna inválido en la consulta.');
+    }
+    return trim($identifier);
+    }
+
+    /** Normaliza y valida el operador de comparación contra la lista blanca. */
+    private function assertComparisonOperator($operator): string {
+    $normalized = strtoupper(trim((string)$operator));
+    if (!in_array($normalized, self::COMPARISON_OPERATORS, true)) {
+        throw new Exception('Operador de comparación no admitido en la consulta.');
+    }
+    return $normalized;
     }
 
     private function parseColumnAndOperator(string $columnExpr): array {
