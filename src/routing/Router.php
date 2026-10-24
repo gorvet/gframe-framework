@@ -71,11 +71,7 @@ class Router {
     // 3. Aplica rutas
     $routeParams = $this->getRouteParamsFromDeclarative($uri);
     $this->startRouteSession($routeParams);
-    $routeParams['currentURL'] = $this->getCurrentURL(); 
-
-/*echo "<pre>";
-    var_dump($routeParams);
-echo "</pre>";*/
+    $routeParams['currentURL'] = $this->getCurrentURL();
 
     // 4. Aplica Middwares
     if (!empty($routeParams['middleware'])) {
@@ -119,10 +115,7 @@ echo "</pre>";*/
 
   private function getRouteParamsFromDeclarative($uri){
     $method = $_SERVER['REQUEST_METHOD'];
-    $uriPath = implode('/', $uri);  
-          /*  echo "<pre>";
-    var_dump(RouteBuilder::all());
-echo "</pre>";*/
+    $uriPath = implode('/', $uri);
 
     foreach (RouteBuilder::all() as $routeMethod => $routesByUri) {
       if ($method === 'OPTIONS') {
@@ -138,7 +131,6 @@ echo "</pre>";*/
             ? '([a-zA-Z0-9_\-]+)' : preg_quote($segment, '#');
         }
         $regexPattern = '#^' . $regexPattern . '$#';
-        //echo "<pre>Comparando: pattern={$pattern} vs uriPath={$uriPath}</pre>";
 
         if (preg_match($regexPattern, $uriPath, $matches)) {
 
@@ -153,9 +145,6 @@ echo "</pre>";*/
           array_shift($matches);
           preg_match_all('#\{([a-zA-Z_]+)\}#', $pattern, $paramNames);
           $params = array_combine($paramNames[1], $matches);
-          /*echo "<pre>params: ";
-          var_dump($params);
-          echo "</pre>";*/
 
           $relativePath = RouteBuilder::relativePathFromController($route['controller']);
 
@@ -224,10 +213,7 @@ echo "</pre>";*/
  
   //Llamamos al render con los parámetros obtenidos
   public function toRender(array $routeParams) {
-    /*echo "to render ";
-    print_r($routeParams);
-    echo "<br><br>";*/
-    $this->renderController->renderView($routeParams);       
+    $this->renderController->renderView($routeParams);
   }
 
 

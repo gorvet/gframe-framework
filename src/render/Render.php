@@ -15,8 +15,6 @@ class Render {
 
 
     public function renderView(array $routeParams) {
-        //$traza = debug_backtrace();
-        //print_r($routeParams);
         $routeParams = $this->normalizeRouteParams($routeParams);
         $this->metasController->reset();
     
@@ -35,10 +33,6 @@ class Render {
             $this->controller = $this->getControllerInstance($routeParams);
 
             $data = $this->executeAction($routeParams);
-            //echo "<pre>";
-            //print_r($routeParams);
-            //echo "</pre>";
-
             $data = $this->interpretDataResponse($data);
         }
 
@@ -51,8 +45,6 @@ class Render {
     }
 
     private function executeAction($routeParams) {
-
-        //var_dump($routeParams);
         if (!empty($routeParams['skipAction']) || empty($routeParams['actionName'])) {
             return []; // o null
         }
@@ -69,7 +61,6 @@ class Render {
 
 
     private function loadView(array $routeParams, $data = []) {
-        //echo '<pre>';print_r($routeParams);echo '</pre>';
         $viewName = $routeParams['view'];
         $relativePath = $routeParams['relativePath'];
         $templateName = $routeParams['templateName'];
@@ -79,10 +70,6 @@ class Render {
         //$groupName=$groupName==$relativePath?"":$groupName;
 
         $metaGroupPath = \GFrame\Modules\ModuleRuntime::file('views', $relativePath . '/' . $groupName . '.group.meta.php', $routeParams['sourceModule'] ?? null) ?? false;
-
-
-
-        //print_r($routeParams);
 
         $metaFilePath = \GFrame\Modules\ModuleRuntime::file('views', $relativePath . '/' . $viewName . '.meta.php', $routeParams['sourceModule'] ?? null) ?? false;
 
@@ -134,10 +121,8 @@ class Render {
 
     private function getControllerInstance(array $routeParams) {
         $controller=$routeParams['controller'];
-        //var_dump($controller);
         $resolvedController = \GFrame\Modules\ModuleRuntime::controller($controller, $routeParams['sourceModule'] ?? null);
         $controllerPath = $resolvedController['path'] ?? $this->resolveControllerPath($controller);
-        // echo'app/controllers/'.$controller.'.php';
 
         if ($controllerPath !== null && file_exists($controllerPath)) {
             //comprobamos la existencia del controlador
@@ -173,8 +158,6 @@ class Render {
 
 
     private function setMetas($metaData, $routeParams) {
-
-        //var_dump($metaData['metaTags']);
         $this->metasController->setRouteParams($routeParams);
 
         if (!empty($routeParams['lang'])) {
