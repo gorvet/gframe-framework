@@ -2,6 +2,20 @@
 
 ## Sin publicar
 
+- Seguridad: reservas atómicas por IP/identidad en autenticación, hash bcrypt de relleno, proxies de confianza y conservación de políticas de cookie existentes. Se mantienen los mensajes de cuentas.
+- Seguridad: preflight MySQL en un proceso con plazo integral de cinco segundos. Requiere PHP CLI/proc_open para esa comprobación; el asistente conserva la instalación visual sin clave de despliegue.
+- HTTP: solo protocolos HTTP/HTTPS, incluidas redirecciones; cabeceras conservadoras configurables y rechazo de canales de ruta incoherentes antes de ejecutarlos (`system` conserva web/AJAX).
+- Correo de acceso: cola existente cuando está instalada, con descarte de tokens caducados/sustituidos; alternativa SMTP síncrona sin procesos por mensaje para proyectos sin el módulo de cola.
+
+- Seguridad: el JSON-LD escapa los caracteres que permiten cerrar su bloque script desde contenido dinámico. Los enlaces de verificación y recuperación exigen una URL pública configurada y no utilizan el Host de la petición; configura APP_URL antes de actualizar aplicaciones que dependían de la URL automática.
+- Seguridad: el instalador rechaza GET y POST, incluido el preflight, cuando existe configuración aunque falte el lock. La recuperación mantiene una respuesta genérica si el correo no puede lanzarse y elimina el contenedor de datos vacío que distinguía cuentas existentes.
+- Seguridad (ORM): `where`, `orWhere`, `whereIn`, `whereNull`/`whereNotNull`, `whereBetween`, `whereLike`/`whereAnyLike`, `having`, `join` y `orderBy` validan sus identificadores de columna/tabla (identificador seguro, un punto opcional) y el operador contra una lista blanca; un argumento no literal lanza excepción en lugar de concatenarse al SQL. Las expresiones siguen en `select`, `groupBy`, `orderByExpr` y `whereRaw`, que requieren entrada propia del código. Cambio de contrato: resuelve las columnas de ordenación/filtrado dinámicas con una lista blanca antes de pasarlas al ORM.
+- Seguridad (sesión): `SessionRuntime` fija las banderas de la cookie antes de iniciar la sesión con valores seguros por defecto (`HttpOnly`, `SameSite=Lax`, `Secure` automático bajo HTTPS) y `use_only_cookies`, configurables con las nuevas claves `session.cookie_*`. Antes dependían del `php.ini` del despliegue.
+- Seguridad (redirección): `Router::pick()` normaliza las barras invertidas antes de validar el destino de redirección, cerrando el rodeo `/\host` que algunos navegadores interpretan como protocolo-relativo hacia un sitio externo.
+- Seguridad (CSRF): caducidad opcional del token para sesiones de invitado (formularios públicos) mediante `security.csrf_guest_max_age` (segundos; `0` lo desactiva). Para usuarios autenticados el token sigue caducando con la sesión (logout o inactividad), sin temporizador propio que fuerce un 403 a mitad de una operación. Un token de invitado caducado se rota y devuelve `to_reload`.
+
+- Skills: manifiesto de complemento en la raíz y distribución con sus metadatos. Instalación local opcional en Codex y sincronización después de actualizaciones con Git, con conservación de hooks, versiones por contenido y comprobación de hashes; sin tareas periódicas.
+
 ## 4.3.3 — 2026-10-22
 
 - Cron: `CronScheduler` interpreta `scheduled_at` explícitamente en UTC al calcular la recurrencia y `CronTaskService` valida las fechas con la misma zona. Conserva la zona del proyecto y evita los aplazamientos adicionales de cuatro o cinco horas con `America/Havana`. Sin migraciones; las tareas ya aplazadas requieren reprogramación selectiva.
