@@ -15,7 +15,7 @@ No todos los helpers tienen el mismo nivel de abstracción: algunos son utilidad
 | `MediaPathHelper` | derivar URL/ruta de thumbnail por sufijo | Solo transforma el string; no comprueba que el archivo exista. |
 | `MenuHelper` | render de menús HTML | Acoplado a la estructura/clases de navegación de GFrame/Bootstrap. |
 | `PaginationHelper` | render de paginación HTML | Acoplado a IDs/clases usados por el frontend de GFrame. |
-| `LogHelper` | log plano a archivo | Utilidad simple; no sustituye un sistema de logging estructurado. |
+| `LogHelper` | log plano (`write`) y por niveles con contexto, rotación y redacción | Diagnóstico y trazas operativas; no sustituye una plataforma de auditoría u observabilidad. |
 | `CorsHelper` | emisión de cabeceras CORS de bajo nivel | En rutas normales usa el middleware/canal de GFrame antes de emitir CORS manualmente. |
 
 Estas clases son globales y Composer las carga por classmap; no utilizan namespace `GFrame\`. **Ese mecanismo de carga no las convierte en legacy ni deprecated.** En esta guía, “legacy” se reserva para wrappers y contratos conservados expresamente por compatibilidad, como las funciones de `LegacyCompatibility.php` descritas más abajo.
@@ -202,24 +202,37 @@ Para listados AJAX consulta [Frontend core](frontend-core.md).
 
 ## LogHelper
 
+Escritura plana compatible (histórica) y registro por niveles con contexto.
+
 ```php
+// Plano, compatible: escribe un bloque con marca de tiempo.
 LogHelper::write('Sincronización iniciada', 'sync');
 LogHelper::write($payload, 'debug_payload');
+
+// Por niveles: debug, info, warning, error. El 2.º argumento es el contexto
+// (se serializa a JSON) y el 3.º el canal (nombre de archivo).
+LogHelper::info('Usuario autenticado', ['user_id' => $id], 'app');
+LogHelper::warning('Reintento de pago', ['intento' => 2], 'pagos');
+LogHelper::error('Fallo externo', ['servicio' => 'facturación'], 'app');
 ```
 
 Cuando `ABSPATH` existe, escribe en:
 
 ```text
-<proyecto>/logs/<filename>.txt
+<proyecto>/logs/<canal>.txt
 ```
 
-El nombre se reduce a caracteres alfanuméricos, `_`, `-` y `.`. Los datos no string se convierten con `print_r()`.
+El nombre del canal se reduce a caracteres alfanuméricos, `_`, `-` y `.`. En `write()` los datos no string se convierten con `print_r()`.
 
-El helper usa append y bloqueo de archivo. Las operaciones de creación/escritura están silenciadas con `@`, por lo que no ofrece un contrato explícito para saber si el log pudo escribirse.
+Comportamiento del registro por niveles:
 
-Úsalo para diagnóstico sencillo, no como sustituto de una estrategia de auditoría, observabilidad o logging estructurado cuando el proyecto necesite garantías mayores.
+- **Umbral**: `logging.level` (por defecto `debug`, registra todo) descarta los niveles por debajo del configurado. `write()` no se filtra.
+- **Contexto**: se serializa a JSON; las claves que parezcan sensibles (`pass`, `token`, `secret`, `authorization`, `cookie`, `csrf`, `api_key`, `credential`) se sustituyen por `[redacted]`, también dentro de objetos y de forma recursiva.
+- **Rotación**: `logging.max_bytes` (por defecto `5000000`; `0` la desactiva) conserva una copia anterior en `<canal>.txt.1` cuando el archivo superaría ese tamaño.
 
-No registres contraseñas, claves privadas, tokens completos ni otros secretos.
+El helper usa append y bloqueo de archivo. Las operaciones de creación/escritura están silenciadas con `@`, por lo que no ofrece un contrato explícito para saber si el log pudo escribirse. Úsalo para diagnóstico y trazas operativas; no sustituye una plataforma de auditoría u observabilidad cuando el proyecto necesite garantías mayores.
+
+Aun con la redacción automática, no registres deliberadamente contraseñas, claves privadas, tokens completos ni otros secretos.
 
 ## CorsHelper
 
