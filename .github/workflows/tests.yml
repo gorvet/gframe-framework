@@ -113,10 +113,6 @@ jobs:
   phpstan:
     name: Análisis estático (PHPStan)
     runs-on: ubuntu-latest
-    # Sin baseline todavía: no bloquea el pipeline. Genera y commitea
-    # phpstan-baseline.neon (composer analyse -- --generate-baseline) y luego
-    # quita continue-on-error para hacerlo obligatorio.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -127,11 +123,15 @@ jobs:
       - uses: ramsey/composer-install@v3
         with:
           dependency-versions: locked
-      # PHPStan se instala en el runner sin tocar composer.lock del repositorio.
-      - run: composer require --dev "phpstan/phpstan:2.3.1" --no-interaction --no-scripts
-      - name: Capturar baseline para revisión
-        if: github.ref == 'refs/heads/codex/phpstan-plugin-sync'
-        run: |
-          composer analyse -- --generate-baseline=phpstan-reviewed.neon
-          cat phpstan-reviewed.neon
       - run: composer analyse
+      - name: Verificar rechazo de errores nuevos
+        run: |
+          test ! -e src/GFrame/StaticAnalysisRegressionProbe.php
+          trap 'rm -f src/GFrame/StaticAnalysisRegressionProbe.php .phpstan-regression.json' EXIT
+          printf '%s\n' '<?php namespace GFrame; function staticAnalysisRegressionProbe(): int { return "invalid"; }' > src/GFrame/StaticAnalysisRegressionProbe.php
+          set +e
+          composer analyse -- --error-format=json > .phpstan-regression.json
+          result=$?
+          set -e
+          test "$result" -ne 0
+          php -r '$r=json_decode(file_get_contents(".phpstan-regression.json"),true,512,JSON_THROW_ON_ERROR); foreach ($r["files"] ?? [] as $path=>$file) { if (str_ends_with($path,"StaticAnalysisRegressionProbe.php")) foreach ($file["messages"] as $message) if (($message["identifier"] ?? "") === "return.type") exit(0); } exit(1);'

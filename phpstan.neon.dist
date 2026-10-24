@@ -3,6 +3,7 @@ includes:
 
 parameters:
     level: 5
+    reportUnmatchedIgnoredErrors: true
     rememberPossiblyImpureFunctionValues: false
     dynamicConstantNames:
         ABSPATH: string
