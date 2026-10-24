@@ -109,3 +109,24 @@ jobs:
       - run: python -m pip install --disable-pip-version-check PyYAML==6.0.3
       - run: python bin/validate-skills-metadata.py
       - run: python -m unittest discover -s tests -p 'test_skill_metadata.py'
+
+  phpstan:
+    name: Análisis estático (PHPStan)
+    runs-on: ubuntu-latest
+    # Sin baseline todavía: no bloquea el pipeline. Genera y commitea
+    # phpstan-baseline.neon (composer analyse -- --generate-baseline) y luego
+    # quita continue-on-error para hacerlo obligatorio.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, pdo_sqlite
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: locked
+      # PHPStan se instala en el runner sin tocar composer.lock del repositorio.
+      - run: composer require --dev "phpstan/phpstan:^2.1" --no-interaction --no-scripts
+      - run: composer analyse

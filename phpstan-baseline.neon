@@ -1,0 +1,10 @@
+# Baseline de PHPStan.
+#
+# Vacío por ahora: genera el baseline real una vez, con red, desde el checkout:
+#   composer require --dev "phpstan/phpstan:^2.1"
+#   composer analyse -- --generate-baseline
+# y commitéalo. Después puedes quitar `continue-on-error` del job de CI para
+# hacerlo obligatorio. El baseline recoge los hallazgos existentes para que solo
+# fallen los nuevos.
+parameters:
+    ignoreErrors: []

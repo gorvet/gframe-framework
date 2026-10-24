@@ -1,0 +1,11 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    # El core combina clases con namespace y clases globales heredadas; se
+    # analiza src. Ajusta el nivel al endurecer el baseline.

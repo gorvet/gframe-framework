@@ -60,6 +60,7 @@
         "skills:check": "@php bin/validate-skills.php",
         "modules:list": "@php bin/modules.php list",
         "new": "@php bin/new-project.php",
+        "analyse": "@php packages/bin/phpstan analyse --no-progress",
         "check": [
             "@lint",
             "@test",
