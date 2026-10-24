@@ -50,6 +50,46 @@ abstract class ORM {
     $pdo->rollBack();
     }
 
+    /**
+     * Ejecuta el callback dentro de una transacción con rollback garantizado.
+     * Si la conexión ya tiene una transacción activa, se une a ella (el
+     * propietario externo confirma o revierte). Cualquier excepción se propaga
+     * tras revertir, de modo que una conexión no queda con una transacción
+     * abierta por un error no controlado. Devuelve lo que devuelva el callback.
+     */
+    public static function transaction(callable $callback, ?string $connectionName = null) {
+    $pdo = self::checkPDO($connectionName);
+    if ($pdo->inTransaction()) {
+        return $callback();
+    }
+    $pdo->beginTransaction();
+    try {
+        $result = $callback();
+        $pdo->commit();
+        return $result;
+    } catch (\Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            try { $pdo->rollBack(); } catch (\Throwable $ignore) {}
+        }
+        throw $exception;
+    }
+    }
+
+    /**
+     * Cierra y reabre la conexión indicada. Útil en procesos de larga duración
+     * (workers, cron) cuando el servidor cierra conexiones inactivas. Se rechaza
+     * con una transacción activa para no perder trabajo sin confirmar.
+     */
+    public static function reconnect(?string $connectionName = null): PDO {
+    $name = static::resolveConnectionName($connectionName);
+    $existing = self::$pdo[$name] ?? null;
+    if ($existing instanceof PDO && $existing->inTransaction()) {
+        throw new Exception('No se puede reconectar con una transacción activa.');
+    }
+    self::disconnect($name);
+    return self::checkPDO($name);
+    }
+
     public static function disconnect(?string $connectionName = null): void {
     if ($connectionName === null) {
         self::$pdo = [];
@@ -378,6 +418,15 @@ abstract class ORM {
 
     // Eager loading básico por relaciones definidas en el modelo.
     if (!empty($this->with)) {
+    // Aviso de posible N+1: el eager loading resuelve relaciones por fila. Solo
+    // en modo depuración para no añadir ruido en producción.
+    if (defined('DebugMode') && DebugMode && count($results) > 20 && class_exists('LogHelper')) {
+        \LogHelper::warning('Posible N+1 en eager loading', [
+            'model' => static::class,
+            'relations' => $this->with,
+            'rows' => count($results),
+        ], 'orm');
+    }
     foreach ($results as &$row) {
         $instance = new static($row);
         $instance->connection = $this->resolveCurrentConnectionName();
