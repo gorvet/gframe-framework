@@ -38,7 +38,7 @@ For update/delete, an AND empty IN prevents matching rows. Short-circuit an empt
 
 ## Allowed Ordering
 
-`orderBy()` and `orderByExpr()` interpolate their column/expression argument. Repeated calls append criteria; only case-insensitive `DESC` selects descending order, with other values falling back to `ASC`. Choose columns/expressions from a server-owned allowlist; direction normalization does not make a client-supplied expression safe.
+`orderBy()` validates its column against a safe identifier (`[A-Za-z_][A-Za-z0-9_]*`, one optional dot for `table.column`) and throws on anything else; `orderByExpr()` is the explicit expression path and does **not** validate. Repeated calls append criteria; only case-insensitive `DESC` selects descending order, with other values falling back to `ASC`. The identifier/operator guards in `where()`, `orWhere()`, `whereIn()`, `whereNull()`, `whereBetween()`, `whereLike()` and `orderBy()` are defense-in-depth on the request-facing builders, not a substitute for choosing columns/expressions from a server-owned allowlist. Query-structure positions stay code-owned and unchecked because they admit expressions/aliases/aggregates: `select()`, `groupBy()`, `having()`, `join()`, `orderByExpr()` and `whereRaw()`. Direction normalization does not make a client-supplied expression safe.
 
 Example inside a method receiving normalized `$sortKey` and `$direction`, with `$query` already scoped:
 

@@ -35,6 +35,10 @@ Production deployment and release publication remain separate from validating a 
 
 ## Distribution and Installer Contracts
 
+Fresh web installers preserve the visual copy/deploy-and-open workflow, without a deployment key or an additional console step. Existing configuration/lock guards remain first. MySQL preflight uses bin/database-preflight.php in a bounded CLI process (five seconds including DNS/auth/query); keep credentials on stdin, terminate on timeout and fail closed when CLI/proc_open/PDO is unavailable. The final installation has separate timing.
+
+The visual installer rejects every action when configuration exists but the installation lock is missing, including the database preflight. Preserve the config/app.php, .env and legacy-configuration guards; restore a valid lock and use the updater instead of deleting configuration to reinstall. A fresh installer still needs deployment access control: its CSRF token does not authenticate the deployment owner. Do not describe the PDO timeout as a guaranteed deadline for the full database handshake.
+
 Read the following only for installer/updater/distribution development or the specific integration surface being verified. Updating one installed application does not require redesigning or retesting the entire visual installer.
 
 Module schema changes must be delivered as ordered MySQL and SQLite migrations in the module manifest. Fresh installations baseline those migrations after installing the current schema.

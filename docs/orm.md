@@ -110,6 +110,22 @@ Los métodos de construcción devuelven la instancia para encadenar llamadas. La
 
 También existen `orWhereIn()`, `orWhereNull()`, `orWhereNotNull()`, `orWhereBetween()` y `orWhereRaw()`. Usa grupos cuando combines AND y OR para que la precedencia represente la regla de negocio.
 
+### Validación de identificadores y operadores
+
+Los enlaces (`?`) protegen los **valores**, nunca los **identificadores** (columnas, tablas) ni los **operadores**: `ORDER BY`, por ejemplo, no admite parámetros. Por eso los constructores que suelen recibir campos de la petición —`where()`, `orWhere()`, `whereIn()`, `whereNull()`, `whereNotNull()`, `whereBetween()`, `whereLike()`/`whereAnyLike()` y `orderBy()`— validan sus argumentos de columna contra un identificador seguro (`[A-Za-z_][A-Za-z0-9_]*`, con un punto opcional para `tabla.columna`) y, donde aplica, el operador contra una lista blanca (`=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`, `LIKE`, `NOT LIKE`). Un argumento que no cumpla lanza una excepción en lugar de concatenarse al SQL.
+
+Las posiciones que forman la **estructura** de la consulta admiten expresiones (funciones, alias, agregados) y **no** validan identificadores: `select('COUNT(*) AS total')`, `groupBy('SUBSTR(created_at, 1, 7)')`, `having('COUNT(*)', '>', 1)`, `join('pedidos AS p', 'p.user_id', '=', 'users.user_id')`, `orderByExpr('LENGTH(name)', 'DESC')` y `whereRaw('precio > ?', [10])`. Son de entrada propia del código: nunca pases ahí datos del usuario sin una lista blanca.
+
+Cuando una columna de ordenación o filtrado dependa de la petición, resuélvela siempre con una lista blanca definida en el código antes de pasarla al ORM:
+
+```php
+// Resuelve una columna de ordenación dinámica con una lista blanca del código.
+$sortable = ['nombre' => 'name', 'reciente' => 'product_id'];
+$requestedSort = 'nombre';                         // valor recibido de la petición
+$sortColumn = $sortable[$requestedSort] ?? 'product_id';
+$sortedRows = (new ProductModel())->orderBy($sortColumn, 'ASC')->get();
+```
+
 Un array vacío en `whereIn()` u `orWhereIn()` agrega una condición falsa (`1 = 0`), respetando AND/OR y los grupos. Una consulta con solo esa condición no devuelve filas ni modifica registros. Un OR con otra condición verdadera puede devolver filas; agrupa correctamente los filtros de autorización. Antes de esta mejora, la lista vacía omitía el filtro: si tu aplicación utiliza una lista vacía para indicar «sin filtro», omite explícitamente la llamada, por ejemplo con `when($ids !== [], fn($query) => $query->whereIn('product_id', $ids))`.
 
 ### Búsqueda textual
@@ -280,6 +296,8 @@ Una instancia del ORM conserva el estado de construcción de su consulta. Al reu
 Si consultas otra tabla mediante `queryTable()`, vuelve a comprobar la conexión que utiliza esa consulta. No deduzcas su ámbito a partir de un modelo distinto que se haya usado antes. Mantén además los filtros de autorización y tenant del servicio: una transacción protege la unidad de las escrituras, no concede permisos sobre las filas.
 
 ## Relaciones y joins
+
+`reconnect()` rechaza transacciones activas tanto en la caché del ORM como en la conexión obtenida directamente de `DatabaseManager`. No cierra una transacción abierta por otro consumidor de esa conexión.
 
 `join()` y `leftJoin()` permiten unir tablas. Selecciona columnas sin ambigüedad y comprueba que el esquema y la conexión permitan esa consulta. La existencia de `rightJoin()` no garantiza que cualquier versión de SQLite lo admita.
 

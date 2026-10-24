@@ -15,6 +15,22 @@ return [
         'default' => 'main',
         'connections' => [],
     ],
+    'security' => [
+        'trusted_proxies' => [],
+        'headers' => [
+            'enabled' => true,
+            'referrer_policy' => 'strict-origin-when-cross-origin',
+            'frame_options' => null,
+            'content_security_policy' => null,
+            'hsts_max_age' => 0,
+            'hsts_include_subdomains' => false,
+        ],
+        // Caducidad del token CSRF (en segundos) SOLO para sesiones de invitado
+        // (formularios públicos). Para usuarios autenticados el token caduca con
+        // la sesión (logout o inactividad), nunca con un temporizador propio.
+        // 0 lo desactiva también para invitados (comportamiento histórico).
+        'csrf_guest_max_age' => 0,
+    ],
     'cron' => [
         'mode' => 'real',
         'executor' => 'cli',
@@ -27,6 +43,12 @@ return [
         'connection' => null,
         'lifetime' => 1800,
         'idle_timeout' => 1800,
+        'cookie_httponly' => true,
+        'cookie_secure' => null,
+        'cookie_samesite' => null,
+        'cookie_path' => null,
+        'cookie_domain' => null,
+        'cookie_lifetime' => null,
         'redis' => [
             'host' => '127.0.0.1',
             'port' => 6379,
@@ -37,6 +59,13 @@ return [
         ],
     ],
     'auth' => [
+        'rate_limit' => [
+            'enabled' => true,
+            'window_seconds' => 900,
+            'ip_attempts' => 100,
+            'login_attempts' => 10,
+            'mail_attempts' => 5,
+        ],
         'registration_admin_notice' => [
             'enabled' => false,
             'user_ids' => [],

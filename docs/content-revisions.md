@@ -1,5 +1,7 @@
 # Revisiones del contenido
 
+En SQLite, si dos escritores intentan promover sus lecturas a escritura, el guardado con historial revierte y repite la transacción completa ante SQLITE_BUSY (incluido BUSY_SNAPSHOT), durante una ventana de reintentos de cinco segundos. Cada intento vuelve a comprobar la revisión mediante CAS: solo un escritor puede guardar la revisión esperada. Al agotar la ventana se propaga el error; otros errores se propagan sin repetición. El timeout de bloqueo configurado en PDO puede prolongar un intento. Los reintentos se limitan a esta operación de base de datos; no deben incluir correo, archivos u otros efectos externos.
+
 ![Comparación de dos revisiones guardadas del artículo](assets/4.3.1/revisiones.png)
 
 *Comparación nativa de los valores anterior y posterior, integrada en una página de ejemplo de Estudio Nexo. El HTML histórico se muestra como texto, sin ejecutarlo. Captura de GFrame 4.3.1.*

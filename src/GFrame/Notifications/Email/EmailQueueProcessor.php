@@ -31,7 +31,7 @@ final class EmailQueueProcessor implements NotificationBatchProcessor
                 else $lost++;
             } catch (Exception $exception) {
                 $attempts = (int)($notification['attempts'] ?? 0);
-                if ($attempts >= $maxAttempts) {
+                if ($exception instanceof \GFrame\Mail\ExpiredAccessMail || $attempts >= $maxAttempts) {
                     if (NotificationQueueLease::finish($this->queue, $notification, 'failed', $exception->getMessage())) $failed++;
                     else $lost++;
                 } else {

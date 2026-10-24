@@ -8,7 +8,8 @@ use GFrame\Install\DatabasePreflight;
 use GFrame\Modules\ModuleCatalog;
 use GFrame\Modules\ModuleAssetPublisher;
 
-session_start();
+session_start(['use_strict_mode' => 1, 'use_only_cookies' => 1, 'cookie_httponly' => true,
+    'cookie_samesite' => 'Strict', 'cookie_secure' => !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off']);
 header('Cache-Control: no-store');
 
 $projectRoot = __DIR__;
@@ -40,6 +41,13 @@ $installed = is_file($lock);
 if ($installed) {
     header('Location: /' . ltrim(trim($basePath, '/') . '/', '/'), true, 303);
     exit;
+}
+foreach (['config/app.php', '.env', 'config/bootstrap.php', 'core/Config.php'] as $configurationFile) {
+    if (is_file($projectRoot . '/' . $configurationFile)) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        exit('El instalador está deshabilitado porque ya existe configuración. Restaura storage/gframe-installed.json antes de continuar con el mantenimiento.');
+    }
 }
 $moduleCatalog = ModuleCatalog::frameworkDefault();
 if (!$installed) {

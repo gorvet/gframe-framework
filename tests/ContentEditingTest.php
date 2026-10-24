@@ -9,6 +9,12 @@ use PHPUnit\Framework\TestCase;
 
 final class ContentEditingTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        $path = sys_get_temp_dir() . '/gframe-expected-presence-' . getmypid() . '.log';
+        if (is_file($path)) unlink($path);
+    }
+
     public function testExistingCustomDialectWithoutExactComparisonFailsClosed(): void
     {
         $dialect = $this->createStub(\DatabaseDialectInterface::class);
@@ -104,6 +110,7 @@ final class ContentEditingTest extends TestCase
     #[RunInSeparateProcess]
     public function testPresenceIsolationExpiryControllerAndRepeatableMigration(): void
     {
+        ini_set('error_log', sys_get_temp_dir() . '/gframe-expected-presence-' . getmypid() . '.log');
         $pdo = $this->database();
         $runner = MigrationRunner::frameworkDefault();
         $pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/database/schema/sqlite/auth.sql'));

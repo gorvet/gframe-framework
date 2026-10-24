@@ -92,12 +92,12 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
 }
 $composer = Get-Content -LiteralPath (Join-Path $sourceRoot 'composer.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($composer.name -ne 'gorvet/gframe') { throw 'La fuente no es el framework GFrame.' }
-$manifest = [ordered]@{
-    '$schema' = 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json'
-    name = 'gframe-skills'
-    version = $Version
-    description = 'Skills de GFrame para desarrollo, mantenimiento y coordinación de sus contratos técnicos.'
+$manifest = Get-Content -LiteralPath (Join-Path $sourceRoot 'plugin.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+if ($manifest.name -ne 'gframe-skills' -or $manifest.'$schema' -ne 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json') {
+    throw 'Manifiesto de GFrame Skills inválido.'
 }
+if ($manifest.extensions.'com.openai'.interface.shortDescription.Length -gt 30) { throw 'El subtítulo supera los 30 caracteres.' }
+$manifest.version = $Version
 $claude = [ordered]@{ name = $manifest.name; version = $Version; description = $manifest.description }
 $evidence = [ordered]@{
     schema_version = 1

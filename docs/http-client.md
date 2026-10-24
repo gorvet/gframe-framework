@@ -6,6 +6,8 @@
 
 `HttpClient` permite que una aplicación GFrame haga peticiones HTTP hacia servicios externos. Es una clase global del core y utiliza cURL.
 
+Solo admite URL HTTP/HTTPS, también en cada redirección. Otros protocolos, como `file://` o FTP, se rechazan. Esta restricción no bloquea direcciones privadas por HTTP: el servicio del proyecto debe autorizar los destinos que consume y no aceptar una URL arbitraria del visitante.
+
 No debe confundirse con [Acceso API](api-access.md):
 
 ```text

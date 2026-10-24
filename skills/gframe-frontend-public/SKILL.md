@@ -9,6 +9,8 @@ For new symbols or a naming review, use the matching-package [shared naming refe
 
 Use this when the task is about public-facing GFrame pages rather than admin screens.
 
+View, section, modal, card and SweetAlert titles never end with a full stop, including dynamically supplied titles. Preserve question/exclamation marks and punctuation within the title; body text retains normal sentence punctuation. For feedback helper behavior, see the [shared feedback conventions](../gframe-frontend-admin/references/ajax-feedback-pattern.md).
+
 Examples:
 
 - home and marketing pages

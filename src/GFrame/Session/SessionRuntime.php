@@ -27,6 +27,8 @@ final class SessionRuntime
             session_set_save_handler($handler, true);
         }
         ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        self::applyCookieParams();
         $name = trim((string)ConfigRepository::get('session.name', ''));
         if ($name === '' && defined('session_name')) {
             $name = trim((string)constant('session_name'));
@@ -71,6 +73,36 @@ final class SessionRuntime
         if ($password !== '' && !$redis->auth($password)) throw new \RuntimeException('Redis rechazó las credenciales de sesiones.');
         $redis->select((int)ConfigRepository::get('session.redis.database', 0));
         return new RedisSessionHandler($redis, (string)ConfigRepository::get('session.redis.prefix', 'gframe:session:'), self::lifetime());
+    }
+
+    /**
+     * Fija las banderas de la cookie de sesión antes de iniciarla. Los valores
+     * seguros son el predeterminado y pueden ajustarse por configuración:
+     * HttpOnly activo, SameSite=Lax y Secure automático bajo HTTPS. Debe
+     * invocarse antes de session_start().
+     */
+    private static function applyCookieParams(): void
+    {
+        if (!filter_var(ini_get('session.use_cookies'), FILTER_VALIDATE_BOOLEAN)) return;
+        $current = session_get_cookie_params();
+        $sameSite = trim((string)(ConfigRepository::get('session.cookie_samesite') ?? ($current['samesite'] ?: 'Lax')));
+        if (!in_array($sameSite, ['Lax', 'Strict', 'None'], true)) {
+            $sameSite = 'Lax';
+        }
+
+        // null (predeterminado) = automático según HTTPS; un booleano explícito lo fuerza.
+        $secure = ConfigRepository::get('session.cookie_secure', null);
+        $secure = $secure === null ? ($current['secure'] || \GFrame\Http\RequestSecurity::isSecure()) : (bool)$secure;
+        if ($sameSite === 'None') $secure = true;
+
+        session_set_cookie_params([
+            'lifetime' => max(0, (int)(ConfigRepository::get('session.cookie_lifetime') ?? $current['lifetime'])),
+            'path' => (string)(ConfigRepository::get('session.cookie_path') ?? $current['path']),
+            'domain' => (string)(ConfigRepository::get('session.cookie_domain') ?? $current['domain']),
+            'secure' => $secure,
+            'httponly' => (bool)ConfigRepository::get('session.cookie_httponly', true),
+            'samesite' => $sameSite,
+        ]);
     }
 
     private static function lifetime(): int

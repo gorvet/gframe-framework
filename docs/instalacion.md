@@ -83,6 +83,12 @@ Los módulos MVC conservan sus originales dentro del paquete. En `app` se crean 
 
 ## Comprobar la instalación
 
+Si falta `storage/gframe-installed.json` pero existe `config/app.php`, `.env` o configuración anterior del proyecto, el asistente responde 403 para GET y POST, incluida la comprobación de base de datos. Restaura el registro desde una copia válida y utiliza el actualizador; no elimines la configuración para intentar reinstalar sobre los datos existentes.
+
+En una instalación nueva, abre el asistente visual después de copiar o desplegar el proyecto. No requiere clave de despliegue ni un paso adicional de consola. El CSRF sigue protegiendo sus acciones; el despliegue decide cuándo hacer público el proyecto aún sin configurar.
+
+El preflight MySQL requiere `proc_open` y PHP CLI con PDO MySQL; configura `GFRAME_PHP_BINARY` si su ruta no se detecta. DNS, conexión, autenticación y consulta se ejecutan en un proceso limitado a cinco segundos en total. Las credenciales viajan por stdin, sin argumentos de consola ni archivos temporales. Un timeout termina el proceso y no confirma conectividad. La instalación final conserva sus propias comprobaciones y no está incluida en ese plazo de preflight.
+
 En un perfil administrado, abre `/login` y accede con la cuenta inicial. Comprueba también una URL inexistente: debe responder con estado HTTP 404 y mostrar la página del framework.
 
 Antes de publicar, desactiva la depuración y comprueba [la configuración del entorno](configuracion.md). Si el proyecto envía correos, configura SMTP y verifica un envío. Si utiliza campañas programadas, configura la ejecución periódica de [tareas programadas](cron-runner.md); es el proceso que revisa y ejecuta los envíos pendientes aunque no haya usuarios navegando.

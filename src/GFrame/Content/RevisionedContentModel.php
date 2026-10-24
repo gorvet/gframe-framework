@@ -107,6 +107,8 @@ abstract class RevisionedContentModel extends VersionedContentModel
     {
         $pdo = $this->pdo();
         if ($pdo->inTransaction()) throw new LogicException('Esta operación debe ser dueña de la transacción; no admite transacciones anidadas.');
+        $dialect = $this->dialect();
+        if (method_exists($dialect, 'transactionWithWriteRetry')) return $dialect->transactionWithWriteRetry($pdo, $operation);
         $pdo->beginTransaction();
         try { $result = $operation(); $pdo->commit(); return $result; }
         catch (\Throwable $exception) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $exception; }

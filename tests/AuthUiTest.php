@@ -125,24 +125,23 @@ final class AuthUiTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    public function testResendVerificationQueuesTheSharedTemplateWithoutExposingToken(): void
+    public function testAccessMailUsesTheSharedTemplateWithoutExposingTokenOrLaunchingWorkers(): void
     {
         require_once __DIR__ . '/AuthModelTest.php';
         require_once $this->modulePath . '/application/app/controllers/auth-ui/AuthController.php';
+        require_once __DIR__ . '/NotificationEmailTest.php';
         define('site_url', 'https://example.test/app/');
+        \GFrame\Config\ConfigRepository::replace(['app' => ['url' => 'https://example.test/app/']]);
         $users = new InMemoryAuthModel();
         $auth = $users;
-        $async = new class extends \Async {
-            public ?\Closure $job = null;
-            public function create(\Closure $closure): void { $this->job = $closure; }
-        };
-        $controller = new AuthController($auth, null, new \GFrame\Mail\MailService(null, null, $async));
+        $sender = new MemoryMailSender();
+        $controller = new AuthController($auth, accessMail: new \GFrame\Mail\AccessMailService($sender));
         $_POST = ['register_email' => 'user@example.test', 'register_password' => 'Password-123'];
         $registration = $controller->register();
         self::assertSame('account_registered', $registration['code']);
         self::assertArrayNotHasKey('token', (array)($registration['data'] ?? []));
-        self::assertInstanceOf(\Closure::class, $async->job);
-        $initialMail = (new \ReflectionFunction($async->job))->getStaticVariables();
+        $initialMail = $sender->last;
+        self::assertSame(10, $initialMail['options']['timeout']);
         self::assertStringStartsWith('https://example.test/app/login/verify?v=', $initialMail['variables']['aHref']);
         self::assertStringContainsString('Gracias por registrarte.', $initialMail['variables']['p1']);
         $_POST = ['login_email' => 'user@example.test'];
@@ -150,8 +149,7 @@ final class AuthUiTest extends TestCase
         self::assertSame('verification_requested', $response['code']);
         self::assertArrayNotHasKey('token', $response);
         self::assertArrayNotHasKey('token', (array)($response['data'] ?? []));
-        self::assertInstanceOf(\Closure::class, $async->job);
-        $captured = (new \ReflectionFunction($async->job))->getStaticVariables();
+        $captured = $sender->last;
         self::assertSame('mailTemplate', $captured['template']);
         self::assertSame('Hola, user.', $captured['variables']['greeting']);
         self::assertSame('Verifica tu cuenta · GFrame', $captured['subject']);
@@ -161,7 +159,7 @@ final class AuthUiTest extends TestCase
         $response = $controller->recovery();
         self::assertSame('recovery_requested', $response['code']);
         self::assertArrayNotHasKey('token', (array)($response['data'] ?? []));
-        $recoveryMail = (new \ReflectionFunction($async->job))->getStaticVariables();
+        $recoveryMail = $sender->last;
         self::assertSame('Recupera tu cuenta · GFrame', $recoveryMail['subject']);
         self::assertSame('Hola, user.', $recoveryMail['variables']['greeting']);
         self::assertSame('Establecer una contraseña', $recoveryMail['variables']['aText']);

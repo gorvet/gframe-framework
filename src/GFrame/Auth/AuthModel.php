@@ -169,7 +169,10 @@ class AuthModel extends \ORM
     {
         try {
             $user = $this->findByEmail($this->normalizeEmail($email));
-            if ($user === null || !password_verify($password, (string)($user['password'] ?? ''))) {
+            // Bcrypt de coste 12 también para correos ausentes. No garantiza tiempo constante.
+            $hash = $user['password'] ?? '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.';
+            $validPassword = password_verify($password, (string)$hash);
+            if ($user === null || !$validPassword) {
                 return $this->error('invalid_user');
             }
 

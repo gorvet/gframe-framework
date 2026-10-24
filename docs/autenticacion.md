@@ -1,5 +1,17 @@
 # Autenticación
 
+## Protección de solicitudes y correo de acceso
+
+El controlador estándar conserva los mensajes de registro, login y reenvío. Antes de ejecutar bcrypt o solicitar correo reserva cupo por dirección IP y por identidad normalizada. `auth.rate_limit` configura `enabled` (true), `window_seconds` (900), `ip_attempts` (100), `login_attempts` (10) y `mail_attempts` (5). Registro, recuperación y reenvío comparten el cupo de correo por identidad; reset tiene su propio cupo por hash del token. Los intentos aceptados consumen cupo aunque luego fallen o tengan éxito. El modelo mantiene su API y no aplica una política HTTP a sus llamadas internas. Para correos inexistentes, login verifica un hash bcrypt de relleno de coste 12; reduce la diferencia de trabajo, sin prometer tiempo constante.
+
+El almacenamiento `storage/auth-rate/attempts.json` necesita escritura y bloqueo fiable. Las reservas de IP e identidad se hacen bajo el mismo bloqueo antes de realizar el trabajo. Se eliminan contadores vencidos en cada solicitud y se limita el tamaño del almacenamiento; no se crean archivos por correo. Un almacenamiento corrupto, lleno o inaccesible rechaza la operación con `auth_rate_limit_unavailable`; el cupo agotado devuelve `auth_rate_limited` y `data.retry_after`. Varios servidores necesitan un almacenamiento compartido con bloqueos fiables para compartir cuotas. Detrás de un proxy configura `security.trusted_proxies`; no se confía directamente en la IP reenviada por un visitante.
+
+Los correos de verificación y recuperación usan `AccessMailService`. Si `notifications-email` está instalado se persisten en la cola de correo existente, procesada por su tarea cron; asegúrate de que el runner funciona. No se lanza un proceso por correo. Sin ese módulo, el envío es síncrono con timeout SMTP de diez segundos por operación, y la respuesta puede tardar mientras SMTP responde. Esto no constituye un plazo integral para todo el intercambio SMTP. El fallo al persistir una cola instalada no provoca otro envío alternativo.
+
+Antes de enviar un correo de acceso encolado se comprueban el token actual de la cuenta, su estado y su caducidad estándar de 24 horas. Los mensajes vencidos o sustituidos por una solicitud posterior terminan como fallidos sin reintentos. La cola contiene el enlace de acceso y debe conservarse privada, igual que los tokens de cuentas. Un correo ya aceptado por SMTP no puede retirarse y un fallo entre SMTP y confirmación de la cola puede duplicarlo. Los adaptadores con tokens o repositorios de identidad personalizados deben adaptar este transporte; no se cambia su política implícitamente.
+
+Los avisos administrativos de registro conservan su flujo independiente. Persistencia o aceptación SMTP no garantizan recepción en la bandeja del usuario.
+
 ![Formulario de acceso conectado con los contratos de autenticación](assets/4.3.1/autenticacion.png)
 
 *La interfaz nativa de acceso utiliza los contratos descritos en esta guía. Es un ejemplo del módulo auth-ui; el núcleo de autenticación también puede integrarse en otras interfaces. Captura de GFrame 4.3.1.*

@@ -13,7 +13,7 @@
 
 <div id="knowledgeMediaUpload" class="card p-4 mb-4 d-none">
     <div class="drop-zone text-center p-4" data-ml-upload data-ml-dropzone>
-        <h2 class="h5 mb-3">Arrastra aquí los archivos para subirlos o selecciónalos desde tu equipo.</h2>
+        <h2 class="h5 mb-3">Arrastra aquí los archivos para subirlos o selecciónalos desde tu equipo</h2>
         <input type="file" id="knowledgeMediaFile" data-ml-file multiple hidden>
         <button type="button" class="btn btn-secondary ms-2" id="knowledgeMediaClose">Cancelar</button>
         <button type="button" class="btn btn-primary" id="knowledgeMediaSelect" data-ml-uploadbtn>Seleccionar archivos</button>

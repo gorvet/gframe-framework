@@ -1,5 +1,13 @@
 # Configuración
 
+## Proxies y cabeceras de seguridad
+
+`security.trusted_proxies` es una lista de direcciones IP o redes CIDR del proxy inmediato; por defecto está vacía. Solo sus conexiones pueden aportar `X-Forwarded-Proto`, `X-Forwarded-Host` y la cadena `X-Forwarded-For` para cookies, origen y límites de autenticación. El proxy debe reescribir esas cabeceras. La cadena de direcciones se recorre desde el extremo confiable hasta el primer salto no confiable. No configures todas las direcciones como confiables. Los enlaces de acceso siguen requiriendo `APP_URL`.
+
+Router emite `X-Content-Type-Options: nosniff` y `Referrer-Policy: strict-origin-when-cross-origin`, conservando cabeceras ya emitidas por la aplicación. Configura `security.headers` en `config/app.php`: `enabled=false` desactiva la emisión, `referrer_policy` cambia la política, `frame_options` permite, por ejemplo, `SAMEORIGIN`, y `content_security_policy` define la CSP del proyecto. Estas dos últimas están desactivadas por defecto para conservar embebidos y recursos existentes. Evita configurar políticas contradictorias en PHP y el servidor.
+
+`hsts_max_age` vale 0 por defecto; un valor positivo emite HSTS únicamente bajo HTTPS confiable. `hsts_include_subdomains` está desactivado. Actívalos solo cuando el host y, si corresponde, todos sus subdominios dispongan de HTTPS permanente: el navegador recuerda HSTS durante el plazo indicado. Las cabeceras del servidor web o proxy deben comprobarse en el despliegue.
+
 El instalador crea `config/app.php` y `.env`. Modifica esos archivos del proyecto, no `config/defaults.php` dentro del paquete.
 
 ## Dónde guardar cada dato
@@ -44,7 +52,9 @@ La configuración generada ya conecta esas variables:
 
 ### URL automática y URL explícita
 
-`APP_URL` es opcional para peticiones web. Sin un valor, el framework calcula `site_url` a partir de HTTPS, host, puerto y ubicación del script. Incluye la subcarpeta y normaliza la barra final. El correo construido durante esa petición puede utilizar la URL calculada.
+`APP_URL` es opcional para renderizar páginas web. Sin un valor, el framework calcula `site_url` a partir de HTTPS, host, puerto y ubicación del script. Los correos de verificación y recuperación de `auth-ui` requieren una URL configurada: no utilizan el host de la petición. Indica una URL HTTP/HTTPS absoluta, con la subcarpeta si corresponde, sin credenciales, parámetros ni fragmento. Si falta o no es válida, no se inicia el envío y se registra un diagnóstico en el servidor. La recuperación conserva su respuesta genérica; esa respuesta no confirma la entrega del correo.
+
+Antes de actualizar una aplicación con autenticación, configura `APP_URL` en su `.env` o `app.url` en `config/app.php`. El instalador ya genera este valor. Una aplicación que dependía del cálculo automático debe configurar su dirección pública para seguir enviando enlaces de acceso.
 
 Una ejecución CLI independiente, como cron, no recibe el dominio público ni el protocolo de una petición HTTP. El código actual no recupera automáticamente ese contexto de una visita anterior. En esos procesos, configura `APP_URL` con la URL pública para obtener enlaces correctos. Lo mismo se aplica a una tarea asíncrona que arranca un proceso nuevo y construye sus enlaces dentro de él; un enlace construido antes y capturado como dato conserva su valor.
 

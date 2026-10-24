@@ -128,7 +128,7 @@ Después de actualizar el framework en un proyecto, reinstale los skills desde `
 
 ## Generar el complemento
 
-Desde el checkout del framework, `bin/build-skills-plugin.ps1` genera una carpeta independiente con las catorce skills propias, `plugin.json` portable, `.claude-plugin/plugin.json` y `gframe-skills-source.json` con procedencia y hashes SHA-256. Las skills se copian intactas; stages y UX permanecen externos. Los manifiestos siguen los formatos oficiales de [OpenAI](https://developers.openai.com/plugins/build/plugins) y [Claude](https://code.claude.com/docs/en/plugins-reference).
+La raíz del repositorio contiene `plugin.json` y las catorce skills canónicas en `skills/`, con la estructura de un complemento. Desde este checkout, `bin/build-skills-plugin.ps1` genera una carpeta independiente con esas skills, el manifiesto portable con sus metadatos, `.claude-plugin/plugin.json` y `gframe-skills-source.json` con procedencia y hashes SHA-256. Las skills se copian intactas; stages y UX permanecen externos. Los manifiestos siguen los formatos oficiales de [OpenAI](https://developers.openai.com/plugins/build/plugins) y [Claude](https://code.claude.com/docs/en/plugins-reference).
 
 Codex expone las skills del complemento con su namespace, por ejemplo `gframe-skills:gframe-backend` y `gframe-skills:gframe-orchestrator`. Utiliza el nombre exacto que muestra el cliente; los nombres de carpetas canónicos siguen siendo `gframe-backend` y `gframe-orchestrator`. Una copia global con nombre parecido no demuestra que proceda del mismo paquete.
 
@@ -142,6 +142,30 @@ powershell -NoProfile -ExecutionPolicy Bypass -File bin/build-skills-plugin.ps1 
 La vista previa no escribe archivos. La ejecución rechaza destinos existentes, referencias que salgan de las skills, catálogos inesperados y enlaces/junctions. Verifica hashes al copiar; una interrupción puede dejar una carpeta parcial que debe revisarse, no distribuirse. No sobrescribe, instala ni publica el resultado. El registro identifica el HEAD cuando está disponible y el contenido efectivo, incluidos cambios sin commit; no afirma que el checkout sea una release limpia ni que esa versión corresponda a una aplicación.
 
 Compruebe el generador con `powershell -NoProfile -ExecutionPolicy Bypass -File tests/BuildSkillsPluginTest.ps1`. La estructura y las copias verificadas no prueban carga o selección de skills en los clientes; esa integración se comprueba por separado.
+
+### Instalar en Codex y sincronizar al actualizar con Git
+
+En Windows, con PowerShell 7 y un CLI `codex` que admita `plugin marketplace add` y `plugin add`:
+
+```powershell
+pwsh -NoProfile -File bin/sync-codex-plugin.ps1 -RegisterGitHooks -DryRun
+pwsh -NoProfile -File bin/sync-codex-plugin.ps1 -RegisterGitHooks
+```
+
+Esta instalación es opcional y personal. Registra `gframe-skills@gframe-local` mediante el CLI de Codex y distribuye únicamente las skills y sus manifiestos, sin copiar el runtime. Usa `$CODEX_HOME/local-marketplaces/gframe-local` (por defecto, `~/.codex/local-marketplaces/gframe-local`). Comprueba los hashes de los archivos instalados; no modifica directamente la caché. Las instantáneas anteriores se conservan en ese marketplace.
+
+Los hooks locales `post-merge`, `post-checkout` y `post-rewrite` invocan la sincronización tras un pull con merge, un cambio de rama o un rebase. No hay comprobaciones periódicas ni tareas programadas. Git no ejecuta estos hooks si `pull` no cambia nada. Se respeta `core.hooksPath`; los hooks existentes se conservan como `<hook>.gframe-original` y se ejecutan antes, conservando su código de salida. Un fallo de sincronización muestra un aviso y no revierte la operación de Git. Los hooks guardan rutas absolutas de este checkout, PowerShell, Codex y su configuración; vuelva a registrarlos si mueve esas rutas. Para desactivar la integración, retire los tres hooks que contienen el marcador `GFrame Skills sync` y restaure los respaldos que existan.
+
+La huella SHA-256 del contenido evita reinstalaciones cuando solo cambia código del framework. Los cambios en las skills o el manifiesto producen una versión local distinta, aunque no cambie la versión base del complemento. Para sincronizar cambios directos sin una operación de Git:
+
+```powershell
+pwsh -NoProfile -File bin/sync-codex-plugin.ps1
+codex plugin list --marketplace gframe-local --json
+```
+
+No se recargan las instrucciones de un chat que ya está abierto. Abra otro chat o reinicie Codex si todavía aparece la versión anterior. La selección de especialistas sigue resolviendo primero la versión del framework de cada aplicación; instalar el complemento no actualiza aplicaciones ni sustituye sus skills locales.
+
+`pwsh -NoProfile -File tests/SyncCodexPluginTest.ps1` comprueba instalación con el CLI en un `CODEX_HOME` temporal, preservación y ejecución de hooks anteriores, actualización por Git, idempotencia, hashes y rechazo de referencias rotas.
 
 ## Validación y revisión manual
 

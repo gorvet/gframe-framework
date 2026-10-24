@@ -9,6 +9,27 @@ final class UrlHelper
     {
     }
 
+    /** URL configurada para enlaces de seguridad; nunca utiliza el Host de la petición. */
+    public static function canonicalBase(): ?string
+    {
+        $url = trim((string)\GFrame\Config\ConfigRepository::get('app.url', ''));
+        if ($url === '') {
+            $url = trim((string)\GFrame\Config\Environment::get('APP_URL', ''));
+        }
+        if ($url === '' || str_contains($url, '\\') || preg_match('/[\x00-\x20\x7f]/', $url)) {
+            return null;
+        }
+        $parts = parse_url($url);
+        if (!is_array($parts) || empty($parts['host'])
+            || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['http', 'https'], true)
+            || isset($parts['user']) || isset($parts['pass'])
+            || isset($parts['query']) || isset($parts['fragment'])
+            || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return null;
+        }
+        return rtrim($url, '/') . '/';
+    }
+
     /**
      * Calcula la URL base del sitio segun el entorno HTTP actual.
      *

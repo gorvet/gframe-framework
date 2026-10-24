@@ -1,0 +1,136 @@
+{
+    "aggregate_having": {
+        "head": {
+            "sql": "SELECT role_id, COUNT(*) AS total FROM items  GROUP BY role_id HAVING COUNT(*) > ?",
+            "bindings": [
+                1
+            ],
+            "rows": [
+                {
+                    "role_id": 1,
+                    "total": 2
+                }
+            ]
+        },
+        "current": {
+            "rejected": "Identificador de columna inválido en la consulta."
+        }
+    },
+    "aliased_join": {
+        "head": {
+            "sql": "SELECT items.id FROM items INNER JOIN roles AS r ON r.id = items.role_id",
+            "bindings": [],
+            "rows": [
+                {
+                    "id": 1
+                },
+                {
+                    "id": 2
+                }
+            ]
+        },
+        "current": {
+            "rejected": "Identificador de columna inválido en la consulta."
+        }
+    },
+    "having_alias_alternative": {
+        "head": {
+            "sql": "SELECT role_id, COUNT(*) AS total FROM items  GROUP BY role_id HAVING total > ?",
+            "bindings": [
+                1
+            ],
+            "rows": [
+                {
+                    "role_id": 1,
+                    "total": 2
+                }
+            ]
+        },
+        "current": {
+            "sql": "SELECT role_id, COUNT(*) AS total FROM items  GROUP BY role_id HAVING total > ?",
+            "bindings": [
+                1
+            ],
+            "rows": [
+                {
+                    "role_id": 1,
+                    "total": 2
+                }
+            ]
+        }
+    },
+    "join_type_not_validated": {
+        "head": {
+            "sql": "SELECT roles.secret FROM items JOIN roles ON 1=1 -- JOIN roles ON roles.id = items.role_id",
+            "bindings": [],
+            "rows": [
+                {
+                    "secret": "allowed"
+                },
+                {
+                    "secret": "other"
+                },
+                {
+                    "secret": "allowed"
+                },
+                {
+                    "secret": "other"
+                }
+            ]
+        },
+        "current": {
+            "sql": "SELECT roles.secret FROM items JOIN roles ON 1=1 -- JOIN roles ON roles.id = items.role_id",
+            "bindings": [],
+            "rows": [
+                {
+                    "secret": "allowed"
+                },
+                {
+                    "secret": "other"
+                },
+                {
+                    "secret": "allowed"
+                },
+                {
+                    "secret": "other"
+                }
+            ]
+        }
+    },
+    "identifier_attack": {
+        "head": {
+            "sql": "SELECT * FROM items  ORDER BY id; DROP TABLE items ASC",
+            "bindings": []
+        },
+        "current": {
+            "rejected": "Identificador de columna inválido en la consulta."
+        }
+    },
+    "log_redaction": {
+        "array_secret_visible": false,
+        "object_secret_visible": true
+    },
+    "csrf": {
+        "guest_expired": {
+            "status": "unauthorized",
+            "code": "to_reload",
+            "message": "El formulario caducó. Recárgalo e inténtalo de nuevo."
+        },
+        "guest_disabled": {
+            "status": "success"
+        },
+        "authenticated_expired": {
+            "status": "success"
+        },
+        "guest_valid": {
+            "status": "success"
+        }
+    },
+    "redirect": {
+        "/\\evil.test": "/evil.test",
+        "//evil.test": "/evil.test",
+        "%2F%5Cevil.test": "/evil.test",
+        "admin/items": "/admin/items",
+        "/admin\r\nLocation: https://evil.test": "/admin"
+    }
+}

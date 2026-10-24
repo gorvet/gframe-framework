@@ -69,6 +69,7 @@ Empieza por [Identidad, autenticación, permisos y sesiones](identidad-autorizac
 - [Sanitización de HTML](html-sanitizer.md).
 - [Sanitización y escape de datos](sanitizacion.md): texto plano, HTML enriquecido y wrappers de compatibilidad.
 - [Cifrado de datos de aplicación](encryption.md).
+- [Checklist de despliegue seguro](checklist-despliegue-seguro.md): comprobaciones antes de producción.
 
 ## Añadir capacidades
 

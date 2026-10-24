@@ -77,6 +77,26 @@ test('SweetAlert conserva clases Bootstrap, opciones y callbacks sin mutar el ob
   assert.equal(runInContext('({}).polluted', context), undefined);
 });
 
+test('SweetAlert presenta mensajes dinámicos sin punto final y conserva cuerpo y opciones originales', async () => {
+  const {state, context} = setup();
+  await runInContext(`
+    const response = Object.freeze({message: 'La cuenta quedó verificada. Ya puedes acceder.'});
+    const feedback = Object.freeze({title: response.message, titleText: 'Solicitud completada.  ', text: response.message, html: '<p>Revisa tu correo.</p>'});
+    swalAlert(feedback);
+  `, context);
+  assert.equal(state.calls[0].title, 'La cuenta quedó verificada. Ya puedes acceder');
+  assert.equal(state.calls[0].titleText, 'Solicitud completada');
+  assert.equal(state.calls[0].text, 'La cuenta quedó verificada. Ya puedes acceder.');
+  assert.equal(state.calls[0].html, '<p>Revisa tu correo.</p>');
+  assert.equal(runInContext('feedback.title === response.message', context), true);
+  assert.equal(runInContext('feedback.titleText', context), 'Solicitud completada.  ');
+  for (const title of ['¿Cerrar sesión?', '¡Cuenta verificada!', 'Versión 4.3', '', null]) {
+    context.testTitle = title;
+    await runInContext('swalAlert({title: testTitle});', context);
+    assert.equal(state.calls.at(-1).title, title);
+  }
+});
+
 test('Puente visual conserva spinner visible y usa variables Bootstrap', () => {
   const css = readFileSync(join(__dirname, '../../resources/modules/sweetalert2/public/sweetTheme.css'), 'utf8');
   const toastCss = readFileSync(join(__dirname, '../../resources/modules/alerts/public/alertToast.css'), 'utf8');

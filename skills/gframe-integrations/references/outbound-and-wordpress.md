@@ -2,6 +2,8 @@
 
 ## HttpClient
 
+Transport and every redirect are restricted to HTTP/HTTPS. This excludes file/FTP and other protocols, not HTTP requests to private networks. Authorize configured targets at the integration boundary.
+
 Global `HttpClient::request(array)` returns `ok`, integer HTTP `status`, `headers`, raw `body`, decoded `json` and `error`. This is not a GFrame business `status` string. Success means no cURL error and HTTP 2xx; JSON/business success must be checked separately. `json` normally contains objects from `json_decode`, or null for empty/invalid JSON. Map the remote response in the owning service.
 
 Arrays in a non-GET/DELETE body are form encoded, even with a supplied JSON Content-Type. Encode JSON explicitly as a string or use an object when the remote API requires it. GET array body becomes query parameters; DELETE body is not sent. Header arguments are strings such as `Authorization: Bearer ...`. The client defaults to a 300-second timeout, follows redirects (maximum 10) and verifies TLS; choose bounded timeout/redirect policy for the task. There are no automatic retries/cache, and redirect response headers are not a multi-value history API. Preserve `requestCompat` only for existing consumers (`response`, `httpCode`); use `request` for new work.

@@ -45,6 +45,8 @@ return [
 
 La jerarquía de metas se explica en [Metadatos y recursos de vistas](meta.md).
 
+El serializador escapa los caracteres que podrían cerrar el elemento `<script>` del JSON-LD. Los títulos, descripciones y demás valores mantienen su texto al decodificar el JSON; no apliques escape HTML adicional al bloque generado.
+
 ## Relación con `seo.enabled`
 
 Cuando `SEO_ENABLED=false`, `Meta::renderSchema()` devuelve una cadena vacía y no genera el bloque JSON-LD.

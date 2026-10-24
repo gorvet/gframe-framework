@@ -51,6 +51,7 @@ Use this when creating or modifying GFrame admin views, application overrides, o
 - Do not use `window.alert`, `window.confirm`, or raw `Swal.fire` directly in normal module code.
 - Use `alertToast` for normal success, warning, business error, and transport error feedback.
 - Use `swalAlert` for destructive confirmations or blocking decisions that require explicit confirmation.
+- Never end view, modal, card or SweetAlert titles with a full stop. Follow the title punctuation rules in the view and feedback references, including dynamic backend-sourced titles.
 - `public/js/core/utils/errors.js` should only centralize shared/core code handling such as `forbidden`, `not_found`, `service_unavailable`, `to_reload`, numeric aliases, and transport errors.
 - `alertToast` and `swalAlert` are presentation helpers only. They must not reinterpret or normalize backend `code` values.
 - For new HTML5 forms, keep the standard pattern: `class="needs-validation"` plus `novalidate`, then JS `checkValidity()` plus `was-validated`; use `validationFeedback(...)` when mapping per-field messages to its feedback targets. Preserve existing native-validity flows rather than claiming every current form calls that helper.

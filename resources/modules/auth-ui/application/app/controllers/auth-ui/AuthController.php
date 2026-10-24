@@ -18,7 +18,7 @@ class AuthController
     protected MailService $mail;
     protected RoleModel $roles;
 
-    public function __construct(?AuthModel $auth = null, ?SessionManager $sessions = null, ?MailService $mail = null, ?RoleModel $roles = null)
+    public function __construct(?AuthModel $auth = null, ?SessionManager $sessions = null, ?MailService $mail = null, ?RoleModel $roles = null, private readonly ?\GFrame\Mail\AccessMailService $accessMail = null)
     {
         $this->authModel = $auth ?? new AuthModel();
         $this->sessions = $sessions ?? new SessionManager();
@@ -33,6 +33,8 @@ class AuthController
         if ($email === '' || $password === '') {
             return ['status' => 'error', 'code' => 'empty_field', 'message' => 'Complete el correo y la contraseña.'];
         }
+
+        if (($limited = $this->reserveAttempt('login', $email)) !== null) return $limited;
 
         $response = $this->authModel->login($email, $password);
         if (($response['status'] ?? '') !== 'success') {
@@ -94,6 +96,7 @@ class AuthController
     public function register(): array
     {
         $email = trim((string)($_POST['register_email'] ?? ''));
+        if (($limited = $this->reserveAttempt('register', $email)) !== null) return $limited;
         $response = $this->authModel->registerAcount($email, (string)($_POST['register_password'] ?? ''));
         if (($response['status'] ?? '') !== 'success') {
             return $this->withMessage($response);
@@ -127,6 +130,7 @@ class AuthController
     public function resendVerification(): array
     {
         $email = trim((string)($_POST['login_email'] ?? ''));
+        if (($limited = $this->reserveAttempt('resend', $email)) !== null) return $limited;
         $response = $this->authModel->verifyAcount($email);
         $token = (string)($response['data']['token'] ?? '');
         unset($response['data']['token']);
@@ -150,9 +154,11 @@ class AuthController
     public function recovery(): array
     {
         $email = trim((string)($_POST['recovery_email'] ?? ''));
+        if (($limited = $this->reserveAttempt('recovery', $email)) !== null) return $limited;
         $response = $this->authModel->recoveryAcount($email);
         $token = (string)($response['data']['token'] ?? '');
         unset($response['data']['token']);
+        if (empty($response['data'])) unset($response['data']);
 
         if (($response['status'] ?? '') === 'success' && $token !== '' && !$this->sendAccessMail(
             $email,
@@ -161,7 +167,7 @@ class AuthController
             '/login/resetpassword?rp=' . rawurlencode($token),
             'Recibimos una solicitud para restablecer tu contraseña.'
         )) {
-            return $this->withMessage(['status' => 'error', 'code' => 'mail_delivery_failed']);
+            error_log('[GFrame Auth UI] No se pudo iniciar el envío del correo de recuperación.');
         }
 
         return $this->withMessage($response);
@@ -169,6 +175,7 @@ class AuthController
 
     public function resetPassword(): array
     {
+        if (($limited = $this->reserveAttempt('reset', hash('sha256', (string)($_POST['rpuser_token'] ?? $_POST['reset_token'] ?? '')))) !== null) return $limited;
         return $this->withMessage($this->authModel->resetPassword(
             (string)($_POST['rpuser_token'] ?? $_POST['reset_token'] ?? ''),
             (string)($_POST['reset_password'] ?? '')
@@ -181,16 +188,22 @@ class AuthController
             return false;
         }
 
-        $url = rtrim((string)site_url, '/') . $path;
+        $base = \UrlHelper::canonicalBase();
+        if ($base === null) {
+            error_log('[GFrame Auth UI] Configura APP_URL con una URL HTTP/HTTPS absoluta para enviar enlaces de acceso.');
+            return false;
+        }
+        $url = $base . ltrim($path, '/');
         try {
             $name = $this->mailRecipientName($email);
             $siteName = defined('site_name') ? (string)site_name : 'GFrame';
-            return ($this->mail->sendTemplateAsync($email, $subject . ' · ' . $siteName, 'mailTemplate', [
+            parse_str((string)parse_url($path, PHP_URL_QUERY), $query);
+            return (($this->accessMail ?? new \GFrame\Mail\AccessMailService($this->mail))->send($email, $subject . ' · ' . $siteName, [
                 'title' => $subject, 'h1' => $subject, 'p1' => $message,
                 'greeting' => $name !== '' ? 'Hola, ' . $name . '.' : 'Hola.',
                 'aHref' => $url, 'aText' => $action,
                 'p2' => 'Si no solicitaste esta operación, ignora el mensaje.',
-            ], ['recipient_name' => $name])['status'] ?? '') === 'success';
+            ], $name, (string)($query['v'] ?? $query['rp'] ?? ''))['status'] ?? '') === 'success';
         } catch (Exception $exception) {
             error_log('[GFrame Auth UI] ' . $exception->getMessage());
             return false;
@@ -201,6 +214,14 @@ class AuthController
     {
         $user = $this->authModel->findByEmail($email);
         return trim((string)($user['name'] ?? '')) ?: (string)strtok($email, '@');
+    }
+
+    protected function reserveAttempt(string $operation, string $identity): ?array
+    {
+        // El controlador también puede invocarse desde CLI sin contexto HTTP.
+        if (PHP_SAPI === 'cli' && !isset($_SERVER['REMOTE_ADDR'])) return null;
+        $result = (new \GFrame\Auth\AuthRateLimiter())->reserve($operation, $identity, \GFrame\Http\RequestSecurity::clientAddress());
+        return ($result['status'] ?? '') === 'success' ? null : $result;
     }
 
     protected function withMessage(array $response): array
