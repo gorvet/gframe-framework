@@ -2,6 +2,28 @@
 
 final class SqliteDialect implements DatabaseDialectInterface
 {
+    /** Solo para operaciones de base de datos repetibles y dueñas de su transacción. */
+    public function transactionWithWriteRetry(PDO $pdo, callable $operation): array
+    {
+        if ($pdo->inTransaction()) throw new LogicException('La operación requiere su propia transacción.');
+        $deadline = microtime(true) + 5;
+        do {
+            $pdo->beginTransaction();
+            try {
+                $result = $operation();
+                $pdo->commit();
+                return $result;
+            } catch (Throwable $exception) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                // SQLITE_BUSY incluye BUSY_SNAPSHOT. Reiniciar toda la transacción
+                // evita promover simultáneamente dos snapshots de lectura a escritura.
+                $busy = $exception instanceof PDOException && (((int)($exception->errorInfo[1] ?? 0) & 255) === 5);
+                if (!$busy || microtime(true) >= $deadline) throw $exception;
+                usleep(10000);
+            }
+        } while (true);
+    }
+
     public function name(): string
     {
         return 'sqlite';

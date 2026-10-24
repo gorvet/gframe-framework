@@ -11,9 +11,13 @@ final class DatabaseManager
     {
     }
 
-    /**
-     * @return PDO|array{status:string,message:string,code:int|string}
-     */
+    public static function existingConnection(?string $name = null): ?PDO
+    {
+        $connection = self::$pool[self::normalizeConnectionName($name)] ?? null;
+        return $connection instanceof PDO ? $connection : null;
+    }
+
+    /** @return PDO|array{status:string,message:string,code:int|string} */
     public static function connection(?string $name = null)
     {
         $connectionName = self::normalizeConnectionName($name);

@@ -83,6 +83,7 @@ final class SessionRuntime
      */
     private static function applyCookieParams(): void
     {
+        if (!filter_var(ini_get('session.use_cookies'), FILTER_VALIDATE_BOOLEAN)) return;
         $current = session_get_cookie_params();
         $sameSite = trim((string)(ConfigRepository::get('session.cookie_samesite') ?? ($current['samesite'] ?: 'Lax')));
         if (!in_array($sameSite, ['Lax', 'Strict', 'None'], true)) {

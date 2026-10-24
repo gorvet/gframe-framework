@@ -40,6 +40,8 @@ $rows = UserModel::queryTable('cache_items')
 
 ## Transactions
 
+ORM::reconnect checks active transactions in both the ORM cache and DatabaseManager's existing connection pool, without opening a connection merely to inspect it. RevisionedContentModel may use the native SQLite dialect's transactionWithWriteRetry capability: roll back and retry the complete database-only transaction on SQLITE_BUSY/BUSY_SNAPSHOT, with a five-second retry window and CAS on every attempt. Other exceptions propagate immediately; custom dialects retain the ordinary transaction fallback. Do not apply this retry helper to external side effects or caller-owned transactions.
+
 Keep transaction scope on a single connection:
 
 ```php

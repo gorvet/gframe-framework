@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Correcciones de PR: la reconexión respeta transacciones abiertas directamente desde DatabaseManager; el historial SQLite repite íntegramente las transacciones ante conflictos de bloqueo, conservando CAS. La configuración de cookies respeta session.use_cookies desactivado; las pruebas capturan los logs de errores esperados sin confundirlos con fallos del proceso aislado.
+
 - Seguridad: reservas atómicas por IP/identidad en autenticación, hash bcrypt de relleno, proxies de confianza y conservación de políticas de cookie existentes. Se mantienen los mensajes de cuentas.
 - Seguridad: preflight MySQL en un proceso con plazo integral de cinco segundos. Requiere PHP CLI/proc_open para esa comprobación; el asistente conserva la instalación visual sin clave de despliegue.
 - HTTP: solo protocolos HTTP/HTTPS, incluidas redirecciones; cabeceras conservadoras configurables y rechazo de canales de ruta incoherentes antes de ejecutarlos (`system` conserva web/AJAX).

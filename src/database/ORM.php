@@ -83,7 +83,8 @@ abstract class ORM {
     public static function reconnect(?string $connectionName = null): PDO {
     $name = static::resolveConnectionName($connectionName);
     $existing = self::$pdo[$name] ?? null;
-    if ($existing instanceof PDO && $existing->inTransaction()) {
+    $managed = DatabaseManager::existingConnection($name);
+    if (($existing instanceof PDO && $existing->inTransaction()) || ($managed instanceof PDO && $managed->inTransaction())) {
         throw new Exception('No se puede reconectar con una transacción activa.');
     }
     self::disconnect($name);

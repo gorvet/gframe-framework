@@ -9,6 +9,12 @@ use PHPUnit\Framework\TestCase;
 
 final class SecurityPriorityTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        $path = sys_get_temp_dir() . '/gframe-expected-security-' . getmypid() . '.log';
+        if (is_file($path)) unlink($path);
+    }
+
     #[RunInSeparateProcess]
     public function testJsonLdCannotCreateHtmlButPreservesTheOriginalText(): void
     {
@@ -58,6 +64,7 @@ final class SecurityPriorityTest extends TestCase
     #[RunInSeparateProcess]
     public function testRealMailBuilderUsesCanonicalBaseAndBlocksUnconfiguredMail(): void
     {
+        ini_set('error_log', sys_get_temp_dir() . '/gframe-expected-security-' . getmypid() . '.log');
         require_once __DIR__ . '/AuthModelTest.php';
         require_once dirname(__DIR__) . '/resources/modules/auth-ui/application/app/controllers/auth-ui/AuthController.php';
         require_once __DIR__ . '/NotificationEmailTest.php';
@@ -84,6 +91,7 @@ final class SecurityPriorityTest extends TestCase
     #[RunInSeparateProcess]
     public function testMissingMailConfigurationDoesNotIdentifyRecoveryAccounts(): void
     {
+        ini_set('error_log', sys_get_temp_dir() . '/gframe-expected-security-' . getmypid() . '.log');
         require_once __DIR__ . '/AuthModelTest.php';
         require_once dirname(__DIR__) . '/resources/modules/auth-ui/application/app/controllers/auth-ui/AuthController.php';
         putenv('APP_URL');

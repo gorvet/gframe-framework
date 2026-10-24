@@ -8,6 +8,44 @@ use RuntimeException;
 
 final class OrmTransactionTest extends TestCase
 {
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    public function testReconnectRefusesTransactionOpenedDirectlyThroughDatabaseManager(): void
+    {
+        define('DB_DEFAULT_CONNECTION', 'direct_tx');
+        define('DB_CONNECTIONS', ['direct_tx' => ['driver' => 'sqlite', 'path' => ':memory:']]);
+        $pdo = \DatabaseManager::connection('direct_tx');
+        $pdo->exec('CREATE TABLE probe(id INTEGER)');
+        $pdo->beginTransaction();
+        $pdo->exec('INSERT INTO probe VALUES(1)');
+        try {
+            try { \ORM::reconnect('direct_tx'); self::fail('No debe desconectar una transacción del gestor.'); }
+            catch (\Exception $exception) { self::assertStringContainsString('transacción activa', $exception->getMessage()); }
+            self::assertSame($pdo, \DatabaseManager::connection('direct_tx'));
+            self::assertTrue($pdo->inTransaction());
+            self::assertSame(1, (int)$pdo->query('SELECT COUNT(*) FROM probe')->fetchColumn());
+        } finally { if ($pdo->inTransaction()) $pdo->rollBack(); \ORM::disconnect('direct_tx'); }
+    }
+
+    public function testSqliteBusyRetryRollsBackTheWholeAttemptBeforeRetrying(): void
+    {
+        $pdo = new PDO('sqlite::memory:');
+        $pdo->exec('CREATE TABLE probe(id INTEGER)');
+        $attempts = 0;
+        $result = (new \SqliteDialect())->transactionWithWriteRetry($pdo, function () use ($pdo, &$attempts): array {
+            $pdo->exec('INSERT INTO probe VALUES(1)');
+            if (++$attempts === 1) {
+                $exception = new \PDOException('busy snapshot');
+                $exception->errorInfo = ['HY000', 517, 'busy snapshot'];
+                throw $exception;
+            }
+            return ['status' => 'success'];
+        });
+        self::assertSame('success', $result['status']);
+        self::assertSame(2, $attempts);
+        self::assertSame(1, (int)$pdo->query('SELECT COUNT(*) FROM probe')->fetchColumn());
+        self::assertFalse($pdo->inTransaction());
+    }
+
     private function model(): TxModel
     {
         $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);

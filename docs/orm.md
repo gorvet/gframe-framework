@@ -297,6 +297,8 @@ Si consultas otra tabla mediante `queryTable()`, vuelve a comprobar la conexión
 
 ## Relaciones y joins
 
+`reconnect()` rechaza transacciones activas tanto en la caché del ORM como en la conexión obtenida directamente de `DatabaseManager`. No cierra una transacción abierta por otro consumidor de esa conexión.
+
 `join()` y `leftJoin()` permiten unir tablas. Selecciona columnas sin ambigüedad y comprueba que el esquema y la conexión permitan esa consulta. La existencia de `rightJoin()` no garantiza que cualquier versión de SQLite lo admita.
 
 Los helpers de relaciones no son una copia de Eloquent:

@@ -3,6 +3,8 @@
 /**
  * Optional capability: exactComparisonExpression(string $quotedColumn): string.
  * ORM::whereExact fails closed when a custom dialect does not implement it.
+ * Optional transactionWithWriteRetry(PDO, callable): array is used only by
+ * database-only history operations; other dialects retain ordinary transactions.
  */
 interface DatabaseDialectInterface
 {
