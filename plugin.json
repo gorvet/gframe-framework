@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "gframe-skills",
+  "version": "0.1.0",
+  "description": "Skills oficiales de GFrame para desarrollar y mantener aplicaciones con los contratos de su versión del framework.",
+  "author": { "name": "Gorvet Estudios", "url": "https://gorvet.com" },
+  "license": "MIT",
+  "keywords": ["gframe", "php", "mvc", "backend", "frontend", "orm"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "GFrame Skills",
+        "shortDescription": "Desarrollo con GFrame",
+        "longDescription": "Catorce skills de GFrame para arquitectura, backend, ORM, autenticación, vistas, multimedia, correo, campañas, tareas e integraciones. El orquestador selecciona los especialistas y comprueba su correspondencia con el framework utilizado.",
+        "developerName": "Gorvet Estudios",
+        "category": "Productivity",
+        "capabilities": ["framework-development", "backend", "frontend", "maintenance"],
+        "websiteURL": "https://gorvet.com",
+        "defaultPrompt": "Ayúdame a desarrollar con GFrame usando el orquestador y los especialistas de la versión del proyecto."
+      }
+    }
+  }
+}

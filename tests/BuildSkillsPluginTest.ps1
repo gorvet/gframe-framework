@@ -57,6 +57,7 @@ try {
     Copy-Item -LiteralPath $builder -Destination (Join-Path $fixture 'bin/build-skills-plugin.ps1')
     Copy-Item -LiteralPath (Join-Path $repo 'skills') -Destination $fixture -Recurse
     Copy-Item -LiteralPath (Join-Path $repo 'composer.json') -Destination $fixture
+    Copy-Item -LiteralPath (Join-Path $repo 'plugin.json') -Destination $fixture
     $fixtureScript = Join-Path $fixture 'bin/build-skills-plugin.ps1'
     Add-Content -LiteralPath (Join-Path $fixture 'skills/gframe-backend/SKILL.md') -Value '[invalid](../../../outside.md)' -Encoding UTF8
     Build (Join-Path $testRoot 'bad-link') -Script $fixtureScript -Fail
