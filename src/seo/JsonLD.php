@@ -402,6 +402,7 @@ class JsonLD {
         $json = json_encode(
             ['@context' => 'https://schema.org', '@graph' => array_values($graph)],
             JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
         );
 
         return is_string($json) ? $json : '';

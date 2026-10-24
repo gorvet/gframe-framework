@@ -9,14 +9,14 @@ final class HttpClient
     public static function request(array $args): array
     {
         $url = isset($args['url']) ? trim((string)$args['url']) : '';
-        if ($url === '') {
+        if ($url === '' || !in_array(strtolower((string)parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true)) {
             return [
                 'ok' => false,
                 'status' => 0,
                 'headers' => [],
                 'body' => '',
                 'json' => null,
-                'error' => 'URL is required',
+                'error' => $url === '' ? 'URL is required' : 'Only HTTP/HTTPS URLs are supported',
             ];
         }
 
@@ -66,6 +66,8 @@ final class HttpClient
 
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => $maxRedirects,
