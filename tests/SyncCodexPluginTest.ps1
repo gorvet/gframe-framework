@@ -32,6 +32,8 @@ try {
     Check ((Get-Content $hook -Raw) -eq $original) 'Preview changed a Git hook'
     $first = Sync-Plugin -Hooks
     Check $first.changed 'Initial install did not run'
+    $hookText = Get-Content $hook -Raw
+    Check ($hookText.Contains("-CodexCommand '$CodexCommand'")) 'Hook did not preserve the configured command name'
     $statePath = Join-Path $codexTestHome 'local-marketplaces/gframe-local/gframe-sync.json'
     $state = Get-Content $statePath -Raw | ConvertFrom-Json
     Check (@(Get-ChildItem (Join-Path $state.result.installedPath 'skills') -Directory).Count -eq 14) 'Missing installed skills'
