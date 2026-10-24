@@ -128,5 +128,10 @@ jobs:
         with:
           dependency-versions: locked
       # PHPStan se instala en el runner sin tocar composer.lock del repositorio.
-      - run: composer require --dev "phpstan/phpstan:^2.1" --no-interaction --no-scripts
+      - run: composer require --dev "phpstan/phpstan:2.3.1" --no-interaction --no-scripts
+      - name: Capturar baseline para revisión
+        if: github.ref == 'refs/heads/codex/phpstan-plugin-sync'
+        run: |
+          composer analyse -- --generate-baseline=phpstan-reviewed.neon
+          cat phpstan-reviewed.neon
       - run: composer analyse

@@ -15,7 +15,20 @@ function Write-JsonFile([string]$Path, $Value) {
     [IO.File]::WriteAllText($Path, ($Value | ConvertTo-Json -Depth 12) + "`n", $utf8)
 }
 function Invoke-Codex([string[]]$Arguments) {
-    $result = & $CodexCommand @Arguments
+    $command = Get-Command $CodexCommand -CommandType Application,ExternalScript -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (!$command -and $CodexCommand -eq 'codex' -and $env:LOCALAPPDATA) {
+        # El directorio interno cambia con cada actualización de Codex Desktop.
+        $desktopRoot = Join-Path $env:LOCALAPPDATA 'OpenAI/Codex/bin'
+        if (Test-Path -LiteralPath $desktopRoot) {
+            $candidate = Get-ChildItem -LiteralPath $desktopRoot -Directory | ForEach-Object {
+                $candidatePath = Join-Path $_.FullName 'codex.exe'
+                if (Test-Path -LiteralPath $candidatePath -PathType Leaf) { Get-Item -LiteralPath $candidatePath }
+            } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+            if ($candidate) { $command = Get-Command $candidate.FullName -CommandType Application -ErrorAction Stop }
+        }
+    }
+    if (!$command) { throw "No se encontró el CLI de Codex: $CodexCommand. Instale Codex o indique -CodexCommand." }
+    $result = & $command.Source @Arguments
     if ($LASTEXITCODE -ne 0) { throw "Codex falló: $($Arguments -join ' ')" }
     return ($result -join "`n" | ConvertFrom-Json)
 }
@@ -43,7 +56,8 @@ function Install-GitHooks {
     $engine = Quote-Shell (Get-Process -Id $PID).Path
     $script = Quote-Shell $PSCommandPath
     $homeArgument = Quote-Shell $env:CODEX_HOME
-    $codexArgument = Quote-Shell (Get-Command $CodexCommand -ErrorAction Stop).Source
+    # Conservar el nombre estable, no la ruta interna de una versión instalada.
+    $codexArgument = Quote-Shell $CodexCommand
     foreach ($name in @('post-merge', 'post-checkout', 'post-rewrite')) {
         $hook = Join-Path $hooksRoot $name
         $backup = $hook + '.gframe-original'

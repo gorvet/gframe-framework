@@ -27,6 +27,9 @@ if (!defined('session_name')) {
 if (!defined('APP_LANG')) {
     define('APP_LANG', 'es');
 }
+if (!defined('APP_TIMEZONE')) {
+    define('APP_TIMEZONE', 'UTC');
+}
 if (!defined('SUPPORTED_LANGS')) {
     define('SUPPORTED_LANGS', ['es']);
 }

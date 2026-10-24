@@ -3,6 +3,23 @@ includes:
 
 parameters:
     level: 5
+    rememberPossiblyImpureFunctionValues: false
+    dynamicConstantNames:
+        ABSPATH: string
+        GFRAME_PATH: string
+        DebugMode: bool
+        site_url: string
+        session_name: string
+        APP_LANG: string
+        APP_TIMEZONE: string
+        SUPPORTED_LANGS: list<string>
+        TENANT: string|null
+        TENANT_TABLE: string|null
+        SITEMAP_BUILD: bool
+        SEO_ALLOW_INDEXING: bool
+        WEBHOOK_DEFAULT_SECRET: string
+        DB_DEFAULT_CONNECTION: string
+        DB_CONNECTIONS: array<string, mixed>
     paths:
         - src
     bootstrapFiles:
