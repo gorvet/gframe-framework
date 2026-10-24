@@ -9,3 +9,7 @@
 Las convenciones técnicas de vistas y sus comprobaciones se mantienen en la skill canónica `skills/gframe-frontend-admin/`, no se duplican aquí.
 
 Para cada tarea de desarrollo, corrección o revisión de GFrame, aplica `skills/gframe-orchestrator/SKILL.md` y los especialistas que seleccione antes de editar. Las skills canónicas están en `skills/`; Composer las activa localmente en `.agents/skills` y `.claude/skills`. No uses copias globales de otra versión.
+
+## Coordinación entre asistentes
+
+Si otro asistente puede estar trabajando en paralelo, usa el canal compartido antes de editar: `php bin/agent-coord.php status` al empezar, `claim` sobre los archivos que vayas a tocar y `release` al terminar. Las reservas caducan solas. Trabaja en tu propia rama y worktree para no pisar a los demás. Detalles y hook opcional en [maintenance/coordinacion-agentes.md](maintenance/coordinacion-agentes.md).
