@@ -87,6 +87,63 @@ jobs:
           GFRAME_TEST_NGINX: /usr/sbin/nginx
           GFRAME_TEST_PHP_FPM: /usr/sbin/php-fpm8.3
 
+  infrastructure-84:
+    name: MySQL, HTTP y Redis reales con PHP 8.4
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: gframe_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pgframe_test"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s --health-timeout=3s --health-retries=10
+    env:
+      GFRAME_TEST_MYSQL: '1'
+      GFRAME_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306
+      GFRAME_TEST_MYSQL_USER: root
+      GFRAME_TEST_MYSQL_PASSWORD: gframe_test
+      GFRAME_TEST_REDIS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, openssl, pdo_mysql, pdo_sqlite, redis
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: locked
+      - run: php packages/phpunit/phpunit/phpunit --filter 'MySqlMigrationIntegration|DatabasePreflight|InstallerTest|InstallerHttp|InstallerWizardHttp|RedisSessionIntegration' --fail-on-skipped
+
+  nginx-cgi:
+    name: Routing real con Nginx y PHP-CGI
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, pdo_sqlite
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: locked
+      - run: sudo apt-get update && sudo apt-get install -y nginx php8.3-cgi php8.3-sqlite3 php8.3-mbstring php8.3-xml
+      - run: php packages/phpunit/phpunit/phpunit --filter 'ServerRoutingTest::testRealNginxRoutesRequestsAndServerErrorsToTheInstalledFramework' --fail-on-skipped
+        env:
+          GFRAME_TEST_NGINX: /usr/sbin/nginx
+          GFRAME_TEST_PHP_CGI: /usr/bin/php-cgi8.3
+
   javascript:
     name: JavaScript (sin navegador)
     runs-on: ubuntu-latest
