@@ -1,5 +1,6 @@
 <?php
 
+/** @phpstan-consistent-constructor */
 class RouteBuilder {
     protected static array $routes = [];
     

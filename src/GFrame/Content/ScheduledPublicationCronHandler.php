@@ -15,7 +15,7 @@ abstract class ScheduledPublicationCronHandler extends \Cron
         $context = $this->publicationContext($task);
         if (!is_array($context['scope'] ?? null) || !is_int($context['author_id'] ?? null) || $context['author_id'] <= 0 || (isset($context['tenant_id']) && (!is_int($context['tenant_id']) || $context['tenant_id'] <= 0))) throw new \LogicException('Contexto de publicación no válido.');
         $model = $this->publicationModel();
-        if (!method_exists($model, 'dueContent') || !method_exists($model, 'publishScheduled')) throw new \LogicException('El modelo requiere ScheduledContent.');
+        if (!method_exists($model, 'dueContent') || !method_exists($model, 'publishScheduled') || !method_exists($model, 'publishScheduledRow')) throw new \LogicException('El modelo requiere ScheduledContent.');
         $published = 0; $skipped = 0;
         foreach ($model->reset()->dueContent($context['scope'])->limit(max(1, min(100, (int)($task['batch'] ?? 50))))->get() as $row) {
             if (!$this->mayPublish($row, $context)) { $skipped++; continue; }

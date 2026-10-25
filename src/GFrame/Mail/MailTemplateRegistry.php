@@ -21,7 +21,7 @@ final class MailTemplateRegistry
             $templates[$id] = [
                 'id' => $id,
                 'name' => (string)($metadata['name'] ?? ucfirst(str_replace(['-', '_'], ' ', $id))),
-                'variables' => array_values(array_unique(array_merge($declared, $matches[1] ?? []))),
+                'variables' => array_values(array_unique(array_merge($declared, $matches[1]))),
                 'path' => $path,
             ];
         }

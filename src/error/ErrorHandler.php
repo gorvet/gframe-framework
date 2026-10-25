@@ -75,14 +75,14 @@ final class ErrorHandler
                 E_RECOVERABLE_ERROR,
             ];
 
-            $type = (int)($lastError['type'] ?? 0);
+            $type = $lastError['type'];
             if (!in_array($type, $fatalTypes, true)) {
                 return;
             }
 
-            $message = (string)($lastError['message'] ?? 'Fatal error');
-            $file = (string)($lastError['file'] ?? '');
-            $line = (int)($lastError['line'] ?? 0);
+            $message = $lastError['message'];
+            $file = $lastError['file'];
+            $line = $lastError['line'];
 
             $fatal = new \ErrorException($message, 0, $type, $file, $line);
             self::handleThrowable($fatal);

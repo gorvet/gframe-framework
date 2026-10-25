@@ -1,6 +1,7 @@
 <?php
 // core/database/ORM.php
 //ver 5-2-26
+/** @phpstan-consistent-constructor */
 abstract class ORM {
     protected static $pdo = [];
     protected $table;
@@ -812,9 +813,6 @@ abstract class ORM {
 
     // Fuerza que uniqueBy mande sobre data en columnas repetidas.
     $payload = array_merge($data, $uniqueBy);
-    if (empty($payload)) {
-        throw new Exception("upsert requiere datos para insertar/actualizar.");
-    }
 
     $columns = array_keys($payload);
     foreach ($columns as $col) {

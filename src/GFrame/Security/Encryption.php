@@ -67,9 +67,9 @@ final class Encryption
             throw new InvalidArgumentException('El contenido cifrado no es válido.');
         }
 
-        $iv = base64_decode((string)($data['iv'] ?? ''), true);
-        $tag = base64_decode((string)($data['tag'] ?? ''), true);
-        $cipherText = base64_decode((string)($data['data'] ?? ''), true);
+        $iv = base64_decode($data['iv'], true);
+        $tag = base64_decode($data['tag'], true);
+        $cipherText = base64_decode($data['data'], true);
         if (!is_string($iv) || !is_string($tag) || !is_string($cipherText)
             || strlen($iv) !== openssl_cipher_iv_length(self::CIPHER) || strlen($tag) !== 16) {
             throw new InvalidArgumentException('El contenido cifrado no es válido.');

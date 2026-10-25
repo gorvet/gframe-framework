@@ -24,7 +24,7 @@ final class DatabaseSessionHandler implements SessionHandlerInterface, SessionId
     public function open(string $path, string $name): bool { return true; }
     public function close(): bool { return true; }
 
-    public function read(string $id): string|false
+    public function read(string $id): string
     {
         $hash = $this->hash($id);
         $statement = $this->database->prepare('SELECT s.user_id, s.payload, s.role_id, s.role_version, s.authorization_version, s.tenant_role_id, s.tenant_role_version, r.security_version AS current_role_version, tr.security_version AS current_tenant_role_version, account.authorization_version AS current_authorization_version, account.status AS account_status FROM gframe_sessions s LEFT JOIN roles r ON r.role_id = s.role_id LEFT JOIN roles tr ON tr.role_id = s.tenant_role_id LEFT JOIN users account ON account.user_id = s.user_id WHERE s.session_hash = ? AND s.expires_at >= ? LIMIT 1');
@@ -78,7 +78,7 @@ final class DatabaseSessionHandler implements SessionHandlerInterface, SessionId
         return $this->deleteHash($hash);
     }
 
-    public function gc(int $max_lifetime): int|false
+    public function gc(int $max_lifetime): int
     {
         $statement = $this->database->prepare('DELETE FROM gframe_sessions WHERE expires_at < ?');
         $statement->execute([time()]);

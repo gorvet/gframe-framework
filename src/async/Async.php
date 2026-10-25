@@ -25,7 +25,7 @@ class Async
             'closure' => base64_encode($serialized),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        if (!is_string($payload) || $payload === '') {
+        if (!is_string($payload)) {
             throw new RuntimeException('No se pudo preparar la tarea asíncrona.');
         }
         $worker = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'async-worker.php');

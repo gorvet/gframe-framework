@@ -36,7 +36,10 @@ final class ConfigRepository
         return $value;
     }
 
-    /** @param array<string, mixed> $base @param array<string, mixed> $overrides */
+    /**
+     * @param array<array-key, mixed> $base
+     * @param array<array-key, mixed> $overrides
+     */
     private static function mergeRecursive(array $base, array $overrides): array
     {
         if (array_is_list($base) || array_is_list($overrides)) {
