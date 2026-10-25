@@ -14,7 +14,7 @@ Abre `/admin/users` con el superadministrador inicial. Para permitir acceso a ot
 return [
     'gestor' => [
         'admin' => ['access' => true],
-        'users' => ['view' => true, 'manage' => true],
+        'users' => ['view' => true, 'manage' => true, 'create' => true],
     ],
 ];
 ```
@@ -24,6 +24,7 @@ Integra esa entrada con los roles que ya tenga el archivo, ejecuta `composer gfr
 | Capacidad | Permite |
 | --- | --- |
 | `users.view` | Consultar, buscar, filtrar y paginar. |
+| `users.create` | Crear cuentas mediante invitación por correo. No se concede implícitamente con `users.manage`. |
 | `users.manage` | Verificar, suspender, restablecer, eliminar y asignar roles. |
 
 El superadministrador tiene acceso automáticamente. La comprobación del servidor se mantiene aunque un control esté oculto o deshabilitado.
@@ -42,7 +43,19 @@ Selecciona «Administrar» en una fila:
 
 No permite modificar al superadministrador ni administrar la propia cuenta desde esta pantalla. Un administrador subordinado tampoco puede modificar cuentas con un rol que tenga `admin.access`.
 
-`disabled` corresponde a la desactivación voluntaria en Cuenta y seguridad; no se restablece desde esta pantalla. Crear cuentas o cambiar contraseñas administrativamente no son funciones incluidas.
+`disabled` corresponde a la desactivación voluntaria en Cuenta y seguridad; no se restablece desde esta pantalla. El administrador no elige ni conoce la contraseña de otras cuentas.
+
+## Añadir usuarios
+
+En Gestión de usuarios, pulsa **Añadir usuario**. Indica el correo electrónico y el rol; confirma con **Crear usuario y enviar enlace**. El superadministrador puede utilizarlo directamente. Para otro rol, habilita `users.create` junto a `users.view` y `admin.access` en su configuración de permisos y aplica la actualización de permisos del proyecto.
+
+La cuenta queda sin verificar hasta que su destinatario abra el enlace y defina una contraseña válida. Esa operación verifica la cuenta y consume el enlace, que caduca en 24 horas. No crea membresías de tenant. No se puede crear otro superadministrador; solo el superadministrador puede asignar roles con `admin.access`.
+
+Configura `APP_URL` con la URL pública absoluta del proyecto y el transporte de correo. Las invitaciones usan `mailTemplate` y el mismo servicio de correo de acceso que autenticación: cola persistente si está instalado `notifications-email`, o envío síncrono con timeout en caso contrario. El módulo depende de `auth-ui` para la pantalla pública de contraseña. Una confirmación de envío solicitado no garantiza recepción en la bandeja de entrada.
+
+Si el correo falla, la pantalla indica que la cuenta sí se creó; evita repetir el alta. El destinatario puede solicitar otro enlace desde **Recuperar contraseña**. Los reenvíos invalidan el enlace anterior y mantienen la activación mediante contraseña.
+
+Las rutas son `GET /admin/users/create` y `POST /ajax/admin/users/create`, protegidas por `auth` y `can:users.create`; la escritura requiere CSRF. La vista original es `user-admin/user-adminCreate.php`. Para repositorios de usuarios personalizados, la capacidad opcional `UserInvitationRepository` permite implementar persistencia compatible sin cambiar el contrato existente `UserAdministrationRepository`; el flujo público debe utilizar el mismo almacén de identidad.
 
 ### Por qué solo aparece «Usuario registrado»
 

@@ -4,7 +4,7 @@ return [
     'name' => 'user-admin',
     'type' => 'backend-module',
     'description' => 'Administración de usuarios y asignación protegida de roles.',
-    'dependencies' => ['admin-panel', 'alerts', 'frontend-core'],
+    'dependencies' => ['admin-panel', 'alerts', 'frontend-core', 'auth-ui'],
     'requires_schema' => ['auth'],
     'runtime' => ['root' => 'application/app', 'namespace' => 'GFrame\\Modules\\UserAdmin'],
     'assets' => [

@@ -4,7 +4,7 @@ Esta lista recoge mejoras opcionales de GFrame que no bloquean las correcciones 
 
 ## Administración de usuarios
 
-- [ ] **Añadir usuarios desde el admin.** Prioridad baja; pendiente, sin implementar. Incorporar «Añadir usuario» dentro de Gestión de usuarios, con una vista propia y un permiso específico. Mantenerlo separado del registro público y de Mi cuenta. Antes de implementarlo, acordar cómo se entregará el acceso inicial y cómo se verificará la cuenta. Respetar la jerarquía de roles y los contratos de autenticación existentes.
+- [x] **Añadir usuarios desde el admin.** Implementado con una vista propia en Gestión de usuarios, permiso `users.create` e invitación por correo para definir la contraseña y verificarla, según la decisión del propietario. Mantiene la jerarquía de roles, caducidad y consumo único del enlace, recuperación/reenvío y distinción entre alta completada y fallo del correo. Pruebas con cuentas temporales y transporte de correo simulado; formulario comprobado en navegador. Véase [la guía](../docs/user-admin.md).
 
 ## Campañas
 
@@ -18,7 +18,7 @@ Esta lista recoge mejoras opcionales de GFrame que no bloquean las correcciones 
 
 ## Redirecciones
 
-- [ ] **Módulo opcional independiente de redirecciones.** Aplazado por el usuario el 19 de octubre de 2026; no es necesario ahora. Contemplar direcciones anteriores al cambiar el slug, destinos locales y prevención de ciclos y cadenas, respetando rutas y permisos de cada proyecto. Pendiente de diseño y autorización para implementar.
+- **Módulo de redirecciones descartado por el propietario.** Se retira de las mejoras previstas; no implementar.
 
 ## Auth: aviso administrativo de registro
 

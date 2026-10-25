@@ -8,7 +8,7 @@ use GFrame\Auth\Contracts\UserAdministrationRepository;
 use GFrame\Auth\Contracts\UserModerationRepository;
 use RuntimeException;
 
-class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivationPolicy, UserAdministrationRepository, UserModerationRepository
+class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivationPolicy, UserAdministrationRepository, UserModerationRepository, \GFrame\Auth\Contracts\UserInvitationRepository
 {
     protected $table = 'users';
     protected $primaryKey = 'user_id';
@@ -117,6 +117,26 @@ class UserModel extends \ORM implements SelfAccountRepository, AccountDeactivati
             'password_changed_at' => $now,
             'force_password_change' => false,
         ]))->insert();
+    }
+
+    public function invitationEmailExists(string $email): bool
+    {
+        return $this->reset()->where('email', '=', $email)->exists();
+    }
+
+    public function createInvitedUser(string $email, int $roleID, string $token, string $issuedAt): int
+    {
+        $model = new static([
+            'email' => $email,
+            'password' => password_hash(bin2hex(random_bytes(32)), PASSWORD_BCRYPT),
+            'role_id' => $roleID,
+            'status' => 'unverify',
+            'token' => $token,
+            'token_updated_at' => $issuedAt,
+            'force_password_change' => true,
+        ]);
+        $model->onConnection($this->resolveCurrentConnectionName());
+        return (int)$model->insert();
     }
 
     public function paginateUsers(int $page, int $perPage, string $search = '', string $role = '', string $status = ''): array

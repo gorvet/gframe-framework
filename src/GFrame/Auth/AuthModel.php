@@ -94,6 +94,7 @@ class AuthModel extends \ORM
 
     public function validateAcount(string $token): array
     {
+        if (str_starts_with(strtolower(trim($token)), 'invite_')) return $this->error('invalid_token');
         try {
             $user = $this->findByToken(trim($token));
             if ($user === null || !$this->tokens->isValidTimestamp((string)($user['token_updated_at'] ?? ''))) {
@@ -123,7 +124,7 @@ class AuthModel extends \ORM
                 return ['status' => 'success', 'code' => 'recovery_requested'];
             }
 
-            $token = $this->tokens->issue();
+            $token = (str_starts_with((string)($user['token'] ?? ''), 'invite_') ? 'invite_' : '') . $this->tokens->issue();
             $this->updateAuthUser((int)$user['user_id'], [
                 'token' => $token,
                 'token_updated_at' => $this->tokens->issuedAt(),
@@ -150,13 +151,25 @@ class AuthModel extends \ORM
                 return $this->error('suspended_account');
             }
 
-            $this->updateAuthUser((int)$user['user_id'], [
+            $attributes = [
                 'password' => $this->passwords->hash($password),
                 'token' => $this->tokens->issue(),
                 'token_updated_at' => $this->tokens->issuedAt(),
                 'password_changed_at' => date('Y-m-d H:i:s'),
                 'force_password_change' => false,
-            ]);
+            ];
+            if (str_starts_with(strtolower(trim($token)), 'invite_')) {
+                // Consumir la invitación una sola vez, junto con contraseña y verificación.
+                $attributes['status'] = $this->activeStatus;
+                $result = $this->reset()->useStrictComparison(false)
+                    ->where('user_id', '=', (int)$user['user_id'])
+                    ->where('status', '=', (string)$user['status'])
+                    ->where('force_password_change', '=', 1)
+                    ->whereExact('token', trim($token))->update($attributes);
+                if (($result['status'] ?? '') !== 'updated') return $this->error('invalid_token');
+            } else {
+                $this->updateAuthUser((int)$user['user_id'], $attributes);
+            }
 
             ($this->sessions ?? \GFrame\Session\SessionRuntime::registry())?->revokeUser((int)$user['user_id']);
             return ['status' => 'success', 'code' => 'password_reset'];
@@ -227,7 +240,7 @@ class AuthModel extends \ORM
                 return $this->error('already_verified');
             }
 
-            $token = $this->tokens->issue();
+            $token = (str_starts_with((string)($user['token'] ?? ''), 'invite_') ? 'invite_' : '') . $this->tokens->issue();
             $this->updateAuthUser((int)$user['user_id'], [
                 'token' => $token,
                 'token_updated_at' => $this->tokens->issuedAt(),
