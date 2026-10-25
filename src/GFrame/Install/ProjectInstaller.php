@@ -226,7 +226,7 @@ final class ProjectInstaller
         }
 
         if (!$result instanceof PDO) {
-            throw new RuntimeException((string)($result['message'] ?? 'No se pudo conectar con la base de datos.'));
+            throw new RuntimeException($result['message']);
         }
         return $result;
     }

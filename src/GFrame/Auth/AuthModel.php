@@ -258,7 +258,7 @@ class AuthModel extends \ORM
 
     private function passwordHasExpired(string $changedAt): bool
     {
-        if (!$this->passwordExpirationEnabled || $this->passwordExpirationDays <= 0) {
+        if (!$this->passwordExpirationEnabled) {
             return false;
         }
 

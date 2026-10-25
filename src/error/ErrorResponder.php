@@ -241,7 +241,7 @@ class ErrorResponder {
       $relative = $path;
     }
 
-    $segments = array_values(array_filter(explode('/', trim((string)$relative, '/')), 'strlen'));
+    $segments = array_values(array_filter(explode('/', trim((string)$relative, '/')), static fn(string $segment): bool => $segment !== ''));
     if (count($segments) === 0) {
       return site_url;
     }

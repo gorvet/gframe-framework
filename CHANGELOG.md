@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## 4.4.1 — 2026-10-25
+
+- La publicación programada rechaza modelos incompletos antes de consultar contenido y devuelve el error de configuración correspondiente.
+- El cifrado comprueba que la etiqueta de autenticación generada tiene los 16 bytes requeridos antes de guardar el contenido.
+
 ## 4.4.0 — 2026-10-24
 
 - ORM: `transaction()` garantiza rollback ante excepciones y respeta transacciones externas; `reconnect()` rechaza conexiones con transacción activa, incluidas las abiertas desde `DatabaseManager`. El historial SQLite reintenta las transacciones ante conflictos de bloqueo, conservando el control de revisión.

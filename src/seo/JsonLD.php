@@ -373,14 +373,14 @@ class JsonLD {
             $bc = [
                 '@type' => 'BreadcrumbList',
                 '@id' => $id('breadcrumbs'),
-                'itemListElement' => array_values(array_map(function($crumb, $i) {
+                'itemListElement' => array_map(function($crumb, $i) {
                     return [
                         '@type' => 'ListItem',
                         'position' => $i + 1,
                         'name' => $crumb['name'],
                         'item' => $crumb['url'],
                     ];
-                }, $sch['breadcrumbs'], array_keys($sch['breadcrumbs']))),
+                }, $sch['breadcrumbs'], array_keys($sch['breadcrumbs'])),
             ];
             $graph[$bc['@id']] = $bc;
         }

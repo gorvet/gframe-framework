@@ -23,7 +23,7 @@ class HeartbeatMaster {
             }
 
             try {
-                $payload = (array)($definition['payload'] ?? []);
+                $payload = $definition['payload'];
                 $out[$key] = $this->runChannel($definition['handler'] ?? null, $payload, $context);
                 if (!isset($out[$key]['code']) || $out[$key]['code'] === '') {
                     $out[$key]['code'] = ($out[$key]['status'] ?? '') === 'success' ? 'channel_updated' : 'channel_failed';
@@ -87,7 +87,7 @@ class HeartbeatMaster {
             return true;
         }
         $elapsed = (int)floor(microtime(true) * 1000) - $lastRunMs;
-        return $elapsed >= max($this->baseBeatMs, (int)($definition['interval_ms'] ?? $this->baseBeatMs));
+        return $elapsed >= max($this->baseBeatMs, $definition['interval_ms']);
     }
 
     protected function getLastRunForChannel(string $channel): int {

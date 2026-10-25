@@ -1,6 +1,3 @@
-includes:
-    - phpstan-baseline.neon
-
 parameters:
     level: 5
     reportUnmatchedIgnoredErrors: true
@@ -20,10 +17,11 @@ parameters:
         SEO_ALLOW_INDEXING: bool
         WEBHOOK_DEFAULT_SECRET: string
         DB_DEFAULT_CONNECTION: string
-        DB_CONNECTIONS: 'array<string, mixed>'
+        DB_CONNECTIONS: mixed
     paths:
         - src
+        - tests/phpstan
     bootstrapFiles:
         - phpstan-bootstrap.php
     # El core combina clases con namespace y clases globales heredadas; se
-    # analiza src. Ajusta el nivel al endurecer el baseline.
+    # analiza src y consumidores de los traits opcionales.

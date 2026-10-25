@@ -81,7 +81,6 @@ class MediaProcessor {
     return $variants;
   }
 
-  private string $watermarkPath = 'public/img/shop/watermark.png';
 
   public function getAllowedByKind(): array {
     return array_keys($this->getAllowedByKindMap());
@@ -100,7 +99,7 @@ class MediaProcessor {
   }
 
   public function getBlockedExts(): array {
-    return array_values(self::BLOCKED_EXTS);
+    return self::BLOCKED_EXTS;
   }
 
   // Backward compatibility with previous typo.
@@ -201,15 +200,15 @@ class MediaProcessor {
       return ['ok' => false, 'code' => 'not_image', 'message' => 'No es una imagen valida'];
     }
 
-    $imgMime = strtolower(trim((string)($imgInfo['mime'] ?? '')));
+    $imgMime = strtolower(trim($imgInfo['mime']));
     if ($imgMime === '') $imgMime = 'application/octet-stream';
 
     if (!in_array($imgMime, $allowedMimes, true)) {
       return ['ok' => false, 'code' => 'mime_not_allowed', 'message' => 'Mimetype no permitido'];
     }
 
-    $w = (int)($imgInfo[0] ?? 0);
-    $h = (int)($imgInfo[1] ?? 0);
+    $w = $imgInfo[0];
+    $h = $imgInfo[1];
     if ($w < 1 || $h < 1 || ($w * $h) > self::MAX_IMAGE_PIXELS) {
       return ['ok' => false, 'code' => 'image_too_large', 'message' => 'Imagen demasiado grande'];
     }
@@ -584,8 +583,8 @@ class MediaProcessor {
     $info = @getimagesize($srcPath);
     if (!$info) return false;
 
-    $srcWidth = (int)($info[0] ?? 0);
-    $srcHeight = (int)($info[1] ?? 0);
+    $srcWidth = $info[0];
+    $srcHeight = $info[1];
     if ($srcWidth < 1 || $srcHeight < 1 || $newWidth < 1 || $newHeight < 1) return false;
 
     $src = $this->imageCreateFrom($srcPath, $ext);

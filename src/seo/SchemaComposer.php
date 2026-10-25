@@ -30,7 +30,7 @@ class SchemaComposer {
             $composed['image'] = $metaTags['ogimage'];
         }
 
-        if (($composed['type'] ?? '') === 'Article' && empty($composed['author']) && !empty($metaTags['author'])) {
+        if ($composed['type'] === 'Article' && empty($composed['author']) && !empty($metaTags['author'])) {
             $composed['author'] = $metaTags['author'];
         }
 

@@ -203,7 +203,7 @@ final class MigrationRunner
             if ($default === 'NULL' && preg_match('/^(BIGINT|INT|INTEGER)\b/i', $type)) $default = null;
             if (is_string($default)) $default = trim($default, "'");
         }
-        $expectedDefault = isset($match[5]) && $match[5] !== '' ? trim($match[5], "'") : null;
+        $expectedDefault = isset($match[5]) ? trim($match[5], "'") : null;
         if (strtoupper($type) !== strtoupper($match[3]) || $nullable !== (strtoupper($match[4]) === 'NULL')
             || ($default === null ? null : (string)$default) !== $expectedDefault) {
             throw new RuntimeException("La columna {$match[1]}.{$match[2]} existe con una definición incompatible.");

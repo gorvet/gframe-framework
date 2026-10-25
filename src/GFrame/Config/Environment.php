@@ -7,7 +7,7 @@ final class Environment
     public static function get(string $key, mixed $default = null): mixed
     {
         $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
-        if ($value === false || $value === null) {
+        if ($value === false) {
             return $default;
         }
 

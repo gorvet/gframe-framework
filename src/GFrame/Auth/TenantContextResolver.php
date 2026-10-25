@@ -13,7 +13,7 @@ final class TenantContextResolver
         $key = defined('TENANT') ? (string)TENANT : (string)ConfigRepository::get('tenancy.key', 'tenant_id');
         $identity = 0;
         $legacy = isset($session['tenantID']) ? ['tenant_id' => $session['tenantID']] : [];
-        foreach ([$params, $_POST ?? [], $_GET ?? [], $_REQUEST ?? [], $session, (array)($session['auth'] ?? []), $legacy] as $source) {
+        foreach ([$params, $_POST, $_GET, $_REQUEST, $session, (array)($session['auth'] ?? []), $legacy] as $source) {
             foreach (array_unique([$key, 'tenant_id']) as $candidate) {
                 if (!array_key_exists($candidate, $source)) continue;
                 $value = $source[$candidate];

@@ -27,7 +27,7 @@ final class RedisSessionHandler implements SessionHandlerInterface, SessionIdInt
     public function open(string $path, string $name): bool { return true; }
     public function close(): bool { return true; }
 
-    public function read(string $id): string|false
+    public function read(string $id): string
     {
         $hash = $this->hash($id);
         $owner = $this->redis->get($this->ownerKey($hash));
@@ -94,7 +94,7 @@ LUA;
         return true;
     }
 
-    public function gc(int $max_lifetime): int|false { return 0; }
+    public function gc(int $max_lifetime): int { return 0; }
     public function create_sid(): string { return bin2hex(random_bytes(32)); }
     public function validateId(string $id): bool { return (bool)$this->redis->exists($this->dataKey($this->hash($id))); }
 

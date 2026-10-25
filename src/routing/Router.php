@@ -168,7 +168,7 @@ class Router {
           // extraer modulo para usar en can del middware
           
           $parts = explode('/', str_replace('\\', '/', (string)$route['controller']));
-          $module = $parts[count($parts) - 2] ?? ($parts[0] ?? null);
+          $module = $parts[count($parts) - 2] ?? $parts[0];
 
           
 
@@ -394,7 +394,7 @@ private function getCurrentURL() {
     $segments = explode('/', trim(parse_url($uri, PHP_URL_PATH), '/'));
 
     $lang = $defaultLang;
-    if (in_array($segments[0] ?? '', $supportedLangs)) {
+    if (in_array($segments[0], $supportedLangs)) {
       $lang = $segments[0];
       array_shift($segments); // quita idioma si está
     }
@@ -412,7 +412,7 @@ private function getCurrentURL() {
     $uri = preg_replace('#/+#', '/', $uri); // Normaliza slashes
     $uriSegments = explode('/', trim($uri, '/'));
 
-    $firstSegment = $uriSegments[0] ?? '';
+    $firstSegment = $uriSegments[0];
 
     // Eliminar idioma redundante si es el default
     if ($firstSegment === $defaultLang) {
@@ -430,7 +430,7 @@ private function getCurrentURL() {
     $path = (string)parse_url('/' . implode('/', $uriSegments), PHP_URL_PATH);
     $segments = explode('/', trim($path, '/'));
     $lang = SUPPORTED_LANGS[0];
-    if (in_array($segments[0] ?? '', SUPPORTED_LANGS, true)) {
+    if (in_array($segments[0], SUPPORTED_LANGS, true)) {
         $lang = array_shift($segments);
     }
     if (!defined('APP_LANG')) define('APP_LANG', $lang);

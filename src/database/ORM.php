@@ -1,6 +1,7 @@
 <?php
 // core/database/ORM.php
 //ver 5-2-26
+/** @phpstan-consistent-constructor */
 abstract class ORM {
     protected static $pdo = [];
     protected $table;
@@ -28,7 +29,7 @@ abstract class ORM {
 
 
 
-    public function __construct($attributes = []) {
+    public function __construct(array $attributes = []) {
     $this->fill($attributes);
     }
 
@@ -812,9 +813,6 @@ abstract class ORM {
 
     // Fuerza que uniqueBy mande sobre data en columnas repetidas.
     $payload = array_merge($data, $uniqueBy);
-    if (empty($payload)) {
-        throw new Exception("upsert requiere datos para insertar/actualizar.");
-    }
 
     $columns = array_keys($payload);
     foreach ($columns as $col) {
@@ -879,7 +877,7 @@ abstract class ORM {
         'matched'  => null,
         'affected' => $affected,
         'action'   => $action,
-        'id'       => ($id !== false && $id !== null && $id !== '') ? (int)$id : null,
+        'id'       => ($id !== false && $id !== '') ? (int)$id : null,
     ];
     }
 
