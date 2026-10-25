@@ -29,8 +29,7 @@ abstract class ORM {
 
 
 
-    /** @param array $attributes */
-    public function __construct($attributes = []) {
+    public function __construct(array $attributes = []) {
     $this->fill($attributes);
     }
 
