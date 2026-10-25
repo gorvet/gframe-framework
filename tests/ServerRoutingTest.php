@@ -110,6 +110,21 @@ final class ServerRoutingTest extends TestCase
             self::assertStringNotContainsString('<html', $body);
             [$status, $body] = $this->request($base . '/ajax/lostpassword', 'POST', 'recovery_email=unknown%40example.test&middle_name=');
             self::assertSame(200, $status);
+            self::assertSame('fail_csrf', json_decode($body, true)['code'] ?? null);
+            [$status, $form, $headers] = $this->request($base . '/login/lostpassword');
+            self::assertSame(200, $status);
+            self::assertSame(1, preg_match('/name="csrfToken" value="([^"]+)"/', $form, $token));
+            self::assertSame(1, preg_match('/name="csrfTimestamp" value="([^"]+)"/', $form, $timestamp));
+            $cookies = [];
+            foreach ($headers as $header) {
+                if (preg_match('/^Set-Cookie:\s*([^;]+)/i', $header, $cookie)) $cookies[] = $cookie[1];
+            }
+            self::assertNotEmpty($cookies);
+            [$status, $body] = $this->request($base . '/ajax/lostpassword', 'POST', http_build_query([
+                'recovery_email' => 'unknown@example.test', 'middle_name' => '',
+                'csrfToken' => $token[1], 'csrfTimestamp' => $timestamp[1],
+            ]), ['Cookie: ' . implode('; ', $cookies)]);
+            self::assertSame(200, $status);
             self::assertSame('recovery_requested', json_decode($body, true)['code'] ?? null);
         } finally {
             foreach (array_reverse($processes) as $process) { proc_terminate($process); proc_close($process); }
