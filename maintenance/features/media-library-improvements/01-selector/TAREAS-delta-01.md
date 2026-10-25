@@ -2,7 +2,7 @@
 
 **Principal:** no
 **Cierra:** AUDIT.md pase 1, no coincide; CA-03 y CA-04, E-02.
-**Estado:** implementada
+**Estado:** auditada
 
 - [x] D01-T1 — Al vaciar la selección invalidar el render anterior y actualizar la habilitación de confirmación.
   Verificar: `sistema`; servidor field retrasado, retirar ambas imágenes y confirmar []; pruebas de navegador y regresión PHP.

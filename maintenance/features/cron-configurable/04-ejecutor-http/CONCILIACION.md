@@ -1,6 +1,8 @@
 # Etapa 04 — Ejecutor HTTP
 
 **Estado:** cerrada
+
+**Seguimiento conciliado — 2026-10-25:** Etapa cerrada; [AUDIT.md](AUDIT.md), pase 4, incluye los deltas 01 y 02 y la comprobación [HTTPS/PHP-FPM](HTTPS-FPM.md). Las auditorías de las etapas 01–03 también están cerradas.
 **Spec:** [SPEC.md](../SPEC.md); ampliación aprobada en el chat el 2026-10-15.
 
 ## Resultado observable
@@ -9,7 +11,7 @@ Cron real y virtual pueden solicitar ejecución mediante CLI o HTTP protegido, c
 
 ## Dependencias
 
-Etapas anteriores: excepción explícita, implementación publicada en v4.0.0 y CI aprobado; auditoría formal separada pendiente.
+Etapas anteriores: cerradas por sus auditorías separadas, registradas en el [índice de cron](../README.md). Al iniciar esta ampliación se autorizó una excepción de secuencia con implementación publicada en v4.0.0 y CI aprobado.
 
 ## Entra
 

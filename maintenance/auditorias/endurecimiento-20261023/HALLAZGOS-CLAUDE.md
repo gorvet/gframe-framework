@@ -1,5 +1,7 @@
 # Endurecimiento de seguridad — hallazgos
 
+> **Seguimiento conciliado — 2026-10-25:** Los cinco hallazgos y su revisión están integrados por PR #2. Las correcciones de compatibilidad y los límites de las posiciones SQL propias del código figuran en los informes adyacentes; no quedan como un patch sin integrar. Véase [estado y evidencia de cierre](../../cierre-auditorias-20261025.md).
+
 > Auditoría defensiva de solo lectura del core realizada por Claude (Opus) el 2026-10-23, a petición del propietario del framework. Alcance: `src/` (routing, middleware, auth, sesiones, ORM, CORS, cifrado, multimedia). No se ejecutó explotación; los puntos son análisis estático y de contrato.
 
 ## Estado

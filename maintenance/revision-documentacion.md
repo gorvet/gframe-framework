@@ -1,5 +1,7 @@
 # Revisión de documentación para desarrolladores
 
+> **Seguimiento conciliado — 2026-10-25:** Lista histórica superada por la reconstrucción DOC-001–027 y la unificación posteriores. Las casillas antiguas no son el backlog actual. El registro enlazado distingue los cierres demostrados de las ampliaciones documentales/visuales que siguen en seguimiento. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Esta lista pertenece al mantenimiento del repositorio, no a la ayuda pública. La revisión avanza por tema; comprobar enlaces no equivale a revisar el contenido completo.
 
 El inventario por componente, documento existente, estado y orden de ejecución está en [Plan de documentación](plan-documentacion.md).

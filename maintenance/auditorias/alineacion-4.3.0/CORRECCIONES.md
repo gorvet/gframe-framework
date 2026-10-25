@@ -1,5 +1,7 @@
 # Correcciones de H-01 y H-02
 
+> **Seguimiento conciliado — 2026-10-25:** Correcciones integradas y publicadas en 4.3.1. La carrera de historial registrada al final recibió corrección y prueba de repetición en PR #2; no queda un arreglo de aquella entrega sin publicar. Véase [estado y evidencia de cierre](../../cierre-auditorias-20261025.md).
+
 Autorización: «corrige esos dos problemas». Se conservan el informe y el reproductor originales del corte 4.3.0; no se reescribe el dictamen histórico. Especialistas aplicados: orquestador, mantenimiento y ORM del repositorio. No se actualizan consumidores ni se publica una etiqueta.
 
 ## H-01

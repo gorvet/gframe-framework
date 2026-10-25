@@ -6,6 +6,8 @@ El estado canónico de la reconstrucción documental y su backlog cerrado/abiert
 
 ## Estado y auditorías canónicas
 
+- [Conciliación del seguimiento histórico — 2026-10-25](cierre-auditorias-20261025.md): estados de las dieciséis etapas, hallazgos cerrados por entregas posteriores y verificaciones que todavía no se acreditan. Prevalece sobre las notas de trabajo pendiente de snapshots anteriores; conserva sus dictámenes y límites.
+
 - [Ajustes posteriores de documentación e identificadores](ajustes-documentacion-20261006.md): revisión del sitio local, versiones de bibliotecas, guías visibles y compatibilidad de `gf-select`.
 - [Integración de mejoras locales sobre main](integracion-local-main.md): respaldo, revisión de diferencias, selección de código y documentación, y comprobaciones de la integración local sin publicar.
 - [Comparativa de GitHub, trabajo local e integración](comparativa-github-local.md): archivos mejorados por cada fuente, problemas frente a la otra versión y aportes añadidos durante la integración.

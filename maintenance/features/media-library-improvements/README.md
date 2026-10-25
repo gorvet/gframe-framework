@@ -4,6 +4,8 @@
 
 ## Ciclo activo
 
+**Estado conciliado — 2026-10-25:** las siete etapas están auditadas y cerradas, incluidas en versiones publicadas y presentes en 4.4.1. No queda trabajo activo ni publicación pendiente de estas etapas. Las notas de ejecución siguientes conservan el corte anterior a sus commits; las capacidades futuras siguen en [mejoras pendientes](../../mejoras-pendientes.md).
+
 Objetivo: mejorar selección y gestión sin sustituir permisos, ámbitos, originales ni componentes de GFrame. Por qué ahora: el usuario autorizó implementar después del inventario WordPress/GFrame y continuar con la gestión. Las capacidades posteriores permanecen pendientes y no se confunden con funcionalidades terminadas.
 
 | Etapa | Estado | Trabajo activo |
@@ -14,7 +16,7 @@ Objetivo: mejorar selección y gestión sin sustituir permisos, ámbitos, origin
 | [04 Scroll propio](04-editor-scroll/CONCILIACION.md) | cerrada | Sin trabajo activo; AUDIT.md pasada 1 coincide |
 | [05 Herramientas](05-writing-tools/CONCILIACION.md) | cerrada | AUDIT.md pasada 1 coincide |
 | [06 Protección](06-writing-protection/CONCILIACION.md) | cerrada | AUDIT.md pasada 1 coincide; protección, recuperación, concentración y esquema |
-| [07 Autoguardado servidor](07-server-autosave/CONCILIACION.md) | cerrada | AUDIT.md pasada 1 coincide; entrega 4.1.0 preparada y publicación autorizada |
+| [07 Autoguardado servidor](07-server-autosave/CONCILIACION.md) | cerrada | Sin trabajo activo; AUDIT.md pasada 1 coincide; entrega 4.1.0 publicada |
 
 Prioridad actual: escritura integrada con la biblioteca antes de procesamiento visual y metadatos adicionales. Sin cambios a sitios instalados ni publicación de versión en estas etapas.
 

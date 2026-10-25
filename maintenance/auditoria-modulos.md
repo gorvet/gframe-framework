@@ -67,9 +67,9 @@ El cotejo directo con BaseConfías, Bebots y Dane detectó que la primera extrac
 - [x] Ingesta de contenido generado en base64.
 - [x] Cuotas de almacenamiento.
 - [x] Sincronización entre disco y base de datos.
-- [ ] Recorridos completos del selector y del campo en navegador.
+- [x] Recorridos del selector y del campo en navegador, dentro del alcance aprobado: [selector, pase 4](features/media-library-improvements/01-selector/AUDIT.md) y [escritura, pasada 2](features/media-library-improvements/03-writing/AUDIT.md). No certifican cada aplicación consumidora.
 - [x] Registro seguro de URL externa (*hotlink*) y controles genéricos del modal cotejados con los proyectos de origen.
-- [ ] Pruebas de interacción del frontend y cotejo final de paridad antes de marcar Multimedia como completo.
+- [x] Interacción del frontend y paridad de los flujos acordados de selección, gestión y escritura: [etapas 01–03 cerradas](features/media-library-improvements/README.md). La multimedia avanzada continúa aplazada.
 
 ### Notificaciones: alcance modular
 
@@ -93,7 +93,8 @@ El cotejo directo con BaseConfías, Bebots y Dane detectó que la primera extrac
 - [x] TextClassifier permanece en Bebots por ser parte de su algoritmo conversacional.
 - [x] Estructura del panel administrativo: plantilla, navbar, sidebar, modo oscuro y persistencia compartidos. Menús y escritorio quedan a cargo de cada aplicación; pendiente la comprobación visual HTTP de instalaciones limpias.
 - [x] Footer del esqueleto: áreas opcionales de contenido, copyright y créditos mediante plantillas PHP con prioridad de vista, grupo y proyecto. Documentado en `docs/footer.md`.
-- [ ] Falta comprobar versión, licencia, dependencias, publicación y prueba mínima de cada paquete visual opcional.
+- [x] Inventario de versiones/licencias y comprobaciones de dependencias/assets/publicación: [dependencias distribuidas](../docs/dependencias-frontend.md), [ajustes de versiones](ajustes-documentacion-20261006.md) y `ModuleCatalogTest`. El inventario de licencias es curado; no es una validación legal automatizada.
+- [ ] Prueba visual mínima de cada paquete opcional en sus combinaciones de tema, navegador y tamaño. Sigue sin acreditarse para todos; V-01 del [seguimiento conciliado](cierre-auditorias-20261025.md).
 
 ### Inventario de paquetes visuales
 
@@ -131,7 +132,7 @@ Todos los manifiestos consultados apuntan a archivos de origen existentes.
 - [x] PHPAsync permanece en el núcleo y utiliza Opis Closure.
 - [x] Cifrado, utilidades, ORM, Router, Render, middleware y servicios comunes están en `src`.
 - [x] No se detectaron copias activas de QR, Opus Converter ni TextClassifier.
-- [ ] Compatibilidad con PHP 8.4 sin deprecaciones, si las dependencias externas lo permiten. PHP 8.1 queda como base actual por decisión del proyecto; la restricción `^8.1` no demuestra compatibilidad de ejecución con 8.4.
+- [x] Suite del framework ejecutada en PHP 8.4.27, sin deprecaciones PHP notificadas: [CI de PR #7](https://github.com/gorvet/gframe-framework/actions/runs/40168481806), job 121094294563; 581 pruebas/5737 aserciones, 14 omisiones. No certifica las integraciones omitidas ni cambia el mínimo PHP 8.1.9.
 
 ## Instalador y perfiles
 
@@ -177,4 +178,4 @@ La comparación por ruta y contenido idéntico entre Base Confías, Bebots y Dan
 
 ## Regla para revisiones posteriores
 
-Las revisiones futuras continúan desde las casillas abiertas de este documento. No deben reiniciar el inventario ni marcar un módulo como completo por la sola presencia de archivos.
+Las revisiones futuras consultan el [seguimiento conciliado](cierre-auditorias-20261025.md) y las casillas abiertas de este documento. Se distinguen las mejoras aplazadas de los huecos de verificación. No deben reiniciar el inventario ni marcar un módulo como completo por la sola presencia de archivos.

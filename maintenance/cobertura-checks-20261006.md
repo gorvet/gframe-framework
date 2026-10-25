@@ -1,5 +1,7 @@
 # Inventario de CI, lint y comprobaciones
 
+> **Seguimiento conciliado — 2026-10-25:** JS, YAML y lint ya se ejecutaron en GitHub. El workflow incluye ahora MySQL, HTTPS/PHP-FPM y PHPStan obligatorio. Las tablas siguientes conservan el inventario del 6 de octubre y sus propuestas; no describen el CI actual completo. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Revisión del checkout del 6 de octubre de 2026, lote 22; estado actualizado tras el lote 25. Inventario de configuración y código de pruebas; no ejecución de pipelines remotos ni una medición de cobertura de líneas. Los lotes 23–24 incorporan JS/YAML al workflow y el 25 completa lint, sin cambiar Composer, runtime o clientes.
 
 ## Cadena automática actual
@@ -47,9 +49,9 @@ El comando permite `--root` para una copia/fixture identificada, rechaza raíces
 
 | Orden | Propuesta | Criterio de cierre |
 | --- | --- | --- |
-| 1 | Job JS implementado en lote 23 | Comando local comprobado en Node 24.13.0: 80 tests, 78 pasan y dos omisiones de navegador, sin fallos. Ejecución del job en GitHub pendiente hasta subir los cambios; no se modificaron reglas de protección de ramas. |
-| 2 | Job YAML implementado en lote 24 | Validación local con Python 3.12.14/PyYAML 6.0.3: catorce skills y siete tests correctos, sin omisiones. Run en Ubuntu/GitHub pendiente de subir el cambio; Composer/PHP sigue independiente. |
-| 3 | Lint ampliado en lote 25 | Nueve tests y 32 aserciones correctos; errores detectados en fuentes nuevas, sin ejecución y con exclusiones comprobadas. Lint completo local comprobado y ejecución remota pendiente. |
+| 1 | Job JS implementado en lote 23 | Publicado y comprobado en GitHub; job JavaScript aprobado en run 40168481806. Los resultados locales originales y sus omisiones conservan su fecha. No se modificaron reglas de protección de ramas. |
+| 2 | Job YAML implementado en lote 24 | Publicado y comprobado en Ubuntu/GitHub; job de metadata aprobado en run 40168481806. Composer/PHP sigue independiente. |
+| 3 | Lint ampliado en lote 25 | Publicado y comprobado mediante composer check en la matriz PHP 8.1–8.4 de run 40168481806. Las pruebas del comando comprueban detección, exclusiones y ausencia de ejecución. |
 | 4 | Job Windows para instalador/complemento | Ejecutar las dos pruebas PowerShell en temporales, preservando directorios globales. No prometer portabilidad Linux de junctions. |
 | 5 | Integraciones por entorno y pruebas faltantes | MySQL, Nginx/PHP-CGI, navegador, Redis/SMTP y CLI sin extensiones solo con alcance/entorno propios; distinguir checks existentes de pruebas aún no creadas. |
 

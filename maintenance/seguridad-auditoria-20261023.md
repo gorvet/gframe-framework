@@ -1,5 +1,7 @@
 # Correcciones de seguridad de la auditoría
 
+> **Seguimiento conciliado — 2026-10-25:** El alcance autorizado está integrado por PR #2 y publicado. La carrera SQLite y las advertencias de la suite final se corrigieron después; PHPStan sin baseline quedó cerrado por PR #7. Los fallos de esta intervención siguen registrados como historia. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Fecha: 2026-10-23.
 
 Primera intervención autorizada después de la revisión independiente: H-01, H-09 y cierre del preflight del instalador cuando ya existe configuración. Se conservan los cambios locales anteriores y no se aplican las series externas en bloque.

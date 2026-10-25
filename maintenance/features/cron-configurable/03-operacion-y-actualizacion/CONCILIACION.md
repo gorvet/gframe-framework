@@ -1,6 +1,8 @@
 # Etapa 03 — Operación y actualización
 
 **Estado:** cerrada
+
+**Seguimiento conciliado — 2026-10-25:** Etapa cerrada; [AUDIT.md](AUDIT.md), pasada 2, y [CI-20261019.md](../CI-20261019.md) cierran T4 y el bloqueo B-01 de Linux. Las notas de implementación anteriores no son tareas activas.
 **Spec:** [SPEC.md](../SPEC.md) § Requisitos R-09–R-12.
 
 ## Resultado observable
@@ -9,8 +11,8 @@ Una instalación nueva o actualizada permite diagnosticar ambos modos y dispone 
 
 ## Dependencias
 
-- **DEP-01 — etapa 01:** excepción de secuencia autorizada; auditoría separada pendiente.
-- **DEP-02 — etapa 02:** excepción de secuencia autorizada; auditoría separada pendiente.
+- **DEP-01 — etapa 01:** cerrada; [auditoría](../01-ejecucion-coordinada/AUDIT.md) con veredicto coincide. La excepción de secuencia fue necesaria durante la implementación.
+- **DEP-02 — etapa 02:** cerrada; [auditoría](../02-disparador-configurable/AUDIT.md), pasada 2 coincide. La excepción de secuencia fue necesaria durante la implementación.
 
 ## Entra
 
@@ -46,7 +48,7 @@ Una instalación nueva o actualizada permite diagnosticar ambos modos y dispone 
 
 ## Bloqueos
 
-- **B-01:** Linux no está disponible en esta sesión. Desbloqueador: ejecución de los jobs Linux/MySQL de CI tras publicar el commit o acceso a un host de prueba. Evidencia requerida: jobs aprobados y logs de procesos; siguiente revisión: 2026-10-16. La implementación y comprobación Windows continúan disponibles.
+- **B-01 — resuelto el 2026-10-19:** Linux no estaba disponible en la sesión de implementación. La repetición Linux/MySQL del job 118176309692 completó la evidencia requerida; [ledger E-11](../CI-20261019.md). Se conserva la causa histórica; no hay bloqueo activo.
 
 ## Preguntas abiertas
 

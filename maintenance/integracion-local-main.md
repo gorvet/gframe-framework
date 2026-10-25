@@ -1,5 +1,7 @@
 # Integración de mejoras locales sobre main
 
+> **Seguimiento conciliado — 2026-10-25:** Integración confirmada, publicada y limpia. La casilla del requisito PHP local se actualiza con evidencia posterior; los respaldos y resultados anteriores se conservan. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Fecha: 6 de octubre de 2026.
 
 Los [ajustes posteriores de documentación e identificadores](ajustes-documentacion-20261006.md) registran los cambios solicitados después de esta conciliación. El inventario de 142 archivos describe la selección entre las fuentes originales y el ajuste de Opis; esos cambios posteriores se documentan aparte para no atribuirlos a las ramas comparadas.
@@ -18,7 +20,7 @@ Los [ajustes posteriores de documentación e identificadores](ajustes-documentac
 ## Actualización de Opis acordada el 6 de octubre de 2026
 
 - [x] Mantener Opis: instalada `opis/closure` 4.5.0 con restricción `^4.3`, retirada la dependencia Laravel y adaptado `ClosureWrapper` a las funciones de Opis 4. Se comprueba la lectura de una tarea real de Opis 3.7, su conversión a Opis 4 y la ejecución en otro proceso PHP. Actualizadas la documentación y la comparativa. El aviso de Opis 3.7 no implica que la librería Opis esté deprecada ni justifica por sí solo cambiar de proveedor.
-- [ ] Actualizar el PHP de XAMPP antes de usar esta integración en ese servidor. PHP 8.1.5 reproduce el fallo de referencias en WeakMap corregido en PHP 8.1.9; el mínimo de Composer pasa a `^8.1.9`. Para la verificación se utiliza PHP 8.1.33 portátil, sin modificar XAMPP ni el PATH persistente. Los payloads locales de Laravel deben finalizar antes del cambio; no se mantiene esa dependencia para leerlos.
+- [x] Requisito mínimo de PHP local satisfecho posteriormente: `C:/xampp/php/php.exe` es 8.3.35 y la prueba aislada de Apache con su módulo actual pasa el 2026-10-25. PHP 8.1.5 era el runtime del snapshot original; no se recomienda reutilizarlo. Evidencia E-05 del [seguimiento conciliado](cierre-auditorias-20261025.md); no se modifica PHP ni otro servidor durante este cierre.
 
 ## Decisiones de código
 

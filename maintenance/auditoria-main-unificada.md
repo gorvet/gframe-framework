@@ -1,5 +1,7 @@
 # Auditoría de diferencias entre main y reconstrucción unificada
 
+> **Seguimiento conciliado — 2026-10-25:** Comparación histórica cerrada e integrada. No queda una fusión pendiente de esta rama; los límites del dictamen original se conservan. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Rama auditada: `codex/reconstruccion-unificada`.
 
 Base comparada: `main`.

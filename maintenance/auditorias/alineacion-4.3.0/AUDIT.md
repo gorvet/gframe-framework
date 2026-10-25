@@ -1,5 +1,7 @@
 # Auditoría transversal de alineación de GFrame 4.3.0
 
+> **Seguimiento conciliado — 2026-10-25:** H-01 y H-02 cerrados mediante CORRECCIONES.md y release 4.3.1. El dictamen del snapshot 4.3.0 se conserva intacto. La metadata YAML y las verificaciones posteriores no convierten todas las omisiones ambientales o de navegador en aprobaciones. Véase [estado y evidencia de cierre](../../cierre-auditorias-20261025.md).
+
 ## Corte y alcance
 
 Base: `8fdacc30795076f7f4ca8489f56edab70ab86b33` (`v4.3.0`), árbol inicialmente limpio. Solicitud: contrastar framework, instalador, contratos, documentación y skills antes de nuevas funcionalidades. Windows/PHP 8.3.35, SQLite y MySQL local. No se modificó runtime, documentación pública ni skills durante este pase.

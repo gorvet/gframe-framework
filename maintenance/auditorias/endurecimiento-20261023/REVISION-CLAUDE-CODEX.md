@@ -1,5 +1,7 @@
 # Revisión independiente de los hallazgos y cambios de Claude
 
+> **Seguimiento conciliado — 2026-10-25:** C-01, C-02 y C-03 corregidos e integrados por PR #2. La redacción de objetos, expresiones/alias legítimos y sesiones sin cookies están cubiertas por regresiones posteriores. El dictamen y las sondas originales no se reescriben. Véase [estado y evidencia de cierre](../../cierre-auditorias-20261025.md).
+
 Fecha: 2026-10-23. Revisión de solo lectura del código funcional; no se aplican correcciones ni se publica una versión. Se añaden únicamente este informe, una sonda reproducible y sus resultados con datos ficticios.
 
 Baseline Git: `b1350313df23e62ca759a86ddd4213dde635010d`, más el árbol local. El diff actual mezcla los cambios iniciales de Claude con la continuación de Codex; no se atribuyen a Claude los ajustes posteriores de proxies, conservación de cookies o canales del router. Se revisan los cinco hallazgos de `HALLAZGOS-CLAUDE.md` y la ampliación local adicional de `LogHelper`, que no figura en ese inventario. La autoría individual de esta última no puede demostrarse solo con el árbol sin commits.

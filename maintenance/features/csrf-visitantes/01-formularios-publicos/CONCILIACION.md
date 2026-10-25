@@ -1,6 +1,8 @@
 # Etapa 01 — Formularios públicos
 
 **Estado:** cerrada
+
+**Seguimiento conciliado — 2026-10-25:** Etapa cerrada; [AUDIT.md](AUDIT.md), pasada 2, incorpora el delta 01 y completa las verificaciones acordadas. La nota de auditoría pendiente al implementar es histórica.
 **Spec:** [SPEC.md](../SPEC.md) § Alcance propuesto R-01–R-06.
 
 ## Resultado observable

@@ -6,4 +6,4 @@
 
 | Etapa | Conciliación | Estado | Trabajo activo | Tareas | Auditoría |
 |---|---|---|---|---|---|
-| [01 Vista previa](01-private-preview/CONCILIACION.md) | ver archivo | cerrada | principal implementado | TAREAS.md | [coincide](01-private-preview/AUDIT.md) |
+| [01 Vista previa](01-private-preview/CONCILIACION.md) | cerrada | cerrada | ninguno | TAREAS.md auditada | [pasada 1: coincide](01-private-preview/AUDIT.md) |
