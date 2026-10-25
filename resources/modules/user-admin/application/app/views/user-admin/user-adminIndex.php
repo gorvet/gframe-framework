@@ -11,7 +11,12 @@ $canManage = !empty($moduleData['can_manage']);
         <input type="hidden" name="csrfTimestamp" value="<?= htmlspecialchars((string)($_SESSION['csrfTimestamp'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
     </form>
     <div class="pagetitle">
+        <div class="d-flex align-items-center flex-wrap">
         <h1>Usuarios</h1>
+        <?php if (!empty($moduleData['can_create'])): ?>
+        <a class="btn btn-primary ms-0 ms-md-3 mt-3 mt-md-0" href="<?= htmlspecialchars(site_url . 'admin/users/create', ENT_QUOTES, 'UTF-8') ?>">Añadir usuario</a>
+        <?php endif; ?>
+        </div>
     </div>
     <div class="card">
         <div class="card-body">

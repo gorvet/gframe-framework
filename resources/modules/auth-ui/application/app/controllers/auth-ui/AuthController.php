@@ -134,10 +134,11 @@ class AuthController
         $response = $this->authModel->verifyAcount($email);
         $token = (string)($response['data']['token'] ?? '');
         unset($response['data']['token']);
+        $invitation = str_starts_with($token, 'invite_');
         if (($response['status'] ?? '') === 'success' && $token !== '' && !$this->sendAccessMail(
             $email, 'Verifica tu cuenta', 'Verificar mi cuenta',
-            '/login/verify?v=' . rawurlencode($token),
-            'Confirma tu correo electrónico para activar la cuenta.'
+            ($invitation ? '/login/resetpassword?rp=' : '/login/verify?v=') . rawurlencode($token),
+            $invitation ? 'Define tu contraseña para verificar y activar la cuenta.' : 'Confirma tu correo electrónico para activar la cuenta.'
         )) return $this->withMessage(['status' => 'error', 'code' => 'mail_delivery_failed']);
         return $this->withMessage($response);
     }

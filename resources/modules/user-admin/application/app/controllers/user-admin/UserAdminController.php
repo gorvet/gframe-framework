@@ -37,6 +37,7 @@ class UserAdminController
                 'users' => $users,
                 'roles' => (array)($roles['data'] ?? []),
                 'can_manage' => !empty($capabilities['data']['manage']),
+                'can_create' => !empty($capabilities['data']['create']),
             ],
         ]);
     }
@@ -60,6 +61,21 @@ class UserAdminController
             ob_end_clean();
         }
         return $response;
+    }
+
+    public function create(): array
+    {
+        return $this->withMessage($this->users->creationForm($this->actorID()));
+    }
+
+    public function store(): array
+    {
+        $email = trim((string)($_POST['email'] ?? ''));
+        $roleID = (int)($_POST['role_id'] ?? 0);
+        if ($email === '' || $roleID <= 0) {
+            return ['status' => 'error', 'code' => 'empty_field', 'message' => 'Completa el correo electrónico y el rol.'];
+        }
+        return $this->withMessage($this->users->create($this->actorID(), $email, $roleID));
     }
 
     public function update(): array
@@ -108,6 +124,13 @@ class UserAdminController
     protected function withMessage(array $response): array
     {
         $messages = [
+            'user_invited' => 'Cuenta creada. Se ha solicitado el envío del enlace para definir la contraseña y verificarla.',
+            'user_created_mail_failed' => 'La cuenta se creó, pero no se pudo enviar el correo. El usuario puede solicitar otro enlace desde Recuperar contraseña.',
+            'user_exists' => 'Ya existe una cuenta con ese correo electrónico.',
+            'invalid_email' => 'Escribe un correo electrónico válido.',
+            'invitation_url_missing' => 'Configura APP_URL para enviar el enlace de activación.',
+            'creation_not_supported' => 'El repositorio de la aplicación no permite crear usuarios mediante invitación.',
+            'user_creation_failed' => 'No se pudo crear la cuenta.',
             'user_verified' => 'Cuenta verificada.',
             'user_suspended' => 'Cuenta suspendida.',
             'user_restored' => 'Acceso restablecido.',

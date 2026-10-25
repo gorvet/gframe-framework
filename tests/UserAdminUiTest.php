@@ -30,6 +30,7 @@ final class UserAdminUiTest extends TestCase
         self::assertNotContains('gf-select', $manifest['dependencies']);
         self::assertNotContains('self-account', $manifest['dependencies']);
         self::assertContains('admin-panel', $manifest['dependencies']);
+        self::assertContains('auth-ui', $manifest['dependencies']);
         $menu = (string)file_get_contents($this->modulePath . '/application/admin/users-menu.php');
         self::assertStringContainsString('<span>Gestión de usuarios</span>', $menu);
         self::assertStringContainsString('<li class="nav-heading">Usuarios</li>', $menu);
@@ -43,6 +44,8 @@ final class UserAdminUiTest extends TestCase
         self::assertStringContainsString("can:users.view", $web);
         self::assertStringContainsString("can:users.view", $ajax);
         self::assertStringContainsString("can:users.manage", $ajax);
+        self::assertStringContainsString("can:users.create", $web);
+        self::assertStringContainsString("can:users.create", $ajax);
         self::assertStringNotContainsString('role:superadministrator', $web . $ajax);
     }
 

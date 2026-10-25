@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## Sin publicar
+
+- Gestión de usuarios permite crear cuentas con el permiso `users.create` y enviar una invitación con plantilla para definir la contraseña y verificar la cuenta. Los enlaces caducan en 24 horas, se consumen al utilizarlos y mantienen la jerarquía de roles. `user-admin` incorpora `auth-ui` como dependencia para completar la activación.
+
 ## 4.4.1 — 2026-10-25
 
 - La publicación programada rechaza modelos incompletos antes de consultar contenido y devuelve el error de configuración correspondiente.

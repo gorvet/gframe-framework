@@ -18,7 +18,8 @@ final class UserAdministrationService
     public function __construct(
         private readonly UserAdministrationRepository $users,
         private readonly RoleAdministrationRepository $roles,
-        ?ActiveSessionRegistry $sessions = null
+        ?ActiveSessionRegistry $sessions = null,
+        private readonly ?\GFrame\Mail\AccessMailService $accessMail = null
     ) {
         $this->sessions = $sessions ?? SessionRuntime::registry();
     }
@@ -65,10 +66,67 @@ final class UserAdministrationService
             return [
                 'status' => 'success',
                 'code' => 'capabilities_loaded',
-                'data' => ['view' => true, 'manage' => $this->canManageUsers($actorID)],
+                'data' => ['view' => true, 'manage' => $this->canManageUsers($actorID), 'create' => $this->hasPermission($actorID, 'users.create')],
             ];
         } catch (Exception $exception) {
             return $this->failure($exception, 'capabilities_lookup_failed');
+        }
+    }
+
+    public function creationForm(int $actorID): array
+    {
+        try {
+            if (!$this->hasPermission($actorID, 'users.create')) return $this->denied();
+            $roles = array_values(array_filter($this->roles->assignableRoles(), fn(array $role): bool =>
+                !$this->isSuperadministratorRole($role)
+                && ($this->actorIsSuperadministrator($actorID) || !$this->isAdministratorRole($role))
+            ));
+            return ['status' => 'success', 'code' => 'roles_loaded', 'data' => ['roles' => $roles]];
+        } catch (Exception $exception) {
+            return $this->failure($exception, 'roles_list_failed');
+        }
+    }
+
+    public function create(int $actorID, string $email, int $roleID): array
+    {
+        try {
+            if (!$this->hasPermission($actorID, 'users.create')) return $this->denied();
+            if (!$this->users instanceof \GFrame\Auth\Contracts\UserInvitationRepository) return $this->error('creation_not_supported');
+            $email = mb_strtolower(trim($email), 'UTF-8');
+            if (strlen($email) > 190 || !filter_var($email, FILTER_VALIDATE_EMAIL)) return $this->error('invalid_email');
+            $role = $this->roles->findRoleByID($roleID);
+            if ($role === null || $this->isSuperadministratorRole($role)
+                || (!$this->actorIsSuperadministrator($actorID) && $this->isAdministratorRole($role))) {
+                return $this->error('invalid_role_assignment');
+            }
+            $base = \UrlHelper::canonicalBase();
+            if ($base === null) return $this->error('invitation_url_missing');
+            if ($this->users->invitationEmailExists($email)) return $this->error('user_exists');
+            $tokens = new TokenManager();
+            $token = 'invite_' . $tokens->issue();
+            $userID = $this->users->createInvitedUser($email, $roleID, $token, $tokens->issuedAt());
+            if ($userID <= 0) return $this->error('user_creation_failed');
+            try {
+                $result = ($this->accessMail ?? new \GFrame\Mail\AccessMailService())->send(
+                    $email, 'Activa tu cuenta', [
+                        'title' => 'Activa tu cuenta', 'h1' => 'Activa tu cuenta', 'greeting' => 'Hola.',
+                        'p1' => 'Un administrador ha creado tu cuenta. Define tu contraseña para verificarla y acceder.',
+                        'aHref' => $base . 'login/resetpassword?rp=' . rawurlencode($token),
+                        'aText' => 'Definir contraseña y activar cuenta',
+                        'p2' => 'El enlace caduca en 24 horas. Si vence, solicita otro desde Recuperar contraseña.',
+                    ], '', $token
+                );
+            } catch (Exception $exception) {
+                error_log('[GFrame User Admin] No se pudo enviar la invitación.');
+                $result = ['status' => 'error'];
+            }
+            return [
+                'status' => 'success',
+                'code' => ($result['status'] ?? '') === 'success' ? 'user_invited' : 'user_created_mail_failed',
+                'data' => ['user_id' => $userID],
+            ];
+        } catch (Exception $exception) {
+            return $this->failure($exception, 'user_creation_failed');
         }
     }
 
