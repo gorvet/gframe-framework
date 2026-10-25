@@ -181,7 +181,9 @@ jobs:
         run: |
           export GFRAME_TEST_PHP="$(command -v php)"
           export GFRAME_TEST_BROWSER="$(node -p 'require("playwright").chromium.executablePath()')"
-          node --test --test-concurrency=1 --test-reporter=tap tests/js/*.test.cjs
+          set -o pipefail
+          node --test --test-concurrency=1 --test-reporter=tap tests/js/*.test.cjs | tee "$RUNNER_TEMP/gframe-browser.tap"
+          grep -Fx '# skipped 0' "$RUNNER_TEMP/gframe-browser.tap"
 
   skills-metadata:
     name: Metadata YAML de skills

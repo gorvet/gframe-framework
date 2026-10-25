@@ -32,4 +32,6 @@ Sonda independiente en memoria, sin editar el runtime: envíos separados por 500
 
 El test conserva el umbral de 4800 ms y observa el envío real de XMLHttpRequest mediante el reloj monótono del navegador. No modifica temporizadores ni tráfico del producto. La nueva ejecución con demora deliberada del arnés debe confirmar que no se confunde esa demora con el intervalo del editor.
 
+Sonda con 500 ms de demora deliberada antes de registrar el primer evento en Node: el navegador separa sus envíos 4999,2 ms, mientras el arnés registra 4410 ms. El criterio corregido mantiene el umbral y mide la propiedad exigida; el anterior rechazaría un intervalo correcto por la demora introducida en la observación. Recorrido completo con la demora inyectada: 1 caso aprobado, sin omisiones, 56,7 segundos. Log local `~/.gframe-agents/autosave-demora-controlada.log`.
+
 Se añade un job Chromium que ejecuta la suite completa en Linux, donde no se hereda el bloqueo local. Dependencias solo en el directorio temporal del runner; sin package.json ni cambios del core. La cobertura de todos los paquetes visuales opcionales sigue siendo más amplia que estos recorridos y no se da por completada automáticamente.
