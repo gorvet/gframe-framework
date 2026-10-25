@@ -11,3 +11,11 @@ Convenciones seleccionadas: orchestrator, framework-maintenance y auth-access, c
 - Routing Nginx/PHP-CGI: ejecutar el test existente con recursos públicos, rutas virtuales, archivos internos protegidos, errores y canales.
 
 Los resultados de CI se registrarán después de la ejecución. No se presenta esta preparación como V-02 resuelta. SMTP, personalización del pie, hosting real y cobertura visual universal conservan sus límites.
+
+## Primera ejecución
+
+[CI 40171290826](https://github.com/gorvet/gframe-framework/actions/runs/40171290826), commit `6574d5c`: MySQL/HTTP y Redis reales, PHP 8.4.27, 36 pruebas/764 aserciones, sin omisiones ni fallos; job 121102466808. Redis 7.4.11 y MySQL 8.0.46 reales en contenedores temporales.
+
+Nginx/PHP-CGI llegó a 79 aserciones y falló porque el test antiguo esperaba `recovery_requested` enviando un POST sin CSRF; el framework devolvió correctamente `fail_csrf`. Job 121102466609. El resto de la matriz pasó. Se conserva este fallo como evidencia de una expectativa obsoleta del fixture, no se cambia la protección del framework.
+
+La corrección de la prueba conserva el caso negativo y añade GET del formulario, cookie de sesión y token/timestamp reales antes del POST válido. Requiere una nueva ejecución de Nginx/PHP-CGI para cerrar ese escenario.
