@@ -41,3 +41,8 @@ Se añade un job Chromium que ejecuta la suite completa en Linux, donde no se he
 [CI 40171975482](https://github.com/gorvet/gframe-framework/actions/runs/40171975482), commit `8c1e303`, job Chromium 121104534537: **99 casos aprobados, cero fallos, cero omisiones**, 219 segundos. Incluye instalador, gestión y selector que el entorno local impedía abrir, además del autoguardado con la medición corregida. La condición posterior del job exige explícitamente `# skipped 0`, conservando el fallo del proceso mediante pipefail.
 
 V-02 está cerrada para sus tres escenarios identificados. V-01 tiene ahora todos los recorridos existentes de navegador ejecutados, pero la cobertura visual universal de cada biblioteca/vista sigue sin acreditarse. V-03, V-04 y V-05 conservan su alcance: no hubo acceso a SMTP externo, cambios de pie personalizados ni despliegue o certificación del hosting.
+
+
+## Conciliación posterior con el propietario
+
+Los límites anteriores describen las pruebas realizadas en esta continuación. Posteriormente, el propietario confirmó envíos con plantillas en Enconfianza y despliegues operativos en servidores, aceptó el pie estándar de correo y aplazó la revisión visual amplia. El [seguimiento vigente](cierre-auditorias-20261025.md) cierra V-03–V-05 con esas aclaraciones y mantiene V-01 aplazada; no se atribuyen pruebas nuevas a este informe.
