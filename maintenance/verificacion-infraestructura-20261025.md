@@ -35,3 +35,9 @@ El test conserva el umbral de 4800 ms y observa el envío real de XMLHttpRequest
 Sonda con 500 ms de demora deliberada antes de registrar el primer evento en Node: el navegador separa sus envíos 4999,2 ms, mientras el arnés registra 4410 ms. El criterio corregido mantiene el umbral y mide la propiedad exigida; el anterior rechazaría un intervalo correcto por la demora introducida en la observación. Recorrido completo con la demora inyectada: 1 caso aprobado, sin omisiones, 56,7 segundos. Log local `~/.gframe-agents/autosave-demora-controlada.log`.
 
 Se añade un job Chromium que ejecuta la suite completa en Linux, donde no se hereda el bloqueo local. Dependencias solo en el directorio temporal del runner; sin package.json ni cambios del core. La cobertura de todos los paquetes visuales opcionales sigue siendo más amplia que estos recorridos y no se da por completada automáticamente.
+
+## Cierre de los recorridos existentes
+
+[CI 40171975482](https://github.com/gorvet/gframe-framework/actions/runs/40171975482), commit `8c1e303`, job Chromium 121104534537: **99 casos aprobados, cero fallos, cero omisiones**, 219 segundos. Incluye instalador, gestión y selector que el entorno local impedía abrir, además del autoguardado con la medición corregida. La condición posterior del job exige explícitamente `# skipped 0`, conservando el fallo del proceso mediante pipefail.
+
+V-02 está cerrada para sus tres escenarios identificados. V-01 tiene ahora todos los recorridos existentes de navegador ejecutados, pero la cobertura visual universal de cada biblioteca/vista sigue sin acreditarse. V-03, V-04 y V-05 conservan su alcance: no hubo acceso a SMTP externo, cambios de pie personalizados ni despliegue o certificación del hosting.
