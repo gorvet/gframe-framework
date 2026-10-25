@@ -155,6 +155,34 @@ jobs:
           package-manager-cache: false
       - run: node --test --test-reporter=tap tests/js/*.test.cjs
 
+  browser:
+    name: Recorridos reales con Chromium
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, openssl, pdo_sqlite, gd
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: locked
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Instalar navegador de pruebas en el directorio temporal
+        run: |
+          npm install --prefix "$RUNNER_TEMP/gframe-browser" --no-package-lock --no-audit --no-fund playwright@1.62.1
+          "$RUNNER_TEMP/gframe-browser/node_modules/.bin/playwright" install --with-deps chromium
+          echo "NODE_PATH=$RUNNER_TEMP/gframe-browser/node_modules" >> "$GITHUB_ENV"
+      - name: Ejecutar todos los recorridos de navegador
+        run: |
+          export GFRAME_TEST_PHP="$(command -v php)"
+          export GFRAME_TEST_BROWSER="$(node -p 'require("playwright").chromium.executablePath()')"
+          node --test --test-concurrency=1 --test-reporter=tap tests/js/*.test.cjs
+
   skills-metadata:
     name: Metadata YAML de skills
     runs-on: ubuntu-latest

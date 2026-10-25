@@ -20,6 +20,15 @@ test('Autoguardado privado real: recuperación, petición en vuelo, conflictos y
   const {chromium} = require('playwright');
   const browser = await chromium.launch({headless: true, executablePath: process.env.GFRAME_TEST_BROWSER});
   const context = await browser.newContext({viewport: {width: 1440, height: 1000}});
+  await context.addInitScript(() => {
+    window.__autosaveRequestTimes = [];
+    const send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(body) {
+      const action = new URLSearchParams(body || '').get('action');
+      if (action) window.__autosaveRequestTimes.push({action, time: performance.now()});
+      return send.apply(this, arguments);
+    };
+  });
   const requests = [], errors = []; let hold, heldStarted, release, failSaves = 0, active = 0, maximum = 0;
   context.on('page', page => { page.on('pageerror', e => errors.push(e.message)); page.on('dialog', dialog => dialog.accept()); page.setDefaultTimeout(12000); });
   await context.route('**/*', async route => {
@@ -55,7 +64,8 @@ test('Autoguardado privado real: recuperación, petición en vuelo, conflictos y
     let state = await inspect(); assert.equal(state.article.content, old.article.content); assert.equal(state.draft.data.content, '<p>Privado inicial</p>');
     assert.equal(await page.evaluate(() => AdminRichTextEditor.hasUnsavedChanges()), true, 'Autoguardar no equivale a publicar.');
     assert.ok(requests.every(req => req.data.csrfToken === 'fixture-token'));
-    assert.ok(requests.find(req => req.action === 'save').time - requests[0].time >= 4800, 'Respeta el intervalo mínimo entre peticiones.');
+    const attempts = await page.evaluate(() => window.__autosaveRequestTimes);
+    assert.ok(attempts.find(req => req.action === 'save').time - attempts[0].time >= 4800, 'Respeta el intervalo mínimo entre peticiones en el reloj del navegador.');
     await page.reload(); await ready(page);
     await page.locator('[data-autosave-recovery]').waitFor({state:'visible'});
     assert.equal(await get(page), '<p>Publicado</p>');
