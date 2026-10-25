@@ -140,11 +140,13 @@ Sus operaciones públicas principales son:
 | `paginate($actorID, $page, $perPage, $search, $role, $status)` | Lista usuarios visibles para el actor |
 | `assignableRoles($actorID)` | Devuelve los roles que pueden ofrecerse en la interfaz |
 | `capabilities($actorID)` | Informa si el actor puede ver y administrar |
+| `creationForm($actorID)` | Devuelve los roles permitidos para crear cuentas |
+| `create($actorID, $email, $roleID)` | Crea una cuenta y solicita la entrega de su invitación |
 | `assignRole($actorID, $userID, $roleID)` | Cambia el rol y revoca las sesiones del usuario |
 | `moderate($actorID, $userID, $operation)` | Verifica, suspende, restaura o elimina |
 | `setActive($actorID, $userID, $active)` | Activa o desactiva desde integraciones que usen este contrato |
 
-`users.manage` permite las escrituras. Para lectura basta `users.view` o `users.manage`. El superadministrador supera ambas comprobaciones mediante su rol del sistema.
+`users.manage` permite moderar cuentas y asignar roles; crear cuentas requiere `users.create`. Para lectura basta `users.view` o `users.manage` en el servicio; la ruta del listado requiere `users.view`. El superadministrador supera estas comprobaciones mediante su rol del sistema.
 
 ### Filtros y paginación
 
