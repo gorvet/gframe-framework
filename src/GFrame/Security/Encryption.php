@@ -24,7 +24,7 @@ final class Encryption
     public function encrypt(string $plainText): string
     {
         $ivLength = openssl_cipher_iv_length(self::CIPHER);
-        if ($ivLength === false || $ivLength <= 0) {
+        if ($ivLength <= 0) {
             throw new RuntimeException('El cifrado requerido no está disponible.');
         }
 
@@ -39,7 +39,7 @@ final class Encryption
             $tag
         );
 
-        if ($cipherText === false || $tag === '') {
+        if ($cipherText === false || strlen($tag) !== 16) {
             throw new RuntimeException('No se pudo cifrar el contenido.');
         }
 

@@ -17,7 +17,7 @@ parameters:
         SEO_ALLOW_INDEXING: bool
         WEBHOOK_DEFAULT_SECRET: string
         DB_DEFAULT_CONNECTION: string
-        DB_CONNECTIONS: 'array<string, mixed>'
+        DB_CONNECTIONS: mixed
     paths:
         - src
         - tests/phpstan

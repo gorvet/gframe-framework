@@ -105,7 +105,7 @@ final class DatabaseManager
     }
 
     /**
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     private static function configuredConnections(): array
     {

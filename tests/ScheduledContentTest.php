@@ -7,6 +7,23 @@ use PHPUnit\Framework\TestCase;
 
 final class ScheduledContentTest extends TestCase
 {
+    public function testCronRejectsIncompletePublicationModelBeforeQuerying(): void
+    {
+        $model = new class extends VersionedContentModel {
+            public function dueContent(array $scope): \ORM { throw new \RuntimeException('Unexpected query'); }
+            public function publishScheduled(): array { return []; }
+        };
+        $handler = new class($model) extends ScheduledPublicationCronHandler {
+            public function __construct(private VersionedContentModel $model) {}
+            protected function publicationModel(): VersionedContentModel { return $this->model; }
+            protected function publicationContext(array $task): array { return ['scope' => [], 'author_id' => 1]; }
+            protected function mayPublish(array $row, array $context): bool { return true; }
+        };
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('El modelo requiere ScheduledContent.');
+        $handler->handle();
+    }
+
     #[RunInSeparateProcess]
     public function testHistoryRestorePreservesCurrentPublicationStateAndDate(): void
     {

@@ -29,6 +29,7 @@ abstract class ORM {
 
 
 
+    /** @param array $attributes */
     public function __construct($attributes = []) {
     $this->fill($attributes);
     }
@@ -877,7 +878,7 @@ abstract class ORM {
         'matched'  => null,
         'affected' => $affected,
         'action'   => $action,
-        'id'       => ($id !== false && $id !== null && $id !== '') ? (int)$id : null,
+        'id'       => ($id !== false && $id !== '') ? (int)$id : null,
     ];
     }
 
