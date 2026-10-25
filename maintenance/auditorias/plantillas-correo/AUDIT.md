@@ -1,5 +1,7 @@
 # Auditoría de plantillas de correo
 
+> **Seguimiento conciliado — 2026-10-25:** Las correcciones de homogeneidad, año, saludo y publicación se cerraron en las pasadas posteriores. El aviso administrativo también está implementado. Continúan separados el diagnóstico SMTP externo, clientes de correo y la personalización del contenido de créditos del pie; no se marcan como realizados. Véase [estado y evidencia de cierre](../../cierre-auditorias-20261025.md).
+
 ## Pasada 1 — 2026-10-01
 
 **Alcance:** petición explícita de comprobar homogeneidad. Revisión intermedia del árbol de trabajo; no es el cierre de una etapa. No existe una CONCILIACION.md cerrada ni TAREAS.md principal para esta auditoría. No se declara `coincide` ni se inventan criterios aprobados retrospectivamente.

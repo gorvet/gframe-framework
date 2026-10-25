@@ -1,6 +1,8 @@
 # Etapa 06 — Protección de escritura
 
 **Estado:** cerrada
+
+**Seguimiento conciliado — 2026-10-25:** Etapa cerrada; la [auditoría de etapa 05](../05-writing-tools/AUDIT.md) y [AUDIT.md](AUDIT.md) de esta etapa ya tienen veredicto coincide. No queda activa la excepción de secuencia descrita al preparar la implementación.
 **Spec:** [SPEC.md](../SPEC.md), protección de escritura.
 **Baseline:** 2026-10-15. El usuario prioriza protección ante pérdidas y autoriza implementarla, junto con la continuación de UX propuesta. Decisiones técnicas descritas abajo, sin atribuirlas como opciones elegidas por el usuario.
 
@@ -10,7 +12,7 @@ Advertir al abandonar cambios sin confirmar y ofrecer recuperación explícita d
 
 ## Dependencias
 
-- Etapa 05: auditoría en curso; excepción para preparar esta etapa sin cambiar su código hasta terminar esa auditoría. Requiere cerrarla antes de implementar.
+- Etapa 05: cerrada con [auditoría coincide](../05-writing-tools/AUDIT.md). La excepción original permitía preparar esta etapa sin cambiar su código hasta terminar aquella auditoría.
 
 ## Entra
 

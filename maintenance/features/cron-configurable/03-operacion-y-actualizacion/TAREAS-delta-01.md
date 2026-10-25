@@ -3,7 +3,7 @@
 **Principal:** no
 **Cierra:** AUDIT.md pasada 1; CA-04, CA-05; E-02, E-03.
 **Hueco:** repetir evidencia Linux y ejecutar fallos HTTP reales con diagnóstico acotado.
-**Estado:** implementada
+**Estado:** auditada
 
 ## Listado
 

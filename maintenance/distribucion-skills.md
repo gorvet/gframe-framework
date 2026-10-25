@@ -1,5 +1,7 @@
 # Distribución de las skills de GFrame
 
+> **Seguimiento conciliado — 2026-10-25:** Empaquetado e instalación/carga en Codex completados y publicados. Claude se retiró expresamente de esa validación. Las aplicaciones externas mencionadas conservan su propio alcance y no se actualizan por cerrar este registro. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Revisión del 6 de octubre de 2026. Instalación por proyecto implementada en el lote 18; generador en el lote 19. Carga y descubrimiento de las catorce skills comprobados en Codex CLI/app-server aislado; Claude fuera del alcance por petición del usuario. Véase la [evidencia de carga](carga-complemento-codex-20261006.json).
 
 ## Contenido y fuente

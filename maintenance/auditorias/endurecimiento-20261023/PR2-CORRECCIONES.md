@@ -1,5 +1,7 @@
 # Correcciones posteriores a la revisión de PR #2
 
+> **Seguimiento conciliado — 2026-10-25:** PR #2 integrada. La nota final de PHPStan informativo fue superada por PR #3 y PR #7: nivel 5 obligatorio, cero avisos y baseline retirado. La matriz PHP 8.1–8.4 ya pasó en CI. Véase [estado y evidencia de cierre](../../cierre-auditorias-20261025.md).
+
 Baseline: rama endurecimiento-seguridad, commit 3d0314dd7179a679e9d33a842a32c19a6ed0c255. Se conservan los cambios publicados por Claude y las decisiones del propietario. Skills canónicas aplicadas: orchestrator, framework-maintenance, core-architecture y orm-models, con los contratos de autenticación/sesiones ya seleccionados durante la revisión.
 
 Alcance autorizado: corregir los bloqueos detectados, verificar y actualizar la rama de la PR antes de valorar su integración. Se comprueban reconexión, transacciones de historial y concurrencia SQLite, cookies sin emisión, captura de errores esperados en pruebas aisladas, suite completa y CI. No se modifican aplicaciones consumidoras.

@@ -3,7 +3,7 @@
 **Principal:** no
 **Cierra:** AUDIT.md pasada 1; CA-02; E-02
 **Hueco:** `editor.save()` sincroniza el textarea y limpia isDirty, aunque el artículo todavía no se ha guardado.
-**Estado:** implementada
+**Estado:** auditada
 
 - [x] D01-T1 — Sincronizar contenido sin limpiar la marca de cambios pendientes (CA-02).
   Verificar: sistema; repetir media-writing.browser.test.cjs con isDirty verdadero después de insertar, conservando undo/redo, recarga y controles de otras instancias; ejecutar regresiones JS del principal.

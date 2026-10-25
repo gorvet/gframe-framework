@@ -1,5 +1,7 @@
 # Revisión inicial de seguridad e historial
 
+> **Seguimiento conciliado — 2026-10-25:** La revisión ampliada autorizada se realizó después y quedó integrada por PR #2. Las capturas se incorporaron en entregas posteriores. La configuración efectiva del hosting y los límites del escaneo histórico conservan su alcance; no equivalen a una certificación de producción. Véase [estado y evidencia de cierre](../../cierre-auditorias-20261025.md).
+
 Alcance: repositorios locales del framework y del sitio documental, refs disponibles con `--all`. Se conservan las correcciones y el informe de alineación anteriores. No se reescribe historial, revocan credenciales ni modifican aplicaciones o producción.
 
 ## Historial

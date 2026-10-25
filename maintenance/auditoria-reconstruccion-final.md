@@ -1,5 +1,7 @@
 # Estado canónico de la auditoría y reconstrucción
 
+> **Seguimiento conciliado — 2026-10-25:** Reconstrucción integrada en main; el estado de la rama fuente y su CI pendiente pertenecen al snapshot del 5 de octubre. El cierre y los límites actuales están conciliados en el registro enlazado. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Fecha de cierre técnico: 2026-10-05.
 
 Este documento representa el estado vigente de la rama `codex/auditoria-reconstruccion`. Los demás archivos de `maintenance/` conservan historia, planes y listas de trabajo y pueden contener nombres, limitaciones o pendientes que ya no representan el código actual.

@@ -1,6 +1,8 @@
 # Etapa 07 — Autoguardado en el servidor
 
 **Estado:** cerrada
+
+**Seguimiento conciliado — 2026-10-25:** Etapa cerrada; [AUDIT.md](AUDIT.md), pasada 1, acredita su cierre. La entrega 4.1.0 se publicó y está incluida en 4.4.1; no queda pendiente un commit, push o publicación de esta etapa.
 **Spec:** [SPEC.md](../SPEC.md), continuación de protección.
 
 ## Resultado solicitado

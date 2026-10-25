@@ -3,7 +3,7 @@
 **Principal:** no
 **Cierra:** AUDIT.md pase 3, no coincide; CA-02 y CA-05, E-08.
 **Hueco:** Nginx puede cancelar el POST al cerrar el socket antes de que PHP-FPM inicie el endpoint.
-**Estado:** implementada
+**Estado:** auditada
 
 - [x] D02-T1 — Documentar fastcgi_ignore_client_abort on en el manejador PHP del endpoint HTTP de Nginx; reflejarlo en ayuda y skill. Sin introducir un socket o manejador PHP en el fragmento reutilizable.
   Verificar: documentación y enlaces, comparación con configuración ejecutada.

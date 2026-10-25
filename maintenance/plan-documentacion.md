@@ -1,5 +1,7 @@
 # Plan de documentación de GFrame
 
+> **Seguimiento conciliado — 2026-10-25:** Matriz histórica superada por la reconstrucción DOC-001–027 y la unificación. Las filas «existente, pendiente» no describen automáticamente el estado actual de las guías. Las ampliaciones visuales posteriores se conservan en su propio inventario. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Documento de trabajo, no forma parte de la ayuda pública. Inventario comprobado contra `docs/`, `resources/modules/` y `src/` el 4 de octubre de 2026.
 
 ## Estados y criterio

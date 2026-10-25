@@ -2,7 +2,7 @@
 
 **Principal:** no
 **Cierra:** AUDIT.md pase 3, no coincide; CA-01–04, E-07.
-**Estado:** implementada
+**Estado:** auditada
 
 - [x] D03-T1 — Esperar shown.bs.modal antes de interactuar con teclado en el fixture, conservando la pulsación Enter real y todas las aserciones de orden.
   Verificar: `sistema`; recorrido completo y suite de navegador con casos existentes, sin omisiones, bajo ejecución concurrente con regresión PHP.

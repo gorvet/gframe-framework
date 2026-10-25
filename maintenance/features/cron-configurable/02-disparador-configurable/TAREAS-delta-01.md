@@ -3,7 +3,7 @@
 **Principal:** no
 **Cierra:** AUDIT.md pasada 1; CA-05, CA-06, CA-07; E-03.
 **Hueco:** faltan intentos HTTP con entradas hostiles, fallos reales de infraestructura y extremos de configuración.
-**Estado:** implementada
+**Estado:** auditada
 
 ## Listado
 

@@ -1,5 +1,7 @@
 # Unificación de las dos reconstrucciones
 
+> **Seguimiento conciliado — 2026-10-25:** Unificación integrada en main y ramas temporales retiradas. Las referencias a ramas existentes describen el momento de la comparación. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Rama de trabajo: `codex/reconstruccion-unificada`.
 
 Fuentes comparadas:

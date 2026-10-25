@@ -3,7 +3,7 @@
 **Principal:** no
 **Cierra:** AUDIT.md pasada 1; CA-03; E-02.
 **Hueco:** falta prueba entre peticiones de varias pestañas y pérdida/recuperación de sesión.
-**Estado:** implementada
+**Estado:** auditada
 
 ## Listado
 

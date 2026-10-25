@@ -1,6 +1,8 @@
 # Etapa 01 — Ejecución coordinada
 
 **Estado:** cerrada
+
+**Seguimiento conciliado — 2026-10-25:** Etapa cerrada; [AUDIT.md](AUDIT.md), pasada 1, y [CI-20261019.md](../CI-20261019.md) completan la auditoría y los perfiles Windows/Linux. Las notas de implementación del 15 de octubre conservan su estado histórico.
 **Spec:** [SPEC.md](../SPEC.md) § Requisitos R-05, R-06, R-07 y R-11.
 
 ## Resultado observable

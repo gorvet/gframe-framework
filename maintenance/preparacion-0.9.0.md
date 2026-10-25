@@ -1,5 +1,7 @@
 # Preparación de GFrame 0.9.0
 
+> **Seguimiento conciliado — 2026-10-25:** Preparación histórica superada por versiones publicadas. Navegador del instalador y Apache se comprobaron después en 2.0.2/2.0.3; PHP 8.4 y cron HTTPS/FPM tienen evidencia posterior. No se da por ejecutada la combinación MySQL/HTTP en PHP 8.4 ni routing general Nginx/PHP-CGI. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Fecha de comprobación: 2 de octubre de 2026. Este documento no declara publicada la versión.
 
 ## Alcance

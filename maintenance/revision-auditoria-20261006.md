@@ -1,5 +1,7 @@
 # Revisión de la auditoría y reducción de alcance
 
+> **Seguimiento conciliado — 2026-10-25:** Correcciones integradas; los contratos pospuestos de cola, ORM y cron fueron resueltos posteriormente en el lote 32 del inventario. No se debe reaplicar el patch respaldado. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Fecha: 6 de octubre de 2026. Base comprobada: `d5221de54654fc4ea66eeff5f99bff86e8612449`.
 
 ## Qué se comprobó

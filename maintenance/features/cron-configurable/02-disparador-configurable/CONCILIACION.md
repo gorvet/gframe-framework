@@ -1,6 +1,8 @@
 # Etapa 02 — Disparador configurable
 
 **Estado:** cerrada
+
+**Seguimiento conciliado — 2026-10-25:** Etapa cerrada; [AUDIT.md](AUDIT.md), pasada 2, incorpora el delta 01 y cierra la dependencia de etapa 01. La configuración propuesta quedó aprobada en el cierre del 15 de octubre y verificada después.
 **Spec:** [SPEC.md](../SPEC.md) § Requisitos R-01–R-04, R-08 y R-11.
 
 ## Resultado observable

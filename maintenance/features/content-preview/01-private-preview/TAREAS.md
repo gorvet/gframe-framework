@@ -2,7 +2,7 @@
 
 **Principal:** sí
 **Origen:** CONCILIACION.md cerrada 2026-10-19
-**Estado:** implementada
+**Estado:** auditada
 
 - [x] T1 — Lectura privada y revisión de estado (CA-01, CA-02).
   Verificar: nivel sistema; SQLite, sesión real, scopes y copia antigua; headers y contrato de autorización explícito.

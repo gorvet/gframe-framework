@@ -1,5 +1,7 @@
 # Inventario de mejoras de skills, nomenclatura y contratos
 
+> **Seguimiento conciliado — 2026-10-25:** Los lotes posteriores resuelven K-01–K-04 y M-01 y acreditan instalación/carga en Codex. La tabla inicial conserva el orden propuesto entonces; no es una cola activa de cambios pendientes. Las validaciones de proveedores/consumidores siguen fuera de ese cierre. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Fecha de revisión: 6 de octubre de 2026.
 
 ## Objetivo y alcance actual
@@ -23,12 +25,12 @@ Se conservan los cambios de código ya verificados y las tareas pospuestas. Véa
 | Etapa | Resultado que se busca | Dependencia | Estado |
 | --- | --- | --- | --- |
 | 01. Convenciones y nueve skills existentes | Reglas compatibles con código y documentación; nomenclatura acordada por contexto. | Inventario actual. | Correcciones/recetas consolidadas y revisión nativa de nomenclatura cerrada en lote 32; verificaciones de aplicaciones externas conservan su alcance propio. |
-| 02. Cobertura y recetas faltantes | Cada capacidad tiene un responsable y ejemplos comprobables, sin una skill por biblioteca. | Reglas compartidas de 01. | En curso; cuatro especialistas creados en lotes 12–15, comprobaciones restantes abiertas. |
+| 02. Cobertura y recetas faltantes | Cada capacidad tiene un responsable y ejemplos comprobables, sin una skill por biblioteca. | Reglas compartidas de 01. | Catorce especialistas y recetas entregados; lotes posteriores cierran el trabajo de instrucciones. Proveedores, consumidores y QA visual conservan sus límites propios. |
 | 03. Orquestador | Selección de especialistas según proyecto, versión y tarea, sin duplicar sus instrucciones. | Cobertura mínima de 01 y 02. | Implementado en el lote 16; evaluación de selección y límites registrada abajo. |
 | 04. Descubrimiento, instalación y complemento | Instrucciones asociadas a la versión del proyecto y distribución mantenible. | Skills y selección estables. | Instalación por proyecto y generador implementados; carga comprobada y complemento instalado/habilitado en Codex del usuario. No equivale a certificar toda selección automática. |
 | 05. Verificadores y CI | Comprobaciones de ejemplos, enlaces instalados, nomenclatura y entornos reales. | Cada lote define qué debe verificarse; algunos controles se incorporan antes de esta consolidación. | Controles implementados en lotes 21–25; ampliaciones pospuestas para mantener el foco. |
-| 06. Contratos de cola, ORM y cron | Mejoras con compatibilidad, migración y evidencia propia. | Conciliar cada contrato; no depende de terminar todo el paquete de skills. | Pospuesto, conservado. |
-| 07. Diagnóstico CLI y posible MCP | Reducir trabajo repetido con inspección estructurada. | Demostrar una necesidad que los comandos y skills no cubran. | Evaluación futura. |
+| 06. Contratos de cola, ORM y cron | Mejoras con compatibilidad, migración y evidencia propia. | Conciliar cada contrato; no depende de terminar todo el paquete de skills. | K-01–K-04 implementados y documentados en lote 32; no reaplicar el patch anterior. |
+| 07. Diagnóstico CLI y posible MCP | Reducir trabajo repetido con inspección estructurada. | Demostrar una necesidad que los comandos y skills no cubran. | M-01 resuelto por gframe-context.php en lote 33; no hay un servidor MCP pendiente de implementación. |
 
 Trabajar un solo lote a la vez. Antes de editar, concretar archivos, resultado, contratos afectados y verificación. Al terminar, actualizar su estado con evidencia y enumerar pendientes. Una corrección no justifica renombrar módulos o cambiar otros subsistemas. Si surge un hallazgo nuevo, se registra antes de ampliar el lote.
 

@@ -1,5 +1,7 @@
 # Ajustes posteriores de documentación e identificadores
 
+> **Seguimiento conciliado — 2026-10-25:** Los cambios se publicaron; PHP CLI de XAMPP es 8.3.35 y gframe-docs se actualizó a 4.4.0. Las notas finales de subida y actualización pendientes corresponden al 6 de octubre. Véase [estado y evidencia de cierre](cierre-auditorias-20261025.md).
+
 Fecha: 6 de octubre de 2026. Estos cambios responden a la revisión del usuario después de conciliar las ramas; no se atribuyen a GitHub ni a los commits locales originales.
 
 ## Documentación del framework
