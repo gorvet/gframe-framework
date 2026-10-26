@@ -1,0 +1,20 @@
+name: Publicar GFrame 4.6.0
+on:
+  push:
+    branches: [codex/publish-v4.6.0]
+permissions:
+  contents: write
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Crear etiqueta sobre el commit validado de main
+        env:
+          RELEASE_SHA: 11824b7053aed94ec73f43de6dfba66c610cc93c
+        run: |
+          test "$(git rev-parse origin/main)" = "$RELEASE_SHA"
+          git tag v4.6.0 "$RELEASE_SHA"
+          git push origin refs/tags/v4.6.0
