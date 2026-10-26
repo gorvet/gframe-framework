@@ -25,7 +25,7 @@ Las variantes síncronas sirven también para workers y tareas programadas que y
 
 ## Configuración SMTP
 
-Las credenciales se leen exclusivamente desde `.env`:
+Las credenciales se leen por defecto desde `.env`. También puedes registrar un [proveedor SMTP personalizado](smtp-provider.md) para leer los ajustes guardados desde el admin de tu aplicación:
 
 ```dotenv
 MAIL_HOST=smtp.example.com
@@ -69,11 +69,11 @@ $result = (new MailService())->sendTemplateAsync(
 );
 ```
 
-`sendTemplateAsync()` y `sendHtmlAsync()` entregan una closure serializable al ejecutor `Async`, basado en Opis Closure 4. El worker carga nuevamente la aplicación, lee SMTP desde `.env` y realiza el envío fuera de la petición web. La respuesta inmediata usa `mail_queued` o `mail_queue_failed`.
+`sendTemplateAsync()` y `sendHtmlAsync()` entregan una closure serializable al ejecutor `Async`, basado en Opis Closure 4. El worker carga nuevamente la aplicación, resuelve SMTP con el proveedor registrado o `.env` y realiza el envío fuera de la petición web. La respuesta inmediata usa `mail_queued` o `mail_queue_failed`.
 
 Consulta [Async](async.md) para ejecutar otras tareas PHP en segundo plano y revisar los requisitos del worker.
 
-El worker crea una nueva instancia de MailService: los objetos de configuración o registro de plantillas inyectados en la instancia que encola no se trasladan al worker. Las plantillas del envío asíncrono deben estar disponibles en el directorio estándar del proyecto y su SMTP en el entorno del worker.
+El worker crea una nueva instancia de MailService: los objetos inyectados no se trasladan al worker. Las plantillas deben estar en el directorio estándar del proyecto. SMTP se resuelve con `mail.smtp_provider` del proyecto o `.env` por defecto.
 
 ### Resultado y feedback
 

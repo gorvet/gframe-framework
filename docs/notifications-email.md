@@ -16,7 +16,7 @@ El transporte convierte cada notificación en destinatario, asunto, identificado
 
 ## Configuración
 
-SMTP se configura exclusivamente en `.env`:
+SMTP utiliza `.env` por defecto y admite un [proveedor personalizado](smtp-provider.md) registrado por la aplicación:
 
 ```dotenv
 MAIL_HOST=smtp.example.com

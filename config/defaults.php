@@ -2,6 +2,7 @@
 
 return [
     'app' => [
+        'settings_provider' => null,
         'name' => 'GFrame',
         'environment' => 'production',
         'debug' => false,
@@ -106,6 +107,7 @@ return [
         ],
     ],
     'mail' => [
+        'smtp_provider' => null,
         'rate_limit' => [
             'enabled' => true,
             'max_attempts' => 5,

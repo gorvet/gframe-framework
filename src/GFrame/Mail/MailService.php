@@ -4,6 +4,8 @@ namespace GFrame\Mail;
 
 use Exception;
 use GFrame\Mail\Contracts\MailSender;
+use GFrame\Mail\Contracts\SmtpConfigurationProvider;
+use GFrame\Config\ConfigRepository;
 use PHPMailer\PHPMailer\PHPMailer;
 
 /**
@@ -13,7 +15,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 final class MailService implements MailSender
 {
     public function __construct(
-        private readonly ?SmtpConfiguration $configuration = null,
+        private readonly ?SmtpConfigurationProvider $configuration = null,
         private readonly ?MailTemplateRegistry $templates = null,
         private readonly ?\Async $async = null,
         private readonly ?MailRateLimiter $rateLimiter = null
@@ -70,8 +72,13 @@ final class MailService implements MailSender
         }
         try { $attachments = MailAttachments::prepare($options['attachments'] ?? []); }
         catch (\InvalidArgumentException) { return ['status' => 'error', 'code' => 'mail_attachments_invalid']; }
-        $smtp = ($this->configuration ?? new SmtpConfiguration())->resolve();
-        $validation = ($this->configuration ?? new SmtpConfiguration())->validate($smtp);
+        try {
+            $smtp = $this->configurationProvider()->resolve();
+        } catch (\Throwable) {
+            error_log('[GFrame Mail] mail_send_failed');
+            return ['status' => 'error', 'code' => 'mail_send_failed'];
+        }
+        $validation = (new SmtpConfiguration())->validate($smtp);
         if (($validation['status'] ?? '') !== 'success') return $validation;
 
         try {
@@ -100,9 +107,20 @@ final class MailService implements MailSender
             $mailer->send();
             return ['status' => 'success', 'code' => 'mail_sent'];
         } catch (Exception $exception) {
-            error_log('[GFrame Mail] ' . $exception->getMessage());
+            error_log('[GFrame Mail] mail_send_failed');
             return ['status' => 'error', 'code' => 'mail_send_failed'];
         }
+    }
+
+    private function configurationProvider(): SmtpConfigurationProvider
+    {
+        if ($this->configuration !== null) return $this->configuration;
+        $providerClass = ConfigRepository::get('mail.smtp_provider');
+        if ($providerClass === null) return new SmtpConfiguration();
+        if (!is_string($providerClass) || !is_a($providerClass, SmtpConfigurationProvider::class, true)) {
+            throw new \RuntimeException('Invalid SMTP configuration provider.');
+        }
+        return new $providerClass();
     }
 
     private function limited(array $options, \Closure $send): array

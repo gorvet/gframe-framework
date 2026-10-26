@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 4.6.0 — 2026-10-25
+
+- Configuración: proveedor opcional de ajustes generales, SEO y Metricool desde la aplicación, cargado antes de las constantes en web y CLI; conserva los valores existentes y excluye límites y opciones del servidor.
+
+- Mail admite proveedores SMTP personalizados mediante `mail.smtp_provider`, también en workers independientes, conservando `.env`, validación y TLS por defecto.
+
 ## 4.5.0 — 2026-10-25
 
 - Gestión de usuarios permite crear cuentas con el permiso `users.create` y enviar una invitación con plantilla para definir la contraseña y verificar la cuenta. Los enlaces caducan en 24 horas, se consumen al utilizarlos y mantienen la jerarquía de roles. `user-admin` incorpora `auth-ui` como dependencia para completar la activación.

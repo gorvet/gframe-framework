@@ -102,6 +102,8 @@ composer gframe:update
 
 Consulta [Actualizaciones](docs/actualizaciones.md) antes de modificar archivos publicados por módulos o el esqueleto.
 
+La aplicación puede proporcionar [ajustes generales, SEO y Metricool](docs/project-settings.md) y [configuración SMTP](docs/smtp-provider.md) desde base de datos, conservando los valores predeterminados sin cambiar cada llamada de envío. Los formularios administrativos pertenecen a la aplicación.
+
 ## Módulos y personalización
 
 GFrame diferencia entre:

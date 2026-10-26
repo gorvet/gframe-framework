@@ -13,7 +13,9 @@ Use this to trace startup in an application or verify that a skill matches the p
 
 ## Startup Order
 
-`Bootstrap::boot` validates the project root and defines `ABSPATH` and `GFRAME_PATH` if they are not already defined. It loads project configuration, utility files, the legacy constant bridge for structured configuration, project autoload, installed module runtime and finally routes. It records a completed boot and returns early on subsequent calls in the same process.
+`Bootstrap::boot` validates the project root and defines `ABSPATH` and `GFRAME_PATH` if they are not already defined. It loads project configuration, utility files and project autoload. In structured mode it defines database constants, loads optional `app.settings_provider` overrides, then defines the remaining legacy constants. Installed module runtime and routes follow. It records a completed boot and returns early on subsequent calls in the same process.
+
+`app.settings_provider` is an autoloadable no-required-arguments `ProjectSettingsProvider` class. Only name/language/timezone, SEO and Metricool overrides are allowed; missing values preserve project/environment defaults. The provider can use the configured database, but not site constants, modules or session. Settings apply once per boot before constants; persistent workers require restart. Failures produce `project_settings_failed` without exposing provider exceptions. See `docs/project-settings.md`. SMTP uses its separate per-send provider.
 
 Configuration discovery checks `config/app.php`, `config/bootstrap.php` and legacy `core/Config.php`. With the structured `config/app.php` and framework defaults available, bootstrap loads package `config/defaults.php`, then merges the project array. Otherwise it uses the first available legacy configuration file; it does not apply all three as additive layers. Configuration files must follow the contract of their mode. Do not migrate a legacy bridge automatically as part of another task.
 

@@ -42,10 +42,12 @@ final class Bootstrap
 
         $usesStructuredConfiguration = self::loadProjectConfiguration($projectRoot);
         self::loadUtilityFiles();
+        self::registerProjectAutoload($projectRoot . DIRECTORY_SEPARATOR . 'app');
         if ($usesStructuredConfiguration) {
+            LegacyConfigBridge::defineDatabaseConstants();
+            \GFrame\Config\ProjectSettings::load();
             LegacyConfigBridge::defineConstants();
         }
-        self::registerProjectAutoload($projectRoot . DIRECTORY_SEPARATOR . 'app');
         $moduleLock = $projectRoot . '/storage/gframe-installed.json';
         $installed = is_file($moduleLock) ? json_decode((string)file_get_contents($moduleLock), true) : [];
         if (!is_array($installed)) throw new RuntimeException('El registro de módulos instalados no es válido.');

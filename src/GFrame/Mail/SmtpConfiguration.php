@@ -4,7 +4,7 @@ namespace GFrame\Mail;
 
 use GFrame\Config\Environment;
 
-final class SmtpConfiguration
+final class SmtpConfiguration implements \GFrame\Mail\Contracts\SmtpConfigurationProvider
 {
     public function resolve(): array
     {

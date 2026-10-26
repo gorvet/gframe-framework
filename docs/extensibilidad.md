@@ -12,6 +12,8 @@ El mecanismo depende de lo que quieras modificar:
 | Acción de un módulo MVC | Controlador heredado en `app/controllers/<módulo>/` |
 | Consulta o regla de negocio | Modelo o servicio propio, construido e inyectado por el controlador |
 | Nuevo canal de notificación o almacenamiento | Implementación del contrato que ofrece el módulo |
+| Nombre, idioma, zona horaria, SEO y Metricool desde el proyecto | `ProjectSettingsProvider`, registrado mediante `app.settings_provider`; consulte [ajustes del proyecto](project-settings.md) |
+| SMTP desde base de datos u otra fuente | `SmtpConfigurationProvider`, registrado mediante `mail.smtp_provider`; consulte [proveedor SMTP](smtp-provider.md) |
 | Nueva regla de campaña automática | Modelo heredado e integración tanto con el controlador como con cron |
 
 Crear una clase heredada no reemplaza las instancias construidas con `new` en otras clases. Cada punto de entrada que deba utilizarla necesita recibir la dependencia propia.

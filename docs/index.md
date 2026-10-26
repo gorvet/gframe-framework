@@ -15,6 +15,8 @@ La documentación está organizada primero por **lo que quieres construir** y de
 
 Para preparar el entorno consulta también [Apache y Nginx](servidores-web.md), [Configuración y entorno](configuracion.md) y [Desarrollo con una copia local](instalacion-local.md).
 
+Para integrar un panel de configuración propio, consulta [ajustes generales, SEO y Metricool](project-settings.md) y [SMTP desde base de datos](smtp-provider.md). Ambos conservan los valores predeterminados y funcionan también en procesos independientes.
+
 ## Construir una aplicación
 
 ### Páginas, rutas y presentación

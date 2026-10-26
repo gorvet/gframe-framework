@@ -1,5 +1,7 @@
 # Mail, Templates and Public Forms
 
+Register an autoloadable no-required-arguments `SmtpConfigurationProvider` class as `mail.smtp_provider` in project `config/app.php` for custom SMTP sources. Null preserves `.env`. MailService resolves settings on every send, including internal instances and bootstrapped workers. Never depend on web session or log provider exceptions. Explicit constructor injection applies to synchronous sends of that instance; Async uses project registration. See `docs/smtp-provider.md` for application-owned database/admin/encryption responsibilities.
+
 ## Configuration and Rendering
 
 `GFrame\Mail\MailService` uses SMTP from environment configuration. Keep credentials in the project's `.env`; do not expose them or return internal SMTP errors to visitors. Configuration validation does not test authentication or connectivity. For a contact form, keep the project's configured From address and pass the visitor through `reply_to`/`reply_name`.

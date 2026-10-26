@@ -19,6 +19,28 @@ final class LegacyConfigBridge
         self::define('APP_TIMEZONE', (string)ConfigRepository::get('app.timezone', 'UTC'));
         self::define('session_name', self::sessionName($siteUrl));
 
+        self::defineDatabaseConstants();
+
+        self::defineTenancy();
+
+        $debug = (bool)ConfigRepository::get('app.debug', false);
+        $seoEnabled = (bool)ConfigRepository::get('seo.enabled', true);
+        $allowIndexing = $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.allow_indexing', true);
+        $analyticsEnabled = (bool)ConfigRepository::get('analytics.enabled', false);
+        $metricoolEnabled = (bool)ConfigRepository::get('analytics.metricool.enabled', false);
+        self::define('Metricool', !$debug && $analyticsEnabled && $metricoolEnabled);
+        self::define('METRICOOL_HASH', (string)ConfigRepository::get('analytics.metricool.hash', ''));
+        self::define('SEO_ENABLED', $seoEnabled && !$debug);
+        self::define('SEO_ALLOW_INDEXING', $allowIndexing);
+        self::define('SEO_ENABLE_SITEMAP_XML', $allowIndexing && (bool)ConfigRepository::get('seo.sitemap', true));
+        self::define('SEO_ENABLE_ROBOTS_TXT', $seoEnabled && (bool)ConfigRepository::get('seo.robots', true));
+        self::define('SEO_ENABLE_LLMS_TXT', $allowIndexing && (bool)ConfigRepository::get('seo.llms', true));
+
+        date_default_timezone_set((string)APP_TIMEZONE);
+    }
+
+    public static function defineDatabaseConstants(): void
+    {
         $defaultConnection = (string)ConfigRepository::get('database.default', 'main');
         $connections = (array)ConfigRepository::get('database.connections', []);
         self::define('DB_DEFAULT_CONNECTION', $defaultConnection);
@@ -42,23 +64,6 @@ final class LegacyConfigBridge
         if (isset($database['foreign_keys'])) {
             self::define('DB_SQLITE_FOREIGN_KEYS', (bool)$database['foreign_keys']);
         }
-
-        self::defineTenancy();
-
-        $debug = (bool)ConfigRepository::get('app.debug', false);
-        $seoEnabled = (bool)ConfigRepository::get('seo.enabled', true);
-        $allowIndexing = $seoEnabled && !$debug && (bool)ConfigRepository::get('seo.allow_indexing', true);
-        $analyticsEnabled = (bool)ConfigRepository::get('analytics.enabled', false);
-        $metricoolEnabled = (bool)ConfigRepository::get('analytics.metricool.enabled', false);
-        self::define('Metricool', !$debug && $analyticsEnabled && $metricoolEnabled);
-        self::define('METRICOOL_HASH', (string)ConfigRepository::get('analytics.metricool.hash', ''));
-        self::define('SEO_ENABLED', $seoEnabled && !$debug);
-        self::define('SEO_ALLOW_INDEXING', $allowIndexing);
-        self::define('SEO_ENABLE_SITEMAP_XML', $allowIndexing && (bool)ConfigRepository::get('seo.sitemap', true));
-        self::define('SEO_ENABLE_ROBOTS_TXT', $seoEnabled && (bool)ConfigRepository::get('seo.robots', true));
-        self::define('SEO_ENABLE_LLMS_TXT', $allowIndexing && (bool)ConfigRepository::get('seo.llms', true));
-
-        date_default_timezone_set((string)APP_TIMEZONE);
     }
 
     private static function defineTenancy(): void
