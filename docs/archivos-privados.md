@@ -52,6 +52,14 @@ Se conservan `auth` y los permisos habituales de [la biblioteca](media-library.m
 
 La biblioteca identifica los privados, permite filtrar por visibilidad y muestra su estado en detalles. Campos y selector utilizan la misma autorización. GET/HEAD `admin/media-file?media_id=<id>&variant=<clave>` entrega originales y miniaturas con autorización en cada petición. Las respuestas de presentación omiten rutas físicas privadas. Copiar esa URL interna no concede acceso externo.
 
+![Biblioteca filtrada para mostrar únicamente los medios privados autorizados](assets/4.7.1/medios-filtro-privados.png)
+
+*El filtro «Privados» muestra solo los archivos que el actor puede consultar. Captura real de una instalación temporal con datos ficticios, GFrame 4.7.1.*
+
+![Detalles de un medio privado con su visibilidad y URL interna protegida](assets/4.7.1/medio-privado-detalles.png)
+
+*Los detalles muestran «Visibilidad: Privado». La URL apunta al controlador autorizado; copiarla no emite un enlace externo. Esta pantalla no contiene controles de emisión de enlaces ni de cambio de visibilidad.*
+
 Los servicios PHP no leen sesiones y presuponen un llamador autorizado. Para aplicar permisos dentro de `MediaLibraryService`, inyecta `MediaAccessPolicy` como quinto argumento con un comprobador del actor/tenant verificados; el controlador nativo lo hace. Sin política, el llamador debe autorizar cada operación. Para reglas por registro, además de origen y ámbito, utiliza endpoints propios y consultas autorizadas; un permiso de biblioteca no implementa esas reglas particulares.
 
 ## Biblioteca desde PHP

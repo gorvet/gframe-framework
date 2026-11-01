@@ -3,6 +3,7 @@
 ## 4.7.1 — 2026-11-01
 
 - Documentación de medios: sección inicial sobre almacenamiento público y privado, acceso directo a la guía completa y corrección de las afirmaciones anteriores sobre URLs públicas, migraciones y permisos.
+- Capturas reales actualizadas: biblioteca mixta, filtro de privados y detalles con URL protegida; inventario y generador reproducible incluidos.
 
 ## 4.7.0 — 2026-11-01
 

@@ -1,5 +1,17 @@
 # Inventario de imágenes de la ayuda
 
+## Actualización de medios 4.7.1 — 1 de noviembre de 2026
+
+Tres capturas reales en una aplicación temporal, con autenticación y archivos ficticios. Generador reproducible: `maintenance/help/capture-private-media.cjs` y `seed-private-media.php`. Se revisaron las tres imágenes renderizadas, sin recortes de controles ni textos ilegibles. No se representan controles de compartir o cambiar visibilidad que no existen en la interfaz.
+
+| Archivo | Uso | Contenido |
+| --- | --- | --- |
+| `4.7.1/medios-publicos-privados.png` | `media-library.md` | Listado mixto y filtro de visibilidad; sustituye la captura inicial `4.3.1/multimedia.png`. |
+| `4.7.1/medios-filtro-privados.png` | `archivos-privados.md` | Filtro «Privados» con dos documentos autorizados. |
+| `4.7.1/medio-privado-detalles.png` | `archivos-privados.md` | Estado privado y URL de descarga interna protegida. |
+
+Las capturas de otras funciones permanecen identificadas por su versión; esta revisión cubre las páginas de medios afectadas por 4.7.0/4.7.1.
+
 Estado: actualización 4.3.1, 20 de octubre de 2026. Este archivo identifica qué existe, dónde se usa y qué falta. No debe deducirse la cobertura por el número de PNG ni abrir todos los archivos para reconstruirla.
 
 ## Archivos disponibles
