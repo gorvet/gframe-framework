@@ -16,7 +16,7 @@ Base limpia: 11824b7 (v4.6.0). Versión prevista: 4.7.0.
 - Chrome real: gestión y selector completos pasan (2/2) con transporte loopback PHP temporal porque Node rechaza sockets locales con EACCES en este host. Conserva respuestas HTTP reales. La primera ejecución amplia tuvo 97 éxitos, 2 fallos y 1 timeout; se corrigió la pérdida de origen al filtrar sin resultados y se repitieron ambos recorridos de medios con transporte funcional. El timeout del recorrido editorial instalado queda pendiente de CI.
 - `composer validate --strict`, `composer audit --locked`, validación PHP de skills y `git diff --check`: correctos.
 - Sitio local: HTTP 200 en https://localhost/gframe-docs/guias/archivos-privados, leyendo docs/ del framework. Se añadió la guía al grupo Contenido y multimedia, sin duplicar su contenido.
-- Pendientes de publicación: PHPStan (descarga de la dependencia bloqueada/interrumpida), CI remoto, push y etiqueta. No se presenta ese análisis como aprobado.
+- Publicado el código en main (0653abd). CI confirma PHPStan, YAML, JavaScript sin navegador, MySQL, Redis, Nginx/PHP-CGI, cron HTTPS y procesos Windows. La primera matriz PHP de Linux detectó que el fallo simulado de rollback escribía en stderr y PHPUnit lo interpretaba como error de su proceso aislado; el test ahora dirige ese log al directorio temporal, como las otras pruebas de medios. Pendiente de confirmar la repetición de CI y publicar la etiqueta.
 
 ## Límites del contrato
 

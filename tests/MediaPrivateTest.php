@@ -19,6 +19,7 @@ final class MediaPrivateTest extends TestCase
         $pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/media-library/database/sqlite.sql'));
         $root = sys_get_temp_dir() . '/gframe-private-media-' . bin2hex(random_bytes(6));
         mkdir($root . '/public', 0775, true);
+        ini_set('error_log', $root . '/errors.log');
         define('ABSPATH', $root . '/');
         define('site_url', 'https://example.test/project/');
         $storage = new MediaStorage($root . '/public', $root . '/private');
