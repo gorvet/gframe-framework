@@ -47,6 +47,7 @@ For a concrete normalized HTTP boundary, service operation and consumer response
 - Model must not read raw `$_POST`, `$_REQUEST`, or generic form state.
 - Model should not redo generic required-field validation already enforced by controller.
 - Use services for filesystem work, external APIs, reusable orchestration, or logic that should not live in controller/model.
+- For protected local file delivery, reuse GFrame\Files\PrivateDownloadService/PrivateFileStorage and GFrame\Http\FileResponse; read the resolved package's docs/archivos-privados.md. Authorize issuance/revocation/internal access, pass verified identities and server-owned paths, keep no-store/range/HEAD behavior, and never redirect to a public physical URL. Bearer-link possession is access unless optional identity/entitlement checks are configured. Limits count GET attempts, not completed downloads. Record retention belongs to an explicit project policy.
 - `code` is part of the backend-frontend contract. Emit canonical lowercase codes, preferably `snake_case`, such as `empty_field`, `not_found`, `bad_json`, `to_login`, and `to_reload`.
 - Do not invent mixed naming conventions for new emitted response codes across modules.
 - Do not lowercase or normalize controller/model business codes in Router `ajax` or `api` output. Payload codes must arrive at JS exactly as emitted by the module.

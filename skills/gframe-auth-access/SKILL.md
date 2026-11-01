@@ -34,6 +34,7 @@ Use this for registration, login, verification, recovery, session identity, My A
 - Password reset and changes revoke sessions through an available managed registry; the native driver has no GFrame multidevice-revocation guarantee. Verify the driver and registry instead of promising the same behavior for all storage modes.
 - Keep tenant selection consistent with route/request/session identity, then verify membership and permissions. Registration does not create a tenant or membership.
 - Protect routes in middleware, not inside persistence models.
+- Private media visibility does not replace owner/tenant or record authorization. Native media adds source-configurable private action permissions to its ordinary route permissions; other administrator roles need explicit grants. External download tokens are separate capabilities and must not imply admin access. PrivateDownloadService requires a controller-verified user ID for identity restrictions and an optional current-entitlement callback; it never reads or validates a session itself. Follow docs/archivos-privados.md in the resolved package, without introducing business-specific roles or retention rules.
 
 ## Verification
 

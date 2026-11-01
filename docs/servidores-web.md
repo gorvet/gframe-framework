@@ -74,6 +74,7 @@ Solo tras una validación satisfactoria, recarga Nginx mediante el mecanismo del
 - Solo las ubicaciones públicas autorizadas entregan archivos existentes; las demás peticiones pasan por `/index.php`, sin añadir segmentos a `SCRIPT_NAME` ni a la URL.
 - Los puntos de entrada PHP son `/index.php`, `/install.php` y, si se instala cron-runner, `/gframe-cron.php`. El instalador se bloquea al completar la instalación; puede denegarse explícitamente en producción.
 - Los directorios internos, archivos ocultos, Composer, bases de datos, logs, copias de seguridad y otros scripts PHP no son públicos.
+- `private/` está denegado explícitamente; sus archivos se entregan mediante rutas autorizadas. Incorpora este bloqueo al actualizar reglas personalizadas. Consulta [archivos privados](archivos-privados.md).
 - Una cabecera AJAX o de webhook no elimina esos bloqueos.
 - Los tokens ACME se permiten únicamente bajo `/.well-known/acme-challenge/`, con nombres de token válidos.
 - `public` sirve archivos, no PHP. Si un proyecto expone scripts adicionales deliberadamente, necesita una regla y una revisión propias; no se habilitan todos los scripts por defecto.

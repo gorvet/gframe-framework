@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `media` (
   `original_name` VARCHAR(255) NOT NULL,
   `path` VARCHAR(500) NOT NULL,
   `remote_url` VARCHAR(500) NULL,
+  `visibility` VARCHAR(20) NOT NULL DEFAULT 'public',
   `mime_type` VARCHAR(150) NOT NULL,
   `size_bytes` BIGINT UNSIGNED NOT NULL DEFAULT 0,
   `alt_text` VARCHAR(255) NOT NULL DEFAULT '',

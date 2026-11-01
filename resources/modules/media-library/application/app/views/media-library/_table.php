@@ -16,6 +16,7 @@
             <?= $escape($file['original_name'] ?: $file['name']) ?>
           </button>
           <div class="small text-body-secondary media-list-file"><?= $escape($file['name']) ?></div>
+          <?php if (($file['visibility'] ?? 'public') === 'private'): ?><span class="badge text-bg-secondary">Privado</span><?php endif; ?>
         </td>
         <td><?= $escape($file['mime_type']) ?></td>
         <td class="text-nowrap"><?= number_format((int)($file['size_bytes'] ?? 0) / 1024, 1, ',', '.') ?> KB</td>

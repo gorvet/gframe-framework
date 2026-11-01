@@ -106,7 +106,7 @@ public/uploads/tenant/<id>/<source>/<año>/<mes>/      tenant
 
 `source` identifica el origen funcional, como `library` o `articles`; no crea otro ámbito de seguridad. Cada publicación guarda sus selecciones en su propia tabla.
 
-El aislamiento del listado no convierte los archivos en privados: están en `public` y pueden servirse directamente por URL. Para documentos confidenciales utiliza almacenamiento protegido y una descarga autorizada del proyecto; un enlace difícil de adivinar no sustituye esa protección.
+El ámbito identifica al propietario, no la visibilidad. Los archivos existentes siguen siendo públicos. Desde 4.7.0, `media.visibility` y `media.sources.<origen>.visibility` permiten guardar originales y variantes privados en `private/media/`. Consulta [archivos privados y enlaces de descarga](archivos-privados.md) para configurar almacenamiento, permisos y enlaces externos. Aplica las migraciones del módulo al actualizar.
 
 ## Permisos
 

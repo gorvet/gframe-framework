@@ -2,7 +2,7 @@
 
 ## Route Declaration
 
-Routes are declared with `Route::get()`, `Route::post()`, `Route::put()`, or `Route::delete()`.
+Routes are declared with `Route::get()`, `Route::head()`, `Route::post()`, `Route::put()`, or `Route::delete()`. HEAD is explicit, not an automatic GET fallback; preserve the same authorization and omit the response body, as the private-file endpoints do.
 
 The controller target uses:
 

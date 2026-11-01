@@ -1,0 +1,1 @@
+ALTER TABLE media ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public';

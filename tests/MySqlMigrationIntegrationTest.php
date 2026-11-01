@@ -201,4 +201,22 @@ final class MySqlMigrationIntegrationTest extends TestCase
         file_put_contents($this->fixture . '/journal-test/migration.sql', 'CREATE TABLE journal_values (value INT); INSERT INTO journal_values VALUES (1); INSERT INTO missing_table VALUES (2);');
         return new MigrationRunner(new ModuleCatalog($this->fixture));
     }
+
+    public function testMediaVisibilityMigrationAndFreshSchema(): void
+    {
+        $schema = file_get_contents(dirname(__DIR__) . '/resources/modules/media-library/database/mysql.sql');
+        $legacy = str_replace("  `visibility` VARCHAR(20) NOT NULL DEFAULT 'public',\n", '', str_replace("\r\n", "\n", $schema));
+        $this->pdo->exec($legacy);
+        $this->pdo->exec("INSERT INTO media (kind, name, original_name, path, mime_type, created_at) VALUES ('docs', 'old', 'old', 'uploads/old.txt', 'text/plain', NOW())");
+        $runner = MigrationRunner::frameworkDefault();
+        $runner->baseline($this->pdo, 'mysql', ['media-library']);
+        $this->pdo->exec("DELETE FROM gframe_migrations WHERE migration LIKE '%202611010001_media_visibility%'");
+        self::assertSame(1, $runner->migrate($this->pdo, 'mysql', ['media-library'])['count']);
+        self::assertSame('public', $this->pdo->query('SELECT visibility FROM media')->fetchColumn());
+        self::assertSame(0, $runner->migrate($this->pdo, 'mysql', ['media-library'])['count']);
+        $this->pdo->exec('DROP TABLE media');
+        $this->pdo->exec($schema);
+        self::assertNotFalse($this->pdo->query("SHOW COLUMNS FROM media LIKE 'visibility'")->fetch());
+        self::assertSame(0, $runner->migrate($this->pdo, 'mysql', ['media-library'])['count']);
+    }
 }

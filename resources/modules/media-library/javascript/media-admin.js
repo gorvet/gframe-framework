@@ -136,6 +136,7 @@
       $("#upload_date").text(media.created_at || "-");
       $("#uploaded_by").text(media.uploaded_by || "-");
       $("#uploaded_to").text(media.uploaded_to || "-");
+      $('#media-visibility-label').text(media.visibility_label || '-');
       $("#mime_type").text(media.mime_type || "-");
       $("#name").text(media.name || "-");
       $("#file_weight").text(formatSize(meta));

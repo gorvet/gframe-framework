@@ -2,6 +2,8 @@
 
 use RouteBuilder as Route;
 
+Route::post('ajax/admin/media/visibility', 'media-library/MediaController@visibility')->module('media-library')->middleware(['auth', 'can:media.edit'])->registerFinal();
+
 Route::post('ajax/admin/media/list', 'media-library/MediaController@list')->module('media-library')->middleware(['auth', 'can:media.view'])->registerFinal();
 Route::post('ajax/admin/media/field', 'media-library/MediaController@field')->module('media-library')->middleware(['auth', 'can:media.view'])->registerFinal();
 Route::post('ajax/admin/media/upload', 'media-library/MediaController@upload')->module('media-library')->middleware(['auth', 'can:media.add'])->registerFinal();

@@ -159,7 +159,7 @@ function _normYm(v){
       ym: 'all',
       q: '',
       page: 1,
-      kind: 'all', view: 'grid', sort: 'newest'
+      kind: 'all', view: 'grid', sort: 'newest', visibility: 'all'
     };
 
     // kind: options.kind > data-ml-kind > URL(kind) (si no está 'locked') > all
@@ -318,7 +318,7 @@ MediaLibrary.prototype.setMode = function(mode){
     });
 
     // filtros: change (ids clásicos + data-ml-filter)
-    $ui.on('change.mediaLibrary', '#media-source-filter, #media-date-filter, #media-kind-filter, [data-ml-filter="source"], [data-ml-filter="ym"], [data-ml-filter="kind"], [data-ml-filter="view"], [data-ml-filter="sort"]', function(){
+    $ui.on('change.mediaLibrary', '#media-source-filter, #media-date-filter, #media-kind-filter, [data-ml-filter="source"], [data-ml-filter="ym"], [data-ml-filter="kind"], [data-ml-filter="view"], [data-ml-filter="sort"], [data-ml-filter="visibility"]', function(){
       self.state.page = 1;
       self.load(1, { push: true, makeActive: true });
     });
@@ -471,12 +471,13 @@ MediaLibrary.prototype.normalizeItem = function($el){
     if (!$k.length) $k = $ui.find('#media-kind-filter').first();
 
     if ($src.length) this.state.source = _normSource($src.val());
-    else this.state.source = 'all';
     if ($ym.length)  this.state.ym     = _normYm($ym.val());
     if ($q.length)   this.state.q      = ($q.val() || '').toString().trim();
     if (!this._kindLocked && $k.length) this.state.kind = _normKind($k.val());
     var view = $ui.find('[data-ml-filter="view"]').val();
     var sort = $ui.find('[data-ml-filter="sort"]').val();
+    var visibility = $ui.find('[data-ml-filter="visibility"]').val();
+    if (visibility) this.state.visibility = /^(public|private)$/.test(visibility) ? visibility : 'all';
     if (view) this.state.view = view === 'list' ? 'list' : 'grid';
     if (sort) this.state.sort = /^(newest|oldest|name_asc|name_desc|size_asc|size_desc)$/.test(sort) ? sort : 'newest';
   };
@@ -500,6 +501,7 @@ MediaLibrary.prototype.normalizeItem = function($el){
     if ($k.length && !this._kindLocked) $k.val(this.state.kind || 'all');
     $ui.find('[data-ml-filter="view"]').val(this.state.view);
     $ui.find('[data-ml-filter="sort"]').val(this.state.sort);
+    $ui.find('[data-ml-filter="visibility"]').val(this.state.visibility);
 
     // si el usuario está escribiendo ahora mismo, no le pelees el foco
     if ($q.length) {
@@ -523,6 +525,7 @@ MediaLibrary.prototype.normalizeItem = function($el){
     this.state.ym     = _normYm(params.get('ym'));
     this.state.q      = (params.get('q') || '').toString().trim();
     this.state.view = params.get('view') === 'list' ? 'list' : 'grid';
+    this.state.visibility = /^(public|private)$/.test(params.get('visibility') || '') ? params.get('visibility') : 'all';
     this.state.sort = /^(newest|oldest|name_asc|name_desc|size_asc|size_desc)$/.test(params.get('sort') || '') ? params.get('sort') : 'newest';
 
     var p = parseInt(params.get('page') || '1', 10) || 1;
@@ -573,12 +576,14 @@ MediaLibrary.prototype.syncUrl = function(push){
     else u.searchParams.delete('kind');
     if (this.state.view === 'list') u.searchParams.set('view', 'list');
     else u.searchParams.delete('view');
+    if (this.state.visibility !== 'all') u.searchParams.set('visibility', this.state.visibility);
+    else u.searchParams.delete('visibility');
     if (this.state.sort !== 'newest') u.searchParams.set('sort', this.state.sort);
     else u.searchParams.delete('sort');
 
     var newUrl = u.pathname + (u.search ? u.search : '');
 
-    var st = { source: this.state.source, ym: this.state.ym, q: this.state.q, page: this.state.page, kind: this.state.kind, view: this.state.view, sort: this.state.sort };
+    var st = { source: this.state.source, ym: this.state.ym, q: this.state.q, page: this.state.page, kind: this.state.kind, view: this.state.view, sort: this.state.sort, visibility: this.state.visibility };
     if (push) history.pushState(st, '', newUrl);
     else history.replaceState(st, '', newUrl);
   };
@@ -591,7 +596,7 @@ MediaLibrary.prototype.syncUrl = function(push){
     }
 
     var params = new URLSearchParams(window.location.search);
-    var hasAny = params.has('source') || params.has('ym') || params.has('q') || params.has('page') || params.has('kind') || params.has('view') || params.has('sort');
+    var hasAny = params.has('source') || params.has('ym') || params.has('q') || params.has('page') || params.has('kind') || params.has('view') || params.has('sort') || params.has('visibility');
 
     // si URL trae kind y no está locked, lo aplicamos aquí también
     if (!this._kindLocked && params.has('kind')) {
@@ -608,6 +613,7 @@ MediaLibrary.prototype.syncUrl = function(push){
 
   MediaLibrary.prototype.resetFilters = function(){
     this.state.sort = 'newest';
+    this.state.visibility = 'all';
     this.state.source = 'all';
     this.state.ym = 'all';
     this.state.q = '';
@@ -630,6 +636,7 @@ MediaLibrary.prototype.syncUrl = function(push){
     if ($ym.length)  $ym.val('all');
     if ($q.length)   $q.val('');
     $ui.find('[data-ml-filter="sort"]').val('newest');
+    $ui.find('[data-ml-filter="visibility"]').val('all');
     if ($k.length && !this._kindLocked) $k.val('all');
     if (!this._kindLocked) this.state.kind = 'all';
   };
@@ -658,6 +665,7 @@ MediaLibrary.prototype.syncUrl = function(push){
     if (this.tenantID > 0)                                 data += '&tenant_id=' + encodeURIComponent(this.tenantID);
     data += '&view=' + encodeURIComponent(this.mode === 'picker' ? 'grid' : this.state.view);
     data += '&sort=' + encodeURIComponent(this.state.sort);
+    data += '&visibility=' + encodeURIComponent(this.state.visibility);
 
     return data;
   };

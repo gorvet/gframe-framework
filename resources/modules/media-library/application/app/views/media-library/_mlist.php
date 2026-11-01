@@ -138,6 +138,14 @@
       <?php endforeach; ?>
     </select>
   </div>
+  <div class="input-group w-auto">
+    <label class="input-group-text" for="media-visibility">Visibilidad</label>
+    <select id="media-visibility" class="form-select" data-ml-filter="visibility">
+      <?php foreach (['all' => 'Todas', 'public' => 'Públicos', 'private' => 'Privados'] as $value => $label): ?>
+      <option value="<?= $value ?>" <?= ($paginate['visibility'] ?? 'all') === $value ? 'selected' : '' ?>><?= $label ?></option>
+      <?php endforeach; ?>
+    </select>
+  </div>
 </div>
 <?php endif; ?>
 
@@ -215,6 +223,7 @@
       data-media-ext="<?= htmlspecialchars((string)($f['ext'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
     >
       <div class="card mb-3 position-relative">
+        <?php if (($f['visibility'] ?? 'public') === 'private'): ?><span class="badge text-bg-secondary position-absolute top-0 start-0 m-1">Privado</span><?php endif; ?>
         <?php if ($pickerFragment): ?><span class="badge text-bg-success position-absolute top-0 end-0 m-1 d-none" data-mp-selected aria-hidden="true">✓</span><?php endif; ?>
         <?php if ($isImage): ?>
           <img class="card-img-top" src="<?= htmlspecialchars($toPublicUrl($smallURL), ENT_QUOTES, 'UTF-8'); ?>" alt="">

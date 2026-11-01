@@ -12,7 +12,8 @@ class MediaLibraryService
         protected readonly MediaRepository $media,
         protected readonly MediaStorage $storage,
         protected readonly MediaProcessor $processor = new MediaProcessor(),
-        protected readonly RemoteMediaInspector $remote = new RemoteMediaInspector()
+        protected readonly RemoteMediaInspector $remote = new RemoteMediaInspector(),
+        protected readonly ?MediaAccessPolicy $access = null
     ) {
     }
 
@@ -20,6 +21,7 @@ class MediaLibraryService
     {
         $scope ??= MediaScope::global();
         try {
+            if ($this->visibility($this->normalizeSource($source), null) === 'private') return $this->error('private_hotlink_not_allowed');
             $inspection = $this->remote->inspect($url, $this->processor);
             if (($inspection['status'] ?? '') !== 'success') return $this->error((string)($inspection['code'] ?? 'hotlink_probe_failed'));
             $url = (string)$inspection['url'];
@@ -29,7 +31,7 @@ class MediaLibraryService
             if ($name === '') $name = 'enlace-' . date('Ymd-His') . '.' . $extension;
             $recordPath = 'remote/' . bin2hex(random_bytes(16));
             $mediaID = $this->media->createMedia([
-                'scope_type' => $scope->type(), 'scope_id' => $scope->id(),
+                'scope_type' => $scope->type(), 'scope_id' => $scope->id(), 'visibility' => 'public',
                 'source' => $this->normalizeSource($source), 'kind' => $inspection['kind'],
                 'name' => $name, 'original_name' => $name, 'path' => $recordPath, 'remote_url' => $url,
                 'mime_type' => $inspection['mime'], 'size_bytes' => 0, 'alt_text' => '',
@@ -42,7 +44,7 @@ class MediaLibraryService
         }
     }
 
-    public function registerLocalFile(string $filePath, string $originalName, string $source = 'library', ?MediaScope $scope = null, array $uploader = []): array
+    public function registerLocalFile(string $filePath, string $originalName, string $source = 'library', ?MediaScope $scope = null, array $uploader = [], ?string $visibility = null): array
     {
         $scope ??= MediaScope::global();
         if (!is_file($filePath)) {
@@ -50,6 +52,9 @@ class MediaLibraryService
         }
 
         try {
+            $source = $this->normalizeSource($source);
+            $visibility = $this->visibility($source, $visibility);
+            if (!$this->allowed(['visibility' => $visibility, 'source' => $source], 'add')) return $this->error('media_forbidden');
             $size = (int)(filesize($filePath) ?: 0);
             $maxBytes = $this->processor->getMaxUploadBytes();
             if ($size <= 0 || $size > $maxBytes) {
@@ -83,8 +88,8 @@ class MediaLibraryService
             }
 
             $source = $this->normalizeSource($source);
-            $directory = $this->storage->uploadDirectory($source, date('Y'), date('m'), $scope);
-            $filename = $this->storage->uniqueName($directory['absolute'], $originalName, $extension);
+            $directory = $this->storage->uploadDirectory($source, date('Y'), date('m'), $scope, $visibility);
+            $filename = $this->storage->uniqueName($directory['absolute'], $visibility === 'private' ? bin2hex(random_bytes(16)) : $originalName, $extension);
             $destination = $directory['absolute'] . DIRECTORY_SEPARATOR . $filename;
             if (!copy($filePath, $destination)) {
                 return $this->error('media_storage_failed');
@@ -101,17 +106,18 @@ class MediaLibraryService
             }
             $storedBytes = (int)(filesize($destination) ?: $size);
             foreach (array_unique($variants) as $variantPath) {
-                $variantAbsolute = $this->storage->absolute((string)$variantPath);
+                $variantAbsolute = $this->storage->absolute((string)$variantPath, $visibility);
                 $storedBytes += is_file($variantAbsolute) ? (int)(filesize($variantAbsolute) ?: 0) : 0;
             }
             if ($quotaBytes > 0 && $this->media->usedBytes($scope) + $storedBytes > $quotaBytes) {
-                $this->deletePaths(array_merge([$relative], array_values($variants)));
+                $this->deletePaths(array_merge([$relative], array_values($variants)), $visibility);
                 return $this->error('media_quota_exceeded');
             }
             try {
                 $mediaID = $this->media->createMedia([
                     'scope_type' => $scope->type(),
                     'scope_id' => $scope->id(),
+                    'visibility' => $visibility,
                     'source' => $source,
                     'kind' => $kind,
                     'name' => $filename,
@@ -125,11 +131,11 @@ class MediaLibraryService
                     'status' => 'ready',
                 ]);
             } catch (Exception $exception) {
-                $this->deletePaths(array_merge([$relative], array_values(array_unique($variants))));
+                $this->deletePaths(array_merge([$relative], array_values(array_unique($variants))), $visibility);
                 throw $exception;
             }
 
-            return ['status' => 'success', 'code' => 'media_created', 'data' => ['media_id' => $mediaID, 'path' => $relative, 'variants' => $variants]];
+            return ['status' => 'success', 'code' => 'media_created', 'data' => ['media_id' => $mediaID, 'path' => $relative, 'variants' => $variants, 'visibility' => $visibility]];
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_create_failed');
         }
@@ -139,6 +145,7 @@ class MediaLibraryService
     {
         $scope ??= MediaScope::global();
         try {
+            if ($this->access !== null) $filters = array_merge($filters, $this->access->filters());
             $filters['search'] = mb_substr(trim((string)($filters['search'] ?? '')), 0, 120, 'UTF-8');
             $source = trim((string)($filters['source'] ?? ''));
             $filters['source'] = $source === '' || $source === 'all' ? '' : $this->normalizeSource($source);
@@ -159,9 +166,10 @@ class MediaLibraryService
                 'source' => $filters['source'] ?: 'all', 'kind' => $filters['kind'],
                 'ym' => $filters['ym'] ?: 'all', 'q' => $filters['search'],
                 'sort' => $filters['sort'], 'view' => $view,
+                'visibility' => in_array($filters['visibility'] ?? '', ['public', 'private'], true) ? $filters['visibility'] : 'all',
             ];
             $response['filters'] = method_exists($this->media, 'filterOptions')
-                ? $this->media->filterOptions($scope) : ['sources' => [], 'dates' => []];
+                ? $this->media->filterOptions($scope, $filters) : ['sources' => [], 'dates' => []];
             return $response;
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_list_failed');
@@ -176,11 +184,12 @@ class MediaLibraryService
             if ($media === null) {
                 return $this->error('media_not_found');
             }
-            $this->media->deleteMedia($mediaID, $scope);
+            if (!$this->allowed($media, 'delete')) return $this->error('media_not_found');
             $variants = $this->decodeJson((string)($media['variants_json'] ?? ''));
             if (empty($media['remote_url'])) {
-                $this->deletePaths(array_merge([(string)($media['path'] ?? '')], array_values($variants)));
+                $this->deletePaths(array_merge([(string)($media['path'] ?? '')], array_values($variants)), (string)($media['visibility'] ?? 'public'));
             }
+            $this->media->deleteMedia($mediaID, $scope);
             return ['status' => 'success', 'code' => 'media_deleted'];
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_delete_failed');
@@ -192,7 +201,7 @@ class MediaLibraryService
         $scope ??= MediaScope::global();
         try {
             $media = $this->media->findMedia($mediaID, $scope);
-            if ($media === null) return $this->error('media_not_found');
+            if ($media === null || !$this->allowed($media, 'view')) return $this->error('media_not_found');
             $media['metadata'] = $this->decodeJson((string)($media['metadata_json'] ?? ''));
             $media['variants'] = $this->decodeJson((string)($media['variants_json'] ?? ''));
             unset($media['metadata_json'], $media['variants_json']);
@@ -206,7 +215,8 @@ class MediaLibraryService
     {
         $scope ??= MediaScope::global();
         try {
-            if ($this->media->findMedia($mediaID, $scope) === null) return $this->error('media_not_found');
+            $media = $this->media->findMedia($mediaID, $scope);
+            if ($media === null || !$this->allowed($media, 'edit')) return $this->error('media_not_found');
             $name = mb_substr(trim(strip_tags((string)($input['original_name'] ?? ''))), 0, 255, 'UTF-8');
             $alt = mb_substr(trim(strip_tags((string)($input['alt_text'] ?? ''))), 0, 255, 'UTF-8');
             if ($name === '') return $this->error('invalid_media_data');
@@ -217,7 +227,7 @@ class MediaLibraryService
         }
     }
 
-    public function ingestBase64(string $base64, string $originalName, ?MediaScope $scope = null, array $uploader = []): array
+    public function ingestBase64(string $base64, string $originalName, ?MediaScope $scope = null, array $uploader = [], ?string $visibility = null): array
     {
         $scope ??= MediaScope::global();
         $base64 = preg_replace('/^data:[^;]+;base64,/i', '', trim($base64)) ?? '';
@@ -227,7 +237,7 @@ class MediaLibraryService
         if ($temporary === false) return $this->error('media_temporary_failed');
         try {
             if (file_put_contents($temporary, $binary) === false) return $this->error('media_temporary_failed');
-            return $this->registerLocalFile($temporary, $originalName, 'generated', $scope, $uploader);
+            return $this->registerLocalFile($temporary, $originalName, 'generated', $scope, $uploader, $visibility);
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_create_failed');
         } finally {
@@ -302,10 +312,101 @@ class MediaLibraryService
         return is_array($decoded) ? $decoded : [];
     }
 
-    private function deletePaths(array $paths): void
+    private function deletePaths(array $paths, string $visibility = 'public'): void
     {
         foreach (array_unique(array_filter($paths, 'is_string')) as $path) {
-            if ($path !== '') $this->storage->delete($path);
+            if ($path !== '') $this->storage->delete($path, $visibility);
+        }
+    }
+
+    private function visibility(string $source, ?string $visibility): string
+    {
+        $visibility ??= (string)ConfigRepository::get('media.sources.' . $source . '.visibility', ConfigRepository::get('media.visibility', 'public'));
+        $this->storage->validateVisibility($visibility);
+        return $visibility;
+    }
+
+    private function allowed(array $media, string $action): bool
+    {
+        return ($media['visibility'] ?? 'public') === 'public' || $this->access === null
+            || ($this->access->allows((string)$media['source'], 'view') && $this->access->allows((string)$media['source'], $action));
+    }
+
+    public function fileResponse(int $mediaID, ?MediaScope $scope = null, string $variant = ''): \GFrame\Http\FileResponse
+    {
+        $result = $this->details($mediaID, $scope);
+        if (($result['status'] ?? '') !== 'success') throw new \RuntimeException('El archivo no está disponible.');
+        $media = $result['data'];
+        if (!empty($media['remote_url'])) throw new \RuntimeException('El archivo no es local.');
+        $path = $variant === '' ? $media['path'] : ($media['variants'][$variant] ?? null);
+        if (!is_string($path)) throw new \RuntimeException('La variante no está disponible.');
+        return new \GFrame\Http\FileResponse($this->storage->absolute($path, (string)($media['visibility'] ?? 'public')),
+            (string)$media['original_name'], (string)$media['mime_type'], true);
+    }
+
+    public function issueDownload(int $mediaID, ?MediaScope $scope = null, array $options = []): array
+    {
+        $scope ??= MediaScope::global();
+        $result = $this->details($mediaID, $scope);
+        $media = $result['data'] ?? [];
+        if (($media['visibility'] ?? '') !== 'private' || !$this->allowed($media, 'share')) {
+            throw new \RuntimeException('El archivo no está disponible para compartir.');
+        }
+        $options['context'] = ['media_id' => $mediaID, 'scope_type' => $scope->type(), 'scope_id' => $scope->id()];
+        return (new \GFrame\Files\PrivateDownloadService($this->storage->privateFiles()))->issue((string)$media['path'], (string)$media['original_name'], $options);
+    }
+
+    public function revokeDownload(int $mediaID, string $grantID, ?MediaScope $scope = null): void
+    {
+        $scope ??= MediaScope::global();
+        $result = $this->details($mediaID, $scope);
+        $media = $result['data'] ?? [];
+        if (($media['visibility'] ?? '') !== 'private' || !$this->allowed($media, 'share')) throw new \RuntimeException('Autorización inválida.');
+        (new \GFrame\Files\PrivateDownloadService($this->storage->privateFiles()))->revoke($grantID,
+            static fn(array $grant): bool => ($grant['context']['media_id'] ?? null) === $mediaID
+                && ($grant['context']['scope_type'] ?? null) === $scope->type() && ($grant['context']['scope_id'] ?? null) === $scope->id());
+    }
+
+    /** Moves originals and variants; rollback restores the previous physical paths on failure. */
+    public function changeVisibility(int $mediaID, string $visibility, ?MediaScope $scope = null): array
+    {
+        $scope ??= MediaScope::global();
+        $moved = [];
+        try {
+            $this->storage->validateVisibility($visibility);
+            $media = $this->media->findMedia($mediaID, $scope);
+            if ($media === null || !$this->allowed($media, 'view') || !empty($media['remote_url'])) return $this->error('media_not_found');
+            if ($this->access !== null && !$this->access->allows((string)$media['source'], 'visibility')) return $this->error('media_forbidden');
+            $previous = (string)($media['visibility'] ?? 'public');
+            if ($previous === $visibility) return ['status' => 'success', 'code' => 'media_updated'];
+            $directory = $this->storage->uploadDirectory((string)$media['source'], date('Y'), date('m'), $scope, $visibility);
+            $variants = $this->decodeJson((string)($media['variants_json'] ?? '{}'));
+            $targets = [];
+            $relocated = [];
+            foreach (['original' => $media['path']] + $variants as $key => $oldPath) {
+                if (isset($relocated[$oldPath])) {
+                    $targets[$key] = $relocated[$oldPath];
+                    continue;
+                }
+                $extension = pathinfo((string)$oldPath, PATHINFO_EXTENSION);
+                $filename = $this->storage->uniqueName($directory['absolute'], bin2hex(random_bytes(16)), $extension);
+                $newPath = $directory['relative'] . '/' . $filename;
+                $from = $this->storage->absolute((string)$oldPath, $previous);
+                $to = $this->storage->absolute($newPath, $visibility);
+                if (!rename($from, $to)) throw new \RuntimeException('No se pudo trasladar el archivo.');
+                $moved[] = [$from, $to];
+                $targets[$key] = $newPath;
+                $relocated[$oldPath] = $newPath;
+            }
+            $path = $targets['original'];
+            unset($targets['original']);
+            $this->media->updateMedia($mediaID, $scope, ['visibility' => $visibility, 'path' => $path, 'name' => basename($path), 'variants_json' => $this->encodeJson($targets)]);
+            return ['status' => 'success', 'code' => 'media_updated'];
+        } catch (Exception $exception) {
+            foreach (array_reverse($moved) as [$from, $to]) {
+                if (!rename($to, $from)) error_log('[GFrame Media] No se pudo revertir un traslado multimedia.');
+            }
+            return $this->failure($exception, 'media_update_failed');
         }
     }
 }

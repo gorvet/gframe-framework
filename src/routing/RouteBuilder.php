@@ -27,6 +27,10 @@ class RouteBuilder {
         return static::register('GET', $uri, $controllerAction);
     }
 
+    public static function head(string $uri, string $controllerAction): static {
+        return static::register('HEAD', $uri, $controllerAction);
+    }
+
     public static function post(string $uri, string $controllerAction): static {
         return static::register('POST', $uri, $controllerAction);
     }

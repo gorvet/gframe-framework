@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS media (
   original_name TEXT NOT NULL,
   path TEXT NOT NULL UNIQUE,
   remote_url TEXT NULL,
+  visibility TEXT NOT NULL DEFAULT 'public',
   mime_type TEXT NOT NULL,
   size_bytes INTEGER NOT NULL DEFAULT 0,
   alt_text TEXT NOT NULL DEFAULT '',

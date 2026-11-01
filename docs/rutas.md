@@ -2,6 +2,8 @@
 
 RouteBuilder registra las rutas y sus opciones. Router interpreta la petición HTTP, busca una declaración compatible, ejecuta los middleware y entrega el resultado a Render o al canal de respuesta.
 
+`RouteBuilder::head()` permite declarar HEAD explícitamente, con los mismos middleware que la ruta GET correspondiente. No se convierte automáticamente un GET en HEAD. Las [descargas privadas](archivos-privados.md) registran ambos métodos y omiten el cuerpo en HEAD.
+
 Para situar el enrutamiento en el arranque del proyecto, consulta [Arquitectura](arquitectura.md).
 
 ## Dónde declarar las rutas
@@ -17,7 +19,7 @@ El arranque carga los archivos `config/routes/routes_*.php`, ordenados por nombr
 | `routes_sse.php` | sse | `/sse/eventos` |
 | `routes_system.php` | system | Depende de la declaración |
 
-Hay dos mecanismos distintos: RouteBuilder infiere el tipo por el nombre del archivo que llama a `get()`, `post()`, `put()` o `delete()`; Router decide el canal de ejecución por el primer segmento de la URL, después de reconocer el idioma.
+Hay dos mecanismos distintos: RouteBuilder infiere el tipo por el nombre del archivo que llama a `get()`, `head()`, `post()`, `put()` o `delete()`; Router decide el canal de ejecución por el primer segmento de la URL, después de reconocer el idioma.
 
 El nombre del archivo no añade el prefijo a la URL. Debes declarar `ajax/...`, `api/...`, `webhook/...` o `sse/...` cuando corresponda. `system` es una clasificación de declaraciones internas, no un prefijo de transporte reconocido por Router. Una ruta interna puede ejecutarse como AJAX si su URL comienza por `ajax`.
 
@@ -55,7 +57,7 @@ La URL no debe contener el dominio ni la carpeta de despliegue. Las barras inici
 
 ### Métodos y prioridad
 
-Los métodos disponibles son `get()`, `post()`, `put()` y `delete()`. No existe un método público `patch()` ni `any()` en el RouteBuilder actual. Router compara el método HTTP recibido; no convierte automáticamente un campo de formulario `_method` en PUT o DELETE.
+Los métodos disponibles son `get()`, `head()`, `post()`, `put()` y `delete()`. No existe un método público `patch()` ni `any()` en el RouteBuilder actual. Router compara el método HTTP recibido; no convierte automáticamente un campo de formulario `_method` en PUT o DELETE.
 
 Las rutas se almacenan por método y patrón. Registrar de nuevo el mismo método y patrón reemplaza su declaración anterior. Entre patrones diferentes, gana el primero que coincida; declara las rutas específicas antes de las parametrizadas que puedan capturarlas.
 

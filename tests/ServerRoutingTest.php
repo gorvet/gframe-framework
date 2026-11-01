@@ -162,14 +162,23 @@ final class ServerRoutingTest extends TestCase
         $port = $this->freePort();
         $process = null;
         try {
-            $result = ProjectInstaller::frameworkDefault()->install(['project_root' => $project, 'profile' => 'managed', 'app_name' => 'Apache test', 'app_url' => 'http://127.0.0.1:' . $port, 'database' => ['driver' => 'sqlite', 'path' => 'storage/database.sqlite'], 'superadministrator' => ['email' => 'test@example.test', 'password' => 'Password-123']]);
+            $result = ProjectInstaller::frameworkDefault()->install(['project_root' => $project, 'profile' => 'managed', 'modules' => ['media-library'], 'app_name' => 'Apache test', 'app_url' => 'http://127.0.0.1:' . $port, 'database' => ['driver' => 'sqlite', 'path' => 'storage/database.sqlite'], 'superadministrator' => ['email' => 'test@example.test', 'password' => 'Password-123']]);
             self::assertSame('success', $result['status']);
             mkdir($project . '/packages');
             file_put_contents($project . '/packages/autoload.php', '<?php require ' . var_export(dirname(__DIR__) . '/packages/autoload.php', true) . ';');
             $this->addVirtualAppRoute($project);
-            foreach (['app/private.json', 'app/private.txt', 'app/internal.php', 'public/probe.txt'] as $file) {
+            mkdir($project . '/private/media', 0700, true);
+            foreach (['app/private.json', 'app/private.txt', 'app/internal.php', 'public/probe.txt', 'private/media/probe.txt'] as $file) {
                 file_put_contents($project . '/' . $file, 'internal-file-marker');
             }
+            $configPath = $project . '/config/app.php';
+            file_put_contents($configPath, str_replace('return [', "return [\n'files' => ['downloads' => ['enabled' => true, 'audit' => false]],", file_get_contents($configPath)));
+            $mediaPdo = new \PDO('sqlite:' . $project . '/storage/database.sqlite');
+            $mediaPdo->exec("INSERT INTO media (kind, name, original_name, path, mime_type, visibility, created_at) VALUES ('docs', 'probe.txt', 'Privado.txt', 'media/probe.txt', 'text/plain', 'private', '2026-11-01')");
+            \GFrame\Config\ConfigRepository::merge(['files' => ['downloads' => ['enabled' => true, 'audit' => false]]]);
+            $downloads = new \GFrame\Files\PrivateDownloadService(new \GFrame\Files\PrivateFileStorage($project . '/private'));
+            $grant = $downloads->issue('media/probe.txt', 'Privado.txt', ['context' => ['media_id' => (int)$mediaPdo->lastInsertId(), 'scope_type' => 'global', 'scope_id' => null]]);
+            $mediaPdo = null;
             $serverRoot = str_replace('\\', '/', dirname($apache, 2));
             $phpRoot = str_replace('\\', '/', dirname($phpModule));
             $config = 'ServerRoot "' . $serverRoot . '"' . "\n";
@@ -193,11 +202,22 @@ final class ServerRoutingTest extends TestCase
             fclose($pipes[0]);
             $this->waitPort($port, $root . '/process.log');
             $base = 'http://127.0.0.1:' . $port;
+            $downloadUrl = $base . '/media-access?token=' . $grant['token'];
+            [$downloadStatus, $downloadBody, $downloadHeaders] = $this->request($downloadUrl);
+            self::assertSame(200, $downloadStatus, $downloadBody);
+            self::assertSame('internal-file-marker', $downloadBody);
+            self::assertStringContainsString('Cache-Control: private, no-store', implode("\n", $downloadHeaders));
+            self::assertSame([206, 'ternal'], array_slice($this->request($downloadUrl, 'GET', '', ['Range: bytes=2-7']), 0, 2));
+            self::assertSame([200, ''], array_slice($this->request($downloadUrl, 'HEAD'), 0, 2));
+            self::assertSame(404, $this->request($base . '/media-access?token=invalid')[0]);
+            self::assertStringNotContainsString('internal-file-marker', $this->request($base . '/admin/media-file?media_id=1')[1]);
+            $downloads->revoke($grant['grant_id']);
+            self::assertSame(404, $this->request($downloadUrl)[0]);
             [$status, $body] = $this->request($base . '/app/recordatorios');
             self::assertSame(200, $status, substr($body, 0, 200));
             self::assertStringContainsString('Algo maravilloso se construye aquí.', $body);
             $this->assertPublicWorkerDoesNotStartSession($base);
-            foreach (['app/private.json', 'app/private.txt', 'app/internal.php', 'app/internal.php/extra', 'app/controllers/home/HomeController.php', 'config/app.php', '.env'] as $file) {
+            foreach (['app/private.json', 'app/private.txt', 'app/internal.php', 'app/internal.php/extra', 'app/controllers/home/HomeController.php', 'config/app.php', '.env', 'private/media/probe.txt'] as $file) {
                 [$status, $body] = $this->request($base . '/' . $file);
                 self::assertSame(403, $status, $file);
                 self::assertStringNotContainsString('internal-file-marker', $body);

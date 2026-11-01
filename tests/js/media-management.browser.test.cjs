@@ -40,6 +40,14 @@ test('Gestión real: lista, URL, navegación, guardado, errores y reproductores'
     const close = async () => { await modal.locator('[data-bs-dismiss]').first().click(); await modal.waitFor({state: 'hidden'}); };
     assert.equal(await mount.locator('table tbody tr').count(), 24);
     assert.equal(await mount.locator('.m-list-card').first().textContent().then(s => s.trim()), 'Documento 01');
+    await page.locator('#media-visibility').selectOption('private');
+    await page.waitForFunction(() => !document.querySelector('#knowledgeMediaList .m-list-card'));
+    assert.match(page.url(), /visibility=private/);
+    await page.reload();
+    assert.equal(await page.locator('#media-visibility').inputValue(), 'private');
+    assert.equal(await mount.locator('.m-list-card').count(), 0);
+    await page.locator('#media-visibility').selectOption('all');
+    await page.waitForFunction(() => document.querySelectorAll('#knowledgeMediaList table tbody tr').length === 24);
     await page.locator('#media-sort').selectOption('size_desc');
     await page.waitForFunction(() => document.querySelector('#knowledgeMediaList .m-list-card')?.dataset.mediaId === '28');
     assert.match(page.url(), /sort=size_desc/);

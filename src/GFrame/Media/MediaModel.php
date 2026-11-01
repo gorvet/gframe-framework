@@ -10,7 +10,7 @@ class MediaModel extends \ORM implements MediaRepository
     protected $primaryKey = 'media_id';
     protected $fillable = [
         'media_id', 'scope_type', 'scope_id', 'source', 'kind', 'name', 'original_name',
-        'path', 'remote_url', 'mime_type', 'size_bytes', 'alt_text', 'metadata_json', 'variants_json', 'status', 'created_at',
+        'path', 'remote_url', 'visibility', 'mime_type', 'size_bytes', 'alt_text', 'metadata_json', 'variants_json', 'status', 'created_at',
         'related_type', 'related_id', 'field', 'sort_order',
     ];
 
@@ -32,6 +32,7 @@ class MediaModel extends \ORM implements MediaRepository
     {
         $apply = function (self $query) use ($filters, $scope): self {
             $this->applyScope($query, $scope);
+            $this->applyVisibility($query, $filters);
             if (!empty($filters['source'])) {
                 $query->where('source', '=', (string)$filters['source']);
             }
@@ -73,7 +74,7 @@ class MediaModel extends \ORM implements MediaRepository
 
     public function updateMedia(int $mediaID, MediaScope $scope, array $data): void
     {
-        $allowed = array_intersect_key($data, array_flip(['original_name', 'alt_text', 'metadata_json', 'variants_json', 'status']));
+        $allowed = array_intersect_key($data, array_flip(['original_name', 'alt_text', 'metadata_json', 'variants_json', 'status', 'visibility', 'path', 'name']));
         if ($allowed !== []) {
             $this->applyScope($this->reset()->where('media_id', '=', $mediaID), $scope)->update($allowed);
         }
@@ -92,11 +93,11 @@ class MediaModel extends \ORM implements MediaRepository
         )));
     }
 
-    public function filterOptions(MediaScope $scope): array
+    public function filterOptions(MediaScope $scope, array $filters = []): array
     {
-        $sources = $this->applyScope($this->reset(), $scope)
+        $sources = $this->applyVisibility($this->applyScope($this->reset(), $scope), $filters)
             ->select('source AS value', 'COUNT(*) AS total')->groupBy('source')->orderBy('source')->get();
-        $dates = $this->applyScope($this->reset(), $scope)
+        $dates = $this->applyVisibility($this->applyScope($this->reset(), $scope), $filters)
             ->select('SUBSTR(created_at, 1, 7) AS value', 'COUNT(*) AS total')
             ->groupBy('SUBSTR(created_at, 1, 7)')->orderBy('value', 'DESC')->get();
         foreach ($sources as &$source) $source['label'] = (string)$source['value'];
@@ -107,6 +108,26 @@ class MediaModel extends \ORM implements MediaRepository
             $date['label'] = ($months[$month - 1] ?? '') . ' ' . substr((string)$date['value'], 0, 4);
         }
         return ['sources' => $sources, 'dates' => $dates];
+    }
+
+    protected function applyVisibility(self $query, array $filters): self
+    {
+        if (isset($filters['visibility']) && in_array($filters['visibility'], ['public', 'private'], true)) {
+            $query->where('visibility', '=', $filters['visibility']);
+        }
+        if (!array_key_exists('private_default', $filters)) return $query;
+        return $query->whereGroup(static function ($group) use ($filters): void {
+            $group->where('visibility', '=', 'public')->orWhereGroup(static function ($private) use ($filters): void {
+                $private->where('visibility', '=', 'private')->whereGroup(static function ($sources) use ($filters): void {
+                    if ($filters['private_default']) {
+                        $sources->whereRaw('1 = 1');
+                        foreach ($filters['private_denied_sources'] as $source) $sources->where('source', '!=', $source);
+                    } else {
+                        $sources->whereIn('source', $filters['private_allowed_sources']);
+                    }
+                });
+            });
+        });
     }
 
     protected function applyScope(self $query, MediaScope $scope): self

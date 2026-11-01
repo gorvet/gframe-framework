@@ -8,7 +8,7 @@ Options -Indexes
     RewriteRule ^ - [E=PROJECT:%1]
 
     # /app admite rutas virtuales; sus archivos siguen sujetos a los bloqueos generales.
-    RewriteRule ^(?:bin|config|core|deployment|packages|storage)(?:/|$) - [F,NC]
+    RewriteRule ^(?:bin|config|core|deployment|packages|storage|private)(?:/|$) - [F,NC]
     RewriteRule ^(?:\.env(?:\..*)?|composer\.(?:json|lock)|README\.md)$ - [F,NC]
     RewriteRule (^|/)\. - [F,NC]
     RewriteRule ^(?!index\.php$|install\.php$|gframe-cron\.php$).*\.(?:php[0-9]*|phtml|phar|sql|sqlite|sqlite3|log|bak)(?:/|$) - [F,NC]

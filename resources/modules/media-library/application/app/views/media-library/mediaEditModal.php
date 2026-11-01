@@ -60,6 +60,7 @@
   <label class="form-label" for="alt_text">Subido a: </label>
   <span id="uploaded_to">-</span>
    </p>
+ <p class="filedatas">Visibilidad: <span id="media-visibility-label">-</span></p>
  <p class="filedatas">
   <label class="form-label" for="alt_text">Tipo: </label>
   <span id="mime_type">-</span>

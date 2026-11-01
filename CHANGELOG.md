@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 4.7.0 — 2026-11-01
+
+- Medios: almacenamiento público/privado configurable por origen o integración PHP, migración compatible, permisos privados por ámbito/origen, filtros y vistas previas autorizadas, cambio de visibilidad y sincronización privada explícita.
+- Archivos: API de entrega privada independiente de la biblioteca, enlaces aleatorios con secreto almacenado como huella, caducidad, identidad opcional, revocación, contexto, límite atómico de solicitudes y registro opcional. Admite HEAD y rangos sin publicar URLs físicas; no presupone reglas de negocio ni conservación automática.
+- Servidores: bloqueo explícito de `private/` en Apache/Nginx; incorporar la regla en configuraciones personalizadas antes de habilitar privados. Nuevas rutas HEAD mediante `RouteBuilder::head()`.
+
 ## 4.6.0 — 2026-10-25
 
 - Configuración: proveedor opcional de ajustes generales, SEO y Metricool desde la aplicación, cargado antes de las constantes en web y CLI; conserva los valores existentes y excluye límites y opciones del servidor.

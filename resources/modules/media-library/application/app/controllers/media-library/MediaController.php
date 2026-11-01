@@ -11,6 +11,10 @@ use GFrame\Media\MediaProcessor;
 use GFrame\Media\MediaScopeResolver;
 use GFrame\Media\MediaStorage;
 use GFrame\Media\MediaSyncService;
+use GFrame\Media\MediaAccessPolicy;
+use GFrame\Config\ConfigRepository;
+use GFrame\Files\PrivateDownloadService;
+use GFrame\Files\PrivateFileStorage;
 
 class MediaController
 {
@@ -21,10 +25,17 @@ class MediaController
     public function __construct(?MediaLibraryService $media = null, ?MediaScopeResolver $scopes = null, ?MediaSyncService $sync = null)
     {
         $model = new MediaModel();
-        $storage = new MediaStorage(ABSPATH . 'public');
+        $privateRoot = $this->privateRoot();
+        $storage = new MediaStorage(ABSPATH . 'public', $privateRoot);
         $processor = $this->createProcessor();
-        $this->media = $media ?? new MediaLibraryService($model, $storage, $processor);
         $this->scopes = $scopes ?? new MediaScopeResolver();
+        $access = new MediaAccessPolicy(function (string $permission): bool {
+            $scope = $this->scopes->resolve();
+            $userID = (int)($_SESSION['auth']['id'] ?? $_SESSION['userID'] ?? 0);
+            return (new \GFrame\Auth\RolePermissionService(new \GFrame\Auth\RoleModel()))
+                ->authorize($userID, $permission, $scope->type() === 'tenant' ? (int)$scope->id() : 0)['status'] === 'success';
+        });
+        $this->media = $media ?? new MediaLibraryService($model, $storage, $processor, new \GFrame\Media\RemoteMediaInspector(), $access);
         $this->sync = $sync ?? new MediaSyncService($model, $storage, $processor);
     }
 
@@ -36,6 +47,74 @@ class MediaController
     protected function createProcessor(): MediaProcessor
     {
         return new MediaProcessor();
+    }
+
+    protected function privateRoot(): string
+    {
+        $root = (string)(ConfigRepository::get('media.private_root') ?: ABSPATH . 'private');
+        $normalized = strtolower(str_replace('\\', '/', rtrim($root, '/\\')));
+        if (!preg_match('~^(?:[a-z]:/|/)~', $normalized) || in_array('..', explode('/', $normalized), true)) {
+            throw new RuntimeException('La raíz privada debe ser una ruta absoluta sin segmentos de retroceso.');
+        }
+        $ancestor = $root;
+        $suffix = [];
+        while (!file_exists($ancestor) && dirname($ancestor) !== $ancestor) {
+            array_unshift($suffix, basename($ancestor));
+            $ancestor = dirname($ancestor);
+        }
+        $resolved = realpath($ancestor);
+        if ($resolved === false) throw new RuntimeException('No se pudo resolver la raíz privada.');
+        $normalized = strtolower(str_replace('\\', '/', rtrim($resolved, '/\\') . ($suffix === [] ? '' : '/' . implode('/', $suffix))));
+        $public = strtolower(str_replace('\\', '/', (string)(realpath(ABSPATH . 'public') ?: rtrim(ABSPATH, '/\\') . '/public')));
+        if ($normalized === $public || str_starts_with($normalized, $public . '/')) {
+            throw new RuntimeException('La raíz privada no puede estar dentro de public.');
+        }
+        return $root;
+    }
+
+    public function download(): never
+    {
+        try {
+            $response = $this->media->fileResponse((int)($_GET['media_id'] ?? 0), $this->scopes->resolve(), (string)($_GET['variant'] ?? ''));
+            $method = (string)($_SERVER['REQUEST_METHOD'] ?? 'GET');
+            $response->range($method === 'HEAD' ? null : ($_SERVER['HTTP_RANGE'] ?? null))->send($method);
+        } catch (Exception $exception) {
+            http_response_code(404);
+            header('Cache-Control: private, no-store');
+            exit;
+        }
+    }
+
+    public function externalDownload(): never
+    {
+        try {
+            $service = new PrivateDownloadService(new PrivateFileStorage($this->privateRoot()));
+            $method = (string)($_SERVER['REQUEST_METHOD'] ?? 'GET');
+            $response = $service->resolve((string)($_GET['token'] ?? ''), (int)($_SESSION['auth']['id'] ?? 0), $method, $_SERVER['HTTP_RANGE'] ?? null,
+                static function (array $grant): bool {
+                    $context = (array)($grant['context'] ?? []);
+                    $scope = match ($context['scope_type'] ?? '') {
+                        'global' => \GFrame\Media\MediaScope::global(),
+                        'user' => \GFrame\Media\MediaScope::user((int)($context['scope_id'] ?? 0)),
+                        'tenant' => \GFrame\Media\MediaScope::tenant((int)($context['scope_id'] ?? 0)),
+                        default => throw new RuntimeException('Ámbito inválido.'),
+                    };
+                    $media = (new MediaModel())->findMedia((int)($context['media_id'] ?? 0), $scope);
+                    return $media !== null && ($media['visibility'] ?? '') === 'private' && $media['path'] === $grant['path'];
+                });
+            $response->send($method);
+        } catch (Exception $exception) {
+            http_response_code(404);
+            header('Cache-Control: private, no-store');
+            exit;
+        }
+    }
+
+    public function visibility(): array
+    {
+        try {
+            return $this->withMessage($this->media->changeVisibility((int)($_POST['media_id'] ?? 0), (string)($_POST['visibility'] ?? ''), $this->scopes->resolve()));
+        } catch (Exception $exception) { return $this->scopeFailure($exception); }
     }
 
     protected function uploader(): array
@@ -206,6 +285,7 @@ class MediaController
     public function sync(): array
     {
         try {
+            // The native action only scans public storage. Private synchronization is an explicit PHP integration.
             return $this->withMessage($this->sync->synchronize($this->scopes->resolve()));
         } catch (Exception $exception) {
             return $this->scopeFailure($exception);
@@ -222,6 +302,7 @@ class MediaController
                 'source' => trim((string)($_REQUEST['source'] ?? 'all')),
                 'sort' => trim((string)($_REQUEST['sort'] ?? 'newest')),
                 'view' => trim((string)($_REQUEST['view'] ?? 'grid')),
+                'visibility' => (string)($_REQUEST['visibility'] ?? ''),
             ], $this->scopes->resolve()));
         } catch (Exception $exception) {
             return $this->scopeFailure($exception);
@@ -236,8 +317,10 @@ class MediaController
 
     protected function viewItem(array $item): array
     {
+        $private = ($item['visibility'] ?? 'public') === 'private';
         $url = !empty($item['remote_url']) ? (string)$item['remote_url']
             : \UrlHelper::assetUrl('public/' . ltrim((string)($item['path'] ?? ''), '/'));
+        if ($private) $url = rtrim((string)site_url, '/') . '/admin/media-file?media_id=' . (int)$item['media_id'];
         $variants = (array)($item['variants'] ?? json_decode((string)($item['variants_json'] ?? '{}'), true) ?? []);
         $metadata = (array)($item['metadata'] ?? json_decode((string)($item['metadata_json'] ?? '{}'), true) ?? []);
         $metadata['original'] = (array)($metadata['original'] ?? []) + [
@@ -250,10 +333,12 @@ class MediaController
         $item['meta_json'] = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $item['uploaded_by'] = (string)($metadata['uploader']['name'] ?? '') ?: (isset($metadata['uploader']['id']) ? '#' . (int)$metadata['uploader']['id'] : '—');
         $item['uploaded_to'] = (string)($item['source'] ?? '');
+        $item['visibility_label'] = $private ? 'Privado' : 'Público';
         foreach (['small', 'xsmall', 'medium'] as $size) {
-            $item['thumb_' . $size] = !empty($variants[$size])
-                ? \UrlHelper::assetUrl('public/' . ltrim((string)$variants[$size], '/')) : $url;
+            $item['thumb_' . $size] = $private && !empty($variants[$size]) ? $url . '&variant=' . rawurlencode($size) : (!empty($variants[$size])
+                ? \UrlHelper::assetUrl('public/' . ltrim((string)$variants[$size], '/')) : $url);
         }
+        if ($private) { unset($item['path'], $item['variants'], $item['variants_json'], $item['remote_url']); }
         return $item;
     }
 
@@ -261,6 +346,8 @@ class MediaController
     {
         $messages = [
             'media_created' => 'Archivo añadido a la biblioteca.',
+            'media_forbidden' => 'No tienes permiso para gestionar estos archivos privados.',
+            'private_hotlink_not_allowed' => 'Los archivos privados deben almacenarse localmente.',
             'media_deleted' => 'Archivo eliminado.',
             'media_not_found' => 'El archivo no existe.',
             'extension_not_allowed' => 'La extensión del archivo no está permitida.',

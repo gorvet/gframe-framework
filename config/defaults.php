@@ -91,7 +91,17 @@ return [
     'media' => [
         'scope' => 'global',
         'quota_bytes' => 0,
+        'visibility' => 'public',
+        'private_root' => null,
+        'sources' => [],
     ],
+    'files' => ['downloads' => [
+        'enabled' => false,
+        'ttl_seconds' => 86400,
+        'max_downloads' => 0,
+        'require_auth' => false,
+        'audit' => true,
+    ]],
     'seo' => [
         'enabled' => true,
         'allow_indexing' => true,

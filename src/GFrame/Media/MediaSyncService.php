@@ -18,12 +18,13 @@ final class MediaSyncService
     ) {
     }
 
-    public function synchronize(?MediaScope $scope = null): array
+    public function synchronize(?MediaScope $scope = null, string $visibility = 'public'): array
     {
         $scope ??= MediaScope::global();
         try {
-            $rootRelative = implode('/', array_merge(['uploads'], $scope->pathSegments()));
-            $rootAbsolute = $this->storage->absolute($rootRelative);
+            $this->storage->validateVisibility($visibility);
+            $rootRelative = implode('/', array_merge([$visibility === 'private' ? 'media' : 'uploads'], $scope->pathSegments()));
+            $rootAbsolute = $this->storage->absolute($rootRelative, $visibility);
             if (!is_dir($rootAbsolute)) {
                 return ['status' => 'success', 'code' => 'media_synchronized', 'data' => ['added' => 0, 'ignored' => 0]];
             }
@@ -36,6 +37,9 @@ final class MediaSyncService
             foreach ($iterator as $file) {
                 if (!$file instanceof SplFileInfo || !$file->isFile()) continue;
                 $relative = $this->relativePath($rootAbsolute, $rootRelative, $file->getPathname());
+                // Resolve every candidate again: recursive scans must not import linked external files.
+                if ($file->isLink()) { $ignored++; continue; }
+                $this->storage->absolute($relative, $visibility);
                 $name = $file->getFilename();
                 if (isset($existing[$relative]) || preg_match($variantPattern, $name)) {
                     $ignored++;
@@ -62,6 +66,7 @@ final class MediaSyncService
                 $sourceIndex = 1 + count($scope->pathSegments());
                 $this->media->createMedia([
                     'scope_type' => $scope->type(), 'scope_id' => $scope->id(),
+                    'visibility' => $visibility,
                     'source' => (string)($parts[$sourceIndex] ?? 'library'), 'kind' => $kind,
                     'name' => $name, 'original_name' => $name, 'path' => $relative,
                     'mime_type' => (string)($validation['mime'] ?? $classification['mime'] ?: 'application/octet-stream'),
