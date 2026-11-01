@@ -34,7 +34,7 @@ test('El login original admite clic y Enter, valida y evita envíos duplicados',
     assert.equal(await page.evaluate(() => window.feedback), 1);
     assert.equal(await page.locator('#login').evaluate(el => el.classList.contains('was-validated')), true);
 
-    await page.locator('#login_email').fill('user@example.com');
+    await page.locator('#login_email').fill('nombre+evento@example.info');
     await page.locator('#submit_login').click();
     assert.equal(await page.evaluate(() => window.requests.length), 1);
     await page.locator('#login_password').press('Enter');
@@ -47,8 +47,34 @@ test('El login original admite clic y Enter, valida y evita envíos duplicados',
     assert.equal(await page.evaluate(() => window.requests.length), 2);
     assert.equal(await page.evaluate(() => window.requests[1].url), '/ajax/login');
     const data = await page.evaluate(() => window.requests[1].data);
+    assert.equal(new URLSearchParams(data).get('login_email'), 'nombre+evento@example.info');
     assert.equal(new URLSearchParams(data).get('login_password'), 'Password-123');
   } finally {
     await browser.close();
   }
+});
+
+test('Acceso, registro y recuperación aceptan alias + y dominios largos sin aceptar correos malformados', {
+  skip: !process.env.GFRAME_TEST_BROWSER
+}, async () => {
+  const {chromium} = require('playwright');
+  const browser = await chromium.launch({headless: true,
+    ...(process.env.GFRAME_TEST_BROWSER !== '1' ? {executablePath: process.env.GFRAME_TEST_BROWSER} : {})});
+  try {
+    const page = await browser.newPage();
+    for (const [view, id] of [['authLogin', 'login_email'], ['authRegister', 'register_email'], ['authRecovery', 'recovery_email']]) {
+      const markup = readFileSync(join(__dirname, '../../resources/modules/auth-ui/application/app/views/auth-ui/' + view + '.php'), 'utf8')
+        .replace(/<\?[\s\S]*?\?>/g, '');
+      await page.setContent(markup);
+      const input = page.locator('#' + id);
+      for (const email of ['nombre+evento@gmail.com', 'nombre@example.info', 'nombre+evento@example.info', 'Nombre@Example.technology']) {
+        await input.fill(email);
+        assert.equal(await input.evaluate(el => el.checkValidity()), true, view + ': ' + email);
+      }
+      for (const email of ['', 'sin-arroba', 'nombre@@example.info', 'nombre con espacio@example.info', 'nombre@']) {
+        await input.fill(email);
+        assert.equal(await input.evaluate(el => el.checkValidity()), false, view + ': ' + email);
+      }
+    }
+  } finally { await browser.close(); }
 });

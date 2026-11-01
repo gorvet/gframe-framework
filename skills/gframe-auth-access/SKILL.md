@@ -26,6 +26,7 @@ Use this for registration, login, verification, recovery, session identity, My A
 - Use `SessionManager` to regenerate, normalize, update, and destroy sessions.
 - Use `SelfAccountService` for the current user's base account, password change, and account deactivation.
 - Never expose password hashes or tokens in public profile responses.
+- Email fields use native type=email/required without restrictive patterns that reject + aliases or domain suffixes longer than three characters. Preserve server FILTER_VALIDATE_EMAIL checks and test login, registration and recovery with valid aliases and malformed addresses. Project view overrides may retain obsolete patterns after updating the package; review them explicitly. Format validation does not prove mailbox deliverability.
 - Preserve password bytes through the HTTP boundary. Do not trim, HTML-escape, lowercase or apply display-text sanitization to passwords; keep field names and PasswordPolicy checks unchanged.
 - Do not reveal whether an email exists during password recovery.
 - The first installed user receives the unique protected `superadministrator` role. Additional administrators are optional and subordinate.

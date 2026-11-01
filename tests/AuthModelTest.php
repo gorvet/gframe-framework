@@ -76,6 +76,19 @@ final class AuthModelTest extends TestCase
         self::assertSame('success', $auth->login('persona@example.com', 'New-password-456')['status']);
     }
 
+    public function testEmailAliasesAndLongDomainSuffixesWorkAcrossAccountFlows(): void
+    {
+        foreach (['nombre+evento@gmail.com', 'nombre@example.info', 'nombre+evento@example.info', 'nombre@example.technology'] as $email) {
+            $auth = new InMemoryAuthModel();
+            $registered = $auth->registerAcount($email, 'Password-123');
+            self::assertSame('success', $registered['status'], $email);
+            self::assertSame($email, $auth->users[1]['email']);
+            self::assertSame('account_verified', $auth->validateAcount($registered['data']['token'])['code']);
+            self::assertSame('success', $auth->login($email, 'Password-123')['status']);
+            self::assertSame('success', $auth->recoveryAcount($email)['status']);
+        }
+    }
+
     public function testPasswordPolicyIsAppliedDuringRegistrationAndReset(): void
     {
         $auth = new InMemoryAuthModel();

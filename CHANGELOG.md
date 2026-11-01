@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## 4.7.2 — 2026-11-01
+
+- Autenticación: acceso, registro y recuperación dejan de rechazar alias con `+` y dominios como `.info`; se elimina el patrón HTML restrictivo y se conserva la validación nativa del navegador y del servidor. Revisar overrides personalizados de las tres vistas.
+
 ## 4.7.1 — 2026-11-01
 
 - Documentación de medios: sección inicial sobre almacenamiento público y privado, acceso directo a la guía completa y corrección de las afirmaciones anteriores sobre URLs públicas, migraciones y permisos.

@@ -6,6 +6,8 @@
 
 El módulo `auth-ui` instala el acceso web estándar de GFrame: inicio y cierre de sesión, registro, verificación del correo, recuperación y restablecimiento de contraseña.
 
+Los formularios de acceso, registro y recuperación admiten alias con `+`, como `nombre+evento@gmail.com`, y extensiones de dominio de más de tres letras, como `.info` o `.technology`. Utilizan `type="email"` y `required` sin un patrón adicional restrictivo; el servidor mantiene la validación de formato con `FILTER_VALIDATE_EMAIL`. Esto comprueba sintaxis, no la existencia ni la entrega del buzón. Si el proyecto personalizó esas vistas, elimina también el patrón antiguo de sus overrides.
+
 ## Instalación
 
 El módulo necesita el esquema `auth`. Al publicarlo, GFrame resuelve también `alerts`, `frontend-core`, `heartbeat-client` y `password-utils`.

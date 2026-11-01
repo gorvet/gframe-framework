@@ -9,7 +9,7 @@
         <input type="hidden" name="middle_name" value="">
         <div class="mb-3">
           <label class="form-label" for="recovery_email">Correo electrónico</label>
-          <input class="form-control" type="email" name="recovery_email" id="recovery_email" autocomplete="email" autofocus required pattern="^[a-z0-9_\-.]+@[a-z0-9_\-.]+\.[a-z]{2,3}$">
+          <input class="form-control" type="email" name="recovery_email" id="recovery_email" autocomplete="email" autofocus required>
           <div class="invalid-feedback validation_recovery_email"></div>
         </div>
       </form>
