@@ -4,7 +4,15 @@
 
 *La biblioteca reúne la portada editorial y los recursos de marca. Los filtros y las vistas permiten encontrar y reutilizar archivos sin volver a subirlos. Captura de GFrame 4.3.1.*
 
-`media-library` instala una biblioteca de archivos con listado, búsqueda, carga, eliminación y campos reutilizables. Puede operar de forma global, por tenant o por usuario.
+`media-library` instala una biblioteca de archivos con listado, búsqueda, carga, eliminación y campos reutilizables. Puede operar de forma global, por tenant o por usuario, con archivos públicos o privados.
+
+## Medios públicos y privados
+
+Desde **GFrame 4.7.0**, la biblioteca admite dos destinos: `public/uploads/` para archivos públicos y `private/media/` para archivos protegidos. La visibilidad se configura desde el servidor mediante `media.visibility` o por origen mediante `media.sources.<origen>.visibility`. Los archivos existentes siguen siendo públicos hasta que se cambie expresamente su visibilidad.
+
+Los privados requieren permisos adicionales para consultarlos y gestionarlos. Sus originales y miniaturas se entregan mediante rutas autorizadas; también pueden compartirse con enlaces independientes, revocables y con caducidad configurable. El ámbito global, usuario o tenant determina la propiedad, no la visibilidad.
+
+Consulta [Archivos privados y enlaces de descarga](archivos-privados.md) para ver la configuración, los permisos, el cambio de visibilidad y los ejemplos de uso dentro o fuera de la biblioteca. Al actualizar, aplica la migración del módulo y la protección de `private/` en el servidor.
 
 ## Instalación
 
@@ -22,9 +30,9 @@ La URL conserva `view=list`, `sort`, filtros y página, por lo que puede copiars
 
 Abre un archivo para consultar sus detalles. **Anterior** y **Siguiente** recorren el resultado filtrado, también entre páginas; se desactivan en los extremos. **Nombre visible** modifica `original_name`, sin renombrar el archivo físico ni cambiar enlaces. **Texto alternativo** modifica `alt_text`. Guardar mantiene los detalles abiertos; para abandonar una edición pendiente debes guardar o descartar sus cambios. Un fallo conserva los valores para poder reintentar.
 
-Los audios y vídeos usan controles nativos del navegador, sin reproducción automática; al cambiar de archivo o cerrar se libera el reproductor. **Abrir archivo** abre su URL en otra pestaña. La reproducción depende del formato y los códecs del navegador y del servidor remoto, si corresponde. No se implementa un proxy ni se garantiza descarga forzada de recursos externos. Las URLs locales siguen siendo públicas según el almacenamiento del módulo.
+Los audios y vídeos usan controles nativos del navegador, sin reproducción automática; al cambiar de archivo o cerrar se libera el reproductor. **Abrir archivo** abre su URL en otra pestaña. La reproducción depende del formato y los códecs del navegador y del servidor remoto, si corresponde. Los medios locales públicos usan URL directa; los privados usan una ruta que comprueba sesión y permisos. No se implementa un proxy ni se garantiza descarga forzada de recursos externos.
 
-Estas mejoras no requieren migración de base de datos ni nuevos permisos. Al actualizar, publica los recursos del módulo mediante el actualizador y revisa overrides de `_mlist.php`, `mediaEditModal.php` y controladores personalizados: los overrides del proyecto tienen prioridad sobre las vistas nativas. La lista usa el nuevo fragmento `_table.php`. El selector conserva su cuadrícula y sus modos simple/múltiple.
+Las mejoras de listado y navegación no requieren migración por sí mismas; el soporte de visibilidad de 4.7.0 sí añade la columna `visibility` y permisos para privados. Al actualizar, publica los recursos del módulo mediante el actualizador y revisa overrides de `_mlist.php`, `mediaEditModal.php` y controladores personalizados: los overrides del proyecto tienen prioridad sobre las vistas nativas. La lista usa el fragmento `_table.php`. El selector conserva su cuadrícula y sus modos simple/múltiple.
 
 ## Configuración
 

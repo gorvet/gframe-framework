@@ -2,6 +2,8 @@
 
 Every framework change should review:
 
+When the authorized task includes publication and the documentation website, completion requires the entire delivery chain: update canonical guides and skills, remove contradictory current claims, publish the framework commit/tag and verify Composer availability, update the identified documentation site's lock and managed files, verify rendered guides using its effective source, commit and push that site's changes. A local guide response alone does not prove production delivery. Report each actual state separately; never claim the whole release is ready while a guide correction exists only in the local source. Synchronize assistant installations when requested, using the supported installers below, and verify hashes.
+
 - README and architecture documentation;
 - focused module documentation;
 - `CHANGELOG.md`;

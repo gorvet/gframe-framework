@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## 4.7.1 — 2026-11-01
+
+- Documentación de medios: sección inicial sobre almacenamiento público y privado, acceso directo a la guía completa y corrección de las afirmaciones anteriores sobre URLs públicas, migraciones y permisos.
+
 ## 4.7.0 — 2026-11-01
 
 - Medios: almacenamiento público/privado configurable por origen o integración PHP, migración compatible, permisos privados por ámbito/origen, filtros y vistas previas autorizadas, cambio de visibilidad y sincronización privada explícita.
