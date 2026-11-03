@@ -57,7 +57,7 @@ final class VirtualCron
     {
         try {
             if (!\GFrame\Storage\DatabaseStateStore::configured()->claim('diagnostic', 'cron', 60)) return;
-        } catch (\Exception) { /* Los logs siguen disponibles si no hay conexión. */ }
+        } catch (Throwable) { /* El diagnóstico nunca reemplaza la respuesta si falta el driver o la conexión. */ }
         error_log('[gframe.cron] ' . $message);
     }
 }

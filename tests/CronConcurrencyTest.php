@@ -11,6 +11,21 @@ use PHPUnit\Framework\TestCase;
 
 final class CronConcurrencyTest extends TestCase
 {
+    public function testMissingDatabaseDriverCannotBreakTheCronErrorBoundary(): void
+    {
+        $code = 'require ' . var_export(dirname(__DIR__) . '/packages/autoload.php', true) . ';'
+            . '\GFrame\Config\ConfigRepository::replace(["cron"=>["mode"=>"invalid"]]);'
+            . 'echo json_encode(\GFrame\Cron\VirtualCron::kick());';
+        $process = proc_open([PHP_BINARY, '-n', '-r', $code], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        self::assertIsResource($process);
+        fclose($pipes[0]);
+        $result = json_decode(stream_get_contents($pipes[1]), true);
+        $error = stream_get_contents($pipes[2]);
+        fclose($pipes[1]); fclose($pipes[2]);
+        self::assertSame(0, proc_close($process), $error);
+        self::assertSame('cron_unavailable', $result['code']);
+    }
+
     private string $directory;
     private PDO $database;
     private array $configuration;

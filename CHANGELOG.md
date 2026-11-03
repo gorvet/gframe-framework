@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## 5.0.1 — 2026-11-03
+
+- Cron: el registro de diagnósticos conserva la respuesta `cron_unavailable` aunque falte un driver PDO o la base de datos. Se completa la migración del fixture HTTPS/PHP-FPM para verificar sesiones SQL reales.
+
 ## 5.0.0 — 2026-11-03
 
 - Autenticación y correo: contadores SQL con conexión configurable, concurrencia, caducidad y limpieza; se elimina el driver de archivos. Nuevo módulo técnico `rate-limits` con migración `202611030001_rate_limits.sql`. Se mantienen límites, códigos, tiempos de reintento y devolución del contador si falla el correo. Los constructores reciben PDO opcional en lugar de directorios. Revisar [el despliegue y la migración](docs/rate-limits.md).
