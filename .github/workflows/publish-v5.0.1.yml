@@ -1,0 +1,35 @@
+name: Publicar GFrame 5.0.1
+on:
+  push:
+    branches: [codex/publish-v5.0.1]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 157507e2785d2aad7dba9616115af0faa9cf7fbd
+          fetch-depth: 1
+      - name: Esperar la CI del commit publicado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 30); do
+            run_id=$(gh run list --repo gorvet/gframe-framework --commit 157507e2785d2aad7dba9616115af0faa9cf7fbd --workflow tests.yml --json databaseId --jq '.[0].databaseId')
+            if [ -n "$run_id" ] && [ "$run_id" != "null" ]; then break; fi
+            sleep 5
+          done
+          test -n "$run_id"
+          gh run watch "$run_id" --repo gorvet/gframe-framework --exit-status --interval 10
+      - name: Crear etiqueta anotada y publicación
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a v5.0.1 157507e2785d2aad7dba9616115af0faa9cf7fbd -m "GFrame 5.0.1: diagnóstico de cron seguro sin driver PDO"
+          git push origin refs/tags/v5.0.1
+          gh release create v5.0.1 --verify-tag --title "GFrame 5.0.1" --notes-file maintenance/releases/5.0.1.md
