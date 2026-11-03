@@ -1,0 +1,23 @@
+name: Publicar GFrame 5.0.0
+on:
+  push:
+    branches: [codex/publish-v5.0.0]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 01ff65938edb0098f98e9c9ea989c8f4e484238e
+          fetch-depth: 1
+      - name: Crear etiqueta anotada y publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a v5.0.0 01ff65938edb0098f98e9c9ea989c8f4e484238e -m "GFrame 5.0.0: persistencia SQL de módulos, sesiones y tareas"
+          git push origin refs/tags/v5.0.0
+          gh release create v5.0.0 --verify-tag --title "GFrame 5.0.0" --notes-file maintenance/releases/5.0.0.md
