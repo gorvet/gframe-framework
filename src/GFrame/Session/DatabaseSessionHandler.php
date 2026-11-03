@@ -27,6 +27,13 @@ final class DatabaseSessionHandler implements SessionHandlerInterface, SessionId
     public function read(string $id): string
     {
         $hash = $this->hash($id);
+        $guest = $this->database->prepare('SELECT payload FROM gframe_sessions WHERE session_hash = ? AND (user_id IS NULL OR user_id = 0) AND expires_at >= ? LIMIT 1');
+        $guest->execute([$hash, time()]);
+        $guestPayload = $guest->fetchColumn();
+        if ($guestPayload !== false) return (string)$guestPayload;
+        $exists = $this->database->prepare('SELECT 1 FROM gframe_sessions WHERE session_hash = ? AND expires_at >= ? LIMIT 1');
+        $exists->execute([$hash, time()]);
+        if (!$exists->fetchColumn()) return '';
         $statement = $this->database->prepare('SELECT s.user_id, s.payload, s.role_id, s.role_version, s.authorization_version, s.tenant_role_id, s.tenant_role_version, r.security_version AS current_role_version, tr.security_version AS current_tenant_role_version, account.authorization_version AS current_authorization_version, account.status AS account_status FROM gframe_sessions s LEFT JOIN roles r ON r.role_id = s.role_id LEFT JOIN roles tr ON tr.role_id = s.tenant_role_id LEFT JOIN users account ON account.user_id = s.user_id WHERE s.session_hash = ? AND s.expires_at >= ? LIMIT 1');
         $statement->execute([$hash, time()]);
         $row = $statement->fetch(PDO::FETCH_ASSOC);

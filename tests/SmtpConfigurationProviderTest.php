@@ -70,7 +70,12 @@ final class SmtpConfigurationProviderTest extends TestCase
         $root = sys_get_temp_dir() . '/gframe-smtp-' . bin2hex(random_bytes(5));
         mkdir($root . '/config/routes', 0777, true);
         mkdir($root . '/app', 0777, true);
-        file_put_contents($root . '/config/app.php', '<?php return ["mail" => ["smtp_provider" => "WorkerSmtpProvider"]];');
+        file_put_contents($root . '/config/app.php', '<?php return ' . var_export([
+            'mail' => ['smtp_provider' => 'WorkerSmtpProvider'],
+            'database' => ['default' => 'main', 'connections' => ['main' => ['driver' => 'sqlite', 'path' => $root . '/state.sqlite']]],
+        ], true) . ';');
+        $database = new \PDO('sqlite:' . $root . '/state.sqlite');
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['runtime-storage']);
         file_put_contents($root . '/app/WorkerSmtpProvider.php', '<?php class WorkerSmtpProvider implements \\GFrame\\Mail\\Contracts\\SmtpConfigurationProvider { public function resolve(): array { file_put_contents(ABSPATH . "resolved", "yes"); return ["host" => ""]; } }');
         $async = new class extends \Async {
             public ?\Closure $job = null;
@@ -80,12 +85,15 @@ final class SmtpConfigurationProviderTest extends TestCase
             self::assertSame('mail_queued', (new MailService(async: $async))->sendHtmlAsync('a@example.test', 'Test', '')['code']);
             $serialized = \ClosureWrapper::serialize($async->job);
             self::assertStringNotContainsString('WorkerSmtpProvider', $serialized);
-            $payload = base64_encode(json_encode(['root' => $root, 'closure' => base64_encode($serialized)]));
+            $jobID = bin2hex(random_bytes(32));
+            (new \GFrame\Storage\DatabaseStateStore($database))->create('async', $jobID, ['closure' => base64_encode($serialized)], time() + 60);
+            $payload = base64_encode(json_encode(['root' => $root, 'job_id' => $jobID]));
             exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(dirname(__DIR__) . '/bin/async-worker.php') . ' ' . escapeshellarg($payload), $output, $status);
             self::assertSame(0, $status);
             self::assertSame('yes', file_get_contents($root . '/resolved'));
         } finally {
-            foreach (['resolved', 'config/app.php', 'app/WorkerSmtpProvider.php'] as $file) if (is_file($root . '/' . $file)) unlink($root . '/' . $file);
+            $database = null;
+            foreach (['resolved', 'state.sqlite', 'config/app.php', 'app/WorkerSmtpProvider.php'] as $file) if (is_file($root . '/' . $file)) unlink($root . '/' . $file);
             rmdir($root . '/config/routes'); rmdir($root . '/config'); rmdir($root . '/app'); rmdir($root);
         }
     }

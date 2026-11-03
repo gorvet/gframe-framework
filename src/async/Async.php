@@ -20,30 +20,15 @@ class Async
     public function run(string $serialized): void
     {
         $php = $this->cliBinary();
-        $payload = json_encode([
-            'root' => rtrim((string)ABSPATH, '/\\'),
-            'closure' => base64_encode($serialized),
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        if (!is_string($payload)) {
-            throw new RuntimeException('No se pudo preparar la tarea asíncrona.');
-        }
         $worker = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'async-worker.php');
         if ($worker === false) {
             throw new RuntimeException('No se encontró el worker de tareas asíncronas.');
         }
 
-        $encoded = base64_encode($payload);
-        $jobFile = null;
-        $argument = $encoded;
-
-        if (strlen($encoded) > 6000) {
-            $jobFile = tempnam(sys_get_temp_dir(), 'gframe_job_');
-            if ($jobFile === false || file_put_contents($jobFile, $encoded, LOCK_EX) === false) {
-                throw new RuntimeException('No se pudo crear el archivo temporal de la tarea.');
-            }
-            $argument = 'file:' . $jobFile;
-        }
+        $store = \GFrame\Storage\DatabaseStateStore::configured();
+        $jobID = bin2hex(random_bytes(32));
+        $store->create('async', $jobID, ['closure' => base64_encode($serialized)], time() + 3600);
+        $argument = base64_encode(json_encode(['root' => rtrim((string)ABSPATH, '/\\'), 'job_id' => $jobID], JSON_THROW_ON_ERROR));
 
         $output = [];
         $status = 0;
@@ -60,9 +45,7 @@ class Async
         }
 
         if ($status !== 0) {
-            if ($jobFile !== null && is_file($jobFile)) {
-                @unlink($jobFile);
-            }
+            $store->delete('async', $jobID);
 
             $message = 'No se pudo iniciar la tarea asíncrona. Código: ' . $status;
             if (class_exists(LogHelper::class)) {

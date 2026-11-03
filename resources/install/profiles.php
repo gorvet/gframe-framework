@@ -17,7 +17,7 @@ return [
         'auth' => true,
         'tenancy' => false,
         'public' => true,
-        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library'],
+        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library', 'runtime-storage'],
     ],
     'intranet' => [
         'name' => 'Intranet privada',
@@ -26,7 +26,7 @@ return [
         'auth' => true,
         'tenancy' => false,
         'public' => false,
-        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library'],
+        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library', 'runtime-storage'],
     ],
     'saas' => [
         'name' => 'Aplicación SaaS',
@@ -35,6 +35,6 @@ return [
         'auth' => true,
         'tenancy' => true,
         'public' => true,
-        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library', 'notifications', 'cron-runner'],
+        'modules' => ['auth-ui', 'self-account', 'admin-panel', 'user-admin', 'media-library', 'notifications', 'cron-runner', 'runtime-storage'],
     ],
 ];

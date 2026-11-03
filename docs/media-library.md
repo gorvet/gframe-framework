@@ -6,13 +6,15 @@
 
 `media-library` instala una biblioteca de archivos con listado, búsqueda, carga, eliminación y campos reutilizables. Puede operar de forma global, por tenant o por usuario, con archivos públicos o privados.
 
+Las imágenes y los documentos persistentes de todos los módulos deben pasar por esta biblioteca. Las subidas, importaciones y archivos generados se registran con `MediaLibraryService`; el consumidor guarda el ID del medio y no crea directorios ni registros de archivos paralelos. Los originales y sus variantes siguen siendo archivos administrados por Media; sus metadatos se guardan en la base de datos.
+
 ## Medios públicos y privados
 
 Desde **GFrame 4.7.0**, la biblioteca admite dos destinos: `public/uploads/` para archivos públicos y `private/media/` para archivos protegidos. La visibilidad se configura desde el servidor mediante `media.visibility` o por origen mediante `media.sources.<origen>.visibility`. Los archivos existentes siguen siendo públicos hasta que se cambie expresamente su visibilidad.
 
 Los privados requieren permisos adicionales para consultarlos y gestionarlos. Sus originales y miniaturas se entregan mediante rutas autorizadas; también pueden compartirse con enlaces independientes, revocables y con caducidad configurable. El ámbito global, usuario o tenant determina la propiedad, no la visibilidad.
 
-Consulta [Archivos privados y enlaces de descarga](archivos-privados.md) para ver la configuración, los permisos, el cambio de visibilidad y los ejemplos de uso dentro o fuera de la biblioteca. Al actualizar, aplica la migración del módulo y la protección de `private/` en el servidor.
+Consulta [Archivos privados y enlaces de descarga](archivos-privados.md) para ver la configuración, los permisos, el cambio de visibilidad y la entrega de recursos de la biblioteca. Al actualizar, aplica la migración del módulo y la protección de `private/` en el servidor.
 
 ## Instalación
 

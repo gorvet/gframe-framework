@@ -90,8 +90,10 @@ final class SecurityHardeningTest extends TestCase
     {
         $directory = sys_get_temp_dir() . '/gframe-auth-rate-' . bin2hex(random_bytes(5));
         $now = 1000;
-        ConfigRepository::replace(['auth' => ['rate_limit' => ['login_attempts' => 1, 'mail_attempts' => 1, 'window_seconds' => 10]]]);
-        $limiter = new AuthRateLimiter($directory, static function () use (&$now): int { return $now; });
+        ConfigRepository::replace(['auth' => ['rate_limit' => ['driver' => 'database', 'login_attempts' => 1, 'mail_attempts' => 1, 'window_seconds' => 10]]]);
+        $database = new \PDO('sqlite::memory:');
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['rate-limits']);
+        $limiter = new AuthRateLimiter($database, static function () use (&$now): int { return $now; });
         try {
             self::assertSame('success', $limiter->reserve('login', 'USER@example.test', '192.0.2.1')['status']);
             $denied = $limiter->reserve('login', 'user@example.test', '192.0.2.2');
@@ -101,9 +103,9 @@ final class SecurityHardeningTest extends TestCase
             self::assertSame('auth_rate_limited', $limiter->reserve('resend', 'user@example.test', '192.0.2.1')['code']);
             $now += 11;
             self::assertSame('success', $limiter->reserve('login', 'other@example.test', '192.0.2.1')['status']);
-            self::assertCount(2, json_decode(file_get_contents($directory . '/attempts.json'), true));
-            self::assertStringNotContainsString('example.test', file_get_contents($directory . '/attempts.json'));
-            file_put_contents($directory . '/attempts.json', 'broken');
+            self::assertSame(2, (int)$database->query('SELECT COUNT(*) FROM gframe_rate_buckets')->fetchColumn());
+            self::assertStringNotContainsString('example.test', json_encode($database->query('SELECT * FROM gframe_rate_buckets')->fetchAll()));
+            $database->exec('DROP TABLE gframe_rate_buckets');
             self::assertSame('auth_rate_limit_unavailable', $limiter->reserve('login', 'x', 'y')['code']);
         } finally { @unlink($directory . '/attempts.json'); @rmdir($directory); }
     }
@@ -111,16 +113,16 @@ final class SecurityHardeningTest extends TestCase
     public function testConcurrentRequestsCannotShareTheLastSlot(): void
     {
         $directory = sys_get_temp_dir() . '/gframe-auth-race-' . bin2hex(random_bytes(5));
-        mkdir($directory);
+        $database = new \PDO('sqlite:' . $directory . '.sqlite');
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['rate-limits']);
         $processes = [];
         try {
             for ($i = 0; $i < 8; $i++) {
-                $process = proc_open([PHP_BINARY, __DIR__ . '/fixtures/auth-rate-worker.php', $directory], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+                $process = proc_open([PHP_BINARY, __DIR__ . '/fixtures/auth-rate-worker.php', $directory . '.sqlite'], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
                 self::assertIsResource($process);
                 fclose($pipes[0]);
                 $processes[] = [$process, $pipes];
             }
-            file_put_contents($directory . '/go', '1');
             $accepted = 0;
             foreach ($processes as [$process, $pipes]) {
                 $result = json_decode(stream_get_contents($pipes[1]), true);
@@ -133,7 +135,7 @@ final class SecurityHardeningTest extends TestCase
             self::assertSame(1, $accepted);
         } finally {
             foreach ($processes as [$process, $pipes]) if (is_resource($process)) { proc_terminate($process); proc_close($process); }
-            @unlink($directory . '/go'); @unlink($directory . '/attempts.json'); @rmdir($directory);
+            $database = null; @unlink($directory . '.sqlite');
         }
     }
 
@@ -143,13 +145,16 @@ final class SecurityHardeningTest extends TestCase
         require_once dirname(__DIR__) . '/resources/modules/auth-ui/application/app/controllers/auth-ui/AuthController.php';
         $root = sys_get_temp_dir() . '/gframe-controller-rate-' . bin2hex(random_bytes(5));
         define('ABSPATH', $root . '/');
-        ConfigRepository::replace(['auth' => ['rate_limit' => ['login_attempts' => 1]]]);
+        ConfigRepository::replace(['auth' => ['rate_limit' => ['driver' => 'database', 'login_attempts' => 1]]]);
         $_SERVER['REMOTE_ADDR'] = '192.0.2.1';
         $_POST = ['login_email' => 'user@example.test', 'login_password' => 'Password-123'];
         $auth = new class extends \GFrame\Auth\AuthModel {
             public int $calls = 0;
             public function login(string $email, string $password): array { $this->calls++; return ['status' => 'error', 'code' => 'invalid_user']; }
         };
+        $database = new \PDO('sqlite::memory:');
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['rate-limits']);
+        (new \ReflectionProperty(\DatabaseManager::class, 'pool'))->setValue(null, [\DatabaseManager::defaultConnectionName() => $database]);
         $controller = new \GFrame\Modules\AuthUi\Controllers\AuthController($auth);
         try {
             $first = $controller->login();

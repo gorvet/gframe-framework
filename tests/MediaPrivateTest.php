@@ -17,6 +17,7 @@ final class MediaPrivateTest extends TestCase
         define('DB_CONNECTIONS', ['media_private' => ['driver' => 'sqlite', 'path' => ':memory:']]);
         $pdo = \DatabaseManager::connection();
         $pdo->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/media-library/database/sqlite.sql'));
+        MigrationRunner::frameworkDefault()->migrate($pdo, 'sqlite', ['runtime-storage']);
         $root = sys_get_temp_dir() . '/gframe-private-media-' . bin2hex(random_bytes(6));
         mkdir($root . '/public', 0775, true);
         ini_set('error_log', $root . '/errors.log');

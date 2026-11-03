@@ -6,8 +6,8 @@ require dirname(__DIR__, 2) . '/packages/autoload.php';
 
 $fixtureRoot = (string)getenv('GFRAME_SESSION_RACE_ROOT');
 if ($fixtureRoot === '' || !is_dir($fixtureRoot . '/sessions')) exit;
-ini_set('session.save_path', $fixtureRoot . '/sessions');
-\GFrame\Config\ConfigRepository::replace(['session' => ['driver' => 'native', 'name' => 'GFRAME_RACE']]);
+\GFrame\Config\ConfigRepository::replace(['session' => ['driver' => 'database', 'name' => 'GFRAME_RACE']]);
+(new \ReflectionProperty(\DatabaseManager::class, 'pool'))->setValue(null, [\DatabaseManager::defaultConnectionName() => new \PDO('sqlite:' . $fixtureRoot . '/sessions/state.sqlite')]);
 $path = (string)parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 define('SUPPORTED_LANGS', ['es', 'en']);
 define('site_url', 'http://127.0.0.1/');

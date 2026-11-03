@@ -4,7 +4,7 @@ return [
     'name' => 'auth-ui',
     'type' => 'backend-module',
     'description' => 'Pantalla y rutas de acceso para aplicaciones con autenticación.',
-    'dependencies' => ['alerts', 'frontend-core', 'heartbeat-client', 'password-utils'],
+    'dependencies' => ['alerts', 'frontend-core', 'heartbeat-client', 'password-utils', 'rate-limits'],
     'requires_schema' => ['auth'],
     'runtime' => ['root' => 'application/app', 'namespace' => 'GFrame\\Modules\\AuthUi', 'templates' => ['auth']],
     'migrations' => [

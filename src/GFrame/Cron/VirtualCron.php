@@ -55,19 +55,9 @@ final class VirtualCron
 
     private static function logFailure(string $message): void
     {
-        // Una marca compartida por host limita los logs incluso cuando falta el esquema.
-        $root = defined('ABSPATH') ? (string)ABSPATH : __DIR__;
-        $path = sys_get_temp_dir() . '/gframe-cron-error-' . hash('sha256', $root);
-        $file = @fopen($path, 'c+');
-        if ($file === false) return;
         try {
-            if (!flock($file, LOCK_EX | LOCK_NB)) return;
-            $last = (int)stream_get_contents($file);
-            if (time() - $last < 60) return;
-            rewind($file); ftruncate($file, 0); fwrite($file, (string)time());
-            error_log('[gframe.cron] ' . $message);
-        } finally {
-            fclose($file);
-        }
+            if (!\GFrame\Storage\DatabaseStateStore::configured()->claim('diagnostic', 'cron', 60)) return;
+        } catch (\Exception) { /* Los logs siguen disponibles si no hay conexión. */ }
+        error_log('[gframe.cron] ' . $message);
     }
 }

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class MailRateLimiterTest extends TestCase
 {
-    private string $directory;
+    private \PDO $database;
     private int $now = 10000;
     private array $configuration;
     private array $environment = [];
@@ -17,13 +17,14 @@ final class MailRateLimiterTest extends TestCase
     protected function setUp(): void
     {
         $this->configuration = ConfigRepository::get();
-        ConfigRepository::merge(['mail' => ['rate_limit' => ['enabled' => true, 'max_attempts' => 2, 'window_seconds' => 60]]]);
+        ConfigRepository::merge(['mail' => ['rate_limit' => ['driver' => 'database', 'enabled' => true, 'max_attempts' => 2, 'window_seconds' => 60]]]);
         foreach (['MAIL_RATE_LIMIT_ENABLED', 'MAIL_RATE_LIMIT_MAX_ATTEMPTS', 'MAIL_RATE_LIMIT_WINDOW_SECONDS', 'MAIL_HOST'] as $key) {
             $this->environment[$key] = [$_ENV[$key] ?? null, $_SERVER[$key] ?? null, getenv($key)];
             unset($_ENV[$key], $_SERVER[$key]);
             putenv($key);
         }
-        $this->directory = sys_get_temp_dir() . '/gframe-mail-rate-' . bin2hex(random_bytes(8));
+        $this->database = new \PDO('sqlite::memory:');
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($this->database, 'sqlite', ['rate-limits']);
     }
 
     protected function tearDown(): void
@@ -34,8 +35,6 @@ final class MailRateLimiterTest extends TestCase
             if ($server === null) unset($_SERVER[$key]); else $_SERVER[$key] = $server;
             putenv($process === false ? $key : $key . '=' . $process);
         }
-        foreach (glob($this->directory . '/*') ?: [] as $path) unlink($path);
-        if (is_dir($this->directory)) rmdir($this->directory);
     }
 
     public function testWindowIsSharedBetweenInstancesAndReturnsActualRetryTime(): void
@@ -62,9 +61,7 @@ final class MailRateLimiterTest extends TestCase
         $this->send(); $this->send();
         self::assertSame('success', $this->send('contact', '192.0.2.2')['status']);
         self::assertSame('success', $this->send('password-reset')['status']);
-        foreach (glob($this->directory . '/*') as $file) {
-            self::assertStringNotContainsString('192.0.2.', $file . file_get_contents($file));
-        }
+
     }
 
     public function testLoweringQuotaReportsWhenEnoughSlotsWillExpire(): void
@@ -103,7 +100,7 @@ final class MailRateLimiterTest extends TestCase
         self::assertSame(120, $this->send()['data']['retry_after']);
         $_ENV['MAIL_RATE_LIMIT_ENABLED'] = 'false';
         self::assertSame('success', $this->send()['status']);
-        self::assertSame('success', (new MailRateLimiter(''))->run('', '', static fn(): array => ['status' => 'success'])['status']);
+        self::assertSame('success', (new MailRateLimiter(new \PDO('sqlite::memory:')))->run('', '', static fn(): array => ['status' => 'success'])['status']);
     }
 
     public function testInvalidConfigurationAndUnavailableStoragePreventSending(): void
@@ -113,9 +110,9 @@ final class MailRateLimiterTest extends TestCase
         $_ENV['MAIL_RATE_LIMIT_WINDOW_SECONDS'] = '0';
         self::assertSame('mail_rate_limit_invalid', $this->limiter()->run('contact', 'ip', $never)['code']);
         unset($_ENV['MAIL_RATE_LIMIT_WINDOW_SECONDS']);
-        self::assertSame('mail_rate_limit_unavailable', (new MailRateLimiter(''))->run('contact', 'ip', $never)['code']);
+        self::assertSame('mail_rate_limit_unavailable', (new MailRateLimiter(new \PDO('sqlite::memory:')))->run('contact', 'ip', $never)['code']);
         $this->send();
-        file_put_contents(glob($this->directory . '/*')[0], '{broken');
+        $this->database->exec('DROP TABLE gframe_rate_reservations');
         self::assertSame('mail_rate_limit_unavailable', $this->limiter()->run('contact', '192.0.2.1', $never)['code']);
     }
 
@@ -134,10 +131,10 @@ final class MailRateLimiterTest extends TestCase
         self::assertSame('mail_rate_limited', $mail->sendHtmlAsync('user@example.test', 'Subject', '<p>Test</p>', $options)['code']);
         self::assertSame(1, $async->calls);
         self::assertArrayNotHasKey('rate_limit', (new \ReflectionFunction($async->job))->getStaticVariables()['options']);
-        $snapshot = file_get_contents(glob($this->directory . '/*')[0]);
+        $snapshot = json_encode($this->database->query('SELECT * FROM gframe_rate_reservations')->fetchAll());
         // El worker recibe opciones limpias y no consume un segundo cupo.
         (\ClosureWrapper::unserialize(\ClosureWrapper::serialize($async->job)))();
-        self::assertSame($snapshot, file_get_contents(glob($this->directory . '/*')[0]));
+        self::assertSame($snapshot, json_encode($this->database->query('SELECT * FROM gframe_rate_reservations')->fetchAll()));
         self::assertSame('mail_queued', $mail->sendHtmlAsync('user@example.test', 'Subject', '<p>Test</p>')['code']);
         self::assertSame(2, $async->calls);
     }
@@ -155,22 +152,14 @@ final class MailRateLimiterTest extends TestCase
 
     public function testConcurrentProcessesShareOneAvailableSlot(): void
     {
-        mkdir($this->directory);
-        $script = $this->directory . '/worker.php';
-        file_put_contents($script, '<?php require ' . var_export(dirname(__DIR__) . '/packages/autoload.php', true) . ';' . <<<'PHP'
-$_ENV['MAIL_RATE_LIMIT_ENABLED'] = 'true';
-$_ENV['MAIL_RATE_LIMIT_MAX_ATTEMPTS'] = '1';
-$_ENV['MAIL_RATE_LIMIT_WINDOW_SECONDS'] = '60';
-$result = (new \GFrame\Mail\MailRateLimiter($argv[1]))->run('contact', '192.0.2.1', static function (): array {
-    usleep(200000);
-    return ['status' => 'success'];
-});
-echo $result['code'] ?? $result['status'];
-PHP);
+        $databasePath = sys_get_temp_dir() . '/gframe-mail-rate-' . bin2hex(random_bytes(8)) . '.sqlite';
+        $database = new \PDO('sqlite:' . $databasePath);
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['rate-limits']);
+        $script = __DIR__ . '/fixtures/mail-rate-worker.php';
         $processes = [];
         try {
             for ($index = 0; $index < 2; $index++) {
-                $process = proc_open([PHP_BINARY, $script, $this->directory], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+                $process = proc_open([PHP_BINARY, $script, $databasePath], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
                 self::assertIsResource($process);
                 fclose($pipes[0]);
                 $processes[] = [$process, $pipes];
@@ -190,12 +179,14 @@ PHP);
                 foreach ($pipes as $pipe) if (is_resource($pipe)) fclose($pipe);
                 if (is_resource($process)) { proc_terminate($process); proc_close($process); }
             }
+            $database = null;
+            @unlink($databasePath);
         }
     }
 
     private function limiter(): MailRateLimiter
     {
-        return new MailRateLimiter($this->directory, fn(): int => $this->now);
+        return new MailRateLimiter($this->database, fn(): int => $this->now);
     }
 
     private function send(string $scope = 'contact', string $identity = '192.0.2.1'): array

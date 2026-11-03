@@ -15,7 +15,7 @@ Use this when changing login state, password recovery, roles, memberships or a t
 | --- | --- |
 | `database` | Uses `gframe_sessions`, hashes session IDs and checks account status plus global/user/active-tenant authorization versions during a read. Authenticated writes update an existing live session instead of recreating a revoked one. Requires the managed auth schema and its migrations. |
 | `redis` | Requires phpredis, the standard account lookup when registering, atomic session ownership/presence checks and version publication. It does not query account status on every read; account changes must use the revocation/blocking workflow. Use a separate prefix per project. |
-| `native` | Uses PHP's configured handler. GFrame does not provide multidevice revocation or managed authorization-version checks through this driver. Do not promise managed-session guarantees. |
+| `disabled` | No session is opened or persisted. Static projects without a database use this mode; authenticated flows and protected forms need database or Redis. Native PHP/file sessions are rejected. |
 
 Use the configured session driver; do not silently replace it to make a test or feature work. Existing authenticated sessions must not be resurrected by an in-flight write after logout or revocation. This rule concerns authenticated ownership; guest session storage has its own path.
 

@@ -1,6 +1,6 @@
 # Archivos privados y enlaces de descarga
 
-Desde 4.7.0, la biblioteca admite almacenamiento público y privado. La API de descargas privadas también funciona sin `media-library`, para cualquier módulo que gestione sus propios archivos.
+Desde 4.7.0, la biblioteca admite almacenamiento público y privado. Todas las imágenes y documentos persistentes deben gestionarse mediante `media-library`, también cuando los produce otro módulo. La API de descargas es una utilidad de entrega; no sustituye el registro, almacenamiento ni los permisos de Media.
 
 ## Configuración
 
@@ -84,44 +84,11 @@ GET/HEAD `media-access?token=...` verifica autorización, vigencia, archivo y co
 
 La sincronización nativa recorre solo públicos. Una integración PHP autorizada puede llamar a `MediaSyncService::synchronize($scope, 'private')`. No añade carpetas lógicas ni ámbitos por tipo de contenido.
 
-## API independiente
+## Utilidades de entrega
 
-```php
-use GFrame\Files\{PrivateFileStorage, PrivateDownloadService};
+`PrivateDownloadService` y `PrivateFileStorage` son utilidades de bajo nivel que utiliza la entrega privada. No suben ni registran imágenes o documentos, y no deben utilizarse para crear un almacén paralelo. La integración de módulos debe incorporar el archivo mediante `MediaLibraryService`, conservar su `media_id` y emitir o revocar enlaces con `issueDownload()` y `revokeDownload()`, como en el ejemplo anterior.
 
-$files = new PrivateFileStorage(ABSPATH . 'private');
-$downloads = new PrivateDownloadService($files);
-// El archivo ya existe en private/documents/recurso.pdf.
-// El llamador autoriza la emisión y nunca acepta una ruta desde el navegador.
-$grant = $downloads->issue('documents/recurso.pdf', 'Documento.pdf', [
-    'ttl_seconds' => 3600,
-    'max_downloads' => 0,
-    'require_auth' => false,
-    'user_id' => 0,
-    'context' => ['resource_id' => $resourceID],
-]);
-```
-
-Se devuelve `grant_id`, `token` y `expires_at` (timestamp UTC o null). Cada emisión crea una autorización independiente. El token incluye ID aleatorio y secreto criptográfico; solo se persiste la huella del secreto. Las opciones de emisión prevalecen sobre los predeterminados. El endpoint del proyecto debe restringir qué opciones puede elegir el solicitante; las políticas inválidas se rechazan.
-
-Declara GET y HEAD en el proyecto mediante `RouteBuilder::get()` y `RouteBuilder::head()`, apuntando al mismo controlador. Desde ese controlador, con la misma raíz:
-
-```php
-$method = (string)($_SERVER['REQUEST_METHOD'] ?? 'GET');
-$response = $downloads->resolve(
-    (string)($_GET['token'] ?? ''),
-    $verifiedUserID, // 0 para visitante; identidad calculada desde la autenticación
-    $method,
-    $_SERVER['HTTP_RANGE'] ?? null,
-    // Opcional: servicio propio que comprueba el derecho actual.
-    static fn(array $grant, int $userID): bool => $access->canDownload($grant['context'], $userID)
-);
-$response->send($method);
-```
-
-Sin callback basta un enlace vigente y sus restricciones de identidad. `require_auth=true` requiere cualquier identidad autenticada; `user_id>0` exige esa identidad concreta incluso si `require_auth` es false. El controlador aporta una identidad comprobada, nunca un ID recibido del cliente. Captura excepciones con un error genérico sin revelar rutas o tokens. Tras autorizar una descarga interna, usa `$downloads->internal($relativePath, $visibleName, $inline)` y entrega la respuesta.
-
-Revoca con `$downloads->revoke($grantID)` después de autorizar al actor. El segundo argumento opcional es un callback que debe devolver true comprobando el contexto persistido. Un enlace por posesión es transferible; asociarlo a una persona no demuestra su identidad sin autenticación adicional. Excluye los tokens de logs HTTP, analítica y páginas con recursos de terceros.
+La ruta nativa `media-access` entrega el recurso mediante GET/HEAD. Un endpoint personalizado debe conservar la autorización del actor, ámbito y medio, sin aceptar rutas físicas ni identidades enviadas por el navegador. Los tokens no deben aparecer en logs HTTP, analítica ni páginas con recursos de terceros. La lógica de acceso vigente corresponde a la integración; un enlace por posesión puede compartirse y no demuestra identidad por sí solo.
 
 ## Entrega y conservación
 
@@ -129,7 +96,7 @@ Se transmiten bytes desde PHP con `Cache-Control: private, no-store`, `nosniff` 
 
 `max_downloads` cuenta solicitudes GET autorizadas que pueden entregar contenido, incluidos rangos. HEAD y rangos inválidos no consumen usos. El consumo es atómico entre workers y ocurre antes de transmitir: una interrupción puede consumirlo. Para reanudación/reproducción utiliza 0 por defecto y controla vigencia o identidad. No cuenta descargas completas.
 
-Las autorizaciones se guardan en `.downloads/`, bajo la raíz privada, con `flock`. Todos los workers deben compartir el directorio en un sistema de archivos que soporte esos bloqueos. La huella del contenido se comprueba en cada resolución: sustituir el archivo invalida el enlace y cada petición añade una lectura completa previa. El registro opcional usa el log PHP con evento e ID, sin token. No hay eliminación automática de autorizaciones o archivos; el proyecto define su mantenimiento.
+Las autorizaciones se guardan en SQL mediante el módulo `runtime-storage`, en la conexión `storage.connection` (null usa la predeterminada). La comprobación y el consumo son transaccionales; no se crean archivos `.downloads/*.json`. Todos los workers deben compartir la base de datos y tener acceso a los documentos. La huella del contenido se comprueba en cada resolución: sustituir el archivo invalida el enlace y cada petición añade una lectura completa previa. El registro opcional usa el log PHP con evento e ID, sin token. Las autorizaciones vencidas se limpian al crear registros o mediante `DatabaseStateStore::prune()`; los archivos de contenido los administra el proyecto.
 
 La caducidad del enlace no borra archivos ni afecta a otros enlaces. La conservación del archivo pertenece a una política explícita del proyecto. Su trabajo programado elimina los recursos autorizados al vencer esa política; las solicitudes posteriores se rechazan al faltar el archivo. En la biblioteca usa `delete()` para limpiar registro y variantes. Para retirar disponibilidad antes del borrado físico, utiliza el callback de autorización de la integración. No se presuponen plazos ni reglas de negocio.
 

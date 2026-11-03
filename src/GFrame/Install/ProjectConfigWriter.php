@@ -84,7 +84,7 @@ final class ProjectConfigWriter
             'APP_URL' => (string)($settings['app_url'] ?? ''),
             'APP_KEY' => 'base64:' . base64_encode(random_bytes(32)),
             'METRICOOL_HASH' => (string)($settings['metricool_hash'] ?? ''),
-            'SESSION_DRIVER' => $database !== [] ? 'database' : 'native',
+            'SESSION_DRIVER' => $database !== [] ? 'database' : 'disabled',
             'SESSION_REDIS_HOST' => '127.0.0.1',
             'SESSION_REDIS_PORT' => '6379',
             'SESSION_REDIS_PASSWORD' => '',
@@ -156,7 +156,7 @@ final class ProjectConfigWriter
         $analytics = "['enabled' => {$metricoolEnabled}, 'metricool' => ['enabled' => {$metricoolEnabled}, 'hash' => env('METRICOOL_HASH', '')]]";
         $tenancyExport = var_export($tenancy, true);
         $idleTimeout = max(60, (int)($settings['session_idle_timeout'] ?? 1800));
-        $sessionDriver = $database !== [] ? 'database' : 'native';
+        $sessionDriver = $database !== [] ? 'database' : 'disabled';
         $mediaScope = (string)($settings['media_scope'] ?? (!empty($settings['tenancy']) ? 'tenant' : 'global'));
         if (!in_array($mediaScope, ['global', 'tenant', 'user'], true)) {
             $mediaScope = !empty($settings['tenancy']) ? 'tenant' : 'global';

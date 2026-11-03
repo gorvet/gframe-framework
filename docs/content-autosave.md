@@ -6,6 +6,8 @@
 
 El módulo optativo `content-autosave` guarda una copia privada del texto mientras se escribe. La vincula al usuario, al tenant activo cuando existe y a una clave de contenido/campo. No crea otro artículo ni modifica su versión pública. La publicación continúa en el formulario de la aplicación.
 
+El patrón de recuperación combina esta copia en base de datos con la copia local del editor: autoguardado remoto para el recurso autorizado y recuperación en el navegador ante pérdida de conexión o cierre accidental. Es el mismo principio de protección que emplea WordPress; no implica copiar su esquema de revisiones ni activar escrituras sin la ruta y los permisos de la aplicación. Para disponer de ambas protecciones, configura `autosave` y `draft_key` en el campo.
+
 Para impedir que Guardar/Publicar sobrescriba otra edición, adopte [el guardado por revisión](content-editing.md). Use la revisión del modelo también como `base_version` del autoguardado; la copia privada conserva su control de versión independiente.
 
 ## Instalar y actualizar

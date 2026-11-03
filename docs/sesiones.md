@@ -2,7 +2,7 @@
 
 Una sesión mantiene la identidad del usuario entre peticiones. Después de iniciar sesión, el navegador conserva una cookie con un identificador; el servidor utiliza ese identificador para recuperar el usuario autenticado y sus permisos. Por eso puede abrir otra página o solicitar un listado por AJAX sin volver a introducir su contraseña.
 
-GFrame usa `SessionRuntime` para seleccionar dónde guarda esa información. El driver es el almacenamiento de la sesión: base de datos, Redis o el manejador nativo de PHP. Cambiarlo no requiere reescribir los controladores ni los middleware.
+GFrame usa `SessionRuntime` para seleccionar dónde guarda esa información: base de datos SQL o Redis. El almacenamiento predeterminado es SQL. No admite el driver nativo de PHP ni sesiones en archivos.
 
 ## Uso en la aplicación
 
@@ -83,7 +83,7 @@ Las sesiones administradas guardan `role_version` y `authorization_version`. Si 
 
 `redis` está destinado a aplicaciones distribuidas o con alta concurrencia. Requiere la extensión `phpredis` y conserva sesiones, propietarios e índices por usuario mediante claves con TTL y operaciones Lua atómicas. No consulta `users` en cada petición: comprueba el estado de la cuenta al registrar una nueva sesión y depende de que los servicios de suspensión o eliminación revoquen las sesiones. Conserva una clave temporal de bloqueo para cerrar la carrera entre suspensión e inicio de sesión; no utiliza generaciones.
 
-`native` utiliza el manejador configurado directamente en PHP. Se reserva para sitios sin autenticación o integraciones que aporten su propio almacenamiento; no garantiza revocación multidispositivo desde GFrame.
+`disabled` desactiva las sesiones y no crea cookies ni almacena datos. Se genera para sitios estáticos sin base de datos. Las funciones que requieren sesión, autenticación o formularios protegidos necesitan una conexión SQL o Redis; no se sustituyen por archivos. `native` se rechaza explícitamente, incluso cuando una integración ha iniciado previamente una sesión en archivos.
 
 ```php
 'session' => [
@@ -139,7 +139,7 @@ No son una duración máxima absoluta desde el login. Las peticiones pueden reno
 | Debe volver a identificarse en todos sus dispositivos | Revocación de registros de sesión del usuario | Los registros revocados dejan de ser válidos al comprobarse; no implica desactivar la cuenta |
 | Se suspende el acceso a una cuenta | Servicio de administración de usuarios | Cambia el estado persistido y aplica revocación con bloqueo |
 
-La revocación de dispositivos requiere un driver administrado. Si el proyecto utiliza `native`, no dispone del registro central que necesita ese recorrido. Consulta primero [Drivers](#drivers).
+La revocación de dispositivos requiere una sesión activa con `database` o `redis`. Consulta primero [Drivers](#drivers).
 
 Estos contratos permiten construir una pantalla de gestión de sesiones del proyecto; no significan que exista una pantalla universal de dispositivos instalada en todas las aplicaciones.
 

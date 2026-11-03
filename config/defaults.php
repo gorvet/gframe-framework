@@ -16,6 +16,7 @@ return [
         'default' => 'main',
         'connections' => [],
     ],
+    'storage' => ['connection' => null],
     'security' => [
         'trusted_proxies' => [],
         'headers' => [
@@ -40,7 +41,7 @@ return [
     ],
     'session' => [
         'name' => null,
-        'driver' => 'native',
+        'driver' => 'database',
         'connection' => null,
         'lifetime' => 1800,
         'idle_timeout' => 1800,
@@ -61,6 +62,9 @@ return [
     ],
     'auth' => [
         'rate_limit' => [
+            'driver' => 'database',
+            'connection' => null,
+            'lock_timeout_seconds' => 2,
             'enabled' => true,
             'window_seconds' => 900,
             'ip_attempts' => 100,
@@ -119,6 +123,9 @@ return [
     'mail' => [
         'smtp_provider' => null,
         'rate_limit' => [
+            'driver' => 'database',
+            'connection' => null,
+            'lock_timeout_seconds' => 2,
             'enabled' => true,
             'max_attempts' => 5,
             'window_seconds' => 3600,

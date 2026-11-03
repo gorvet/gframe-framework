@@ -33,6 +33,7 @@ final class CronCsrfBoundaryTest extends TestCase
         file_put_contents($this->root . '/storage/gframe-installed.json', '{"modules":["cron-runner"]}');
         $this->database = new \PDO('sqlite:' . $this->root . '/tasks.sqlite');
         $this->database->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/cron-runner/database/sqlite.sql'));
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($this->database, 'sqlite', ['runtime-storage']);
         $this->environment('real');
         $environment = getenv();
         foreach (array_keys($environment) as $key) {

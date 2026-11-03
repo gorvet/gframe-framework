@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## 5.0.0 — 2026-11-03
+
+- Autenticación y correo: contadores SQL con conexión configurable, concurrencia, caducidad y limpieza; se elimina el driver de archivos. Nuevo módulo técnico `rate-limits` con migración `202611030001_rate_limits.sql`. Se mantienen límites, códigos, tiempos de reintento y devolución del contador si falla el correo. Los constructores reciben PDO opcional en lugar de directorios. Revisar [el despliegue y la migración](docs/rate-limits.md).
+- Estado de módulos: nuevo módulo `runtime-storage` con migración `202611030002_runtime_storage.sql`. Las autorizaciones de descarga y todos los payloads Async se guardan en SQL. Se eliminan los archivos temporales de tareas y los JSON de autorizaciones. Las sesiones usan SQL o Redis; `native` se rechaza y los sitios sin base de datos usan `disabled`. Los logs y archivos de contenido conservan su almacenamiento en archivos.
+
 ## 4.7.2 — 2026-11-01
 
 - Autenticación: acceso, registro y recuperación dejan de rechazar alias con `+` y dominios como `.info`; se elimina el patrón HTML restrictivo y se conserva la validación nativa del navegador y del servidor. Revisar overrides personalizados de las tres vistas.

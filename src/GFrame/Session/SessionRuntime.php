@@ -12,20 +12,19 @@ final class SessionRuntime
     public static function start(string $projectRoot): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
+            if (session_module_name() !== 'user' || self::$registry === null) throw new \RuntimeException('GFrame requiere sesiones en base de datos; no admite sesiones nativas en archivos.');
             \GFrame\Security\CsrfToken::ensure();
             return;
         }
-        $driver = mb_strtolower(trim((string)ConfigRepository::get('session.driver', 'native')), 'UTF-8');
+        $driver = mb_strtolower(trim((string)ConfigRepository::get('session.driver', 'database')), 'UTF-8');
+        if ($driver === 'disabled') { self::$registry = null; return; }
         $handler = match ($driver) {
             'database' => self::databaseHandler(),
             'redis' => self::redisHandler(),
-            'native' => null,
             default => throw new \RuntimeException("Driver de sesión no compatible: {$driver}."),
         };
-        if ($handler !== null) {
-            self::$registry = $handler;
-            session_set_save_handler($handler, true);
-        }
+        self::$registry = $handler;
+        session_set_save_handler($handler, true);
         ini_set('session.use_strict_mode', '1');
         ini_set('session.use_only_cookies', '1');
         self::applyCookieParams();
@@ -49,7 +48,7 @@ final class SessionRuntime
 
     public static function publishRoleVersion(int $roleID, int $version): void
     {
-        if ((string)ConfigRepository::get('session.driver', 'native') !== 'redis') return;
+        if ((string)ConfigRepository::get('session.driver', 'database') !== 'redis') return;
         (self::$registry instanceof RedisSessionHandler ? self::$registry : self::redisHandler())->publishRoleVersion($roleID, $version);
     }
 

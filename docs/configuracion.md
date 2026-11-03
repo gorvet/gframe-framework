@@ -2,6 +2,10 @@
 
 Para leer nombre del sitio, idioma, zona horaria, SEO y Metricool desde ajustes guardados por el panel de tu aplicación, consulta [ajustes del proyecto](project-settings.md). Para correo, consulta el [proveedor SMTP](smtp-provider.md).
 
+Para configurar la conexión SQL de los contadores de autenticación y correo, aplicar su migración y limpiar registros caducados, consulta [contadores temporales en base de datos](rate-limits.md).
+
+Consulta también la [política de persistencia de los módulos](persistencia.md), con los requisitos de sesiones, Async, descargas y las excepciones para logs, contenido y configuración.
+
 ## Proxies y cabeceras de seguridad
 
 `security.trusted_proxies` es una lista de direcciones IP o redes CIDR del proxy inmediato; por defecto está vacía. Solo sus conexiones pueden aportar `X-Forwarded-Proto`, `X-Forwarded-Host` y la cadena `X-Forwarded-For` para cookies, origen y límites de autenticación. El proxy debe reescribir esas cabeceras. La cadena de direcciones se recorre desde el extremo confiable hasta el primer salto no confiable. No configures todas las direcciones como confiables. Los enlaces de acceso siguen requiriendo `APP_URL`.

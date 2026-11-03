@@ -11,6 +11,8 @@ use RuntimeException;
 final class PrivateDownloadTest extends TestCase
 {
     private string $root;
+    private array $pool;
+    private \PDO $database;
     private PrivateFileStorage $storage;
     private PrivateDownloadService $service;
 
@@ -19,6 +21,11 @@ final class PrivateDownloadTest extends TestCase
         $this->root = sys_get_temp_dir() . '/gframe-download-' . bin2hex(random_bytes(6));
         $this->storage = new PrivateFileStorage($this->root);
         file_put_contents($this->root . '/document.txt', '0123456789');
+        $this->database = new \PDO('sqlite:' . $this->root . '/state.sqlite');
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($this->database, 'sqlite', ['runtime-storage']);
+        $property = new \ReflectionProperty(\DatabaseManager::class, 'pool');
+        $this->pool = $property->getValue();
+        $property->setValue(null, [\DatabaseManager::defaultConnectionName() => $this->database]);
         $this->service = new PrivateDownloadService($this->storage);
         ConfigRepository::replace(['files' => ['downloads' => ['enabled' => true, 'audit' => false]]]);
     }
@@ -26,6 +33,8 @@ final class PrivateDownloadTest extends TestCase
     protected function tearDown(): void
     {
         ConfigRepository::replace([]);
+        (new \ReflectionProperty(\DatabaseManager::class, 'pool'))->setValue(null, $this->pool);
+        unset($this->database);
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->root, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($iterator as $file) $file->isDir() && !$file->isLink() ? rmdir($file->getPathname()) : unlink($file->getPathname());
         rmdir($this->root);
@@ -42,7 +51,7 @@ final class PrivateDownloadTest extends TestCase
         $a = $this->service->issue('document.txt', 'Documento.txt');
         $b = $this->service->issue('document.txt', 'Documento.txt');
         self::assertNotSame($a['token'], $b['token']);
-        $stored = file_get_contents($this->root . '/.downloads/' . $a['grant_id'] . '.json');
+        $stored = (string)$this->database->query('SELECT payload FROM gframe_runtime_state LIMIT 1')->fetchColumn();
         self::assertStringNotContainsString(explode('.', $a['token'])[1], $stored);
         self::assertSame(200, $this->service->resolve($a['token'])->status());
         $this->service->revoke($a['grant_id']);
@@ -108,6 +117,7 @@ final class PrivateDownloadTest extends TestCase
         $worker = $this->root . '/worker.php';
         file_put_contents($worker, '<?php require ' . var_export(dirname(__DIR__) . '/packages/autoload.php', true) . '; '
             . '\GFrame\Config\ConfigRepository::replace(["files"=>["downloads"=>["enabled"=>true,"audit"=>false]]]); '
+            . '(new \ReflectionProperty(\DatabaseManager::class, "pool"))->setValue(null, [\DatabaseManager::defaultConnectionName()=>new \PDO("sqlite:".$argv[1]."/state.sqlite")]); '
             . 'try {(new \GFrame\Files\PrivateDownloadService(new \GFrame\Files\PrivateFileStorage($argv[1])))->resolve($argv[2]); echo "allowed";} catch (\RuntimeException $e) {echo "denied";}');
         $processes = [];
         for ($i = 0; $i < 4; $i++) {

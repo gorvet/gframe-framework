@@ -17,9 +17,7 @@ final class SessionManager
 
     public function login(array $identity, array $projectSession = []): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureStarted();
 
         session_regenerate_id(true);
         $_SESSION['auth'] = $this->normalizeIdentity([
@@ -63,9 +61,7 @@ final class SessionManager
 
     public function logout(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureStarted();
 
         $userID = (int)($_SESSION['auth']['id'] ?? 0);
         $sessionID = session_id();
@@ -83,9 +79,7 @@ final class SessionManager
 
     public function updateIdentity(array $identity, array $projectSession = []): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureStarted();
 
         $currentIdentity = is_array($_SESSION['auth'] ?? null) ? $_SESSION['auth'] : [];
         $_SESSION['auth'] = $this->normalizeIdentity(array_replace($currentIdentity, $identity));
@@ -95,6 +89,13 @@ final class SessionManager
                 $_SESSION[$key] = $value;
             }
         }
+    }
+
+    private function ensureStarted(): void
+    {
+        SessionRuntime::start(defined('ABSPATH') ? (string)ABSPATH : '');
+        if (session_status() !== PHP_SESSION_ACTIVE) throw new \RuntimeException('Las sesiones requieren almacenamiento en base de datos.');
+        $this->sessions ??= SessionRuntime::registry();
     }
 
     private function normalizeIdentity(array $identity): array

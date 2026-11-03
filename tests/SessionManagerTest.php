@@ -9,15 +9,31 @@ use PHPUnit\Framework\TestCase;
 final class SessionManagerTest extends TestCase
 {
     private array $session = [];
+    private array $configuration;
+    private array $pool;
 
     protected function setUp(): void
     {
         $this->session = $_SESSION ?? [];
+        $this->configuration = \GFrame\Config\ConfigRepository::get();
+        $property = new \ReflectionProperty(\DatabaseManager::class, 'pool');
+        $this->pool = $property->getValue();
+        $database = new \PDO('sqlite::memory:');
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['runtime-storage']);
+        $property->setValue(null, [\DatabaseManager::defaultConnectionName() => $database]);
+        \GFrame\Config\ConfigRepository::replace(['session' => ['driver' => 'database']]);
+        if (session_status() === PHP_SESSION_ACTIVE) session_abort();
+        session_id('');
+        \GFrame\Session\SessionRuntime::start('');
         $_SESSION = [];
     }
 
     protected function tearDown(): void
     {
+        if (session_status() === PHP_SESSION_ACTIVE) session_abort();
+        (new \ReflectionProperty(\DatabaseManager::class, 'pool'))->setValue(null, $this->pool);
+        \GFrame\Config\ConfigRepository::replace($this->configuration);
+        (new \ReflectionProperty(\GFrame\Session\SessionRuntime::class, 'registry'))->setValue(null, null);
         $_SESSION = $this->session;
     }
 

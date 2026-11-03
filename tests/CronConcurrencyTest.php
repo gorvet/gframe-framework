@@ -184,7 +184,7 @@ final class CronConcurrencyTest extends TestCase
         $this->database->exec('DROP TABLE cron_tasks');
         $this->database->exec('DROP TABLE cron_runtime');
         $runner = MigrationRunner::frameworkDefault();
-        self::assertSame(3, $runner->migrate($this->database, $this->driver, ['cron-runner'])['count']);
+        self::assertSame(4, $runner->migrate($this->database, $this->driver, ['cron-runner'])['count']);
         self::assertSame(0, (int)$this->database->query('SELECT COUNT(*) FROM cron_tasks')->fetchColumn());
         self::assertSame(1, (int)$this->database->query('SELECT COUNT(*) FROM cron_runtime')->fetchColumn());
     }
@@ -205,7 +205,7 @@ final class CronConcurrencyTest extends TestCase
     {
         $this->task('manual-existing');
         $this->database->exec('DROP TABLE cron_runtime');
-        self::assertSame(3, MigrationRunner::frameworkDefault()->migrate($this->database, $this->driver, ['cron-runner'])['count']);
+        self::assertSame(4, MigrationRunner::frameworkDefault()->migrate($this->database, $this->driver, ['cron-runner'])['count']);
         self::assertSame(1, (int)$this->database->query('SELECT COUNT(*) FROM cron_tasks')->fetchColumn());
         self::assertSame(1, (int)$this->database->query('SELECT COUNT(*) FROM cron_runtime')->fetchColumn());
     }

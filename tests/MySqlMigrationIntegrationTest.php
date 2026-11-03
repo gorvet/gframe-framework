@@ -39,7 +39,7 @@ final class MySqlMigrationIntegrationTest extends TestCase
     {
         $this->legacyAuth();
         $runner = MigrationRunner::frameworkDefault();
-        self::assertSame(3, $runner->migrate($this->pdo, 'mysql', ['auth-ui'])['count']);
+        self::assertSame(5, $runner->migrate($this->pdo, 'mysql', ['auth-ui'])['count']);
         self::assertSame(0, $runner->migrate($this->pdo, 'mysql', ['auth-ui'])['count']);
         self::assertFalse($this->pdo->inTransaction());
         self::assertNotFalse($this->pdo->query("SHOW COLUMNS FROM gframe_sessions LIKE 'tenant_role_version'")->fetch());
@@ -51,15 +51,14 @@ final class MySqlMigrationIntegrationTest extends TestCase
         $sql = file_get_contents(dirname(__DIR__) . '/resources/modules/auth-ui/database/migrations/mysql/202609290001_managed_sessions.sql');
         foreach ((new SqlStatementParser())->parse($sql) as $statement) $this->pdo->exec($statement);
         $this->pdo->exec('ALTER TABLE users ADD COLUMN authorization_version BIGINT UNSIGNED NOT NULL DEFAULT 1 AFTER force_password_change');
-        self::assertSame(3, MigrationRunner::frameworkDefault()->migrate($this->pdo, 'mysql', ['auth-ui'])['count']);
+        self::assertSame(5, MigrationRunner::frameworkDefault()->migrate($this->pdo, 'mysql', ['auth-ui'])['count']);
     }
 
     public function testFreshAuthSchemaBaselinesWithoutReapplyingMigrations(): void
     {
-        $schema = file_get_contents(dirname(__DIR__) . '/resources/database/schema/mysql/auth.sql');
-        foreach ((new SqlStatementParser())->parse($schema) as $statement) $this->pdo->exec($statement);
+        \GFrame\Install\SchemaInstaller::frameworkDefault()->install($this->pdo, 'mysql', true, ['auth-ui']);
         $runner = MigrationRunner::frameworkDefault();
-        self::assertSame(3, $runner->baseline($this->pdo, 'mysql', ['auth-ui'])['count']);
+        self::assertSame(5, $runner->baseline($this->pdo, 'mysql', ['auth-ui'])['count']);
         self::assertSame(0, $runner->migrate($this->pdo, 'mysql', ['auth-ui'])['count']);
     }
 

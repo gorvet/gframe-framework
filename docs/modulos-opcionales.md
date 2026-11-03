@@ -34,6 +34,8 @@ No todos estos módulos son opcionales en todos los perfiles. `managed` e `intra
 - `admin-panel`: estructura visual compartida del panel, con navbar, sidebar, tema y puntos de inserción. Los perfiles administrados lo incluyen automáticamente. Consulte [Panel administrativo](panel-administrativo.md).
 
 - `auth-ui`: flujo MVC de autenticación, recuperación y verificación. Consulte [Interfaz de autenticación](auth-ui.md).
+- [`rate-limits`](rate-limits.md): contadores temporales SQL de autenticación y correo, con caducidad y reservas atómicas. Es dependencia técnica de `auth-ui`; para formularios de correo sin autenticación puede añadirse por separado.
+- [`runtime-storage`](persistencia.md): estado SQL de descargas, Async y sesiones públicas; dependencia técnica de `rate-limits` y `cron-runner`.
 - `self-account`: pantalla Mi cuenta y acciones sobre la cuenta propia. Consulte [Mi cuenta](self-account.md).
 - [`heartbeat-client`](heartbeat.md): cliente web, sesión, controlador y canales periódicos.
 - [`password-utils`](password-utils.md): política PHP de contraseñas y utilidades de interfaz. Se incluye con `auth-ui`; las vistas cargan sus JS/CSS solo si los usan.

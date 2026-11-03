@@ -13,6 +13,11 @@ final class VisitorCsrfTest extends TestCase
     public function testAnonymousSessionGetsStableFieldsWithoutLoginAndRotatesOnLogin(): void
     {
         ini_set('session.use_cookies', '0');
+        $database = new \PDO('sqlite::memory:');
+        \GFrame\Install\SchemaInstaller::frameworkDefault()->install($database, 'sqlite', true, ['auth-ui']);
+        $database->exec("INSERT INTO users (user_id, email, password, role_id, status) VALUES (7, 'visitor@example.test', 'unused', 2, 'verify')");
+        (new \ReflectionProperty(\DatabaseManager::class, 'pool'))->setValue(null, [\DatabaseManager::defaultConnectionName() => $database]);
+        \GFrame\Config\ConfigRepository::replace(['session' => ['driver' => 'database']]);
         SessionRuntime::start(sys_get_temp_dir());
         self::assertArrayNotHasKey('auth', $_SESSION);
         $token = $_SESSION['csrfToken'];

@@ -3,9 +3,44 @@
 namespace GFrame\Tests;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 final class AsyncTest extends TestCase
 {
+    #[RunInSeparateProcess]
+    public function testLargePayloadRunsFromDatabaseWithoutTemporaryJobFiles(): void
+    {
+        $root = sys_get_temp_dir() . '/gframe-async-db-' . bin2hex(random_bytes(8));
+        mkdir($root . '/config/routes', 0775, true);
+        $path = $root . '/state.sqlite';
+        $database = new \PDO('sqlite:' . $path);
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['runtime-storage']);
+        $database->exec('CREATE TABLE effects (value TEXT NOT NULL)');
+        file_put_contents($root . '/config/app.php', '<?php return ' . var_export(['database' => ['default' => 'main', 'connections' => ['main' => ['driver' => 'sqlite', 'path' => $path]]]], true) . ';');
+        try {
+            \GFrame\Foundation\Bootstrap::boot($root);
+            $large = str_repeat('database payload ', 1000);
+            (new \Async())->create(static function () use ($large): void {
+                $database = \DatabaseManager::connection();
+                $database->prepare('INSERT INTO effects (value) VALUES (?)')->execute([$large]);
+            });
+            $deadline = microtime(true) + 15;
+            do {
+                $result = $database->query('SELECT value FROM effects')->fetchColumn();
+                if ($result !== false) break;
+                usleep(100000);
+            } while (microtime(true) < $deadline);
+            self::assertSame($large, $result);
+            self::assertSame(0, (int)$database->query('SELECT COUNT(*) FROM gframe_runtime_state')->fetchColumn());
+        } finally {
+            \DatabaseManager::disconnect();
+            $database = null;
+            foreach (glob($root . '/*.sqlite*') ?: [] as $file) unlink($file);
+            unlink($root . '/config/app.php');
+            rmdir($root . '/config/routes'); rmdir($root . '/config'); rmdir($root);
+        }
+    }
+
     public function testClosureRoundTripPreservesCapturedDataWithoutPhpNotices(): void
     {
         $recipient = 'contact@example.test';

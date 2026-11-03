@@ -3,6 +3,7 @@
 return [
     'name' => 'cron-runner',
     'type' => 'backend-module',
+    'dependencies' => ['runtime-storage'],
     'description' => 'Planificador compartido para cron real o virtual y ejecución CLI.',
     'schemas' => [
         'mysql' => 'database/mysql.sql',

@@ -18,27 +18,18 @@ if (!class_exists(\GFrame\Foundation\Bootstrap::class) || PHP_SAPI !== 'cli') {
 }
 
 $argument = (string)($argv[1] ?? '');
-if (str_starts_with($argument, 'file:')) {
-    $jobFile = substr($argument, 5);
-    $argument = is_file($jobFile) ? trim((string)file_get_contents($jobFile)) : '';
-    if (is_file($jobFile)) {
-        @unlink($jobFile);
-    }
-}
 
 $decoded = base64_decode($argument, true);
 $payload = is_string($decoded) ? json_decode($decoded, true) : null;
-if (!is_array($payload) || empty($payload['root']) || empty($payload['closure'])) {
-    exit(1);
-}
-
-$serializedClosure = base64_decode((string)$payload['closure'], true);
-if (!is_string($serializedClosure) || $serializedClosure === '') {
+if (!is_array($payload) || empty($payload['root']) || !preg_match('/^[a-f0-9]{64}$/D', (string)($payload['job_id'] ?? ''))) {
     exit(1);
 }
 
 try {
     \GFrame\Foundation\Bootstrap::boot((string)$payload['root']);
+    $job = \GFrame\Storage\DatabaseStateStore::configured()->update('async', $payload['job_id'], static fn(array $record): array => $record, true);
+    $serializedClosure = base64_decode((string)$job['closure'], true);
+    if (!is_string($serializedClosure) || $serializedClosure === '') throw new RuntimeException('La tarea no es válida.');
     $closure = ClosureWrapper::unserialize($serializedClosure);
     $closure();
 } catch (Throwable $exception) {

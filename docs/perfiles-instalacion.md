@@ -86,7 +86,7 @@ Los módulos opcionales cuyo árbol de dependencias necesita esquema no se ofrec
 
 ### Sesión
 
-Al no existir configuración de base de datos, `ProjectConfigWriter` genera `SESSION_DRIVER=native`.
+Al no existir configuración de base de datos, `ProjectConfigWriter` genera `SESSION_DRIVER=disabled`. No se crean sesiones en archivos. Para formularios protegidos, autenticación o tareas con estado, configura una base de datos e instala los módulos correspondientes.
 
 Eso no convierte el perfil en una aplicación autenticada: simplemente define el almacenamiento de sesión por defecto si alguna parte del proyecto utiliza sesión PHP.
 

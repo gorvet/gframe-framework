@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 PHP);
         $database = new \PDO('sqlite:' . $root . '/tasks.sqlite');
         $database->exec(file_get_contents(dirname(__DIR__) . '/resources/modules/cron-runner/database/sqlite.sql'));
+        \GFrame\Install\MigrationRunner::frameworkDefault()->migrate($database, 'sqlite', ['runtime-storage']);
         $null = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
         $server = proc_open([PHP_BINARY, '-S', $address, $root . '/index.php'], [0 => ['pipe', 'r'], 1 => ['file', $null, 'a'], 2 => ['file', $root . '/server.log', 'a']], $pipes, $root);
         self::assertIsResource($server); fclose($pipes[0]);

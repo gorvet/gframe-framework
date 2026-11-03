@@ -42,7 +42,8 @@ Una tarea debe poder ejecutarse sin emitir una respuesta HTTP. No renderices una
 - Debe existir un ejecutable PHP CLI con las extensiones que necesita la tarea.
 - PHP debe permitir `exec()` y el sistema debe permitir lanzar procesos.
 - El worker necesita acceso al proyecto, sus dependencias, su entorno y sus archivos.
-- El directorio temporal debe permitir escritura para payloads grandes.
+- Debe estar instalada la migración del módulo `runtime-storage` en la conexión seleccionada por `storage.connection` (null usa la predeterminada).
+- La base de datos debe aceptar el tamaño del payload serializado; en MySQL/MariaDB revisa `max_allowed_packet` si capturas adjuntos grandes. La codificación añade tamaño al contenido original.
 
 Async busca y comprueba PHP CLI. Puedes fijar el ejecutable en `.env`:
 
@@ -68,7 +69,7 @@ Diseña las operaciones de forma idempotente si pueden solicitarse varias veces.
 
 `run(string $serialized): void` y `ClosureWrapper` forman el mecanismo de transporte interno. No aceptes funciones serializadas, payloads ni rutas de archivos enviados por usuarios: deserializar una tarea ejecuta código PHP del proyecto.
 
-Los payloads grandes utilizan archivos temporales que el worker elimina al leerlos. No captures secretos innecesarios y limita el acceso al almacenamiento temporal y a los procesos del sistema. Un lanzamiento aparentemente aceptado cuyo worker no llega a iniciar puede dejar un archivo pendiente.
+Todos los payloads se guardan en base de datos. El worker los consume una sola vez antes de ejecutar la función. Caducan al cabo de una hora si no se consumen; las nuevas tareas limpian los vencidos. No captures secretos innecesarios y limita el acceso a la base de datos y a los procesos del sistema.
 
 Async utiliza `opis/closure:^4.3`. `ClosureWrapper` reconoce el formato anterior de Opis 3 y lo recupera mediante `Opis\Closure\v3_unserialize()`; las tareas nuevas usan el formato de Opis 4. Esta compatibilidad no incluye payloads de Laravel Serializable Closure. Antes de actualizar el código que usan tareas activas, deja que terminen: Async no mantiene copias versionadas del código de aplicación para cada ejecución.
 
@@ -96,11 +97,11 @@ El proceso hijo vuelve a cargar el proyecto. No comparte memoria, conexión PDO,
 
 ### Transporte del payload
 
-El payload contiene dos datos: la raíz del proyecto y la closure serializada codificada en base64. Después se codifica el conjunto completo para pasarlo al worker.
+La línea de comandos contiene la raíz del proyecto y un identificador aleatorio de tarea; la función serializada permanece en la base de datos.
 
-Cuando el argumento codificado supera aproximadamente 6000 caracteres, Async escribe el contenido en un archivo temporal y pasa al worker una referencia `file:...`. El worker consume ese archivo. Este mecanismo evita límites prácticos de longitud de línea de comandos, pero no convierte Async en una cola persistente.
+El worker carga la configuración del proyecto y retira el payload mediante una transacción antes de ejecutarlo. No admite referencias `file:` ni payloads ejecutables suministrados directamente como argumento. El almacenamiento SQL no añade reintentos, supervisión ni garantía de entrega.
 
-Por esa razón sigue siendo preferible capturar identificadores pequeños y reconstruir el estado dentro del worker. Capturar estructuras grandes aumenta serialización, uso de disco temporal y riesgo de transportar información que ya quedó obsoleta.
+Sigue siendo preferible capturar identificadores pequeños y reconstruir el estado dentro del worker. Capturar estructuras grandes aumenta la serialización, el tamaño de los registros y el riesgo de transportar información obsoleta.
 
 ## Selección de PHP CLI
 
@@ -114,7 +115,7 @@ Esto es importante en servidores que tienen varias versiones de PHP. El PHP de A
 
 En Windows se utiliza PowerShell con `Start-Process` y ventana oculta. En otros sistemas se ejecuta el worker en segundo plano redirigiendo stdout y stderr.
 
-Un código de lanzamiento distinto de cero provoca una excepción inmediata. Si se había creado un archivo temporal para el payload, Async intenta retirarlo antes de devolver el fallo.
+Un código de lanzamiento distinto de cero provoca una excepción inmediata y se elimina el payload de la base de datos. Si el proceso desaparece después de consumirlo, no se reejecuta automáticamente.
 
 Una vez que el proceso fue lanzado, el padre ya no conoce su resultado. Un error posterior pertenece al worker y debe registrarse o persistirse desde la propia tarea.
 

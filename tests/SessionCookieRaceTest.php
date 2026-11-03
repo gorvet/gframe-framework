@@ -17,6 +17,10 @@ final class SessionCookieRaceTest extends TestCase
     {
         $root = sys_get_temp_dir() . '/gframe-session-race-' . bin2hex(random_bytes(6));
         mkdir($root . '/sessions', 0775, true);
+        $database = new \PDO('sqlite:' . $root . '/sessions/state.sqlite');
+        \GFrame\Install\SchemaInstaller::frameworkDefault()->install($database, 'sqlite', true, ['auth-ui']);
+        $database->exec("INSERT INTO users (user_id, email, password, role_id, status) VALUES (42, 'race@example.test', 'unused', 2, 'verify')");
+        $database = null;
         $processes = [];
         $worker = null;
         try {
