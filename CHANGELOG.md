@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## 5.0.2 — 2026-11-05
+
+- Skeleton: el puente `bootstrap-buttons-compat.css` cubre ahora todas las variantes de botón de Bootstrap (sólidas `light`/`dark` y la serie `outline` completa), de modo que siguen los tokens de `variables.css` también al cambiar de tema. `btn-link` se tematiza desde los tokens de enlace y no necesita puente.
+- Skeleton: `variables.css` define los tokens `--bs-*-rgb` de marca (incluido `--bs-light-rgb` por tema) para que el anillo de foco de los botones use el color de marca en lugar del azul por defecto de Bootstrap.
+
 ## 5.0.1 — 2026-11-03
 
 - Cron: el registro de diagnósticos conserva la respuesta `cron_unavailable` aunque falte un driver PDO o la base de datos. Se completa la migración del fixture HTTPS/PHP-FPM para verificar sesiones SQL reales.

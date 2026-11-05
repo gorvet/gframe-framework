@@ -18,6 +18,16 @@
   --bs-warning: #ffb400;
   --bs-danger: #ff3366;
 
+  /* RGB de marca (para anillos de foco y rgba(); deben seguir a los hex de arriba) */
+  --bs-primary-rgb: 87, 51, 255;
+  --bs-secondary-rgb: 108, 117, 125;
+  --bs-success-rgb: 40, 177, 71;
+  --bs-info-rgb: 26, 109, 214;
+  --bs-warning-rgb: 255, 180, 0;
+  --bs-danger-rgb: 255, 51, 102;
+  --bs-dark-rgb: 10, 37, 64;
+  --bs-light-rgb: 243, 244, 245;
+
   /* Hovers de marca (estas no son var de bs) */
   --bs-primary-hover: color-mix(in srgb, var(--bs-primary), black 20%);
   --bs-secondary-hover: color-mix(in srgb, var(--bs-secondary), black 20%);
@@ -166,6 +176,9 @@
   --bs-gray-900: #cbd1da;
 
   --bs-gray-dark: var(--bs-gray-800);
+
+  /* RGB dependiente del tema (light = gray-100 oscuro) */
+  --bs-light-rgb: 26, 31, 39;
 
   /* Superficies */
   --bs-secondary-bg: var(--bs-gray-200);
