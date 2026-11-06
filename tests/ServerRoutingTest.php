@@ -52,16 +52,32 @@ final class ServerRoutingTest extends TestCase
             mkdir($project . '/packages');
             file_put_contents($project . '/packages/autoload.php', '<?php require ' . var_export(dirname(__DIR__) . '/packages/autoload.php', true) . ';');
             $this->addVirtualAppRoute($project);
+            file_put_contents($project . '/app/controllers/home/OAuthMetadataController.php', '<?php final class OAuthMetadataController { public function index() { header("Content-Type: application/json"); echo json_encode(["metadata" => true, "query" => $_GET["probe"] ?? ""]); exit; } }');
+            foreach (['oauth-authorization-server', 'oauth-protected-resource', 'oauth-protected-resource/mcp'] as $metadata) {
+                file_put_contents($project . '/config/routes/routes_web.php', "\nRouteBuilder::get('.well-known/" . $metadata . "', 'home/OAuthMetadataController@index')->noSession()->registerFinal();\n", FILE_APPEND);
+            }
             foreach (['app/private.json', 'app/private.txt', 'public/wcapi/sdk.js', 'uploads/library/2026/10/photo.jpg', 'uploads/user/2/library/2026/10/photo.jpg', 'uploads/tenant/3/library/2026/10/photo.jpg', 'uploads/procedimientos/private.pdf', 'downloads/private.zip', 'download/private.zip', 'backup.zip', 'data.json'] as $fixture) {
                 if (!is_dir(dirname($project . '/' . $fixture))) mkdir(dirname($project . '/' . $fixture), 0775, true);
                 file_put_contents($project . '/' . $fixture, 'server-fixture-' . $fixture);
             }
+            foreach (['tests/fixture.txt', 'vendor/fixture.txt', '.well-known/no-publico', '.well-known/oauth-protected-resource/mcp/otro', 'config/server/nginx.custom.conf'] as $fixture) {
+                if (!is_dir(dirname($project . '/' . $fixture))) mkdir(dirname($project . '/' . $fixture), 0775, true);
+                file_put_contents($project . '/' . $fixture, 'private-nginx-fixture');
+            }
+            $exceptions = '';
+            foreach (['oauth-authorization-server', 'oauth-protected-resource', 'oauth-protected-resource/mcp'] as $metadata) {
+                $exceptions .= 'location = /.well-known/' . $metadata . ' { rewrite ^ /index.php last; } ';
+            }
+            file_put_contents($project . '/config/server/nginx.custom.conf', $exceptions);
             $params = $root . '/fastcgi_params';
             $serverParams = dirname($nginx) . '/conf/fastcgi_params';
             if (!is_file($serverParams)) $serverParams = '/etc/nginx/fastcgi_params';
             self::assertFileExists($serverParams);
             copy($serverParams, $params);
             file_put_contents($root . '/nginx.conf', 'worker_processes 1; daemon off; master_process off; pid logs/nginx.pid; error_log logs/error.log; events { worker_connections 64; } http { access_log off; server { listen 127.0.0.1:' . $httpPort . '; server_name localhost; root "' . $project . '"; include "' . $project . '/nginx.conf"; location ~ \\.php$ { try_files $uri =404; fastcgi_pass 127.0.0.1:' . $cgiPort . '; include "' . $params . '"; fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; fastcgi_param GFRAME_SERVER_ERROR $gframe_server_error; fastcgi_intercept_errors off; } location = /test500 { return 500; } location = /test503 { return 503; } } }');
+            $serverConfig = file_get_contents($root . '/nginx.conf');
+            $serverConfig = str_replace('include "' . $project . '/nginx.conf";', 'include "' . $project . '/config/server/nginx.custom.conf"; include "' . $project . '/nginx.conf";', $serverConfig);
+            file_put_contents($root . '/nginx.conf', $serverConfig);
             $null = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
             foreach ([[$cgi, '-b', '127.0.0.1:' . $cgiPort, '-d', 'cgi.fix_pathinfo=0'], [$nginx, '-p', $root . '/', '-c', 'nginx.conf']] as $command) {
                 $process = proc_open($command, [0 => ['pipe', 'r'], 1 => ['file', $null, 'a'], 2 => ['file', $root . '/logs/process.log', 'a']], $pipes, $root);
@@ -72,6 +88,17 @@ final class ServerRoutingTest extends TestCase
             $this->waitPort($cgiPort, $root . '/logs/process.log');
             $this->waitPort($httpPort, $root . '/logs/process.log');
             $base = 'http://127.0.0.1:' . $httpPort;
+            foreach (['oauth-authorization-server', 'oauth-protected-resource', 'oauth-protected-resource/mcp'] as $metadata) {
+                [$status, $body, $headers] = $this->request($base . '/.well-known/' . $metadata . '?probe=preserved');
+                self::assertSame(200, $status, $body);
+                self::assertSame(['metadata' => true, 'query' => 'preserved'], json_decode($body, true));
+                self::assertStringContainsString('application/json', implode("\n", $headers));
+            }
+            foreach (['tests/fixture.txt', 'vendor/fixture.txt', '.well-known/no-publico', '.well-known/oauth-protected-resource/mcp/otro', 'config/server/nginx.custom.conf'] as $fixture) {
+                [$status, $body] = $this->request($base . '/' . $fixture);
+                self::assertSame(403, $status, $fixture);
+                self::assertStringNotContainsString('private-nginx-fixture', $body);
+            }
             [$status, $body] = $this->request($base . '/');
             self::assertSame(200, $status);
             self::assertStringContainsString('Algo maravilloso se construye aquí.', $body);
@@ -137,6 +164,9 @@ final class ServerRoutingTest extends TestCase
         $root = dirname(__DIR__) . '/resources/skeleton/';
         $apache = (string)file_get_contents($root . '.htaccess');
         $nginx = (string)file_get_contents($root . 'nginx.conf');
+        self::assertStringContainsString('private|tests|vendor)(/|$)', $nginx);
+        self::assertStringNotContainsString('location ^~ /.well-known/', $nginx);
+        self::assertStringNotContainsString('oauth-protected-resource', $nginx);
         self::assertStringContainsString('RewriteRule ^public/ - [END]', $apache);
         foreach ([$apache, $nginx] as $config) self::assertStringContainsString('core|deployment|packages|storage', $config);
         self::assertStringContainsString('RewriteRule ^(?:uploads|downloads|download)(?:/|$) - [F,NC]', $apache);

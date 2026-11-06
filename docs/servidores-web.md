@@ -32,6 +32,8 @@ server {
     server_name ejemplo.com;
     root /var/www/mi-proyecto;
 
+    # Opcional: crear este archivo antes de activar su inclusión.
+    # include /var/www/mi-proyecto/config/server/nginx.custom.conf;
     include /var/www/mi-proyecto/nginx.conf;
     include enable-php-81.conf;
 }
@@ -68,6 +70,32 @@ nginx -t
 ```
 
 Solo tras una validación satisfactoria, recarga Nginx mediante el mecanismo del sistema o del panel.
+
+### Extensiones propias de la aplicación
+
+Crea `config/server/nginx.custom.conf` cuando necesites excepciones específicas y activa su inclusión mediante una ruta absoluta en el virtual host. El archivo pertenece a la aplicación: el actualizador no lo publica ni lo reemplaza, incluso sin `--preserve-custom`. El directorio `config/` permanece bloqueado por HTTP. No guardes personalizaciones en el fragmento administrado `nginx.conf`.
+
+El orden dentro de `server` es: extensión de aplicación, fragmento GFrame, manejador PHP y extensiones o reglas estáticas del panel. Conserva las inclusiones nativas del panel, revisa sus posibles conflictos y evita duplicar `location /` o ubicaciones exactas existentes. Las rutas relativas de `include` se resuelven desde la configuración de Nginx, no desde la raíz del proyecto; utiliza rutas absolutas.
+
+Por ejemplo, una aplicación con MCP/OAuth puede declarar estas excepciones en su archivo propio:
+
+```nginx
+location = /.well-known/oauth-authorization-server {
+    rewrite ^ /index.php last;
+}
+location = /.well-known/oauth-protected-resource {
+    rewrite ^ /index.php last;
+}
+location = /.well-known/oauth-protected-resource/mcp {
+    rewrite ^ /index.php last;
+}
+```
+
+Cada ubicación exacta tiene prioridad sobre el bloqueo de archivos ocultos y envía la petición al controlador frontal conservando sus argumentos. La aplicación registra las rutas y genera los metadatos; GFrame no habilita rutas OAuth por defecto. No uses `location ^~ /.well-known/`: abriría todo ese prefijo. Los sufijos no declarados, otros archivos ocultos y los directorios internos, incluidos `tests/` y `vendor/`, siguen bloqueados; se conserva la excepción limitada de ACME.
+
+Para migrar reglas personalizadas, trasládalas al archivo propio y después actualiza el fragmento estándar. `--preserve-custom` conserva un `nginx.conf` modificado y comunica conflicto; no combina sus reglas ni incorpora automáticamente las nuevas protecciones.
+
+Comprueba con `nginx -T` que el virtual host efectivo del dominio incluye ambos archivos en ese orden, además del manejador PHP que ejecuta `index.php`. Publicar archivos con Composer no modifica el virtual host. Valida con `nginx -t` antes de recargar. En una aplicación que registre esas rutas, verifica que los tres metadatos devuelven JSON correcto, que `/mcp` mantiene su respuesta y que `/.well-known/no-publico`, `/.well-known/oauth-protected-resource/mcp/otro`, `/tests/fixture.txt`, `/vendor/fixture.txt` y `/config/server/nginx.custom.conf` no revelan contenido interno. Repite las comprobaciones después de actualizar.
 
 ### Enrutamiento y protección
 

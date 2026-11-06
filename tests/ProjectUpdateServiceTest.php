@@ -119,6 +119,28 @@ final class ProjectUpdateServiceTest extends TestCase
         ProjectUpdateService::frameworkDefault()->updateInstaller($project);
     }
 
+    public function testNginxApplicationExtensionSurvivesEveryUpdateMode(): void
+    {
+        $project = $this->temporaryPath . '/project';
+        mkdir($project . '/config/server', 0775, true);
+        $path = $project . '/config/server/nginx.custom.conf';
+        $custom = "# application-owned\r\nlocation = /.well-known/oauth-protected-resource/mcp { rewrite ^ /index.php last; }\r\n";
+        file_put_contents($path, $custom);
+        file_put_contents($project . '/install.php', 'old installer');
+        $updater = ProjectUpdateService::frameworkDefault();
+        foreach ([[false, true], [true, true], [true, false], [false, false]] as [$preserve, $dryRun]) {
+            $updater->updateInstaller($project, $preserve, $dryRun);
+            self::assertSame($custom, file_get_contents($path));
+        }
+        foreach ([[false, true], [true, true], [false, false], [true, false]] as [$preserve, $dryRun]) {
+            $updater->update($project, ['error-pages'], null, '', $preserve, $dryRun);
+            self::assertSame($custom, file_get_contents($path));
+        }
+        $lock = json_decode(file_get_contents($project . '/storage/gframe-installed.json'), true);
+        self::assertArrayNotHasKey('config/server/nginx.custom.conf', $lock['managed_files']);
+        self::assertSame(file_get_contents(dirname(__DIR__) . '/resources/skeleton/nginx.conf'), file_get_contents($project . '/nginx.conf'));
+    }
+
     public function testFrameworkUpdatePublishesGlobalMetaTemplatesAndSharedCss(): void
     {
         $project = $this->temporaryPath . '/project';

@@ -22,6 +22,10 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 5.0.4: protección y extensiones de Nginx
+
+Sincroniza `nginx.conf` para incorporar el bloqueo de `tests/` y `vendor/`. Traslada las reglas específicas de la aplicación a `config/server/nginx.custom.conf`, que el actualizador conserva con y sin `--preserve-custom`. Si el fragmento administrado tiene cambios propios, esta opción informa un conflicto y no incorpora las nuevas reglas automáticamente. Configura las inclusiones absolutas en el virtual host y comprueba su configuración efectiva: Composer no la modifica. Consulta [extensiones propias de la aplicación](servidores-web.md#extensiones-propias-de-la-aplicación) para el orden de inclusión, las excepciones exactas y las comprobaciones de despliegue.
+
 ### Versión 4.3.3: recurrencia del cron en UTC
 
 Corrige el desfase de `CronScheduler` cuando la zona del proyecto difiere de UTC. Incluye la validación de fechas de `CronTaskService`; no cambia la zona global ni requiere migraciones nuevas. Las fechas ya aplazadas se conservan: consulte la [recuperación de tareas](cron-runner.md#recuperar-tareas-aplazadas-por-la-zona-horaria) después de actualizar. Composer obtiene esta versión de la etiqueta `v4.3.3`; si el proyecto fija una versión anterior exacta, cambie esa restricción antes de resolver la actualización.

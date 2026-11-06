@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## 5.0.4 — 2026-11-06
+
+- Nginx: bloqueo explícito de `tests/` y `vendor/`. Contrato de extensión propia en `config/server/nginx.custom.conf`, conservada por el actualizador; documentación de excepciones exactas MCP/OAuth, orden de inclusión y verificación del virtual host efectivo.
+
 ## 5.0.3 — 2026-11-05
 
 - Skeleton: `btn-light` deriva el color de texto y borde de `--bs-body-color` / `--bs-border-color` en lugar de `--bs-dark` fijo. Como `--bs-light` es una superficie que cambia por tema, antes quedaba texto oscuro sobre fondo oscuro en modo oscuro; ahora el texto adapta por tema sin regresión en claro.
