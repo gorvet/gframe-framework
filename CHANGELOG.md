@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## 5.0.3 — 2026-11-05
+
+- Skeleton: `btn-light` deriva el color de texto y borde de `--bs-body-color` / `--bs-border-color` en lugar de `--bs-dark` fijo. Como `--bs-light` es una superficie que cambia por tema, antes quedaba texto oscuro sobre fondo oscuro en modo oscuro; ahora el texto adapta por tema sin regresión en claro.
+- Skeleton: en modo oscuro los botones deshabilitados usan una superficie sólida legible (`opacity: 1`, fondo `gray-400`, borde `gray-500`, texto `gray-700`) en vez del relleno semitransparente por defecto que se fundía con la tarjeta.
+
 ## 5.0.2 — 2026-11-05
 
 - Skeleton: el puente `bootstrap-buttons-compat.css` cubre ahora todas las variantes de botón de Bootstrap (sólidas `light`/`dark` y la serie `outline` completa), de modo que siguen los tokens de `variables.css` también al cambiar de tema. `btn-link` se tematiza desde los tokens de enlace y no necesita puente.

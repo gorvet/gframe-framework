@@ -584,6 +584,17 @@ footer { padding: 45px 0 0 0; transition: .3s; }
   padding: 10px 20px;
 }
 
+/* En oscuro, el disabled semitransparente por defecto de Bootstrap se funde
+   con la tarjeta. Le damos una superficie sólida y texto legible, uniforme
+   para todas las variantes. */
+:root[data-bs-theme="dark"] .btn:disabled,
+:root[data-bs-theme="dark"] .btn.disabled {
+  --bs-btn-disabled-opacity: 1;
+  --bs-btn-disabled-bg: var(--bs-gray-400);
+  --bs-btn-disabled-border-color: var(--bs-gray-500);
+  --bs-btn-disabled-color: var(--bs-gray-700);
+}
+
 
  
 
