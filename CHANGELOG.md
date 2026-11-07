@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 5.1.0 — 2026-11-07
+
+- Medios: copia WebP automática para nuevas imágenes, calidad 80 y hasta 1920×1920, conservada solo si reduce el peso. Original intacto, URL preferida para selector/editor y MIME correcto en variantes privadas. Los archivos y contenidos existentes no se regeneran ni reescriben automáticamente.
+- Medios existentes: botón **Optimizar** en los detalles de biblioteca y selector cuando falta una variante optimizada y el servidor permite crearla. Conserva ID, original, atributos, miniaturas y visibilidad; comprueba permisos y cuota y evita sobrescribir cambios concurrentes.
+- Biblioteca: modales amplios y de altura estable, atributos de la preselección al abrir, metadatos separados con pesos legibles, confirmaciones mediante avisos y vistas previas contenidas con acciones accesibles en móvil.
+
 ## 5.0.4 — 2026-11-06
 
 - Nginx: bloqueo explícito de `tests/` y `vendor/`. Contrato de extensión propia en `config/server/nginx.custom.conf`, conservada por el actualizador; documentación de excepciones exactas MCP/OAuth, orden de inclusión y verificación del virtual host efectivo.

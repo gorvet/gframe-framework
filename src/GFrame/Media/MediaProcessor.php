@@ -72,6 +72,8 @@ class MediaProcessor {
     foreach ($variants as $key => $variant) {
       if (!preg_match('/^[a-z][a-z0-9_-]{0,31}$/D', (string)$key)
           || !is_array($variant) || !in_array($variant['mode'] ?? '', ['crop', 'fit'], true)
+          || (isset($variant['format']) && ($variant['format'] !== 'webp' || $variant['mode'] !== 'fit'))
+          || (isset($variant['quality']) && (($variant['format'] ?? '') !== 'webp' || !is_int($variant['quality']) || $variant['quality'] < 1 || $variant['quality'] > 100))
           || (int)($variant['w'] ?? 0) < 1 || (int)($variant['h'] ?? 0) < 1
           || (int)$variant['w'] > 16384 || (int)$variant['h'] > 16384
           || (int)$variant['w'] * (int)$variant['h'] > self::MAX_IMAGE_PIXELS) {
@@ -264,22 +266,49 @@ class MediaProcessor {
     string $ext,
     string $source
   ): array {
+    return $this->generateConfiguredVariants($folderAbs, $folderRel, $absOriginal, $fileName, $ext, $source, $this->getVariantDefinitions());
+  }
+
+  public function generateOptimizedVariant(string $folderAbs, string $folderRel, string $absOriginal, string $fileName, string $ext, string $source): array {
+    $definitions = $this->getVariantDefinitions();
+    return $this->generateConfiguredVariants($folderAbs, $folderRel, $absOriginal, $fileName, $ext, $source,
+      isset($definitions['optimized']) ? ['optimized' => $definitions['optimized']] : []);
+  }
+
+  protected function generateConfiguredVariants(string $folderAbs, string $folderRel, string $absOriginal, string $fileName, string $ext, string $source, array $definitions): array {
 
     $sizes = [];
+    if (!function_exists('imagecreatetruecolor')) return $sizes;
     $stem  = pathinfo($fileName, PATHINFO_FILENAME);
 
     $originalInfo = @getimagesize($absOriginal);
-    foreach ($this->getVariantDefinitions() as $key => $cfg) {
-      if (!$originalInfo || ((int)$originalInfo[0] <= (int)$cfg['w'] && (int)$originalInfo[1] <= (int)$cfg['h'])) continue;
+    foreach ($definitions as $key => $cfg) {
+      $outputExt = $cfg['format'] ?? $ext;
+      // GIF stays on its original delivery path, preserving animation.
+      if ($key === 'optimized' && $ext === 'gif') continue;
+      if ($outputExt === 'webp' && !$this->gdSupportsWebp()) continue;
+      if (!$originalInfo || ($key !== 'optimized' && $outputExt === $ext && (int)$originalInfo[0] <= (int)$cfg['w'] && (int)$originalInfo[1] <= (int)$cfg['h'])) continue;
       if ($cfg['mode'] === 'crop' && ((int)$originalInfo[0] < (int)$cfg['w'] || (int)$originalInfo[1] < (int)$cfg['h'])) continue;
-      $variantFile = "{$stem}-{$key}.{$ext}";
+      $variantStem = $outputExt !== $ext ? "{$stem}-{$ext}" : $stem;
+      $variantFile = "{$variantStem}-{$key}.{$outputExt}";
       $variantAbs  = $folderAbs . '/' . $variantFile;
+      $counter = 1;
+      while (file_exists($variantAbs) || is_link($variantAbs)) {
+        $variantFile = $variantStem . '-' . $counter++ . '-' . $key . '.' . $outputExt;
+        $variantAbs = $folderAbs . '/' . $variantFile;
+      }
 
       $ok = false;
       if (($cfg['mode'] ?? 'crop') === 'optimize') {
         $ok = $this->optimizeOriginal($absOriginal, $variantAbs, $ext);
       } elseif (($cfg['mode'] ?? 'crop') === 'fit') {
-        $ok = $this->resizeFit($absOriginal, $variantAbs, (int)$cfg['w'], (int)$cfg['h'], $ext);
+        if (isset($cfg['format']) || isset($cfg['quality'])) {
+          if ($outputExt === 'webp' && (!$this->gdSupportsWebp() || $ext === 'gif')) continue;
+          $scale = min(1, (int)$cfg['w'] / $originalInfo[0], (int)$cfg['h'] / $originalInfo[1]);
+          $ok = $this->resizeExact($absOriginal, $variantAbs, max(1, (int)round($originalInfo[0] * $scale)), max(1, (int)round($originalInfo[1] * $scale)), $outputExt, $cfg['quality'] ?? null);
+        } else {
+          $ok = $this->resizeFit($absOriginal, $variantAbs, (int)$cfg['w'], (int)$cfg['h'], $ext);
+        }
       } else {
         $ok = $this->ejResizeAndCropImage($absOriginal, $variantAbs, (int)$cfg['w'], (int)$cfg['h'], $ext);
       }
@@ -288,7 +317,7 @@ class MediaProcessor {
         if ($key === 'optimized') {
           $originalBytes = (int)@filesize($absOriginal);
           $variantBytes = (int)@filesize($variantAbs);
-          if ($originalBytes > 0 && $variantBytes >= $originalBytes) {
+          if ($variantBytes <= 0 || ($originalBytes > 0 && $variantBytes >= $originalBytes)) {
             @unlink($variantAbs);
             continue;
           }
@@ -587,7 +616,7 @@ class MediaProcessor {
     $srcHeight = $info[1];
     if ($srcWidth < 1 || $srcHeight < 1 || $newWidth < 1 || $newHeight < 1) return false;
 
-    $src = $this->imageCreateFrom($srcPath, $ext);
+    $src = $this->imageCreateFrom($srcPath, $this->imageExtFromMime($info['mime']) ?? $ext);
     if (!$src) return false;
 
     $dst = imagecreatetruecolor($newWidth, $newHeight);

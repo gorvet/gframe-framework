@@ -32,6 +32,10 @@ La URL conserva `view=list`, `sort`, filtros y página, por lo que puede copiars
 
 Abre un archivo para consultar sus detalles. **Anterior** y **Siguiente** recorren el resultado filtrado, también entre páginas; se desactivan en los extremos. **Nombre visible** modifica `original_name`, sin renombrar el archivo físico ni cambiar enlaces. **Texto alternativo** modifica `alt_text`. Guardar mantiene los detalles abiertos; para abandonar una edición pendiente debes guardar o descartar sus cambios. Un fallo conserva los valores para poder reintentar.
 
+![Detalles del archivo con vista previa amplia y pesos original y optimizado separados](assets/5.1.0/detalles-medio.png)
+
+*Modal nativo de 5.1.0. La imagen sintética permite comprobar la vista previa vertical, los atributos y el ahorro de la copia WebP; no representa el ahorro habitual de una fotografía.*
+
 Los audios y vídeos usan controles nativos del navegador, sin reproducción automática; al cambiar de archivo o cerrar se libera el reproductor. **Abrir archivo** abre su URL en otra pestaña. La reproducción depende del formato y los códecs del navegador y del servidor remoto, si corresponde. Los medios locales públicos usan URL directa; los privados usan una ruta que comprueba sesión y permisos. No se implementa un proxy ni se garantiza descarga forzada de recursos externos.
 
 Las mejoras de listado y navegación no requieren migración por sí mismas; el soporte de visibilidad de 4.7.0 sí añade la columna `visibility` y permisos para privados. Al actualizar, publica los recursos del módulo mediante el actualizador y revisa overrides de `_mlist.php`, `mediaEditModal.php` y controladores personalizados: los overrides del proyecto tienen prioridad sobre las vistas nativas. La lista usa el fragmento `_table.php`. El selector conserva su cuadrícula y sus modos simple/múltiple.
@@ -59,7 +63,15 @@ El ámbito describe propiedad del almacenamiento, no quién tiene permiso para s
 
 Las llamadas PHP al servicio aceptan un `MediaScope` explícito. Si lo omites utilizan `global`, aunque la configuración diga `tenant`: pasa el ámbito en todas las integraciones propias.
 
-Los tipos, límites por archivo y tamaños pertenecen al módulo: `resources/modules/media-library/config/media.php`. No se modifica esa copia instalada para personalizar un proyecto. Sus valores predeterminados son 25 MB, los formatos seguros habituales, `small` de 150×150 recortado y `medium` de hasta 300×300 proporcional. Se conserva el original intacto; no se genera `optimized` ni se amplían imágenes pequeñas. Las claves de compatibilidad de las miniaturas pueden referirse a un mismo archivo, sin generar copias adicionales.
+Los tipos, límites por archivo y tamaños pertenecen al módulo: `resources/modules/media-library/config/media.php`. No se modifica esa copia instalada para personalizar un proyecto. Sus valores predeterminados son 25 MB, los formatos seguros habituales, `small` de 150×150 recortado, `medium` de hasta 300×300 proporcional y `optimized` en WebP, calidad 80, hasta 1920×1920 sin recortar. Se conserva el original intacto y no se amplían imágenes pequeñas. WebP se genera también para imágenes menores de ese límite, pero solo se conserva si pesa menos que el original. Requiere GD con soporte WebP; si no está disponible, se utiliza el original. Los GIF quedan fuera de esta conversión para conservar sus animaciones. Las claves de compatibilidad pueden referirse a un mismo archivo, sin generar copias adicionales.
+
+Las respuestas del controlador ofrecen `media_url` con la versión optimizada cuando existe y `original_url` con el original. El selector y las imágenes insertadas en el editor usan `media_url`; las miniaturas siguen usando sus tamaños propios. Las variantes privadas se entregan por la misma ruta protegida, con el MIME de su formato. Una página propia que construya su URL directamente desde `path` seguirá utilizando el original: debe elegir `variants['optimized']` con respaldo en `path`, conservando la autorización correspondiente. Los contenidos que ya guardaron una URL no se reescriben automáticamente.
+
+![Selector de medios con la imagen seleccionada y sus atributos visibles](assets/5.1.0/selector-medios.png)
+
+*Selector nativo con imágenes sintéticas en una instalación temporal. El diálogo mantiene su tamaño al cambiar la imagen y muestra los detalles de la preselección al abrir.*
+
+Los detalles muestran por separado el peso original y el de la copia optimizada. El almacenamiento total del registro y la cuota incluyen el original y todas sus variantes únicas. Los diálogos aprovechan la pantalla, mantienen su altura al cambiar de archivo y conservan sus acciones visibles. Al abrir el selector con una selección previa se muestran sus atributos; las confirmaciones de guardado se notifican mediante `alertToast`.
 
 La personalización se realiza por herencia, por ejemplo en `app/services/media-library/ProjectMediaProcessor.php`:
 
@@ -77,6 +89,7 @@ class ProjectMediaProcessor extends \GFrame\Media\MediaProcessor
         $config['variants'] = [
             'small' => ['w' => 150, 'h' => 150, 'mode' => 'crop'],
             'banner' => ['w' => 1200, 'h' => 600, 'mode' => 'fit'],
+            'optimized' => ['w' => 1920, 'h' => 1920, 'mode' => 'fit', 'format' => 'webp', 'quality' => 80],
         ];
         return $config;
     }
@@ -100,7 +113,19 @@ class MediaController extends \GFrame\Modules\MediaLibrary\Controllers\MediaCont
 
 La clase del servicio debe estar registrada en el autoload del proyecto o incluida explícitamente; no se carga automáticamente por estar en una carpeta. El mismo procesador se utiliza en biblioteca, selector y sincronización. Las integraciones PHP externas deben inyectar la misma subclase en su servicio. Omitir una variante la desactiva; `variants => []` conserva solo el original. Los formatos configurados se intersectan con los formatos seguros soportados; esta configuración no habilita PHP, HTML ni otros ejecutables. Añadir un formato realmente nuevo requiere ampliar la validación por herencia, no solo cambiar su extensión.
 
-Los cambios afectan únicamente a archivos nuevos. No se borran ni regeneran los tamaños existentes. `media.max_upload_bytes` de la antigua configuración del proyecto ya no define el límite: ahora lo define el procesador del módulo, y el backend lo comunica a los selectores.
+Los cambios afectan únicamente a archivos nuevos. No se borran ni regeneran los tamaños existentes; los registros antiguos sin `optimized` continúan usando su original. Para conservar los tamaños predeterminados al personalizar, modifica las claves del arreglo heredado en lugar de sustituirlo completo. `format => 'webp'` admite `mode => 'fit'`; su opción `quality` acepta enteros entre 1 y 100 y requiere ese formato. `media.max_upload_bytes` de la antigua configuración del proyecto ya no define el límite: ahora lo define el procesador del módulo, y el backend lo comunica a los selectores.
+
+### Imágenes ya subidas
+
+Actualizar a 5.1.0 habilita la conversión para las siguientes subidas. Para una imagen anterior, abre sus detalles en la biblioteca o en el selector y pulsa **Optimizar**. El botón aparece si falta `optimized`, el archivo es una imagen local compatible, hay soporte WebP y el procesador tiene configurada esa variante. Guarda o descarta antes cualquier edición pendiente.
+
+La operación conserva el mismo ID, original, nombre visible, texto alternativo, autor, miniaturas y visibilidad. Añade únicamente la copia WebP si reduce peso, actualiza el almacenamiento total y respeta la cuota del ámbito. Si la copia no mejora el peso, se descarta y se informa mediante un aviso. En privados se requieren además los permisos de edición del origen. Una petición repetida no duplica una variante ya registrada; un cambio concurrente del archivo rechaza la actualización y elimina la copia provisional de esa petición.
+
+El endpoint `POST ajax/admin/media/optimize` recibe `media_id` y los tokens CSRF habituales. Requiere autenticación y `media.edit`; el servidor resuelve el ámbito. Desde PHP, un consumidor previamente autorizado puede llamar a `$service->optimize($mediaID, $scope)`. El modelo nativo implementa la capacidad opcional `MediaOptimizationRepository`; los adaptadores propios que solo implementan `MediaRepository` conservan su compatibilidad y no ofrecen la nueva operación hasta incorporar la escritura condicional.
+
+Para una biblioteca completa, una integración propia puede recorrer IDs autorizados por lotes y llamar al mismo servicio con su ámbito explícito. Esta versión no incluye un comando masivo: el botón procesa una imagen cada vez. Los originales permanecen disponibles.
+
+Una página que consulta el ID y elige la variante optimizada puede utilizarla cuando exista. Las URLs originales incrustadas en HTML o guardadas en otros campos siguen apuntando al original; adaptar esas referencias requiere una tarea adicional sobre el contenido de la aplicación. La actualización del framework no las sustituye.
 
 El límite efectivo también depende de PHP (`upload_max_filesize`, `post_max_size`) y del servidor web. Aumentar el valor del procesador no aumenta esos límites.
 

@@ -72,7 +72,7 @@ test('Gestión real: lista, URL, navegación, guardado, errores y reproductores'
     await modal.locator('#media-original-name').fill('Edición pendiente');
     await modal.locator('#editMediaNext').click();
     assert.equal(await modal.locator('#media_id').inputValue(), '26');
-    assert.match(await modal.locator('#media-details-status').textContent(), /Guarda o descarta/);
+    assert.match(await page.evaluate(() => window.lastToast?.title || ''), /Guarda o descarta/);
     await modal.locator('[data-bs-dismiss]').first().click();
     assert.equal(await modal.isVisible(), true);
     await modal.locator('#media-details-discard').click();

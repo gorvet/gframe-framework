@@ -5,6 +5,7 @@ namespace GFrame\Media;
 use Exception;
 use GFrame\Config\ConfigRepository;
 use GFrame\Media\Contracts\MediaRepository;
+use GFrame\Media\Contracts\MediaOptimizationRepository;
 
 class MediaLibraryService
 {
@@ -99,10 +100,18 @@ class MediaLibraryService
             $variants = [];
             $metadata = $this->uploaderMetadata($uploader);
             if ($kind === 'images') {
-                $metadata += ['width' => (int)($validation['w'] ?? 0), 'height' => (int)($validation['h'] ?? 0), 'extension' => $extension];
+                $metadata += ['width' => (int)($validation['w'] ?? 0), 'height' => (int)($validation['h'] ?? 0), 'extension' => $extension,
+                    'original' => ['size_bytes' => $size, 'width' => (int)($validation['w'] ?? 0), 'height' => (int)($validation['h'] ?? 0)]];
                 $variants = $this->processor->generateVariants(
                     $directory['absolute'], $directory['relative'], $destination, $filename, $extension, $source
                 );
+                if (isset($variants['optimized'])) {
+                    $optimizedPath = $this->storage->absolute($variants['optimized'], $visibility);
+                    $dimensions = getimagesize($optimizedPath);
+                    $metadata['optimized'] = ['size_bytes' => (int)filesize($optimizedPath),
+                        'width' => (int)($dimensions[0] ?? 0), 'height' => (int)($dimensions[1] ?? 0),
+                        'mime_type' => (string)($dimensions['mime'] ?? $mime)];
+                }
             }
             $storedBytes = (int)(filesize($destination) ?: $size);
             foreach (array_unique($variants) as $variantPath) {
@@ -204,10 +213,77 @@ class MediaLibraryService
             if ($media === null || !$this->allowed($media, 'view')) return $this->error('media_not_found');
             $media['metadata'] = $this->decodeJson((string)($media['metadata_json'] ?? ''));
             $media['variants'] = $this->decodeJson((string)($media['variants_json'] ?? ''));
+            if (($media['kind'] ?? '') === 'images' && empty($media['remote_url']) && !isset($media['metadata']['original'])) {
+                $originalPath = $this->storage->absolute((string)$media['path'], (string)($media['visibility'] ?? 'public'));
+                if (is_file($originalPath)) {
+                    $dimensions = @getimagesize($originalPath);
+                    $media['metadata']['original'] = ['size_bytes' => (int)filesize($originalPath),
+                        'width' => (int)($dimensions[0] ?? $media['metadata']['width'] ?? 0),
+                        'height' => (int)($dimensions[1] ?? $media['metadata']['height'] ?? 0)];
+                }
+            }
             unset($media['metadata_json'], $media['variants_json']);
             return ['status' => 'success', 'code' => 'media_details_loaded', 'data' => $media];
         } catch (Exception $exception) {
             return $this->failure($exception, 'media_details_failed');
+        }
+    }
+
+    public function canOptimize(array $media): bool
+    {
+        $variants = (array)($media['variants'] ?? $this->decodeJson((string)($media['variants_json'] ?? '{}')));
+        return $this->media instanceof MediaOptimizationRepository
+            && ($media['kind'] ?? '') === 'images' && empty($media['remote_url']) && empty($variants['optimized'])
+            && ($media['mime_type'] ?? '') !== 'image/gif' && $this->allowed($media, 'edit')
+            && $this->processor->gdSupportsWebp()
+            && ($this->processor->getVariantDefinitions()['optimized']['format'] ?? '') === 'webp';
+    }
+
+    public function optimize(int $mediaID, ?MediaScope $scope = null): array
+    {
+        $scope ??= MediaScope::global();
+        $generated = [];
+        $visibility = 'public';
+        try {
+            $media = $this->media->findMedia($mediaID, $scope);
+            if ($media === null || !$this->allowed($media, 'view') || !$this->allowed($media, 'edit')) return $this->error('media_not_found');
+            $variants = $this->decodeJson((string)($media['variants_json'] ?? '{}'));
+            if (!empty($variants['optimized'])) return ['status' => 'success', 'code' => 'media_already_optimized'];
+            if (!$this->canOptimize($media) || !$this->media instanceof MediaOptimizationRepository) return $this->error('media_optimization_unavailable');
+            $visibility = (string)($media['visibility'] ?? 'public');
+            $original = $this->storage->absolute((string)$media['path'], $visibility);
+            if (!is_file($original)) return $this->error('file_not_found');
+            $validation = $this->processor->validateImageUpload($original, ['image/jpeg', 'image/png', 'image/webp']);
+            if (empty($validation['ok'])) return $this->error((string)($validation['code'] ?? 'not_image'));
+            $extension = pathinfo($original, PATHINFO_EXTENSION);
+            $variantName = pathinfo($original, PATHINFO_FILENAME) . '-' . bin2hex(random_bytes(8)) . '.' . $extension;
+            $generated = $this->processor->generateOptimizedVariant(dirname($original), str_replace('\\', '/', dirname((string)$media['path'])),
+                $original, $variantName, $extension, (string)$media['source']);
+            if (empty($generated['optimized'])) return ['status' => 'success', 'code' => 'media_not_reduced'];
+            $optimized = $this->storage->absolute($generated['optimized'], $visibility);
+            $extraBytes = (int)filesize($optimized);
+            $limit = max(0, (int)ConfigRepository::get('media.quota_bytes', 0));
+            if ($limit > 0 && $this->media->usedBytes($scope) + $extraBytes > $limit) {
+                $this->deletePaths(array_unique(array_values($generated)), $visibility);
+                return $this->error('media_quota_exceeded');
+            }
+            $metadata = $this->decodeJson((string)($media['metadata_json'] ?? '{}'));
+            $dimensions = getimagesize($original);
+            $metadata['original'] = ['size_bytes' => (int)filesize($original), 'width' => (int)($dimensions[0] ?? 0), 'height' => (int)($dimensions[1] ?? 0)];
+            $dimensions = getimagesize($optimized);
+            $metadata['optimized'] = ['size_bytes' => $extraBytes, 'width' => (int)($dimensions[0] ?? 0), 'height' => (int)($dimensions[1] ?? 0), 'mime_type' => 'image/webp'];
+            $saved = $this->media->saveOptimization($mediaID, $scope, $media, [
+                'variants_json' => $this->encodeJson($variants + $generated), 'metadata_json' => $this->encodeJson($metadata),
+                'size_bytes' => (int)$media['size_bytes'] + $extraBytes,
+            ]);
+            if (!$saved) {
+                $this->deletePaths(array_unique(array_values($generated)), $visibility);
+                return $this->error('media_optimization_conflict');
+            }
+            return ['status' => 'success', 'code' => 'media_optimized'];
+        } catch (Exception $exception) {
+            if ($generated !== []) $this->deletePaths(array_unique(array_values($generated)), $visibility);
+            return $this->failure($exception, 'media_optimization_failed');
         }
     }
 
@@ -340,8 +416,14 @@ class MediaLibraryService
         if (!empty($media['remote_url'])) throw new \RuntimeException('El archivo no es local.');
         $path = $variant === '' ? $media['path'] : ($media['variants'][$variant] ?? null);
         if (!is_string($path)) throw new \RuntimeException('La variante no está disponible.');
+        $mime = (string)$media['mime_type'];
+        $name = (string)$media['original_name'];
+        if ($variant !== '' && pathinfo($path, PATHINFO_EXTENSION) === 'webp') {
+            $mime = 'image/webp';
+            $name = pathinfo($name, PATHINFO_FILENAME) . '.webp';
+        }
         return new \GFrame\Http\FileResponse($this->storage->absolute($path, (string)($media['visibility'] ?? 'public')),
-            (string)$media['original_name'], (string)$media['mime_type'], true);
+            $name, $mime, true);
     }
 
     public function issueDownload(int $mediaID, ?MediaScope $scope = null, array $options = []): array

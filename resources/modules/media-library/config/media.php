@@ -11,5 +11,6 @@ return [
     'variants' => [
         'small' => ['w' => 150, 'h' => 150, 'mode' => 'crop'],
         'medium' => ['w' => 300, 'h' => 300, 'mode' => 'fit'],
+        'optimized' => ['w' => 1920, 'h' => 1920, 'mode' => 'fit', 'format' => 'webp', 'quality' => 80],
     ],
 ];

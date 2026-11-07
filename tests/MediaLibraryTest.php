@@ -239,7 +239,7 @@ final class MediaLibraryTest extends TestCase
     public function testModulePolicyCanBeChangedByInheritanceAndPreservesOriginals(): void
     {
         $processor = new MediaProcessor();
-        self::assertSame(['small', 'medium'], $processor->getVariantKeys());
+        self::assertSame(['small', 'medium', 'optimized'], $processor->getVariantKeys());
         self::assertSame(150, $processor->getVariantDefinitions()['small']['w']);
         self::assertSame('fit', $processor->getVariantDefinitions()['medium']['mode']);
         $custom = new class extends MediaProcessor {
@@ -271,14 +271,153 @@ final class MediaLibraryTest extends TestCase
         self::assertSame($hash, hash_file('sha256', $source));
         self::assertSame([150, 150], array_slice(getimagesize($this->temporaryPath . '/original-small.png'), 0, 2));
         self::assertSame([300, 200], array_slice(getimagesize($this->temporaryPath . '/original-medium.png'), 0, 2));
-        self::assertArrayNotHasKey('optimized', $sizes);
+        if ($processor->gdSupportsWebp()) {
+            self::assertSame('image/webp', getimagesize($this->temporaryPath . '/original-png-optimized.webp')['mime']);
+            self::assertLessThan(filesize($source), filesize($this->temporaryPath . '/original-png-optimized.webp'));
+        }
         self::assertCount(3, glob($this->temporaryPath . '/*.png'));
         $custom->generateVariants($this->temporaryPath, 'uploads', $source, 'original.png', 'png', 'library');
         self::assertSame([150, 100], array_slice(getimagesize($this->temporaryPath . '/original-banner.png'), 0, 2));
         $image = imagecreatetruecolor(20, 20);
         imagepng($image, $this->temporaryPath . '/tiny.png');
         imagedestroy($image);
-        self::assertSame([], $processor->generateVariants($this->temporaryPath, 'uploads', $this->temporaryPath . '/tiny.png', 'tiny.png', 'png', 'library'));
+        $tiny = $processor->generateVariants($this->temporaryPath, 'uploads', $this->temporaryPath . '/tiny.png', 'tiny.png', 'png', 'library');
+        self::assertArrayNotHasKey('small', $tiny);
+        self::assertArrayNotHasKey('medium', $tiny);
+        if (isset($tiny['optimized'])) self::assertSame([20, 20], array_slice(getimagesize($this->temporaryPath . '/tiny-png-optimized.webp'), 0, 2));
+    }
+
+    public function testVariantConfigurationRejectsUnsafeFormatsAndInvalidWebpQuality(): void
+    {
+        foreach ([['format' => '../php'], ['quality' => 80], ['format' => 'webp', 'quality' => 101], ['format' => 'webp', 'quality' => '80']] as $invalid) {
+            $processor = new class($invalid) extends MediaProcessor {
+                public function __construct(private array $invalid) {}
+                protected function configuration(): array {
+                    return ['variants' => ['optimized' => $this->invalid + ['w' => 100, 'h' => 100, 'mode' => 'fit']]];
+                }
+            };
+            try { $processor->getVariantDefinitions(); self::fail('La configuración debe rechazarse.'); }
+            catch (\InvalidArgumentException) { self::assertTrue(true); }
+        }
+    }
+
+    public function testWebpOptimizationKeepsOriginalAlphaDimensionsAndStoredByteAccounting(): void
+    {
+        $processor = new MediaProcessor();
+        if (!$processor->gdSupportsWebp()) self::markTestSkipped('GD con WebP no disponible.');
+        $image = imagecreatetruecolor(2400, 1200);
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        imagefilledrectangle($image, 0, 0, 2399, 1199, imagecolorallocatealpha($image, 40, 120, 180, 64));
+        $source = $this->temporaryPath . '/cover.png';
+        imagepng($image, $source, 0);
+        imagedestroy($image);
+        $hash = hash_file('sha256', $source);
+        $repository = new InMemoryMediaRepository();
+        $storage = new MediaStorage($this->temporaryPath);
+        $service = new MediaLibraryService($repository, $storage);
+        $created = $service->registerLocalFile($source, 'cover.png');
+        self::assertSame('success', $created['status']);
+        $media = $service->details($created['data']['media_id'])['data'];
+        $original = $storage->absolute($media['path']);
+        $webp = $storage->absolute($media['variants']['optimized']);
+        self::assertSame($hash, hash_file('sha256', $original));
+        self::assertSame([1920, 960], array_slice(getimagesize($webp), 0, 2));
+        self::assertSame('image/webp', getimagesize($webp)['mime']);
+        self::assertLessThan(filesize($original), filesize($webp));
+        self::assertSame(filesize($original), $media['metadata']['original']['size_bytes']);
+        self::assertSame(filesize($webp), $media['metadata']['optimized']['size_bytes']);
+        $decoded = imagecreatefromwebp($webp);
+        self::assertGreaterThan(0, (imagecolorat($decoded, 10, 10) >> 24) & 0x7f);
+        imagedestroy($decoded);
+        $total = filesize($original);
+        foreach (array_unique($media['variants']) as $path) $total += filesize($storage->absolute($path));
+        self::assertSame($total, $media['size_bytes']);
+        $legacyMetadata = $media['metadata'];
+        unset($legacyMetadata['original']);
+        $repository->records[$media['media_id']]['metadata_json'] = json_encode($legacyMetadata);
+        self::assertSame(filesize($original), $service->details($media['media_id'])['data']['metadata']['original']['size_bytes']);
+        self::assertSame($total, $repository->records[$media['media_id']]['size_bytes']);
+        $service->delete($media['media_id']);
+        self::assertFileDoesNotExist($webp);
+        self::assertFileDoesNotExist($original);
+        self::assertSame($hash, hash_file('sha256', $source));
+    }
+
+    public function testOptimizedDerivativeCannotOverwriteAnExistingOriginalWithTheSameName(): void
+    {
+        $processor = new MediaProcessor();
+        if (!$processor->gdSupportsWebp()) self::markTestSkipped('GD con WebP no disponible.');
+        $image = imagecreatetruecolor(400, 200);
+        $source = $this->temporaryPath . '/cover.png';
+        imagepng($image, $source, 0);
+        $reserved = $this->temporaryPath . '/cover-png-optimized.webp';
+        imagewebp($image, $reserved, 100);
+        imagedestroy($image);
+        $hash = hash_file('sha256', $reserved);
+        $sizes = $processor->generateVariants($this->temporaryPath, 'uploads', $source, 'cover.png', 'png', 'library');
+        self::assertSame($hash, hash_file('sha256', $reserved));
+        self::assertSame('uploads/cover-png-1-optimized.webp', $sizes['optimized']);
+        self::assertSame('image/webp', getimagesize($this->temporaryPath . '/cover-png-1-optimized.webp')['mime']);
+    }
+
+    public function testOptimizationFallbackGifAndAlreadySmallWebpKeepOriginalDelivery(): void
+    {
+        if (!function_exists('imagecreatetruecolor')) self::markTestSkipped('GD no disponible.');
+        $processor = new class extends MediaProcessor {
+            protected function configuration(): array {
+                $config = parent::configuration();
+                $config['variants'] = ['optimized' => $config['variants']['optimized']];
+                return $config;
+            }
+        };
+        $image = imagecreatetruecolor(16, 8);
+        imagegif($image, $this->temporaryPath . '/animated.gif');
+        $hash = hash_file('sha256', $this->temporaryPath . '/animated.gif');
+        self::assertSame([], $processor->generateVariants($this->temporaryPath, 'uploads', $this->temporaryPath . '/animated.gif', 'animated.gif', 'gif', 'library'));
+        self::assertSame($hash, hash_file('sha256', $this->temporaryPath . '/animated.gif'));
+        imagepng($image, $this->temporaryPath . '/input.png', 0);
+        $unsupported = $this->getMockBuilder(MediaProcessor::class)->onlyMethods(['gdSupportsWebp'])->getMock();
+        $unsupported->method('gdSupportsWebp')->willReturn(false);
+        self::assertSame([], $unsupported->generateVariants($this->temporaryPath, 'uploads', $this->temporaryPath . '/input.png', 'input.png', 'png', 'library'));
+        if ($processor->gdSupportsWebp()) {
+            imagewebp($image, $this->temporaryPath . '/input.webp', 80);
+            self::assertSame([], $processor->generateVariants($this->temporaryPath, 'uploads', $this->temporaryPath . '/input.webp', 'input.webp', 'webp', 'library'));
+            self::assertFileDoesNotExist($this->temporaryPath . '/input-optimized.webp');
+        }
+        imagedestroy($image);
+    }
+
+    #[RunInSeparateProcess]
+    public function testPreferredUrlReachesPickerFieldAndEditorWhileOriginalRemainsAvailable(): void
+    {
+        if (!(new MediaProcessor())->gdSupportsWebp()) self::markTestSkipped('GD con WebP no disponible.');
+        define('site_url', 'https://example.test/');
+        define('ABSPATH', $this->temporaryPath . '/');
+        mkdir($this->temporaryPath . '/public');
+        \GFrame\Modules\ModuleRuntime::initialize(\GFrame\Modules\ModuleCatalog::frameworkDefault(), ['media-library'], $this->temporaryPath);
+        $repository = new InMemoryMediaRepository();
+        $service = new MediaLibraryService($repository, new MediaStorage($this->temporaryPath . '/public'));
+        $image = imagecreatetruecolor(800, 400);
+        imagejpeg($image, $this->temporaryPath . '/cover.jpg', 100);
+        imagedestroy($image);
+        $created = $service->registerLocalFile($this->temporaryPath . '/cover.jpg', 'cover.jpg');
+        $controller = new \GFrame\Modules\MediaLibrary\Controllers\MediaController($service);
+        $_POST = ['media_id' => $created['data']['media_id']];
+        $item = $controller->details()['data'];
+        self::assertStringEndsWith('-jpg-optimized.webp', parse_url($item['media_url'], PHP_URL_PATH));
+        self::assertStringEndsWith('.jpg', parse_url($item['original_url'], PHP_URL_PATH));
+        foreach (['sthumb', 'gthumb', 'editor_image'] as $fragment) {
+            $_POST = ['media_ids' => json_encode([$item['media_id']]), 'variant' => $fragment];
+            $field = $controller->field();
+            self::assertSame('success', $field['status']);
+            self::assertSame($item['media_url'], $field['data'][0]['media_url']);
+            if ($fragment === 'editor_image') self::assertStringContainsString($item['media_url'], $field['html']);
+        }
+        $repository->records[$item['media_id']]['variants_json'] = '{}';
+        $_POST = ['media_id' => $item['media_id']];
+        $legacy = $controller->details()['data'];
+        self::assertSame($legacy['original_url'], $legacy['media_url']);
     }
 
     public function testUploaderIsExplicitMetadataAndSurvivesEditing(): void
@@ -309,7 +448,7 @@ final class MediaLibraryTest extends TestCase
     }
 }
 
-final class InMemoryMediaRepository implements MediaRepository
+final class InMemoryMediaRepository implements \GFrame\Media\Contracts\MediaOptimizationRepository
 {
     public array $records = [];
     public array $lastFilters = [];
@@ -353,6 +492,13 @@ final class InMemoryMediaRepository implements MediaRepository
             $record['scope_type'] === $scope->type() && $record['scope_id'] === $scope->id() ? (int)($record['size_bytes'] ?? 0) : 0,
             $this->records
         ));
+    }
+
+    public function saveOptimization(int $mediaID, MediaScope $scope, array $expected, array $replacement): bool
+    {
+        if ($this->findMedia($mediaID, $scope) !== $expected) return false;
+        $this->records[$mediaID] = array_merge($expected, $replacement);
+        return true;
     }
 
     public function paths(MediaScope $scope): array

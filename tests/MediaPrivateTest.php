@@ -81,12 +81,21 @@ final class MediaPrivateTest extends TestCase
                 self::assertSame('success', $created['status']);
                 $imageID = (int)$created['data']['media_id'];
                 $imageMedia = $trusted->details($imageID, $scope)['data'];
-                self::assertCount(2, array_unique($imageMedia['variants']));
+                self::assertCount((new MediaProcessor())->gdSupportsWebp() ? 3 : 2, array_unique($imageMedia['variants']));
                 foreach ($imageMedia['variants'] as $variant) {
                     self::assertFileExists($storage->absolute($variant, 'private'));
                     self::assertFileDoesNotExist($root . '/public/' . $variant);
                 }
                 self::assertSame(200, $permitted->fileResponse($imageID, $scope, 'small')->status());
+                if (isset($imageMedia['variants']['optimized'])) {
+                    self::assertSame('image/webp', $permitted->fileResponse($imageID, $scope, 'optimized')->headers()['Content-Type']);
+                    self::assertStringContainsString('.webp', $permitted->fileResponse($imageID, $scope, 'optimized')->headers()['Content-Disposition']);
+                    $presented = $controller->present($imageMedia);
+                    self::assertStringEndsWith('&variant=optimized', $presented['media_url']);
+                    self::assertStringNotContainsString('variant=', $presented['original_url']);
+                    self::assertArrayNotHasKey('variants', $presented);
+                    self::assertSame('media_not_found', $deny->details($imageID, $scope)['code']);
+                }
                 $broken = new MediaLibraryService(new class extends MediaModel {
                     public function updateMedia(int $mediaID, MediaScope $scope, array $data): void { throw new \RuntimeException('Fallo simulado'); }
                 }, $storage);

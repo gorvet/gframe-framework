@@ -27,6 +27,11 @@
           'saved' => 'Atributos guardados.',
           'limit' => 'Hay archivos guardados que no se seleccionaron porque se alcanzó el máximo.',
           'incompatible' => 'Algún archivo guardado no está disponible para este selector.',
+          'copied' => 'URL copiada.',
+          'copy_failed' => 'No se pudo copiar la URL.',
+          'optimizing' => 'Optimizando imagen…',
+          'optimize' => 'Optimizar',
+          'optimize_failed' => 'No se pudo optimizar la imagen.',
       ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
 
       <div class="modal-header">
@@ -56,27 +61,44 @@
         <div class="tab-content pt-3">
           <div class="tab-pane fade show active" id="mp-library" role="tabpanel">
             <!-- MediaLibrary injects _mlist.php HTML here -->
-            <div class="row g-3">
-              <div class="col-12 col-lg-8">
+            <div class="row g-0 media-picker-layout">
+              <div class="col-12 col-lg-8 media-picker-library">
                 <div class="row mediasList" data-ml-mount <?php if ($tenantID > 0): ?>data-ml-tenant-id="<?= $tenantID; ?>"<?php endif; ?>></div>
               </div>
-              <aside class="col-12 col-lg-4" aria-labelledby="mp-details-title">
+              <aside class="col-12 col-lg-4 media-picker-details" aria-labelledby="mp-details-title">
                 <h6 id="mp-details-title">Detalles del archivo</h6>
                 <p data-mp-details-empty class="text-muted">Selecciona un archivo para consultar sus atributos.</p>
+                <p data-mp-details-loading class="small text-body-secondary d-none">Cargando atributos…</p>
                 <div data-mp-details-form class="d-none">
-                  <img data-mp-preview class="img-fluid media-picker-details-preview mb-2 d-none" alt="">
-                  <p data-mp-file-info class="small text-break"></p>
+                  <div class="media-picker-preview mb-3">
+                    <img data-mp-preview class="media-picker-details-preview d-none" alt="">
+                    <span data-mp-preview-file class="text-body-secondary d-none">Vista previa no disponible</span>
+                  </div>
+                  <dl class="media-file-info mb-3">
+                    <div><dt>Nombre del archivo</dt><dd data-mp-file-name></dd></div>
+                    <div><dt>Tipo</dt><dd data-mp-file-type></dd></div>
+                    <div><dt>Tamaño original</dt><dd data-mp-file-size></dd></div>
+                    <div data-mp-dimensions-row><dt>Dimensiones</dt><dd data-mp-file-dimensions></dd></div>
+                    <div data-mp-optimized-row class="d-none"><dt>Versión optimizada</dt><dd data-mp-file-optimized></dd></div>
+                  </dl>
+                  <div class="mb-3"><button type="button" data-mp-optimize class="btn btn-outline-primary btn-sm d-none" disabled>Optimizar</button></div>
                   <label for="mp-original-name" class="form-label">Nombre visible</label>
                   <input id="mp-original-name" data-mp-name class="form-control mb-2" maxlength="255" required disabled>
                   <label for="mp-alt-text" class="form-label">Texto alternativo</label>
-                  <textarea id="mp-alt-text" data-mp-alt class="form-control mb-2" maxlength="255" aria-describedby="mp-alt-help" disabled></textarea>
+                  <textarea id="mp-alt-text" data-mp-alt class="form-control mb-2" rows="3" maxlength="255" aria-describedby="mp-alt-help" disabled></textarea>
                   <p id="mp-alt-help" class="form-text">Describe la imagen para quien no pueda verla. Puede quedar vacío si es decorativa.</p>
                   <label for="mp-file-url" class="form-label">URL del archivo</label>
                   <input id="mp-file-url" class="form-control mb-2" readonly disabled>
-                  <button type="button" class="btn btn-primary btn-sm" data-mp-save disabled>Guardar atributos</button>
-                  <button type="button" class="btn btn-outline-secondary btn-sm" data-mp-discard disabled>Descartar cambios</button>
+                  <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-mp-copy disabled>Copiar URL</button>
+                    <a data-mp-original class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener noreferrer">Abrir original</a>
+                  </div>
+                  <div class="d-flex flex-wrap justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-mp-discard disabled>Descartar cambios</button>
+                    <button type="button" class="btn btn-primary btn-sm" data-mp-save disabled>Guardar atributos</button>
+                  </div>
                 </div>
-                <p class="small mt-2 mb-0" data-mp-details-status role="status" tabindex="-1"></p>
+                <p class="visually-hidden" data-mp-details-status role="status"></p>
               </aside>
             </div>
           </div>
@@ -88,6 +110,7 @@
               <input type="file" data-ml-file multiple hidden>
               <div class="pb-4 pt-4 text-center"><small class="text-muted">Tamaño máximo de archivo: <span data-ml-max-mb-value>10</span> MB</small></div>
             </div>
+            <?php include \GFrame\Modules\ModuleRuntime::file('views', 'media-library/_uploadProgress.php', 'media-library'); ?>
           </div>
 
           <div class="tab-pane fade" id="mp-hotlink" role="tabpanel">
@@ -114,13 +137,12 @@
                    autocomplete="off">
           </div>
         </div>
-        <p class="small mt-3 mb-0" data-mp-notice role="status"></p>
-        <section class="mt-3 d-none" data-mp-selection aria-labelledby="mp-selection-title">
+        <p class="small mt-3 mb-0 d-none flex-shrink-0" data-mp-notice role="status"></p>
+        <div class="mt-3 d-none media-picker-selection" data-mp-selection aria-labelledby="mp-selection-title">
           <h6 id="mp-selection-title">Archivos seleccionados</h6>
           <ol class="list-group" data-mp-selection-list></ol>
           <p class="small text-muted mt-2">Quitar de esta selección no borra archivos de la biblioteca.</p>
-        </section>
-        <?php include \GFrame\Modules\ModuleRuntime::file('views', 'media-library/_uploadProgress.php', 'media-library'); ?>
+        </div>
       </div>
 
       <div class="modal-footer">

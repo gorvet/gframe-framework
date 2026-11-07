@@ -104,6 +104,7 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   var defaultEndpoints = $.extend({
     details: endpointBase + 'ajax/admin/media/details',
     save: endpointBase + 'ajax/admin/media/save',
+    optimize: endpointBase + 'ajax/admin/media/optimize',
     field: endpointBase + 'ajax/admin/media/field'
   }, lib.endpoints || {});
 
@@ -135,6 +136,22 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   try { messages = JSON.parse($modal.find('[data-mp-messages]').text() || '{}'); } catch (error) {}
   function message(key) { return String(messages[key] || ''); }
 
+  function notify(key, icon, response) {
+    var title = response && response.message ? response.message : message(key);
+    if (response && typeof window.successError === 'function') {
+      var mapped = window.successError(title, response.code);
+      title = mapped && mapped.title ? mapped.title : title;
+    }
+    if (typeof window.alertToast === 'function') window.alertToast({icon: icon || 'error', title: title});
+  }
+
+  function formatSize(bytes) {
+    bytes = Math.max(0, Number(bytes) || 0);
+    var units = ['B', 'KB', 'MB', 'GB'];
+    var index = bytes ? Math.min(3, Math.floor(Math.log(bytes) / Math.log(1024))) : 0;
+    return (bytes / Math.pow(1024, index)).toLocaleString('es', {maximumFractionDigits: 1}) + ' ' + units[index];
+  }
+
   function request(action, data) {
     var payload = {};
     resolveTokensForm(tokensForm).serializeArray().forEach(function(token) { payload[token.name] = token.value; });
@@ -150,26 +167,38 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   }
 
   function mayLeaveDetails() {
-    if (state.saving) { $status.text(message('wait_save')).trigger('focus'); return false; }
-    if (state.dirty) { $status.text(message('dirty')).trigger('focus'); return false; }
+    if (state.saving) { notify('wait_save', 'warning'); return false; }
+    if (state.dirty) { notify('dirty', 'warning'); $details.find('[data-mp-name]').trigger('focus'); return false; }
     return true;
   }
 
   function fillDetails(item) {
     state.active = item;
+    if (state.selected.has(item.id)) state.selected.set(item.id, item);
     state.dirty = false;
     $details.find(':input').prop('disabled', false);
     $modal.find('[data-mp-details-empty]').addClass('d-none');
+    $modal.find('[data-mp-details-loading]').addClass('d-none');
     $details.removeClass('d-none');
+    $details.attr('aria-busy', 'false');
     $details.find('[data-mp-name]').val(item.original_name || item.name || '');
     $details.find('[data-mp-alt]').val(item.alt_text || '').prop('disabled', item.type !== 'images');
     $modal.find('#mp-file-url').val(item.media_url || '');
+    $details.find('[data-mp-original]').attr('href', item.original_url || item.media_url || '');
+    $details.find('[data-mp-original]').removeAttr('aria-disabled tabindex');
     $details.find('[data-mp-preview]').toggleClass('d-none', item.type !== 'images').attr('src', item.type === 'images' ? item.media_url : '').attr('alt', item.alt_text || '');
+    $details.find('[data-mp-preview-file]').toggleClass('d-none', item.type === 'images');
     var meta = item.metadata || {};
     if (!Object.keys(meta).length) { try { meta = JSON.parse(item.meta_json || '{}'); } catch (error) {} }
     var original = meta.original || meta;
-    var dimensions = original.width && original.height ? ' · ' + original.width + ' × ' + original.height : '';
-    $details.find('[data-mp-file-info]').text((item.name || '') + ' · ' + (item.mime_type || '') + ' · ' + (item.size_bytes || 0) + ' bytes' + dimensions);
+    $details.find('[data-mp-file-name]').text(item.name || '—');
+    $details.find('[data-mp-file-type]').text(item.mime_type || '—');
+    $details.find('[data-mp-file-size]').text(formatSize(original.size_bytes || item.size_bytes));
+    $details.find('[data-mp-dimensions-row]').toggleClass('d-none', !original.width || !original.height);
+    $details.find('[data-mp-file-dimensions]').text(original.width && original.height ? original.width + ' × ' + original.height : '');
+    $details.find('[data-mp-optimized-row]').toggleClass('d-none', !meta.optimized);
+    $details.find('[data-mp-file-optimized]').text(meta.optimized ? (meta.optimized.mime_type || 'image/webp') + ' · ' + formatSize(meta.optimized.size_bytes) : '');
+    $details.find('[data-mp-optimize]').toggleClass('d-none', !item.can_optimize);
     $status.text('');
   }
 
@@ -178,14 +207,22 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     var sequence = ++detailSequence;
     state.active = null;
     $details.find(':input').prop('disabled', true);
-    $details.addClass('d-none');
+    $details.attr('aria-busy', 'true');
+    $details.find('[data-mp-original]').attr({'aria-disabled': 'true', tabindex: '-1'});
+    $modal.find('[data-mp-details-empty]').addClass('d-none');
+    $modal.find('[data-mp-details-loading]').toggleClass('d-none', !$details.hasClass('d-none'));
     $status.text(message('loading_details'));
     request('details', {media_id: id}).done(function(response) {
       if (session !== state.session || sequence !== detailSequence) return;
-      if (response.status !== 'success') { $status.text(response.message || message('details_failed')); return; }
+      if (response.status !== 'success') { $details.addClass('d-none'); notify('details_failed', 'error', response); return; }
       fillDetails(normalize(response.data));
     }).fail(function() {
-      if (session === state.session && sequence === detailSequence) $status.text(message('details_failed'));
+      if (session === state.session && sequence === detailSequence) { $details.addClass('d-none'); notify('details_failed'); }
+    }).always(function() {
+      if (session === state.session && sequence === detailSequence) {
+        $details.attr('aria-busy', 'false'); $status.text('');
+        $modal.find('[data-mp-details-loading]').addClass('d-none');
+      }
     });
   }
 
@@ -204,9 +241,9 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     $modal.find('#mp-insert').prop('disabled', true);
     request('field', {media_ids: JSON.stringify(ids), variant: 'selection'}).done(function(response) {
       if (session !== state.session || sequence !== selectionSequence) return;
-      if (response.status !== 'success') { $status.text(response.message || message('selection_failed')); return; }
+      if (response.status !== 'success') { notify('selection_failed', 'error', response); return; }
       var $list = $modal.find('[data-mp-selection-list]').html(response.html || '');
-      if ((response.data || []).length !== ids.length) { $status.text(message('selection_unavailable')); return; }
+      if ((response.data || []).length !== ids.length) { notify('selection_unavailable'); return; }
       (response.data || []).forEach(function(item) { item = normalize(item); if (state.selected.has(item.id)) state.selected.set(item.id, item); });
       $list.find('li').first().find('[data-mp-move="-1"]').prop('disabled', true);
       $list.find('li').last().find('[data-mp-move="1"]').prop('disabled', true);
@@ -218,7 +255,7 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
         ($focus.length ? $focus : $item.find('[data-mp-detail]')).trigger('focus');
       }
     }).fail(function() {
-      if (session === state.session && sequence === selectionSequence) $status.text(message('selection_retry'));
+      if (session === state.session && sequence === selectionSequence) notify('selection_retry');
     });
   }
 
@@ -233,6 +270,11 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     if (event.key === 'Enter') { event.preventDefault(); $details.find('[data-mp-save]').trigger('click'); }
   });
   $modal.on('click.mediaPickerDetails', '[data-mp-discard]', function() { if (!state.saving && state.active) fillDetails(state.active); });
+  $details.on('click', '[data-mp-copy]', function() {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) { notify('copy_failed'); return; }
+    navigator.clipboard.writeText(String($modal.find('#mp-file-url').val() || ''))
+      .then(function() { notify('copied', 'success'); }).catch(function() { notify('copy_failed'); });
+  });
   $details.on('click', '[data-mp-save]', function(event) {
     event.preventDefault();
     if (!state.active || state.saving || !$details.find('[data-mp-name]')[0].reportValidity()) return;
@@ -242,19 +284,42 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     var item = state.active;
     var data = {media_id: item.id, original_name: $details.find('[data-mp-name]').val(), alt_text: $details.find('[data-mp-alt]').val()};
     request('save', data).done(function(response) {
-      if (response.status !== 'success') { $status.text(response.message || message('save_denied')); return; }
+      if (response.status !== 'success') { notify('save_denied', 'error', response); return; }
       item = response.data ? normalize(response.data) : $.extend({}, item, {original_name: data.original_name, alt_text: data.alt_text});
       fillDetails(item);
       if (state.selected.has(item.id)) state.selected.set(item.id, item);
-      $status.text(message('saved'));
+      notify('saved', 'success');
       renderSelection();
       lib.load(lib.state.page || 1, {push: false, makeActive: true});
-    }).fail(function() { $status.text(message('save_failed')); })
+    }).fail(function(xhr, status, error) {
+      var mapped = typeof window.ajaxError === 'function' ? window.ajaxError(status, error) : null;
+      notify('save_failed', 'error', mapped && mapped.title ? {message: mapped.title} : null);
+    })
       .always(function() {
         state.saving = false;
         $details.find(':input').prop('disabled', false);
         $details.find('[data-mp-alt]').prop('disabled', !state.active || state.active.type !== 'images');
+        $status.text('');
       });
+  });
+
+  $details.on('click', '[data-mp-optimize]', function() {
+    if (!state.active || !mayLeaveDetails()) return;
+    state.saving = true;
+    $details.find(':input').prop('disabled', true);
+    var $button = $(this).text(message('optimizing'));
+    request('optimize', {media_id: state.active.id}).done(function(response) {
+      if (response.status !== 'success') { notify('optimize_failed', 'error', response); return; }
+      if (response.data) fillDetails(normalize(response.data));
+      notify('optimize_failed', response.code === 'media_not_reduced' ? 'info' : 'success', response);
+      renderSelection();
+      lib.load(lib.state.page || 1, {push: false, makeActive: true});
+    }).fail(function() { notify('optimize_failed'); }).always(function() {
+      state.saving = false;
+      $button.text(message('optimize'));
+      $details.find(':input').prop('disabled', false);
+      $details.find('[data-mp-alt]').prop('disabled', !state.active || state.active.type !== 'images');
+    });
   });
 
   $modal.on('click.mediaPickerComposition', '[data-mp-detail]', function() {
@@ -299,9 +364,10 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
       bootstrap.Tab.getOrCreateInstance($modal.find('[data-bs-target="#mp-library"]')[0]).show();
       syncSelection();
       if (items.length && mayLeaveDetails()) showDetails(items[items.length - 1].id);
-      $modal.find('[data-mp-notice]').text(state.multiple && items.some(function(item) { return !state.selected.has(item.id); })
+      var notice = state.multiple && items.some(function(item) { return !state.selected.has(item.id); })
         ? message('limit')
-        : (items.length !== uploaded.length ? message('incompatible') : ''));
+        : (items.length !== uploaded.length ? message('incompatible') : '');
+      $modal.find('[data-mp-notice]').text(notice).toggleClass('d-none', !notice);
     });
   });
 
@@ -527,8 +593,9 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
       state.dirty = false;
       $details.addClass('d-none');
       $modal.find('[data-mp-details-empty]').removeClass('d-none');
+      $modal.find('[data-mp-details-loading]').addClass('d-none');
       $status.text('');
-      $modal.find('[data-mp-notice]').text('');
+      $modal.find('[data-mp-notice]').text('').addClass('d-none');
       $modal.find('[data-ml-upload-results]').empty();
       bootstrap.Tab.getOrCreateInstance($modal.find('[data-bs-target="#mp-library"]')[0]).show();
 
@@ -590,6 +657,7 @@ try {
         state.resolve = resolve;
         // cuando renderice, aplicará highlightSelected() via ml:render
         syncSelection();
+        if (pre.length) showDetails(pre[pre.length - 1]);
       });
     }
   };

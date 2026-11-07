@@ -81,6 +81,22 @@ test('Selector real: subida, atributos, orden, cancelación y respuestas antigua
 
     // Nombre visible y alt reales, guardados mediante controlador/SQLite.
     await open({selected: [1], kind: 'images'});
+    await modal.locator('#mp-original-name').waitFor({state: 'visible'});
+    assert.equal(await modal.locator('#mp-original-name').inputValue(), 'Primera.png', 'La preselección abre sus detalles sin otro clic.');
+    const initialBox = await modal.locator('.modal-content').boundingBox();
+    await page.route('**/ajax/admin/media/details', async route => {
+      const response = await route.fetch();
+      await new Promise(resolve => setTimeout(resolve, 350));
+      await route.fulfill({response});
+    });
+    await modal.locator('[data-media-id="2"]').click();
+    await page.waitForTimeout(100);
+    const loadingBox = await modal.locator('.modal-content').boundingBox();
+    assert.deepEqual(loadingBox, initialBox, 'El diálogo no cambia de posición ni altura durante la consulta.');
+    await page.waitForFunction(() => document.querySelector('#mp-original-name').value === 'Segunda.png');
+    assert.deepEqual(await modal.locator('.modal-content').boundingBox(), initialBox);
+    assert.doesNotMatch(await modal.locator('[data-mp-file-size]').innerText(), /bytes/);
+    await page.unroute('**/ajax/admin/media/details');
     const first = modal.locator('[data-media-id="1"]');
     await first.press(' ');
     await modal.locator('#mp-original-name').waitFor({state: 'visible'});
@@ -90,7 +106,8 @@ test('Selector real: subida, atributos, orden, cancelación y respuestas antigua
     await modal.locator('[data-bs-dismiss="modal"]').first().click();
     assert.equal(await modal.isVisible(), true);
     await modal.locator('[data-mp-save]').click();
-    await page.waitForFunction(() => document.querySelector('[data-mp-details-status]').textContent === 'Atributos guardados.');
+    await page.waitForFunction(() => window.lastToast?.icon === 'success' && window.lastToast?.title === 'Atributos guardados.');
+    assert.equal(await modal.locator('[data-mp-details-status]').innerText(), '');
     const detail = await (await page.request.post(base + '/ajax/admin/media/details', {form: {media_id: '1'}})).json();
     assert.equal(detail.data.original_name, 'Portada accesible');
     assert.equal(detail.data.alt_text, 'Descripción de prueba');
@@ -99,7 +116,7 @@ test('Selector real: subida, atributos, orden, cancelación y respuestas antigua
     writeFileSync(join(root, 'deny-save'), 'deny');
     await modal.locator('#mp-alt-text').fill('No autorizado');
     await modal.locator('[data-mp-save]').click();
-    await page.waitForFunction(() => document.querySelector('[data-mp-details-status]').textContent.includes('guardar'));
+    await page.waitForFunction(() => window.lastToast?.icon === 'error' && window.lastToast?.title.includes('guardar'));
     const unchanged = await (await page.request.post(base + '/ajax/admin/media/details', {form: {media_id: '1'}})).json();
     assert.equal(unchanged.data.alt_text, 'Descripción de prueba');
     unlinkSync(join(root, 'deny-save'));
@@ -141,7 +158,7 @@ test('Selector real: subida, atributos, orden, cancelación y respuestas antigua
     await open({kind: 'images'});
     await modal.locator('[data-bs-target="#mp-upload"]').click();
     await modal.locator('[data-ml-file]').setInputFiles([{name: 'simple-a.png', mimeType: 'image/png', buffer: png}, {name: 'simple-b.png', mimeType: 'image/png', buffer: png}]);
-    await page.waitForFunction(() => document.querySelector('[data-mp-file-info]').textContent.includes('simple-b'));
+    await page.waitForFunction(() => document.querySelector('[data-mp-file-name]').textContent.includes('simple-b'));
     await modal.locator('#mp-insert').click();
     await modal.waitFor({state: 'hidden'});
     assert.equal(await page.evaluate(() => pickResult.items[0].original_name), 'simple-b.png');
@@ -152,7 +169,7 @@ test('Selector real: subida, atributos, orden, cancelación y respuestas antigua
     await modal.locator('[data-bs-target="#mp-hotlink"]').click();
     await modal.locator('[data-ml-url-input]').fill('https://example.test/imagen.png');
     await modal.locator('[data-ml-url-add]').click();
-    await page.waitForFunction(() => document.querySelector('[data-mp-file-info]').textContent.includes('segunda'));
+    await page.waitForFunction(() => document.querySelector('[data-mp-file-name]').textContent.includes('segunda'));
     await modal.locator('#mp-insert').click();
     await modal.waitFor({state: 'hidden'});
     assert.deepEqual(await page.evaluate(() => pickResult.ids), [2]);

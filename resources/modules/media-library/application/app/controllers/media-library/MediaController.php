@@ -262,6 +262,22 @@ class MediaController
         }
     }
 
+    public function optimize(): array
+    {
+        try {
+            $scope = $this->scopes->resolve();
+            $mediaID = (int)($_POST['media_id'] ?? 0);
+            $response = $this->media->optimize($mediaID, $scope);
+            if (($response['status'] ?? '') === 'success') {
+                $details = $this->media->details($mediaID, $scope);
+                if (($details['status'] ?? '') === 'success') $response['data'] = $this->viewItem($details['data']);
+            }
+            return $this->withMessage($response);
+        } catch (Exception $exception) {
+            return $this->scopeFailure($exception);
+        }
+    }
+
     public function base64(): array
     {
         try {
@@ -327,7 +343,11 @@ class MediaController
             'size_bytes' => (int)($item['size_bytes'] ?? 0),
             'width' => (int)($metadata['width'] ?? 0), 'height' => (int)($metadata['height'] ?? 0),
         ];
-        $item['media_url'] = $url;
+        $item['original_url'] = $url;
+        $item['can_optimize'] = $this->media->canOptimize($item);
+        $item['media_url'] = ($item['kind'] ?? '') === 'images' && !empty($variants['optimized'])
+            ? ($private ? $url . '&variant=optimized' : \UrlHelper::assetUrl('public/' . ltrim((string)$variants['optimized'], '/')))
+            : $url;
         $item['type'] = (string)($item['kind'] ?? 'docs');
         $item['ext'] = pathinfo((string)($item['name'] ?? ''), PATHINFO_EXTENSION);
         $item['meta_json'] = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -364,6 +384,12 @@ class MediaController
             'media_list_failed' => 'No se pudo cargar la biblioteca multimedia.',
             'media_delete_failed' => 'No se pudo eliminar el archivo.',
             'media_updated' => 'Metadatos actualizados.',
+            'media_optimized' => 'Versión WebP generada. Se conserva el original.',
+            'media_already_optimized' => 'El archivo ya tiene una versión optimizada.',
+            'media_not_reduced' => 'La copia WebP no reduce el peso. Se conserva el original.',
+            'media_optimization_unavailable' => 'No se puede optimizar este archivo con la configuración actual del servidor.',
+            'media_optimization_failed' => 'No se pudo optimizar la imagen.',
+            'media_optimization_conflict' => 'El archivo cambió durante la optimización. Vuelve a abrirlo e inténtalo de nuevo.',
             'media_details_failed' => 'No se pudieron cargar los detalles.',
             'media_update_failed' => 'No se pudieron actualizar los metadatos.',
             'invalid_media_data' => 'Revisa el nombre y la descripción del archivo.',

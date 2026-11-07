@@ -204,7 +204,7 @@
       }
 ?>
 
-  <div class="col-3 col-md-2 col-lg-2 col-sm-2">
+  <div class="col-4 col-sm-3 col-lg-2 media-library-item">
     <a
       id="<?= ($pickerFragment ? 'mp-media-' : 'mID_') . (int)$mediaId; ?>"
       class="m-list-card"
@@ -255,6 +255,7 @@
 </div>
 
         <?php endif; ?>
+        <div class="media-library-caption" title="<?= htmlspecialchars((string)($f['original_name'] ?? $mediaName), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string)($f['original_name'] ?? $mediaName), ENT_QUOTES, 'UTF-8') ?></div>
       </div>
     </a>
   </div>

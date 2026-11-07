@@ -40,7 +40,12 @@ if (!$pdo->query("SELECT COUNT(*) FROM sqlite_master WHERE name='media'")->fetch
     $testImage = getenv('GFRAME_MEDIA_TEST_IMAGE');
     if ($testImage && is_file($testImage)) copy($testImage, $image);
     else file_put_contents($image, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='));
-    $service = new \GFrame\Media\MediaLibraryService(new \GFrame\Media\MediaModel(), new \GFrame\Media\MediaStorage($root . '/public'));
+    $processor = getenv('GFRAME_MEDIA_TEST_LEGACY') ? new class extends \GFrame\Media\MediaProcessor {
+        protected function configuration(): array {
+            $config = parent::configuration(); unset($config['variants']['optimized']); return $config;
+        }
+    } : new \GFrame\Media\MediaProcessor();
+    $service = new \GFrame\Media\MediaLibraryService(new \GFrame\Media\MediaModel(), new \GFrame\Media\MediaStorage($root . '/public'), $processor);
     $service->registerLocalFile($image, 'Primera.png');
     $service->registerLocalFile($image, 'Segunda.png');
 }
@@ -61,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status' => 'success', 'data' => ['html' => $html]]); exit;
     }
     $action = basename($path);
-    if (!in_array($action, ['list', 'details', 'save', 'field', 'upload'], true)) { http_response_code(404); exit; }
+    if (!in_array($action, ['list', 'details', 'save', 'field', 'upload', 'optimize'], true)) { http_response_code(404); exit; }
     // Respuesta denegada para probar la UX; los permisos reales se comprueban en las rutas/tests PHP.
     if ($action === 'save' && is_file($root . '/deny-save')) { http_response_code(403); echo '{"status":"unauthorized","code":"permission","message":"No tienes permiso para editar."}'; exit; }
     echo json_encode($controller->$action()); exit;

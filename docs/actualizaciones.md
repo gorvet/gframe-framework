@@ -22,6 +22,12 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 5.1.0: imágenes WebP y biblioteca de medios
+
+Las nuevas imágenes generan una copia WebP de hasta 1920×1920, calidad 80, solo si pesa menos que el original. Requiere GD con soporte WebP; los GIF conservan su formato. `media_url` del controlador prefiere la copia optimizada y `original_url` conserva el acceso al original. Sincroniza los assets de `media-library` mediante el actualizador, conservando y revisando sus personalizaciones. No requiere migraciones nuevas.
+
+La actualización no convierte imágenes ya subidas ni cambia las URLs guardadas en contenidos. Abre una imagen anterior y pulsa **Optimizar** si aún no tiene esa variante; conserva su ID y original. La nueva ruta requiere sincronizar las rutas y los assets administrados de `media-library`. Consulta [las imágenes existentes](media-library.md#imágenes-ya-subidas) para los permisos, la cuota y los contenidos que ya guardaron URLs.
+
 ### Versión 5.0.4: protección y extensiones de Nginx
 
 Sincroniza `nginx.conf` para incorporar el bloqueo de `tests/` y `vendor/`. Traslada las reglas específicas de la aplicación a `config/server/nginx.custom.conf`, que el actualizador conserva con y sin `--preserve-custom`. Si el fragmento administrado tiene cambios propios, esta opción informa un conflicto y no incorpora las nuevas reglas automáticamente. Configura las inclusiones absolutas en el virtual host y comprueba su configuración efectiva: Composer no la modifica. Consulta [extensiones propias de la aplicación](servidores-web.md#extensiones-propias-de-la-aplicación) para el orden de inclusión, las excepciones exactas y las comprobaciones de despliegue.

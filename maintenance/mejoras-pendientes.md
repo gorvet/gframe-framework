@@ -4,6 +4,15 @@ Esta lista recoge mejoras opcionales de GFrame que no bloquean las correcciones 
 
 ## Administración de usuarios
 
+- [ ] **Cuenta y seguridad: cambio de contraseña.** Solicitud del 7 de noviembre de 2026: contraseña actual introducida manualmente, sin autocompletado; un único campo de contraseña nueva, sin confirmación duplicada; medidor de fortaleza del framework y mostrar/ocultar en ambos campos, siguiendo el formulario de registro. Revisar vista, JavaScript y contrato del endpoint al implementarlo. Registrado para una entrega posterior a la mejora multimedia en curso.
+
+## Iconos y navegación del panel
+
+- [ ] **Compatibilidad entre gicon y Bootstrap Icons.** Evaluar el mapeo ya realizado por el usuario en Enconfianza para emplear Bootstrap Icons conservando los nombres `gicon`. Inspeccionar primero esa implementación; no eliminar la compatibilidad de proyectos instalados. Bootstrap Icons es una dependencia separada de Bootstrap. La evaluación no autoriza una sustitución masiva en esta entrega.
+- [ ] **Reducir la sangría del menú lateral.** Solicitud del 7 de noviembre de 2026, con captura de referencia: hay demasiado espacio a la izquierda entre títulos de grupo como «Gestión del sitio» y sus ítems «Portada de inicio», «Datos de facturación» y «Recordatorios de pago». Acercar los ítems al inicio del grupo y mantener alineados iconos/textos para mejorar la lectura; comprobar niveles de submenú, selección, foco y móvil. Pendiente de implementación.
+
+## Administración de usuarios: entregado
+
 - [x] **Añadir usuarios desde el admin.** Implementado con una vista propia en Gestión de usuarios, permiso `users.create` e invitación por correo para definir la contraseña y verificarla, según la decisión del propietario. Mantiene la jerarquía de roles, caducidad y consumo único del enlace, recuperación/reenvío y distinción entre alta completada y fallo del correo. Pruebas con cuentas temporales y transporte de correo simulado; formulario comprobado en navegador. Véase [la guía](../docs/user-admin.md).
 
 ## Campañas

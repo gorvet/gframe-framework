@@ -2,9 +2,9 @@
 
 namespace GFrame\Media;
 
-use GFrame\Media\Contracts\MediaRepository;
+use GFrame\Media\Contracts\MediaOptimizationRepository;
 
-class MediaModel extends \ORM implements MediaRepository
+class MediaModel extends \ORM implements MediaOptimizationRepository
 {
     protected $table = 'media';
     protected $primaryKey = 'media_id';
@@ -78,6 +78,17 @@ class MediaModel extends \ORM implements MediaRepository
         if ($allowed !== []) {
             $this->applyScope($this->reset()->where('media_id', '=', $mediaID), $scope)->update($allowed);
         }
+    }
+
+    public function saveOptimization(int $mediaID, MediaScope $scope, array $expected, array $replacement): bool
+    {
+        $query = $this->applyScope($this->reset()->where('media_id', '=', $mediaID), $scope);
+        foreach (['path', 'visibility', 'variants_json', 'metadata_json'] as $column) {
+            $query->whereExact($column, (string)$expected[$column]);
+        }
+        $query->where('size_bytes', '=', (int)$expected['size_bytes']);
+        $result = $query->update(array_intersect_key($replacement, array_flip(['variants_json', 'metadata_json', 'size_bytes'])));
+        return (int)($result['affected'] ?? 0) === 1;
     }
 
     public function usedBytes(MediaScope $scope): int

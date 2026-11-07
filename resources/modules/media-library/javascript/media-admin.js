@@ -71,7 +71,7 @@
   function dirty() { return baseline && (values().name !== baseline.name || values().alt !== baseline.alt); }
   function status(text, focus) { $status.text(text || ''); if (focus) $status.trigger('focus'); }
   function mayLeave() {
-    if (saving || dirty()) { status(saving ? messages.saving : messages.pending, true); return false; }
+    if (saving || dirty()) { alertToast({icon: 'warning', title: saving ? messages.saving : messages.pending}); return false; }
     return true;
   }
   function releasePreview() {
@@ -86,6 +86,7 @@
     $('#editMediaPrev').prop('disabled', busy || saving || index < 0 || (index === 0 && page <= 1));
     $('#editMediaNext').prop('disabled', busy || saving || index < 0 || (index === ids.length - 1 && page >= last));
     $('#editMedia_guardar, #media-original-name, #alt_text').prop('disabled', busy || saving || !activeID);
+    $('#media-optimize').prop('disabled', busy || saving || !activeID);
     $('#media-details-discard').toggleClass('d-none', !dirty()).prop('disabled', saving || busy);
     $('#delmedia').toggleClass('disabled', busy || saving || !activeID).attr('aria-disabled', busy || saving || !activeID ? 'true' : 'false');
   }
@@ -140,6 +141,9 @@
       $("#mime_type").text(media.mime_type || "-");
       $("#name").text(media.name || "-");
       $("#file_weight").text(formatSize(meta));
+      $modal.find('[data-media-optimized-row]').toggleClass('d-none', !meta.optimized);
+      $('#media-optimized-info').text(meta.optimized ? (meta.optimized.mime_type || 'image/webp') + ' · ' + formatSize({original: meta.optimized}) : '');
+      $('#media-optimize').toggleClass('d-none', !media.can_optimize);
       var width = meta.original && meta.original.width ? meta.original.width : 0;
       var height = meta.original && meta.original.height ? meta.original.height : 0;
       $("#file_size").text(width && height ? width + " × " + height + ' ' + messages.pixels : "-");
@@ -147,6 +151,7 @@
       $("#alt_text").val(media.alt_text || "");
       $("#img_url").val(absoluteUrl(media.media_url || ""));
       $('#media-open-file').attr('href', absoluteUrl(media.media_url || ''));
+      $('#media-open-original').attr('href', absoluteUrl(media.original_url || media.media_url || '')).toggleClass('d-none', !media.original_url || media.original_url === media.media_url);
       baseline = values(); $form.removeClass('was-validated');
       if (media.type === "images") {
         $("#img_details").removeClass("d-none").attr("src", absoluteUrl(media.media_url || "")).attr("alt", media.alt_text || "");
@@ -201,6 +206,20 @@
       library.reload({ push: false, makeActive: true });
       alertToast({ icon: "success", title: response.message });
     }).always(function() { if (epoch === sequence) { saving = false; updateControls(); if ($status.text() === messages.saving) status(''); } });
+  });
+
+  $('#media-optimize').on('click', function() {
+    if (busy || !activeID || !mayLeave()) return;
+    var id = activeID;
+    saving = true; updateControls();
+    var $button = $(this).text(messages.optimizing);
+    request('ajax/admin/media/optimize', $.extend(tokens(), {media_id: id})).done(function(response) {
+      if (response.status !== 'success') return notifyError(response);
+      saving = false;
+      openDetails(id);
+      library.reload({push: false, makeActive: true});
+      alertToast({icon: response.code === 'media_not_reduced' ? 'info' : 'success', title: response.message});
+    }).always(function() { saving = false; $button.text(messages.optimize); updateControls(); });
   });
 
   $(document).on("click", "#delmedia", function(event) {

@@ -61,6 +61,11 @@
     max-width: 300px;
 }
 
+.media-library-item { flex: 0 0 10rem; width: 10rem; min-width: 0; max-width: 50%; }
+.media-library-caption { padding: .375rem .5rem; font-size: .8125rem; line-height: 1.4; color: var(--bs-body-color); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.m-list-card { text-decoration: none; }
+.m-list-card:focus-visible .card { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+
 
 /*#all_items .thumbnail{
 amargin: 5px;
@@ -69,13 +74,7 @@ cursor: pointer;
 border: 1px solid rgba(0,0,0,.1);
 }*/
 
-#editMediaModal #img_details{
-display: block;
-  margin: 0 auto 16px;
-  max-width: 100%;
-  max-height: min(350px, 45dvh);
-width: auto;
-}
+#editMediaModal #img_details { max-width: 100%; max-height: 100%; object-fit: contain; }
 
 #editMediaModal #img_url{
   word-break: break-all;
@@ -98,20 +97,10 @@ width: auto;
 }
 
 
-#editMediaModal .filedatas{
-margin: 0;
-font-size: .8rem;
-line-height: 1;
-padding-bottom: .8rem;
-}
-#editMediaModal .filedatas label{
-padding-bottom: .3rem;
-}
-#editMediaModal .filedatas *{
-line-height: 1;
-padding-bottom: 0;
-margin-bottom: 0;
-}
+.media-file-info { font-size: .8125rem; line-height: 1.6; color: var(--bs-secondary-color); }
+.media-file-info > div { display: flex; gap: .5rem; align-items: baseline; }
+.media-file-info dt { flex: 0 0 8rem; font-weight: 600; }
+.media-file-info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 
 
 .media-field .media-field-preview,
@@ -155,8 +144,57 @@ body:has(#mediaPickerModal.modal.show) .modal-backdrop.show {
   z-index: 1061 !important;
 }
  
-/* La vista previa no desplaza los atributos fuera de la zona de edición. */
-.media-picker-details-preview {
-  max-height: 12rem;
-  object-fit: contain;
+/* El diálogo conserva su tamaño al cargar y cambiar de archivo. */
+#mediaPickerModal .modal-dialog,
+#editMediaModal .modal-dialog {
+  width: calc(100% - 2rem);
+  max-width: none;
+  height: calc(100dvh - 2rem);
+  min-height: 0;
+  margin: 1rem auto;
+}
+#mediaPickerModal .modal-content,
+#editMediaModal .modal-content { height: 100%; }
+#mediaPickerModal .modal-body { display: flex; flex-direction: column; min-height: 0; }
+#mediaPickerModal .nav-tabs { flex-shrink: 0; }
+#mediaPickerModal .tab-content { flex: 1; min-height: 0; }
+#mediaPickerModal .tab-pane { height: 100%; overflow-y: auto; }
+#mediaPickerModal .media-picker-layout { min-height: 100%; }
+.media-picker-library { padding-right: 1rem; }
+.media-picker-details { padding: 1rem; background: var(--bs-tertiary-bg); }
+.media-picker-details .form-text { font-size: .8125rem; line-height: 1.5; margin-bottom: 1rem; }
+.media-picker-preview { height: 11rem; display: flex; align-items: center; justify-content: center; }
+.media-picker-details-preview { width: 100%; height: 100%; object-fit: contain; }
+.media-picker-selection { flex: 0 1 auto; max-height: 10rem; overflow-y: auto; }
+#mediaPickerModal [aria-busy="true"] { opacity: .6; pointer-events: none; }
+#editMediaModal .modal-body { padding: 0; }
+.media-details-layout { min-height: 100%; }
+.media-details-preview { display: flex; align-items: center; justify-content: center; padding: 1.5rem; height: 100%; min-height: 20rem; }
+.media-details-attributes { padding: 1.5rem; background: var(--bs-tertiary-bg); }
+#editMediaModal #media-details-video { max-height: 100%; }
+
+@media (min-width: 992px) {
+  #mediaPickerModal #mp-library { overflow: hidden; }
+  #mediaPickerModal .media-picker-layout { height: 100%; min-height: 0; }
+  .media-picker-library, .media-picker-details { height: 100%; overflow-y: auto; }
+  .media-picker-library { flex: 1; width: auto; min-width: 0; }
+  .media-picker-details { flex: 0 0 clamp(20rem, 28vw, 26rem); width: auto; }
+  #editMediaModal .modal-body { overflow: hidden; }
+  .media-details-layout { height: 100%; min-height: 0; }
+  .media-details-attributes { height: 100%; overflow-y: auto; }
+}
+
+@media (max-width: 991.98px) {
+  .media-picker-library { padding: 0 0 1rem; }
+  .media-picker-details { margin-top: 1rem; }
+  .media-details-preview { height: 16rem; min-height: 0; padding: 1rem; }
+}
+
+@media (max-width: 575.98px) {
+  #mediaPickerModal .modal-dialog,
+  #editMediaModal .modal-dialog { width: 100%; height: 100dvh; margin: 0; }
+  #mediaPickerModal .modal-content,
+  #editMediaModal .modal-content { border-radius: 0; }
+  .media-file-info > div { display: block; margin-bottom: .5rem; }
+  .media-details-attributes { padding: 1rem; }
 }

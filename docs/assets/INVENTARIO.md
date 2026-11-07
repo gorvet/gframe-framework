@@ -1,5 +1,14 @@
 # Inventario de imágenes de la ayuda
 
+## Biblioteca 5.1.0 — 7 de noviembre de 2026
+
+Capturas del selector y los detalles nativos, con PHP/SQLite/Bootstrap reales y tres imágenes sintéticas de prueba. No contienen datos de usuarios ni acreditan el porcentaje de ahorro típico de fotografías. Se copian intactas desde `.playwright-mcp/media-modal-picker-wide.png` y `media-modal-details-wide.png`; reproducción con `tests/js/media-modal-layout.browser.test.cjs`, Playwright disponible, `GFRAME_TEST_BROWSER` apuntando a Chrome y `GFRAME_TEST_SCREENSHOTS` a una carpeta existente. Se revisan escritorio, móvil y temas antes de copiar.
+
+| Archivo | Guía | Contenido |
+| --- | --- | --- |
+| `5.1.0/selector-medios.png` | `media-library` | Selector amplio con preselección y metadatos originales/optimizados separados. |
+| `5.1.0/detalles-medio.png` | `media-library` | Detalles con vista previa vertical y acceso separado al original. |
+
 ## Actualización de medios 4.7.1 — 1 de noviembre de 2026
 
 Tres capturas reales en una aplicación temporal, con autenticación y archivos ficticios. Generador reproducible: `maintenance/help/capture-private-media.cjs` y `seed-private-media.php`. Se revisaron las tres imágenes renderizadas, sin recortes de controles ni textos ilegibles. No se representan controles de compartir o cambiar visibilidad que no existen en la interfaz.
