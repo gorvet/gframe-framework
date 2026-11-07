@@ -1,3 +1,6 @@
+@import url("../../external/bootstrap-icons/font/bootstrap-icons.css");
+@import url("bootstrap-icons-compat.css");
+
 @font-face {
   font-family: 'gframe-icons';
   src:  url('fonts/gframe-icons.eot?f3thb3');

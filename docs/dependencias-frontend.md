@@ -6,6 +6,7 @@ Los archivos distribuidos con los módulos conservan sus avisos originales. Esta
 |---|---:|---|---|---|
 | AOS | 3.0.0-beta.6 | JS y CSS coincidentes con la distribución oficial de npm; versión registrada en el manifiesto | MIT | [Proyecto](https://www.npmjs.com/package/aos/v/3.0.0-beta.6) |
 | Bootstrap | 5.3.8 | Manifiesto del módulo | MIT | https://getbootstrap.com/ |
+| Bootstrap Icons | 1.13.2 | Manifiesto del módulo | MIT | https://icons.getbootstrap.com/ |
 | Chart.js | 4.4.2 | Manifiesto del módulo | MIT | https://www.chartjs.org/ |
 | Coloris | 0.25.0 | JavaScript coincidente con la etiqueta oficial y versión registrada en el manifiesto | MIT | [Proyecto](https://github.com/mdbassit/Coloris/tree/v0.25.0) |
 | Flatpickr | 4.6.13 | Manifiesto del módulo | MIT | https://flatpickr.js.org/ |

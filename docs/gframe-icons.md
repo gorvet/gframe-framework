@@ -1,6 +1,6 @@
 # Iconos de GFrame
 
-`gframe-icons` es la fuente de iconos propia del framework. Se instala con la base visual y se publica en `public/vendors/internal/gframe-icons/`. Para usarla, declare `style.css` en el meta de la vista o del grupo de vistas. Las fuentes se cargan mediante rutas relativas al CSS.
+`gframe-icons` conserva las clases `gicon-*` y las representa mediante Bootstrap Icons 1.13.2. Se instala con la base visual y se publica en `public/vendors/internal/gframe-icons/`. Su dependencia `bootstrap-icons` publica la distribución local en `public/vendors/external/bootstrap-icons/`; no utiliza CDN. Para usarla, declare `style.css` en el meta de la vista o del grupo de vistas. Este recurso carga la fuente y el mapeo de compatibilidad, sin modificar las vistas existentes.
 
 ## Carga
 
@@ -14,7 +14,7 @@ return [
 
 Declare el recurso en la [meta](meta.md) del template si lo utiliza todo el panel, o en el grupo o la vista cuando su uso sea puntual. No requiere JavaScript. Si publica manualmente el módulo, use `php bin/modules.php publish /ruta/del/proyecto/public gframe-icons`.
 
-Conserve la carpeta `fonts/` junto a `style.css`; copiar solamente el CSS deja la fuente sin archivos que cargar. El manifiesto publica también el catálogo y los archivos de selección.
+Publique ambos módulos mediante sus dependencias: copiar solamente `style.css` deja fuera las fuentes y las equivalencias. Conserve también la carpeta original `fonts/`, necesaria para los iconos multicolor. El manifiesto mantiene el catálogo y los archivos de selección anteriores.
 
 ## Uso en vistas
 

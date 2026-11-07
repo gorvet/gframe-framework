@@ -61,7 +61,8 @@ SEO no es una única capacidad activada/desactivada de forma homogénea. Sitemap
 | `bootstrap` | Bootstrap publicado para la interfaz |
 | `jquery` | jQuery publicado para componentes heredados/actuales |
 | `sweetalert2` | motor de diálogos/alertas |
-| `gframe-icons` | iconografía propia |
+| `gframe-icons` | compatibilidad `gicon` sobre Bootstrap Icons y glifos multicolor originales |
+| `bootstrap-icons` | biblioteca oficial de iconos de Bootstrap, distribuida localmente |
 | `alerts` | `alertToast`, `swalAlert` y estados de carga |
 | `frontend-core` | formularios, errores, paginación y helpers JS comunes |
 | `gf-select` | selector enriquecido propio |

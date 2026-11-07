@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 5.2.0 — 2026-11-07
+
+- Cuenta y seguridad: contraseña actual sin autocompletado solicitado, una única contraseña nueva, medidor del framework y controles Mostrar/Ocultar. Confirmación opcional y compatible con consumidores anteriores; se mantienen política y revocación de sesiones.
+- Iconos: Bootstrap Icons 1.13.2 local con el mapeo de Enconfianza, conservando las clases `gicon` y los glifos multicolor originales.
+- Panel: menor sangría en los enlaces del menú lateral y sus submenús.
+
 ## 5.1.0 — 2026-11-07
 
 - Medios: copia WebP automática para nuevas imágenes, calidad 80 y hasta 1920×1920, conservada solo si reduce el peso. Original intacto, URL preferida para selector/editor y MIME correcto en variantes privadas. Los archivos y contenidos existentes no se regeneran ni reescriben automáticamente.

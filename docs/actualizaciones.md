@@ -22,6 +22,12 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 5.2.0: cuenta, iconos y menú lateral
+
+Cuenta y seguridad pide la contraseña actual y una única contraseña nueva, con medidor y controles Mostrar/Ocultar. Las integraciones anteriores pueden seguir enviando la confirmación; si la envían, se valida. Se conservan la política de contraseña y la revocación de sesiones.
+
+`gframe-icons` incorpora `bootstrap-icons` como dependencia, con recursos locales y equivalencias para las clases `gicon-*`. Sincroniza los archivos administrados y las dependencias con `composer gframe:update -- --dry-run --preserve-custom` y después `composer gframe:update -- --preserve-custom`. No copies solo el CSS de compatibilidad: necesita la fuente Bootstrap Icons. Las vistas personalizadas se conservan; adapta sus formularios si aún incluyen confirmación duplicada. No hay migraciones nuevas.
+
 ### Versión 5.1.0: imágenes WebP y biblioteca de medios
 
 Las nuevas imágenes generan una copia WebP de hasta 1920×1920, calidad 80, solo si pesa menos que el original. Requiere GD con soporte WebP; los GIF conservan su formato. `media_url` del controlador prefiere la copia optimizada y `original_url` conserva el acceso al original. Sincroniza los assets de `media-library` mediante el actualizador, conservando y revisando sus personalizaciones. No requiere migraciones nuevas.

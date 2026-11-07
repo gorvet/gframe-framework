@@ -1,6 +1,11 @@
 (function ($) {
     'use strict';
 
+    showPassword('.account-password', '#account-password-form .showPassword');
+    $('#new_password').on('input', function () {
+        updateMeterPassword(this.value, $('#account-password-form').attr('data-account-email'));
+    });
+
     function request(url, data) {
         const tokens = $('#self-account-tokens').serialize();
         const payload = typeof data === 'string'
@@ -16,6 +21,7 @@
 
     $('#account-password-form').on('submit', function (event) {
         event.preventDefault();
+        if ($('#account-password-button').prop('disabled')) return;
         if (!this.checkValidity()) {
             this.classList.add('was-validated');
             return;
@@ -29,6 +35,9 @@
                 if (response.status === 'success') {
                     form.reset();
                     form.classList.remove('was-validated');
+                    $(form).find('.account-password').attr('type', 'password');
+                    $(form).find('.showPassword').each(function () { $(this).text($(this).attr('data-show-label')); });
+                    updateMeterPassword('', '');
                 }
             })
             .fail(function () {

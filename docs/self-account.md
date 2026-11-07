@@ -26,7 +26,7 @@ Todas las rutas utilizan el middleware `auth`. Las mutaciones AJAX reciben los t
 
 | Acción | Campos POST |
 | --- | --- |
-| Cambiar contraseña | `current_password`, `new_password`, `new_password_confirmation` |
+| Cambiar contraseña | `current_password`, `new_password` |
 | Desactivar cuenta | `password` |
 
 El ID se obtiene de la identidad de sesión, no de un campo del formulario. Una cuenta común puede acceder sin `admin.access`; el superadministrador puede cambiar su contraseña, pero la política predeterminada impide su desactivación. La pantalla no ofrece borrado inmediato de la cuenta.
@@ -62,7 +62,7 @@ if (($result['status'] ?? '') !== 'success') {
 return ['status' => 'success', 'data' => ['account' => $result['data']]];
 ```
 
-`changePassword()` exige la contraseña actual, la nueva y su confirmación. La política predeterminada acepta entre 8 y 72 bytes UTF-8; una discrepancia devuelve `password_mismatch` y una contraseña actual incorrecta devuelve `invalid_current_password`. No toma el hash desde el navegador. El frontend muestra el resultado, pero la aceptación se decide en el backend.
+`changePassword()` exige la contraseña actual y la nueva. La pantalla pide la actual sin autocompletado (`autocomplete="off"`) y muestra una única contraseña nueva con el medidor de `password-utils` y botones Mostrar/Ocultar en ambos campos. Los navegadores y gestores de contraseñas pueden ignorar el atributo de autocompletado. La política predeterminada acepta entre 8 y 72 bytes UTF-8; una contraseña actual incorrecta devuelve `invalid_current_password`. El medidor es orientativo y la aceptación se decide en el backend. Se conserva el cuarto argumento opcional y el campo `new_password_confirmation` para consumidores anteriores: si se envía, una discrepancia devuelve `password_mismatch`.
 
 ## Cambio obligatorio de contraseña
 

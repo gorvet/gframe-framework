@@ -12,12 +12,14 @@ return [
         'public/css/common.css',
         'public/vendors/internal/gframe-alerts/alertToast.css',
         'public/css/modules/self-account/self-account.css',
+        'public/vendors/internal/passwordUtils/passwordUtils.css',
     ],
     'js' => [
         'public/vendors/external/jquery/jquery.min.js',
         'public/vendors/external/bootstrap/js/bootstrap.bundle.min.js',
         'public/vendors/external/sweetalert2/sweetalert2.all.min.js',
         'public/vendors/internal/gframe-alerts/alertToast.js',
+        'public/vendors/internal/passwordUtils/passwordUtils.js',
         'public/js/modules/self-account/self-account.js',
     ],
 ];

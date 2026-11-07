@@ -33,6 +33,19 @@ final class SelfAccountServiceTest extends TestCase
         self::assertTrue(password_verify('Nueva-clave-123', $model->accounts[2]['password']));
     }
 
+    public function testPasswordChangeAcceptsOneNewPasswordAndPreservesItsBytes(): void
+    {
+        $model = new InMemorySelfAccountModel();
+        $service = new SelfAccountService($model);
+        $password = '  Nueva <clave> & 123  ';
+        self::assertSame('invalid_current_password', $service->changePassword(2, 'incorrecta', $password)['code']);
+        self::assertSame('invalid_password', $service->changePassword(2, 'Clave-actual-123', 'corta')['code']);
+        self::assertSame('empty_field', $service->changePassword(2, '', $password)['code']);
+        self::assertSame('password_updated', $service->changePassword(2, 'Clave-actual-123', $password)['code']);
+        self::assertTrue(password_verify($password, $model->accounts[2]['password']));
+        self::assertFalse(password_verify(trim($password), $model->accounts[2]['password']));
+    }
+
     public function testProtectedAccountCannotBeDeactivated(): void
     {
         $model = new InMemorySelfAccountModel();

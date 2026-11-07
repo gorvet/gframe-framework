@@ -36,7 +36,7 @@ class SelfAccountController
             $this->userID(),
             (string)($_POST['current_password'] ?? ''),
             (string)($_POST['new_password'] ?? ''),
-            (string)($_POST['new_password_confirmation'] ?? '')
+            array_key_exists('new_password_confirmation', $_POST) ? (string)$_POST['new_password_confirmation'] : null
         ));
 
         if (($response['status'] ?? '') === 'success') {

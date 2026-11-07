@@ -44,7 +44,7 @@ final class SelfAccountService
         int $userID,
         string $currentPassword,
         string $newPassword,
-        string $confirmation
+        ?string $confirmation = null
     ): array {
         if ($userID <= 0) {
             return $this->error('not_found');
@@ -55,7 +55,7 @@ final class SelfAccountService
         if (!$this->passwords->accepts($newPassword)) {
             return $this->error('invalid_password');
         }
-        if (!hash_equals($newPassword, $confirmation)) {
+        if ($confirmation !== null && !hash_equals($newPassword, $confirmation)) {
             return $this->error('password_mismatch');
         }
 

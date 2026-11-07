@@ -17,13 +17,13 @@ Paths under `application/` and `javascript/` above are relative to the self-acco
 
 `POST ajax/account/password` declares `module('self-account')` and `auth`. Its AJAX filename and URL prefix agree. Router adds the normal AJAX middleware, including CSRF, unless explicitly excluded; preserve that protection.
 
-The view supplies `#account-password-form` with `current_password`, `new_password` and `new_password_confirmation`. The script checks native form validity, disables the submit button, serializes the form plus the existing `#self-account-tokens` bridge, and requests JSON. Keep `csrfToken`/`csrfTimestamp` and the module's selectors; do not substitute a new token form merely to standardize names.
+The view supplies `#account-password-form` with `current_password` (autocomplete off) and one `new_password`, the password-utils meter and show/hide controls. The confirmation field is absent; legacy callers may still supply it and receive mismatch validation. Browser password managers may ignore autocomplete off. The script checks native form validity, disables the submit button, serializes the form plus the existing `#self-account-tokens` bridge, and requests JSON. Keep `csrfToken`/`csrfTimestamp` and the module's selectors; do not substitute a new token form merely to standardize names.
 
 The controller obtains `$userID` from session `auth.id`, with legacy `userID` fallback. It does not accept a browser-supplied target user for this operation. Each password field is cast to a string and passed unchanged to `SelfAccountService::changePassword($userID, $currentPassword, $newPassword, $confirmation)`. Do not trim, lowercase, HTML-escape or strip characters from those values.
 
 ## Service, Persistence and Revocation
 
-The service rejects an invalid identity or empty inputs, applies `PasswordPolicy`, compares confirmation with `hash_equals`, loads the account and verifies the current password hash. It then hashes the new password and calls the repository's `updateAccountPassword`; the standard repository is `UserModel`. Retain that existing extension contract rather than adding a wrapper layer around every model.
+The service rejects an invalid identity or empty required inputs, applies `PasswordPolicy`, compares an explicitly supplied confirmation with `hash_equals`, loads the account and verifies the current password hash. Its fourth argument defaults to null, so new callers use three arguments. It then hashes the new password and calls the repository's `updateAccountPassword`; the standard repository is `UserModel`. Retain that existing extension contract rather than adding a wrapper layer around every model.
 
 The default password policy accepts 8–72 UTF-8 bytes by `strlen`, not a strength score or a Unicode character count. HTML minlength/maxlength is client feedback, not equivalent server validation for multibyte input. Preserve the backend policy and test multibyte boundaries when changing it.
 

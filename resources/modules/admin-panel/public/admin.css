@@ -290,7 +290,7 @@ display: inline-block;
   font-size: 1rem;
   font-weight: 500;
   transition: all 0.3s;
-  padding: 5px 30px;
+  padding: 5px 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -435,7 +435,7 @@ margin: 0;
   font-size: 1rem;
   font-weight: 500;
   transition: all 0.3s;
-  padding: 5px 30px;
+  padding: 5px 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -492,7 +492,7 @@ background: var(--bs-primary-bg-subtle);
 
 .sidebar-nav .nav-content a {
 
-  padding: 5px 10px 5px 45px;
+  padding: 5px 10px 5px 25px;
 
 }
 

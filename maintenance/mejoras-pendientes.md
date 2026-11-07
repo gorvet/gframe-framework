@@ -4,12 +4,12 @@ Esta lista recoge mejoras opcionales de GFrame que no bloquean las correcciones 
 
 ## Administración de usuarios
 
-- [ ] **Cuenta y seguridad: cambio de contraseña.** Solicitud del 7 de noviembre de 2026: contraseña actual introducida manualmente, sin autocompletado; un único campo de contraseña nueva, sin confirmación duplicada; medidor de fortaleza del framework y mostrar/ocultar en ambos campos, siguiendo el formulario de registro. Revisar vista, JavaScript y contrato del endpoint al implementarlo. Registrado para una entrega posterior a la mejora multimedia en curso.
+- [x] **Cuenta y seguridad: cambio de contraseña.** Implementado en el framework el 7 de noviembre de 2026: actual con autocomplete off, una única nueva contraseña, medidor y mostrar/ocultar de password-utils. Endpoint y servicio aceptan la ausencia de confirmación y siguen validándola si un consumidor anterior la envía. Verificación acotada en account-icons-sidebar.md; aún sin publicar una nueva etiqueta.
 
 ## Iconos y navegación del panel
 
-- [ ] **Compatibilidad entre gicon y Bootstrap Icons.** Evaluar el mapeo ya realizado por el usuario en Enconfianza para emplear Bootstrap Icons conservando los nombres `gicon`. Inspeccionar primero esa implementación; no eliminar la compatibilidad de proyectos instalados. Bootstrap Icons es una dependencia separada de Bootstrap. La evaluación no autoriza una sustitución masiva en esta entrega.
-- [ ] **Reducir la sangría del menú lateral.** Solicitud del 7 de noviembre de 2026, con captura de referencia: hay demasiado espacio a la izquierda entre títulos de grupo como «Gestión del sitio» y sus ítems «Portada de inicio», «Datos de facturación» y «Recordatorios de pago». Acercar los ítems al inicio del grupo y mantener alineados iconos/textos para mejorar la lectura; comprobar niveles de submenú, selección, foco y móvil. Pendiente de implementación.
+- [x] **Compatibilidad entre gicon y Bootstrap Icons.** Incorporado el mapeo intacto de Enconfianza2 y Bootstrap Icons 1.13.2 como dependencia local. Se conservan las 136 clases simples originales y los glifos multicolor; vistas sin renombrar. Verificación de publicación y fuente en navegador; sin modificar Enconfianza ni etiquetar una versión.
+- [x] **Reducir la sangría del menú lateral.** Reducidos 20 px en enlaces principales y submenús, incluido el hover del menú expandido. Se conserva el modo compacto. Navegador comprueba una separación de 10 px entre el inicio del título de grupo y el icono; vista móvil sin desbordamiento.
 
 ## Administración de usuarios: entregado
 

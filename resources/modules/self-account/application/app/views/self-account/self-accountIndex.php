@@ -34,18 +34,21 @@ $deactivationMessage = $policy ? 'Perderás el acceso inmediatamente. La cuenta 
                     <div class="card h-100">
                         <div class="card-header"><strong>Cambiar contraseña</strong></div>
                         <div class="card-body">
-                            <form id="account-password-form" class="needs-validation" novalidate>
+                            <form id="account-password-form" class="needs-validation" autocomplete="off" data-account-email="<?= htmlspecialchars((string)($account['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" novalidate>
                                 <div class="mb-3">
                                     <label class="form-label" for="current_password">Contraseña actual</label>
-                                    <input class="form-control" type="password" id="current_password" name="current_password" autocomplete="current-password" required>
+                                    <div class="input-group">
+                                        <input class="form-control account-password" type="password" id="current_password" name="current_password" autocomplete="off" required>
+                                        <button class="showPassword input-group-text" type="button" aria-controls="current_password" data-show-label="Mostrar">Mostrar</button>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label" for="new_password">Nueva contraseña</label>
-                                    <input class="form-control" type="password" id="new_password" name="new_password" minlength="8" maxlength="72" autocomplete="new-password" required>
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label" for="new_password_confirmation">Confirmar nueva contraseña</label>
-                                    <input class="form-control" type="password" id="new_password_confirmation" name="new_password_confirmation" minlength="8" maxlength="72" autocomplete="new-password" required>
+                                    <div class="input-group">
+                                        <input class="form-control account-password" type="password" id="new_password" name="new_password" minlength="8" maxlength="72" autocomplete="new-password" required aria-describedby="account-password-meter">
+                                        <button class="showPassword input-group-text" type="button" aria-controls="new_password" data-show-label="Mostrar">Mostrar</button>
+                                    </div>
+                                    <div id="account-password-meter" class="passwordMeter d-none" role="status"></div>
                                 </div>
                                 <div class="d-flex justify-content-end"><button class="btn btn-primary" id="account-password-button" type="submit">Cambiar contraseña</button></div>
                             </form>
