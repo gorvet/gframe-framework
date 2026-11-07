@@ -29,7 +29,7 @@ function setup(id, passwordValue) {
     return chain;
   };
   runInNewContext(readFileSync(join(__dirname, '../../resources/modules/auth-ui/javascript/auth.js'), 'utf8'), {
-    jQuery: $, document, URLSearchParams,
+    jQuery: $, authRequest: options => $.ajax(options), document, URLSearchParams,
     window: { site_url: '/app/', location: { search: '?rd=admin%2Fitems', assign: value => redirects.push(value) } },
     validationFeedback: () => validationCalls++, passwordValidate: value => Buffer.byteLength(value) >= 8 && Buffer.byteLength(value) <= 72,
     generatePassword: () => null, updateMeterPassword: () => meterCalls++, showPassword() {},

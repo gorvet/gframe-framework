@@ -22,6 +22,14 @@ No reemplaza los archivos propios del proyecto: `.env`, configuración generada,
 
 ## Qué hace cada comando
 
+### Versión 5.2.1: recuperación del acceso tras caducar el formulario
+
+Las solicitudes de autenticación renuevan los campos CSRF y reintentan una sola vez si el servidor devuelve `to_reload` o `fail_csrf`. Un segundo rechazo muestra un mensaje sin borrar los campos ni entrar en un bucle. Los consumidores de autenticación evitan avisos vacíos cuando `successError` ya gestionó una navegación.
+
+El selector de medios guarda los atributos pendientes al cambiar de imagen, usar la selección o cerrar el modal. Si falla el guardado, conserva la edición y muestra un aviso. Sincroniza también el asset `media-picker.js` de `media-library` para incorporar este comportamiento.
+
+Actualiza el paquete y sincroniza los assets de `auth-ui` y `frontend-core` mediante `composer gframe:update -- --dry-run --preserve-custom` y después `composer gframe:update -- --preserve-custom`. Si personalizaste las metas de autenticación, carga `public/js/modules/auth/auth-request.js` antes del script del formulario. Revisa los conflictos conservados: una copia personalizada del login o de `errors.js` no se corrige automáticamente. No requiere migraciones ni cambia la caducidad de las sesiones. Consulta [la interfaz de autenticación](auth-ui.md).
+
 ### Versión 5.2.0: cuenta, iconos y menú lateral
 
 Cuenta y seguridad pide la contraseña actual y una única contraseña nueva, con medidor y controles Mostrar/Ocultar. Las integraciones anteriores pueden seguir enviando la confirmación; si la envían, se valida. Se conservan la política de contraseña y la revocación de sesiones.

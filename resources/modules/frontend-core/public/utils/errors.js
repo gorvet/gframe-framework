@@ -41,20 +41,20 @@ function ajaxError(status, error) {
 function successError(error, code) {
   var toAlertToast;
   if (code === 'no_token' || code === 'forbidden' || code === '403') {
-    toAlertToast = {};
+    toAlertToast = { handled: true, title: '' };
     toErrorView('forbidden');
   } else if (code === 'not_found' || code === '404') {
-    toAlertToast = {};
+    toAlertToast = { handled: true, title: '' };
     toErrorView('not_found');
   } else if (code === 'service_unavailable' || code === '503' || code == 1045 || code == 2002 || code == 1049) {
-    toAlertToast = {};
+    toAlertToast = { handled: true, title: '' };
     toErrorView('service_unavailable');
   } else if (code === 'to_reload' || code === 'to_login') {
-    toAlertToast = {};
+    toAlertToast = { handled: true, title: '' };
     location.reload();
   } else if (code === 'external_api_error' || code === '0') {
     toAlertToast = { title: 'No se pudo conectar con API externa.' };
-  } else if (error !== '') {
+  } else if (typeof error === 'string' && error.trim() !== '') {
     toAlertToast = { title: error };
   } else {
     toAlertToast = { title: 'Ha ocurrido un error desconocido: ' + code };

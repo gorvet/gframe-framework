@@ -32,7 +32,7 @@ function recoveryAcount(){
   const email=$('#recovery_email').val();
   showSpinner('#submit_recovery', 'Recuparando tu cuenta')
 
-  $.ajax({
+  authRequest({
     type: 'POST',
     url: site_url+'ajax/lostpassword',
     data: formData,
@@ -60,7 +60,9 @@ function recoveryAcount(){
       if (recoveryErrorSwal) {
         swalAlert(recoveryErrorSwal);
       } else {
-        alertOptions.title = successError(response.message, response.code).title 
+        const feedback = successError(response.message, response.code);
+        if (feedback.handled) return;
+        alertOptions.title = feedback.title;
         alertToast(alertOptions);
       }
     }

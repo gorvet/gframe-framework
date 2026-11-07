@@ -40,7 +40,7 @@
             swalAlert({ icon: 'error', title: message });
         } else {
             const options = successError(message, code);
-            if (options.title) alertToast({ icon: 'error', title: options.title });
+            if (!options.handled && options.title) alertToast({ icon: 'error', title: options.title });
         }
     }
 
@@ -51,7 +51,7 @@
         buttons.prop('disabled', true);
         const payload = $(form).serializeArray();
         if (form.id === 'auth-login-form' && !verification) payload.push({ name: 'rd', value: returnPath });
-        $.ajax({
+        authRequest({
             type: 'POST',
             url: verification ? base + 'ajax/verification' : form.action,
             data: $.param(payload),

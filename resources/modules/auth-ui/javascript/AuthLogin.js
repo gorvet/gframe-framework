@@ -49,7 +49,7 @@ function login(){
   alertOptions = swalOptions = {icon: 'error', title: ''};
   const formData = $('#login').serialize() + (redirectToken !== null ? '&rd=' + encodeURIComponent(redirectToken) : ''); // Obtener los datos del formulario
  
-  $.ajax({
+  authRequest({
     type: 'POST',
     url: site_url+'ajax/login',
     data: formData,
@@ -70,7 +70,9 @@ function login(){
         if (authSwal) {
           swalAlert(authSwal);
         } else {
-          alertOptions.title = successError(response.message, response.code).title 
+          const feedback = successError(response.message, response.code);
+          if (feedback.handled) return;
+          alertOptions.title = feedback.title;
           alertToast(alertOptions);
         }
       }
@@ -108,7 +110,7 @@ function verifyAcount(){
   
   showSpinner(true)
  
-  $.ajax({
+  authRequest({
     type: 'POST',
     url: site_url+'ajax/verifyacount',
     data: formData,
@@ -138,7 +140,9 @@ function verifyAcount(){
           swalAlert(swalOptions)
         }  
         else{
-          alertOptions.title = successError(response.message, response.code).title 
+          const feedback = successError(response.message, response.code);
+          if (feedback.handled) return;
+          alertOptions.title = feedback.title;
           alertToast(alertOptions);
         }
       }
@@ -184,7 +188,7 @@ function validateAcount(validateToken){
   alertOptions = swalOptions = {icon: 'error', title: ''};
 
 
-  $.ajax({
+  authRequest({
     type: 'POST',
     url: site_url+'ajax/validateacount',
     data: formData+'&vtoken='+validateToken,
@@ -229,7 +233,9 @@ function validateAcount(validateToken){
           }); 
         }
         else{
-          alertOptions.title = successError(response.message, response.code).title 
+          const feedback = successError(response.message, response.code);
+          if (feedback.handled) return;
+          alertOptions.title = feedback.title;
           alertToast(alertOptions);
         }
       }

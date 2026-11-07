@@ -43,7 +43,7 @@ function registerAcount(){
   const email = $('#register_email').val();
   /* Mostramos un loader hasta que se procese la solocitud */
   showSpinner('#submit_register', 'Creando tu cuenta')
-  $.ajax({
+  authRequest({
     type: 'POST',   
     url: site_url+'ajax/register',
     data: formData,   
@@ -75,7 +75,9 @@ success: function(response) {
     return;
   }
 
-  alertOptions.title = successError(response.message || '', response.code || '').title || 'Ha ocurrido un error.';
+  const feedback = successError(response.message || '', response.code || '');
+  if (feedback.handled) return;
+  alertOptions.title = feedback.title;
   alertToast(alertOptions);
     },
     error: function(xhr, status, error) { 

@@ -1,5 +1,10 @@
 # Registro de cambios
 
+## 5.2.1 — 2026-11-07
+
+- Autenticación: recuperación de formularios con sesión de invitado o token CSRF caducado, con un único reintento y un mensaje visible si falla. Se evitan los toasts vacíos posteriores a una navegación gestionada por `successError`.
+- Selector de medios: guardado automático de atributos al cambiar de archivo, usar la selección o cerrar el modal. Los errores conservan la edición y muestran un aviso; una operación en curso no duplica el guardado.
+
 ## 5.2.0 — 2026-11-07
 
 - Cuenta y seguridad: contraseña actual sin autocompletado solicitado, una única contraseña nueva, medidor del framework y controles Mostrar/Ocultar. Confirmación opcional y compatible con consumidores anteriores; se mantienen política y revocación de sesiones.

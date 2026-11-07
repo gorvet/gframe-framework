@@ -79,11 +79,12 @@ function mostrarResultado(response) {
         });
     }
     const feedback = successError(response.message || '', response.code);
+    if (feedback.handled) return;
     if (feedback.title) return swalAlert({title: 'No se pudo completar', text: feedback.title, icon: 'error'});
 }
 ```
 
-`successError()` pertenece a [frontend-core](frontend-core.md); ciertos códigos abren una vista de error o recargan la página, por lo que devuelve un objeto sin título. Evite abrir otro diálogo en esos casos. Los errores de transporte se preparan con `ajaxError(status, error)` y pueden mostrarse con icono `error`.
+`successError()` pertenece a [frontend-core](frontend-core.md); ciertos códigos abren una vista de error o recargan la página y devuelven `{handled: true, title: ''}`. Evite abrir otro diálogo en esos casos. Los errores de transporte se preparan con `ajaxError(status, error)` y pueden mostrarse con icono `error`.
 
 Si el backend encoló un correo o una tarea, comunique recepción o programación, no entrega confirmada. El módulo no interpreta `mail_queued`, no procesa colas ni espera el resultado de una tarea Async.
 

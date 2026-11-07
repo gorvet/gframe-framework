@@ -212,7 +212,7 @@ Al seleccionar un archivo se consultan sus detalles en el mismo modal. El nombre
 
 «Nombre visible» no renombra el archivo físico ni cambia su URL. El texto alternativo describe la imagen y puede quedar vacío si es decorativa. Las leyendas y descripciones ampliadas no se incorporan en esta entrega.
 
-Guarde o descarte los cambios de atributos antes de cambiar de archivo, confirmar o cerrar el modal. Guardar atributos modifica los datos de la biblioteca; cancelar después la selección no revierte ese guardado. El panel no añade campos a la serialización del formulario consumidor ni impide su validación cuando el modal está cerrado.
+Al cambiar de archivo, usar la selección o cerrar el selector, los cambios de atributos se guardan automáticamente antes de completar la acción. Si el guardado falla, el modal permanece abierto, conserva los valores y muestra un aviso para corregirlos o reintentar. También puede guardar manualmente o descartar la edición. Estos cambios modifican los datos de la biblioteca; cancelar la selección no revierte los atributos guardados. El panel no añade campos a la serialización del formulario consumidor ni impide su validación cuando el modal está cerrado.
 
 Una respuesta nativa de guardado correcto conserva `status`, `code` y `message` y añade `data` con el archivo guardado, sus atributos normalizados y sus URL del servidor. El selector utiliza esos datos para actualizar la selección y las vistas sin tratar el texto del navegador como resultado definitivo del guardado.
 

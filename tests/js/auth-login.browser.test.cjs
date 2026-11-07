@@ -26,6 +26,7 @@ test('El login original admite clic y Enter, valida y evita envíos duplicados',
       window.alertToast = () => {};
       window.ajaxError = () => ({title: ''});
       $.ajax = options => {window.requests.push(options);};
+      window.authRequest = options => $.ajax(options);
     });
     await page.addScriptTag({path: join(root, 'resources/modules/auth-ui/javascript/AuthLogin.js')});
     await page.locator('#login_password').fill('Password-123');

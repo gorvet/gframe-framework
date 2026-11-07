@@ -6,7 +6,7 @@ const {tmpdir} = require('node:os');
 const {join, resolve} = require('node:path');
 const net = require('node:net');
 
-test('Selector real: subida, atributos, orden, cancelación y respuestas antiguas', {skip: !process.env.GFRAME_TEST_BROWSER, timeout: 90000}, async () => {
+test('Selector real: subida, guardado automático de atributos, orden, cancelación y respuestas antiguas', {skip: !process.env.GFRAME_TEST_BROWSER, timeout: 90000}, async () => {
   const root = mkdtempSync(join(tmpdir(), 'gframe-selector-test-'));
   const listener = net.createServer();
   await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve));
@@ -36,9 +36,13 @@ test('Selector real: subida, atributos, orden, cancelación y respuestas antigua
     const open = async options => {
       await page.evaluate(options => {
         window.pickResult = undefined;
+        window.pickResolved = false;
+        const epoch = window.pickEpoch = (window.pickEpoch || 0) + 1;
         window.pickerShown = false;
         $('#mediaPickerModal').one('shown.bs.modal', () => window.pickerShown = true);
-        window.MediaPicker.open(options).then(result => window.pickResult = result);
+        window.MediaPicker.open(options).then(result => {
+          if (epoch === window.pickEpoch) { window.pickResult = result; window.pickResolved = true; }
+        });
       }, options);
       await page.waitForFunction(() => window.pickerShown);
       await modal.waitFor({state: 'visible'});
@@ -103,25 +107,73 @@ test('Selector real: subida, atributos, orden, cancelación y respuestas antigua
     assert.deepEqual(await page.evaluate(() => Array.from(new FormData(document.getElementById('application-form')).keys())), ['gallery']);
     await modal.locator('#mp-original-name').fill(' <b>Portada accesible</b> ');
     await modal.locator('#mp-alt-text').fill('<em>Descripción de prueba</em>');
-    await modal.locator('[data-bs-dismiss="modal"]').first().click();
-    assert.equal(await modal.isVisible(), true);
-    await modal.locator('[data-mp-save]').click();
-    await page.waitForFunction(() => window.lastToast?.icon === 'success' && window.lastToast?.title === 'Atributos guardados.');
-    assert.equal(await modal.locator('[data-mp-details-status]').innerText(), '');
+    await close();
     const detail = await (await page.request.post(base + '/ajax/admin/media/details', {form: {media_id: '1'}})).json();
     assert.equal(detail.data.original_name, 'Portada accesible');
     assert.equal(detail.data.alt_text, 'Descripción de prueba');
+    await open({kind: 'images', selected: [1]});
+    await page.waitForFunction(() => document.querySelector('#mp-original-name').value === 'Portada accesible');
     assert.equal(await modal.locator('#mp-original-name').inputValue(), 'Portada accesible');
     assert.equal(await modal.locator('#mp-alt-text').inputValue(), 'Descripción de prueba');
     writeFileSync(join(root, 'deny-save'), 'deny');
     await modal.locator('#mp-alt-text').fill('No autorizado');
-    await modal.locator('[data-mp-save]').click();
+    await modal.locator('#mp-insert').click();
     await page.waitForFunction(() => window.lastToast?.icon === 'error' && window.lastToast?.title.includes('guardar'));
+    assert.equal(await modal.isVisible(), true);
+    assert.equal(await modal.locator('#mp-alt-text').inputValue(), 'No autorizado');
     const unchanged = await (await page.request.post(base + '/ajax/admin/media/details', {form: {media_id: '1'}})).json();
     assert.equal(unchanged.data.alt_text, 'Descripción de prueba');
     unlinkSync(join(root, 'deny-save'));
     await modal.locator('[data-mp-discard]').click();
     await close();
+
+    // Un corte de red al cerrar conserva tanto el modal como la edición.
+    await open({kind: 'images', selected: [1]});
+    await page.waitForFunction(() => document.querySelector('#mp-original-name').value === 'Portada accesible');
+    await page.route('**/ajax/admin/media/save', route => route.abort());
+    await modal.locator('#mp-alt-text').fill('Conservar si falla la red');
+    await page.evaluate(() => { window.lastToast = null; });
+    await modal.locator('[data-bs-dismiss="modal"]').first().click();
+    await page.waitForFunction(() => window.lastToast?.icon === 'error' && !!window.lastToast.title);
+    assert.equal(await modal.isVisible(), true);
+    assert.equal(await modal.locator('#mp-alt-text').inputValue(), 'Conservar si falla la red');
+    assert.equal(await page.evaluate(() => window.pickResolved), false);
+    await page.unroute('**/ajax/admin/media/save');
+    await close();
+
+    // Cambiar de imagen persiste los atributos de la anterior antes de cargar detalles.
+    await open({kind: 'images', selected: [1]});
+    await page.waitForFunction(() => document.querySelector('#mp-original-name').value === 'Portada accesible');
+    await modal.locator('#mp-alt-text').fill('Guardado al cambiar');
+    await modal.locator('.m-list-card[data-media-id="2"]').click();
+    await page.waitForFunction(() => document.querySelector('#mp-original-name').value === 'Segunda.png');
+    const switched = await (await page.request.post(base + '/ajax/admin/media/details', {form: {media_id: '1'}})).json();
+    assert.equal(switched.data.alt_text, 'Guardado al cambiar');
+    await close();
+
+    // Usar imagen espera el guardado: doble clic no duplica la escritura.
+    let saves = 0;
+    await page.route('**/ajax/admin/media/save', async route => {
+      saves++;
+      const response = await route.fetch();
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await route.fulfill({response});
+    });
+    await open({kind: 'images', selected: [1]});
+    await page.waitForFunction(() => document.querySelector('#mp-original-name').value === 'Portada accesible');
+    await modal.locator('#mp-alt-text').fill('<b>Guardado al usar</b>');
+    await page.evaluate(() => { $('#mp-insert').trigger('click').trigger('click'); });
+    await modal.waitFor({state: 'hidden'});
+    assert.equal(saves, 1);
+    assert.equal(await page.evaluate(() => pickResult.item.alt_text), 'Guardado al usar');
+    await page.unroute('**/ajax/admin/media/save');
+
+    await open({kind: 'images', multiple: true, selected: [1, 2]});
+    await page.waitForFunction(() => document.querySelector('#mp-original-name').value === 'Segunda.png');
+    await modal.locator('#mp-alt-text').fill('Selección múltiple guardada');
+    await modal.locator('#mp-insert').click();
+    await modal.waitFor({state: 'hidden'});
+    assert.equal(await page.evaluate(() => pickResult.items.find(item => item.id === 2).alt_text), 'Selección múltiple guardada');
 
     // Las dos subidas llegan en orden inverso; el lote conserva el orden de entrada.
     await open({multiple: true, selected: [1], max: 3, kind: 'images'});

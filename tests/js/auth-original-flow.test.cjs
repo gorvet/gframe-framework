@@ -7,6 +7,8 @@ const { runInNewContext } = require('node:vm');
 function setup(script, search = '') {
   const handlers = new Map(), requests = [], fields = new Map();
   let valid = true, feedback = 0, passwordBindings = 0;
+  const notices = [];
+  let mappedError = {title: 'Error'};
   const window = { location: { search, href: '' } };
   const form = { checkValidity: () => valid };
   function $(selector) {
@@ -27,14 +29,14 @@ function setup(script, search = '') {
   }
   $.ajax = options => requests.push(options);
   runInNewContext(readFileSync(join(__dirname, '../../resources/modules/auth-ui/javascript', script), 'utf8'), {
-    jQuery: $, window, document: {}, site_url: 'https://example.test/app/', URL, URLSearchParams,
+    jQuery: $, authRequest: options => $.ajax(options), window, document: {}, site_url: 'https://example.test/app/', URL, URLSearchParams,
     localStorage: { removeItem() {} },
     validationFeedback: () => feedback++, showPassword: () => passwordBindings++,
     showSpinner() {}, generatePassword: () => 'Password-123', updateMeterPassword() {}, passwordValidate: () => true,
-    swalAlert: () => Promise.resolve({ isConfirmed: false }), alertToast() {},
-    successError: () => ({ title: '' }), ajaxError: () => ({ title: '' })
+    swalAlert: () => Promise.resolve({ isConfirmed: false }), alertToast: options => notices.push(options),
+    successError: () => mappedError, ajaxError: () => ({ title: '' })
   });
-  return { handlers, requests, fields, window, invalidate: () => { valid = false; },
+  return { handlers, requests, fields, window, notices, setError: value => {mappedError = value;}, invalidate: () => { valid = false; },
     feedback: () => feedback, passwordBindings: () => passwordBindings };
 }
 
@@ -71,6 +73,23 @@ test('login transmite rd y respeta el destino del servidor incluso si exige camb
   for (const redirect of ['account', 'admin']) {
     state.requests[0].success({ status: 'success', redirect, must_change_password: true });
     assert.equal(state.window.location.href, new URL(redirect, 'https://example.test/app/').href);
+  }
+});
+
+test('los consumidores auth no muestran toasts cuando successError ya gestionó la navegación', () => {
+  for (const [script, selector, search] of [
+    ['AuthLogin.js', '#login:submit', ''],
+    ['AuthLogin.js', '#verifyAcount', ''],
+    ['AuthLogin.js', null, '?v=token'],
+    ['AuthRegister.js', '#submit_register:click', ''],
+    ['AuthLostpassword.js', '#submit_recovery:click', ''],
+    ['AuthResetpassword.js', '#submit_reset:click', '?rp=token']
+  ]) {
+    const state = setup(script, search);
+    state.setError({handled: true, title: ''});
+    if (selector) state.handlers.get(selector)({preventDefault() {}, stopPropagation() {}});
+    state.requests[0].success({status: 'error', code: 'forbidden', message: 'Sin acceso'});
+    assert.equal(state.notices.length, 0, script + ': ' + selector);
   }
 });
 

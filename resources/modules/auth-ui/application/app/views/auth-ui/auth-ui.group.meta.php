@@ -38,6 +38,7 @@ return [
         'public/vendors/internal/gframe-alerts/alertToast.js',
         'public/js/core/utils/forms.js',
         'public/js/core/utils/errors.js',
+        'public/js/modules/auth/auth-request.js',
         'public/vendors/internal/passwordUtils/passwordUtils.js',
         ...($authScript !== null ? ['public/js/modules/auth/' . $authScript] : []),
     ],

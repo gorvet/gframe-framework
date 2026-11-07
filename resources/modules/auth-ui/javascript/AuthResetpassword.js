@@ -51,7 +51,7 @@ $('#submit_reset').on('click', function(event) {
   let alertOptions = {icon: 'error', title:''};
   const formData = $('#reset').serialize(); // Obtener los datos del formulario
    showSpinner('#submit_reset', 'Estableciendo contraseña')
-     $.ajax({
+  authRequest({
       type: 'POST',
       url: site_url+'ajax/resetpassword',
     data: formData ,
@@ -86,7 +86,9 @@ $('#submit_reset').on('click', function(event) {
         });
             }
         else{
-        alertOptions.title = successError(response.message, response.code).title 
+        const feedback = successError(response.message, response.code);
+        if (feedback.handled) return;
+        alertOptions.title = feedback.title;
           alertToast(alertOptions);
         }
          }

@@ -130,6 +130,8 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   };
   var detailSequence = 0;
   var selectionSequence = 0;
+  var detailsSave = null;
+  var leavingDetails = false;
   var $details = $modal.find('[data-mp-details-form]');
   var $status = $modal.find('[data-mp-details-status]');
   var messages = {};
@@ -140,6 +142,7 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     var title = response && response.message ? response.message : message(key);
     if (response && typeof window.successError === 'function') {
       var mapped = window.successError(title, response.code);
+      if (mapped && mapped.handled) return;
       title = mapped && mapped.title ? mapped.title : title;
     }
     if (typeof window.alertToast === 'function') window.alertToast({icon: icon || 'error', title: title});
@@ -168,8 +171,17 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
 
   function mayLeaveDetails() {
     if (state.saving) { notify('wait_save', 'warning'); return false; }
-    if (state.dirty) { notify('dirty', 'warning'); $details.find('[data-mp-name]').trigger('focus'); return false; }
     return true;
+  }
+
+  function leaveDetails(next) {
+    if (leavingDetails) return;
+    if (!state.dirty && !detailsSave) { if (mayLeaveDetails()) next(); return; }
+    leavingDetails = true;
+    saveDetails(false).done(function(saved) {
+      leavingDetails = false;
+      if (saved && state.resolve) next();
+    });
   }
 
   function fillDetails(item) {
@@ -277,7 +289,16 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   });
   $details.on('click', '[data-mp-save]', function(event) {
     event.preventDefault();
-    if (!state.active || state.saving || !$details.find('[data-mp-name]')[0].reportValidity()) return;
+    saveDetails(true);
+  });
+
+  function saveDetails(manual) {
+    if (detailsSave) return detailsSave;
+    if (!state.dirty) return $.Deferred().resolve(true).promise();
+    if (!state.active || state.saving) { notify('wait_save', 'warning'); return $.Deferred().resolve(false).promise(); }
+    if (!$details.find('[data-mp-name]')[0].reportValidity()) { notify('save_denied', 'error'); return $.Deferred().resolve(false).promise(); }
+    var result = $.Deferred(), saved = false;
+    detailsSave = result.promise();
     state.saving = true;
     $details.find(':input').prop('disabled', true);
     $status.text(message('saving'));
@@ -288,8 +309,9 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
       item = response.data ? normalize(response.data) : $.extend({}, item, {original_name: data.original_name, alt_text: data.alt_text});
       fillDetails(item);
       if (state.selected.has(item.id)) state.selected.set(item.id, item);
-      notify('saved', 'success');
-      renderSelection();
+      saved = true;
+      if (manual) notify('saved', 'success');
+      $modal.find('[data-mp-detail="' + item.id + '"]').text(item.original_name || item.name || '');
       lib.load(lib.state.page || 1, {push: false, makeActive: true});
     }).fail(function(xhr, status, error) {
       var mapped = typeof window.ajaxError === 'function' ? window.ajaxError(status, error) : null;
@@ -300,14 +322,21 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
         $details.find(':input').prop('disabled', false);
         $details.find('[data-mp-alt]').prop('disabled', !state.active || state.active.type !== 'images');
         $status.text('');
+        detailsSave = null;
+        result.resolve(saved);
       });
-  });
+    return result.promise();
+  }
 
   $details.on('click', '[data-mp-optimize]', function() {
-    if (!state.active || !mayLeaveDetails()) return;
+    var button = this;
+    leaveDetails(function() { optimizeDetails(button); });
+  });
+  function optimizeDetails(button) {
+    if (!state.active) return;
     state.saving = true;
     $details.find(':input').prop('disabled', true);
-    var $button = $(this).text(message('optimizing'));
+    var $button = $(button).text(message('optimizing'));
     request('optimize', {media_id: state.active.id}).done(function(response) {
       if (response.status !== 'success') { notify('optimize_failed', 'error', response); return; }
       if (response.data) fillDetails(normalize(response.data));
@@ -320,21 +349,26 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
       $details.find(':input').prop('disabled', false);
       $details.find('[data-mp-alt]').prop('disabled', !state.active || state.active.type !== 'images');
     });
-  });
+  }
 
   $modal.on('click.mediaPickerComposition', '[data-mp-detail]', function() {
-    if (mayLeaveDetails()) showDetails(toInt($(this).attr('data-mp-detail')));
+    var id = toInt($(this).attr('data-mp-detail'));
+    leaveDetails(function() { showDetails(id); });
   });
   $modal.on('click.mediaPickerComposition', '[data-mp-remove]', function() {
-    if (!mayLeaveDetails()) return;
-    state.selected.delete(toInt($(this).attr('data-mp-remove')));
-    state.replaceSelection = true;
-    syncSelection();
+    var id = toInt($(this).attr('data-mp-remove'));
+    leaveDetails(function() {
+      state.selected.delete(id);
+      state.replaceSelection = true;
+      syncSelection();
+    });
   });
   $modal.on('click.mediaPickerComposition', '[data-mp-move]', function() {
-    if (!mayLeaveDetails()) return;
     var id = toInt($(this).closest('[data-mp-selection-id]').attr('data-mp-selection-id'));
     var direction = toInt($(this).attr('data-mp-move'));
+    leaveDetails(function() { moveSelection(id, direction); });
+  });
+  function moveSelection(id, direction) {
     var items = Array.from(state.selected.values());
     var index = items.findIndex(function(item) { return item.id === id; });
     var target = index + direction;
@@ -343,7 +377,7 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     state.selected = new Map(items.map(function(item) { return [item.id, item]; }));
     state.replaceSelection = true;
     syncSelection(id, direction);
-  });
+  }
 
   $mount.on('ml:uploadComplete.mediaPicker', function(event, uploaded, context) {
     if (!state.resolve || context !== state.session || !uploaded.length) return;
@@ -358,16 +392,18 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
     })).then(function(items) {
       if (session !== state.session || !state.resolve) return;
       state.uploadHydrating = false;
+      leaveDetails(function() {
       items = items.filter(function(item) { return item && (state.kind === 'all' || state.kind === item.type); });
       if (!state.multiple && items.length) state.selected = new Map([[items[items.length - 1].id, items[items.length - 1]]]);
       else items.forEach(function(item) { if (state.selected.has(item.id) || state.selected.size < state.max) state.selected.set(item.id, item); });
       bootstrap.Tab.getOrCreateInstance($modal.find('[data-bs-target="#mp-library"]')[0]).show();
       syncSelection();
-      if (items.length && mayLeaveDetails()) showDetails(items[items.length - 1].id);
+      if (items.length) showDetails(items[items.length - 1].id);
       var notice = state.multiple && items.some(function(item) { return !state.selected.has(item.id); })
         ? message('limit')
         : (items.length !== uploaded.length ? message('incompatible') : '');
       $modal.find('[data-mp-notice]').text(notice).toggleClass('d-none', !notice);
+      });
     });
   });
 
@@ -504,10 +540,10 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
 
   // Eventos del MediaLibrary: click item / render
   $mount.off("ml:itemClick.mediaPicker").on("ml:itemClick.mediaPicker", function (e, item) {
-    if (!mayLeaveDetails()) return;
-    // picker siempre captura selección
-    toggleSelect(item);
-    showDetails(item.id);
+    leaveDetails(function() {
+      toggleSelect(item);
+      showDetails(item.id);
+    });
   });
 
   $mount.off("ml:render.mediaPicker").on("ml:render.mediaPicker", function () {
@@ -518,7 +554,11 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
   // Insertar
   $modal.off("click.mediaPickerInsert", "#mp-insert").on("click.mediaPickerInsert", "#mp-insert", function (e) {
     e.preventDefault();
-    if (!mayLeaveDetails() || state.selectionPending || state.uploadHydrating) return;
+    leaveDetails(insertSelection);
+  });
+
+  function insertSelection() {
+    if (state.selectionPending || state.uploadHydrating) return;
     if (!state.selected.size && !state.allowEmpty) return;
 
     state.didInsert = true;
@@ -536,10 +576,15 @@ var bsModal = bootstrap.Modal.getOrCreateInstance($modal[0]);
 
     if (typeof state.resolve === "function") state.resolve(result);
     state.resolve = null;
-  });
+  }
 
   // Cierre/cancel: resolve(null) solo si no insertó
   $modal.on('hide.bs.modal.mediaPickerDetails', function(event) {
+    if (state.dirty || detailsSave) {
+      event.preventDefault();
+      leaveDetails(function() { bsModal.hide(); });
+      return;
+    }
     if (!mayLeaveDetails()) { event.preventDefault(); return; }
     state.closing = true;
     $details.find(':input').prop('disabled', true);

@@ -90,7 +90,7 @@ El backend vuelve a validar los mismos requisitos, autorización y ámbito. Una 
 
 `successError(message, code)` interpreta códigos compartidos; `ajaxError(status, error)` prepara información de fallos de transporte. Ambos devuelven un objeto para feedback, pero no asignan su icono. La vista debe usar `icon: 'error'` cuando corresponda y presentar el resultado mediante `alertToast` o `swalAlert`. Conserva los códigos exactos del backend.
 
-`successError()` no es un manejador de respuestas exitosas pese a su nombre. Determinados códigos solicitan una página de error (`forbidden`, `not_found`, `service_unavailable` y sus alias) o recargan la página (`to_reload`, `to_login`). En esos casos devuelve un objeto vacío; no muestres además un toast vacío. Para errores de negocio con mensaje devuelve `{title: ...}`.
+`successError()` no es un manejador de respuestas exitosas pese a su nombre. Determinados códigos solicitan una página de error (`forbidden`, `not_found`, `service_unavailable` y sus alias) o recargan la página (`to_reload`, `to_login`). En esos casos devuelve `{handled: true, title: ''}`: termina el callback sin mostrar otro aviso. Para errores de negocio devuelve `{title: ...}`, con un texto de respaldo si falta el mensaje. Pasa al toast su propiedad `title`, no el objeto completo.
 
 `toErrorView(errorType, tolink, infoMsg)` solicita la vista de error y sustituye el documento completo. El manejador AJAX global también sustituye el documento cuando recibe HTML con estado 200, salvo cuando `window.__gfAuthInactive` es verdadero. No comprueba que ese HTML sea realmente una página de error. Por eso los fragmentos deben viajar dentro del contrato JSON, no como HTML directo.
 

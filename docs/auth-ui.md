@@ -8,6 +8,10 @@ El módulo `auth-ui` instala el acceso web estándar de GFrame: inicio y cierre 
 
 Los formularios de acceso, registro y recuperación admiten alias con `+`, como `nombre+evento@gmail.com`, y extensiones de dominio de más de tres letras, como `.info` o `.technology`. Utilizan `type="email"` y `required` sin un patrón adicional restrictivo; el servidor mantiene la validación de formato con `FILTER_VALIDATE_EMAIL`. Esto comprueba sintaxis, no la existencia ni la entrega del buzón. Si el proyecto personalizó esas vistas, elimina también el patrón antiguo de sus overrides.
 
+Si un formulario abierto pierde su sesión de invitado o conserva un token CSRF antiguo, las solicitudes nativas de autenticación obtienen nuevos campos desde `GET /login` y reintentan una sola vez ante `to_reload` o `fail_csrf`. No se desactiva la protección CSRF, no se recarga el documento y se conservan los datos introducidos. Si la renovación falla o el servidor vuelve a rechazar la solicitud, se muestra un mensaje para recargar manualmente. Los errores de credenciales y los fallos de transporte ordinarios no activan este reintento.
+
+Las metas nativas cargan `public/js/modules/auth/auth-request.js` antes del script de cada formulario. Una personalización que sustituya las metas debe conservar ese orden y los campos `csrfToken` y `csrfTimestamp` dentro de `#login` (o `#auth-login-form`). Los formularios personalizados pueden usar `authRequest(options)` con datos serializados de jQuery; devuelve una promesa jQuery y acepta los callbacks `success`, `error` y `complete` utilizados por el módulo.
+
 ## Instalación
 
 El módulo necesita el esquema `auth`. Al publicarlo, GFrame resuelve también `alerts`, `frontend-core`, `heartbeat-client` y `password-utils`.
